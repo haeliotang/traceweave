@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/bash
 # Start Traceform Complete Field Tester Runtime on Pixel 6a
 # 1. Runs Edge Manifold Daemon in background (live real-time quantization + haptics)
 # 2. Runs Field Sync Engine periodically (daily OTA sync to private GitHub repo)
