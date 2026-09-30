@@ -48,6 +48,17 @@ class EdgeDaemonEvent:
         }
 
 
+def get_system_boot_id() -> str:
+    """Reads Linux kernel boot ID if available, else returns fallback."""
+    boot_file = Path("/proc/sys/kernel/random/boot_id")
+    if boot_file.is_file():
+        try:
+            return boot_file.read_text(encoding="utf-8").strip().lower()
+        except Exception:
+            pass
+    return "unknown-boot-id"
+
+
 class EdgeManifoldDaemon:
     """
     Sub-millisecond on-device edge daemon executing DETM quantization,
@@ -61,12 +72,16 @@ class EdgeManifoldDaemon:
         ring_buffer_size: int = 300,
         dwell_threshold_steps: int = 60,
         csd_threshold_sigma: float = 2.5,
+        boot_epoch_file: Optional[Path | str] = None,
+        max_inter_frame_gap_seconds: float = 300.0,
     ) -> None:
         self.normalizer = normalizer
         self.manifold = manifold
         self.buffer_size = ring_buffer_size
         self.dwell_threshold = dwell_threshold_steps
         self.csd_threshold_sigma = csd_threshold_sigma
+        self.boot_epoch_file = Path(boot_epoch_file) if boot_epoch_file else None
+        self.max_gap_seconds = max_inter_frame_gap_seconds
 
         # Ring buffer storing recent (u, v, proj_dist)
         self.coord_buffer: Deque[Tuple[float, float, float]] = deque(maxlen=ring_buffer_size)
@@ -79,6 +94,52 @@ class EdgeManifoldDaemon:
         # Dwell tracking
         self.current_token: Optional[str] = None
         self.consecutive_dwell_steps: int = 0
+        self.last_observation_ts: Optional[float] = None
+
+        # Cross-boot epoch tracking
+        self.current_boot_id = get_system_boot_id()
+        self._check_and_update_boot_epoch()
+
+    def _check_and_update_boot_epoch(self) -> None:
+        """Detects if system rebooted or power cycled since last execution."""
+        if not self.boot_epoch_file:
+            return
+        reboot_detected = False
+        if self.boot_epoch_file.is_file():
+            try:
+                prev_data = json.loads(self.boot_epoch_file.read_text(encoding="utf-8"))
+                prev_boot_id = prev_data.get("boot_id", "")
+                if prev_boot_id and prev_boot_id != self.current_boot_id:
+                    reboot_detected = True
+            except Exception:
+                reboot_detected = True
+
+        try:
+            self.boot_epoch_file.parent.mkdir(parents=True, exist_ok=True)
+            self.boot_epoch_file.write_text(
+                json.dumps({
+                    "boot_id": self.current_boot_id,
+                    "updated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "reboot_detected": reboot_detected,
+                }, indent=2),
+                encoding="utf-8"
+            )
+        except Exception:
+            pass
+
+        if reboot_detected:
+            self.reset_continuity()
+
+    def reset_continuity(self) -> None:
+        """Resets velocity, ring buffer, and dwell steps across reboots or long downtimes."""
+        self.coord_buffer.clear()
+        self.timestamps.clear()
+        self.consecutive_dwell_steps = 0
+        self.current_token = None
+        if hasattr(self.manifold, "last_obs_vector"):
+            self.manifold.last_obs_vector = None
+        if hasattr(self.manifold, "last_velocity"):
+            self.manifold.last_velocity = None
 
     def process_observation(
         self,
@@ -91,10 +152,24 @@ class EdgeManifoldDaemon:
             events: List of any triggered EdgeDaemonEvents.
         """
         t0 = time.perf_counter()
+        ts = obs.get("timestamp_utc", datetime.datetime.now(datetime.timezone.utc).isoformat())
+
+        # Check time gap across outages or power cycles
+        obs_time = None
+        try:
+            dt_obj = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            obs_time = dt_obj.timestamp()
+        except Exception:
+            pass
+
+        if self.last_observation_ts is not None and obs_time is not None:
+            if (obs_time - self.last_observation_ts) > self.max_gap_seconds:
+                self.reset_continuity()
+        self.last_observation_ts = obs_time
+
         token, coord, dist = self.manifold.quantize(obs, self.normalizer)
         u, v = float(coord[0]), float(coord[1])
         proj = math.sqrt(u * u + v * v)
-        ts = obs.get("timestamp_utc", datetime.datetime.now(datetime.timezone.utc).isoformat())
 
         self.coord_buffer.append((u, v, proj))
         self.timestamps.append(ts)

@@ -82,6 +82,46 @@ class TestEdgeManifoldDaemon(unittest.TestCase):
         self.assertEqual(len(dwell_events), 1)
         self.assertEqual(dwell_events[0].metrics["dwell_steps"], 10.0)
 
+    def test_inter_frame_outage_gap_reset(self):
+        obs1 = {
+            "timestamp_utc": "2026-09-03T10:00:00Z",
+            "observation_id": "gap-1",
+            "motion": {"stationary_likelihood": 0.9, "motion_energy": 0.05},
+            "environment": {"ambient_light_lux": 20.0, "device_temp_c": 30.0},
+            "device_relation": {"battery_percentage": 85.0, "plugged": "UNPLUGGED"},
+            "audio_context": {"silence_likelihood": 0.9},
+            "connectivity": {"wifi_connected": True},
+            "place": {"spatial_cell": "tv58xy"},
+        }
+        for _ in range(5):
+            self.daemon.process_observation(obs1)
+        self.assertEqual(self.daemon.consecutive_dwell_steps, 5)
+
+        # Huge time gap: 4 hours later (e.g. phone ran out of battery and turned off)
+        obs2 = dict(obs1)
+        obs2["timestamp_utc"] = "2026-09-03T14:00:00Z"
+        obs2["observation_id"] = "gap-2"
+
+        self.daemon.process_observation(obs2)
+        # Consecutive dwell should have reset to 1 instead of accumulating to 6
+        self.assertEqual(self.daemon.consecutive_dwell_steps, 1)
+
+    def test_cross_boot_epoch_reset(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            epoch_file = Path(tmpdir) / "boot_epoch.json"
+            epoch_file.write_text('{"boot_id": "old-boot-id-1234"}', encoding="utf-8")
+
+            d = EdgeManifoldDaemon(
+                normalizer=self.normalizer,
+                manifold=self.manifold,
+                boot_epoch_file=epoch_file,
+            )
+            # Daemon detects reboot because current_boot_id != old-boot-id-1234
+            self.assertEqual(len(d.coord_buffer), 0)
+            self.assertEqual(d.consecutive_dwell_steps, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

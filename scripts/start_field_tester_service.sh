@@ -16,11 +16,15 @@ echo " Starting Traceform Field Tester Service (Pixel 6a)"
 echo " Repository: git@github.com:haeliotang/traceform.git"
 echo "============================================================================"
 
-# Ensure edge daemon is running
+# Ensure silent haptics mode is permanently enforced across power cycles
+touch "$DIR/data/.silent"
+
+# Ensure edge daemon is running in silent mode
 if ! pgrep -f "phone_edge_manifold_daemon.py" > /dev/null; then
-    echo "[*] Launching phone_edge_manifold_daemon.py in background..."
+    echo "[*] Launching phone_edge_manifold_daemon.py (Silent Mode) in background..."
     nohup python3 -u "$DIR/scripts/phone_edge_manifold_daemon.py" \
         --follow \
+        --disable-haptics \
         --raw-ledger "$HOME/.pixel_sensorium/physical_observations.jsonl" \
         --normalizer-file "$DIR/artifacts/representation_v1/representation_spec.json" \
         --model-file "$DIR/artifacts/manifold_dynamics_v1/manifold_lattice_model.json" \

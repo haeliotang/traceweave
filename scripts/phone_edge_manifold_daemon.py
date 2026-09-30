@@ -117,6 +117,7 @@ def main():
         ring_buffer_size=args.buffer_size,
         dwell_threshold_steps=args.dwell_steps,
         csd_threshold_sigma=2.5,
+        boot_epoch_file=args.output_stream.parent / "boot_epoch.json",
     )
 
     args.output_stream.parent.mkdir(parents=True, exist_ok=True)
