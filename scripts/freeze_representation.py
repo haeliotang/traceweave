@@ -93,7 +93,7 @@ def main():
     # 4. Quantize full 14-day window and emit state sequence
     print("[*] Quantizing full 14-day corpus into discrete micro-state sequence...")
     state_sequence: List[Dict[str, Any]] = []
-    w2_novel_signatures: List[str] = []
+    w2_novel_signatures: set = set()
 
     out_seq_file = args.out_dir / "state_sequence_14d_v1.jsonl"
     with out_seq_file.open("w", encoding="utf-8") as seq_f:
@@ -107,8 +107,7 @@ def main():
 
             is_w1 = ts_dt < t_mid
             if not is_w1 and micro_state.state_id > w1_distinct_states:
-                if micro_state.signature not in w2_novel_signatures:
-                    w2_novel_signatures.append(micro_state.signature)
+                w2_novel_signatures.add(micro_state.signature)
 
             record = {
                 "step_index": idx,

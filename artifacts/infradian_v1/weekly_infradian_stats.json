@@ -6,7 +6,7 @@
     "weekday_unique_states": 47,
     "weekend_unique_states": 24,
     "shared_states_count": 15,
-    "stationary_rank_correlation": 1.0,
+    "stationary_rank_correlation": 0.9,
     "distribution_cosine_similarity": 0.9182,
     "transition_matrix_jsd": 0.0306,
     "weekday_determinism_ratio": 0.8879,

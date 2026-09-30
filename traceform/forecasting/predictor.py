@@ -97,6 +97,8 @@ class VariableOrderPredictor:
         """
         if len(test_tokens) < 2:
             raise ValueError("Test tokens sequence too short.")
+        if not self.unigram_counts:
+            raise RuntimeError("Predictor has not been fitted: unigram_counts is empty.")
 
         top1_hits = 0
         top3_hits = 0

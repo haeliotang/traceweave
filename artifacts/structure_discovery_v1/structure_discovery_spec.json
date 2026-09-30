@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.structure-discovery-spec.v1",
   "discovery_identity": "structure_discovery_14d_w1",
-  "generated_at_utc": "2026-09-30T18:55:03.911483+00:00",
+  "generated_at_utc": "2026-09-30T19:08:09.791707+00:00",
   "input_window": {
     "partition": "W1_DISCOVERY",
     "frame_count": 3147,
@@ -9,13 +9,13 @@
     "end_utc": "2026-09-09T22:46:09.104513Z"
   },
   "recurrence_quantification_analysis": {
-    "recurrence_rate": 0.1635,
-    "determinism": 0.6748,
-    "laminarity": 0.7446,
-    "average_diagonal_length": 4.17,
+    "recurrence_rate": 0.163,
+    "determinism": 0.6839,
+    "laminarity": 0.7531,
+    "average_diagonal_length": 4.2,
     "max_diagonal_length": 200,
-    "trapping_time": 5.13,
-    "diagonal_entropy": 2.4099,
+    "trapping_time": 5.19,
+    "diagonal_entropy": 2.4428,
     "threshold_epsilon": 0.25
   },
   "dynamic_regimes": {
@@ -43,7 +43,7 @@
             0.068
           ]
         ],
-        "entropy_bits": 0.855
+        "entropy_bits": 1.343
       },
       {
         "regime_id": 2,
@@ -67,7 +67,7 @@
             0.015
           ]
         ],
-        "entropy_bits": 0.463
+        "entropy_bits": 0.669
       },
       {
         "regime_id": 3,
@@ -91,7 +91,7 @@
             0.015
           ]
         ],
-        "entropy_bits": 0.967
+        "entropy_bits": 1.149
       },
       {
         "regime_id": 4,
@@ -115,7 +115,7 @@
             0.054
           ]
         ],
-        "entropy_bits": 1.251
+        "entropy_bits": 1.619
       },
       {
         "regime_id": 5,
@@ -163,7 +163,7 @@
             0.132
           ]
         ],
-        "entropy_bits": 1.323
+        "entropy_bits": 1.845
       },
       {
         "regime_id": 7,
@@ -187,7 +187,7 @@
             0.023
           ]
         ],
-        "entropy_bits": 0.378
+        "entropy_bits": 0.628
       },
       {
         "regime_id": 8,
@@ -211,7 +211,7 @@
             0.04
           ]
         ],
-        "entropy_bits": 1.215
+        "entropy_bits": 1.441
       },
       {
         "regime_id": 9,
@@ -271,7 +271,7 @@
             0.021
           ]
         ],
-        "entropy_bits": 0.426
+        "entropy_bits": 0.661
       },
       {
         "regime_id": 12,
@@ -295,7 +295,7 @@
             0.091
           ]
         ],
-        "entropy_bits": 1.338
+        "entropy_bits": 1.49
       },
       {
         "regime_id": 13,
@@ -339,7 +339,7 @@
             0.074
           ]
         ],
-        "entropy_bits": 1.334
+        "entropy_bits": 1.862
       },
       {
         "regime_id": 15,
@@ -363,7 +363,7 @@
             0.08
           ]
         ],
-        "entropy_bits": 1.109
+        "entropy_bits": 3.204
       },
       {
         "regime_id": 16,
@@ -519,7 +519,7 @@
             0.052
           ]
         ],
-        "entropy_bits": 1.013
+        "entropy_bits": 1.15
       },
       {
         "regime_id": 23,
@@ -627,7 +627,7 @@
             0.008
           ]
         ],
-        "entropy_bits": 0.46
+        "entropy_bits": 0.516
       },
       {
         "regime_id": 28,
@@ -675,7 +675,7 @@
             0.034
           ]
         ],
-        "entropy_bits": 1.097
+        "entropy_bits": 1.197
       },
       {
         "regime_id": 30,
@@ -699,7 +699,7 @@
             0.143
           ]
         ],
-        "entropy_bits": 1.441
+        "entropy_bits": 1.787
       },
       {
         "regime_id": 31,
@@ -787,7 +787,7 @@
             0.051
           ]
         ],
-        "entropy_bits": 0.848
+        "entropy_bits": 1.259
       },
       {
         "regime_id": 35,
@@ -1127,7 +1127,7 @@
   "transition_graph": {
     "total_nodes": 33,
     "total_directed_edges": 111,
-    "graph_density": 0.1051,
+    "graph_density": 0.0881,
     "reciprocity_ratio": 0.5591,
     "stationary_distribution": {
       "S01": 0.49013,

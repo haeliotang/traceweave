@@ -95,22 +95,22 @@ def detect_dynamic_regimes(
         regime_tokens = tokens[idx_start : idx_end + 1]
 
         # Calculate state frequency in regime
-        freq = collections.defaultdict(int) if "collections" in globals() else {}
+        freq: Dict[str, int] = {}
         for tok in regime_tokens:
             freq[tok] = freq.get(tok, 0) + 1
 
         tot = len(regime_tokens)
-        sorted_dominant = sorted(
-            [(tok, round(cnt / tot, 3)) for tok, cnt in freq.items()],
-            key=lambda x: x[1],
-            reverse=True,
-        )[:3]
+        all_state_shares = [(tok, round(cnt / tot, 3)) for tok, cnt in freq.items()]
+        sorted_dominant = sorted(all_state_shares, key=lambda x: x[1], reverse=True)
 
-        # Entropy of regime
+        # Entropy of regime (computed over all states, not just top-3)
         ent = 0.0
         for _, prob in sorted_dominant:
             if prob > 0:
                 ent -= prob * math.log2(prob)
+
+        # Truncate to top 3 for display
+        sorted_dominant = sorted_dominant[:3]
 
         reg = Regime(
             regime_id=r_idx + 1,

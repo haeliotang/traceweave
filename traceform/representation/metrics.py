@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Tuple
 
 @dataclass
 class MetricWeights:
-    weight_topology: float = 0.35
+    weight_topology: float = 0.30
     weight_kinetics: float = 0.25
     weight_device: float = 0.15
-    weight_environment: float = 0.15
-    weight_audio: float = 0.10
+    weight_environment: float = 0.12
+    weight_audio: float = 0.08
+    weight_connectivity: float = 0.10
 
     def to_dict(self) -> Dict[str, float]:
         return asdict(self)
@@ -26,11 +27,12 @@ class MetricWeights:
     @classmethod
     def from_dict(cls, d: Dict[str, float]) -> "MetricWeights":
         return cls(
-            weight_topology=float(d.get("weight_topology", 0.35)),
+            weight_topology=float(d.get("weight_topology", 0.30)),
             weight_kinetics=float(d.get("weight_kinetics", 0.25)),
             weight_device=float(d.get("weight_device", 0.15)),
-            weight_environment=float(d.get("weight_environment", 0.15)),
-            weight_audio=float(d.get("weight_audio", 0.10)),
+            weight_environment=float(d.get("weight_environment", 0.12)),
+            weight_audio=float(d.get("weight_audio", 0.08)),
+            weight_connectivity=float(d.get("weight_connectivity", 0.10)),
         )
 
 
@@ -118,6 +120,7 @@ class MultimodalDistanceMetric:
         d_env = self.continuous_subvector_distance(vec1[4:7], vec2[4:7])
         d_dev = self.continuous_subvector_distance(vec1[7:10], vec2[7:10])
         d_aud = self.continuous_subvector_distance(vec1[10:13], vec2[10:13])
+        d_conn = self.continuous_subvector_distance(vec1[13:15], vec2[13:15])
         d_topo = self.topological_distance(topo1, topo2)
 
         composite = (
@@ -126,6 +129,7 @@ class MultimodalDistanceMetric:
             + self.weights.weight_device * d_dev
             + self.weights.weight_environment * d_env
             + self.weights.weight_audio * d_aud
+            + self.weights.weight_connectivity * d_conn
         )
 
         return round(float(min(1.0, max(0.0, composite))), 6)

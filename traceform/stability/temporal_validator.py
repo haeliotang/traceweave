@@ -145,6 +145,9 @@ class TemporalStabilityValidator:
         """
         Executes out-of-sample temporal stability validation.
         """
+        if not w1_records or not w2_records:
+            raise ValueError("Both w1_records and w2_records must be non-empty for stability validation.")
+
         w1_tokens = [r["state_token"] for r in w1_records]
         w2_tokens = [r["state_token"] for r in w2_records]
 

@@ -44,7 +44,7 @@ class TestMultimodalDistanceMetric(unittest.TestCase):
         d_same_topo = self.metric.compute_distance(self.vec_a, self.topo_a, self.vec_a, self.topo_a)
         d_diff_topo = self.metric.compute_distance(self.vec_a, self.topo_a, self.vec_a, self.topo_c)
         self.assertEqual(d_same_topo, 0.0)
-        self.assertGreater(d_diff_topo, 0.2)
+        self.assertGreater(d_diff_topo, 0.15)
 
 
 if __name__ == "__main__":

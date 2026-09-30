@@ -100,6 +100,9 @@ class InfradianDynamicsAuditor:
         weekday_tokens = [r["state_token"] for r in weekday_recs]
         weekend_tokens = [r["state_token"] for r in weekend_recs]
 
+        if not weekday_tokens or not weekend_tokens:
+            raise ValueError("Insufficient data: need both weekday and weekend observations for infradian audit.")
+
         vocab_weekday = set(weekday_tokens)
         vocab_weekend = set(weekend_tokens)
         shared = vocab_weekday.intersection(vocab_weekend)
@@ -120,8 +123,16 @@ class InfradianDynamicsAuditor:
         if len(shared_list) > 1:
             p_vals = [stat_wd.get(s, 0.0) for s in shared_list]
             q_vals = [stat_we.get(s, 0.0) for s in shared_list]
-            r_p = [float(rank) for rank, (orig, _) in enumerate(sorted(enumerate(p_vals), key=lambda x: x[1]), 1)]
-            r_q = [float(rank) for rank, (orig, _) in enumerate(sorted(enumerate(q_vals), key=lambda x: x[1]), 1)]
+
+            def _get_ranks(arr):
+                indexed = sorted(enumerate(arr), key=lambda x: x[1])
+                ranks = [0.0] * len(arr)
+                for rank, (orig_idx, _) in enumerate(indexed, 1):
+                    ranks[orig_idx] = float(rank)
+                return ranks
+
+            r_p = _get_ranks(p_vals)
+            r_q = _get_ranks(q_vals)
             n = len(shared_list)
             d_sq = sum((rp - rq) ** 2 for rp, rq in zip(r_p, r_q))
             rank_corr = round(1.0 - (6.0 * d_sq) / (n * (n * n - 1)), 4)

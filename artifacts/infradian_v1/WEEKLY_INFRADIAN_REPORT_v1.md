@@ -14,7 +14,7 @@
 | **Weekend Observation Frames** | `1625` | Sat–Sun Flexible Rest Baseline |
 | **Shared State Count** | `15` | Core Shared Lattice Vocabulary |
 | **Distribution Cosine Similarity** | `0.9182` | High overlap in core physical states |
-| **Stationary Rank Correlation ($\rho$)** | `1.0000` | Re-ordering of secondary priorities |
+| **Stationary Rank Correlation ($\rho$)** | `0.9000` | Re-ordering of secondary priorities |
 | **Transition Matrix JSD** | `0.0306 bits` | Subtle divergence in sequence paths |
 | **Weekday Determinism** | `88.79%` | High habitual self-transition |
 | **Weekend Determinism** | `91.93%` | Slightly higher mobility / entropy |

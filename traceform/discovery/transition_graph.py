@@ -98,9 +98,10 @@ def build_transition_graph(
 
     pi_rounded = {u: round(pi[u], 5) for u in sorted(nodes, key=lambda x: pi[x], reverse=True)}
 
-    # Graph Density and Reciprocity
+    # Graph Density and Reciprocity (excluding self-loops)
+    non_self_edges = [e for e in active_edges if e["source"] != e["target"]]
     num_possible_edges = n_nodes * (n_nodes - 1) if n_nodes > 1 else 1
-    density = round(len(active_edges) / num_possible_edges, 4)
+    density = round(len(non_self_edges) / num_possible_edges, 4)
 
     # Reciprocal edges: where (u->v) and (v->u) both exist
     reciprocal_count = 0

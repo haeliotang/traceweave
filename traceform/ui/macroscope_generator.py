@@ -238,9 +238,11 @@ class MacroscopeDashboardGenerator:
 """
         for r in top_regimes:
             dur = r.get("duration_frames", 0) * 30.0 / 3600.0
+            dom_states = r.get('dominant_states', [])
+            dom_label = dom_states[0][0] if dom_states else "?"
             html += f"""      <div class="ribbon-segment">
         <div class="r-token">{r['regime_token']}</div>
-        <div class="r-dur">{dur:.1f}h &bull; {r.get('dominant_states', [['S01']])[0][0]}</div>
+        <div class="r-dur">{dur:.1f}h &bull; {dom_label}</div>
       </div>\n"""
 
         html += """    </div>

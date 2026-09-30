@@ -24,6 +24,11 @@ def compute_empirical_transition_matrix(
     Computes state transition probabilities and empirical stationary distribution.
     """
     vocab = sorted(list(set(state_tokens) if vocabulary is None else set(vocabulary)))
+    if not state_tokens:
+        empty_trans: Dict[str, Dict[str, float]] = {s: {s2: 0.0 for s2 in vocab} for s in vocab}
+        empty_stat: Dict[str, float] = {s: 1.0 / max(1, len(vocab)) for s in vocab}
+        return vocab, empty_trans, empty_stat
+
     counts: Dict[str, Dict[str, int]] = {s: {s_next: 0 for s_next in vocab} for s in vocab}
     total_out: Dict[str, int] = {s: 0 for s in vocab}
     state_freq: Dict[str, int] = {s: 0 for s in vocab}
