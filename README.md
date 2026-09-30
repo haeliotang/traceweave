@@ -5,8 +5,9 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-40%2F40%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-48%2F48%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
+[![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
 [![Disciplines](https://img.shields.io/badge/Semantics-Zero%20Pre--injected-orange)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
 [![Stability](https://img.shields.io/badge/Temporal%20Stability-Confirmed%20(p%3C0.001)-purple)]()
@@ -134,6 +135,14 @@ A head-to-head empirical evaluation ([`DUAL_QUANTIZATION_BENCHMARK_v1.md`](artif
 - **Sub-Millisecond Edge Inference**: Average latency of **0.008 ms/frame** (8 microseconds) with peak latency $< 0.040\text{ ms}$.
 - **Zero-CPU Overhead**: Capable of streaming micro-state quantization inside Termux background runtime without battery penalty.
 
+### G. Dynamical Energy Topological Manifold (DETM) & Attractor Drift Audit
+Integrating 2D Self-Organizing Topological Maps with kinetic momentum geodesics and quasi-potential landscape reconstruction ([`MANIFOLD_DYNAMICS_REPORT_v1.md`](artifacts/manifold_dynamics_v1/MANIFOLD_DYNAMICS_REPORT_v1.md)):
+- **Kinetic Energy Geodesics**: Quantization metric $D(z_t, C_k) = \|x_t - C_k^x\|^2 + \beta(1 - \cos\theta_k)\|v_t\|$ captures physical velocity momentum without human semantic priors.
+- **Sub-Millisecond Inference**: **0.072 ms / frame** (72 microseconds) over 5,961 continuous multimodal frames.
+- **Empirical Potential Landscapes**: Computes $U(u, v) = -\ln P(u, v)$ over 4x4 topological coordinate grids.
+- **Longitudinal Attractor Drift**: Dominant habit attractor exhibits stable retention across weeks with a low drift velocity of **0.569 grid steps / week**.
+- **Critical Slowing Down (CSD) Early Warning Signals**: 25 warning epochs detected via sliding lag-1 autocorrelation $AR(1)$ and spatial variance surges ($z \ge 2.5\sigma$). Successfully flagged the Friday-evening phase transition into the weekend regime ($AR(1) = 0.764$, $\sigma^2 = 3.89$, composite $= 5.76\sigma$).
+
 ---
 
 ## 4. Repository Structure
@@ -149,6 +158,7 @@ traceform/
 │   │   ├── metrics.py
 │   │   ├── lattice.py
 │   │   ├── data_driven_quantizer.py       # Unsupervised k-means clustering quantizer
+│   │   ├── manifold_lattice.py            # DETM: Dynamical Energy Topological Manifold (SOM)
 │   │   └── open_world.py
 │   ├── null_models/                       # Stage 3: Permutation, Markov, Diurnal Phase nulls
 │   │   └── surrogates.py
@@ -165,7 +175,8 @@ traceform/
 │   │   └── predictor.py
 │   ├── dynamics/                          # Stage 8 & 9: Bifurcations & Weekly Infradian Dynamics
 │   │   ├── bifurcation.py
-│   │   └── infradian.py
+│   │   ├── infradian.py
+│   │   └── manifold_drift.py              # Attractor Landscape & Critical Slowing Down (CSD) Auditor
 │   ├── streaming/                         # Layer 2: Lightweight on-device edge quantizer
 │   │   └── edge_quantizer.py
 │   ├── ui/                                # Layer 3: Macroscope Dashboard generator
@@ -185,9 +196,11 @@ traceform/
 │   ├── generate_macroscope_ui.py          # Stage 10 runner
 │   ├── phone_edge_stream_daemon.py        # Edge streaming daemon
 │   ├── benchmark_dual_quantization.py     # Dual-Track Quantization Benchmark (Lattice vs Data-Driven)
+│   ├── audit_manifold_dynamics.py         # DETM Manifold & CSD Attractor Drift Auditor
 │   └── run_traceform_pipeline.py          # Master End-to-End Pipeline CLI (10 Stages)
 ├── artifacts/                             # Immutable audit reports & specifications
 │   ├── quantization_benchmark_v1/         # Dual-track benchmark specifications & report
+│   ├── manifold_dynamics_v1/              # DETM model, potential surface specs & CSD report
 │   ├── trajectory_corpus_v1/              # Stage 1 audit reports & manifest
 │   ├── representation_v1/                 # Stage 2 state sequence & specs
 │   ├── null_baselines_v1/                 # Stage 3 null benchmark reports
@@ -198,9 +211,11 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 40 unit tests across 12 test modules (100% PASS)
+└── tests/                                 # 48 unit tests across 14 test modules (100% PASS)
     ├── test_representation_*.py
     ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
+    ├── test_manifold_lattice.py           # DETM lattice SOM & kinetic metric tests
+    ├── test_manifold_drift.py             # Attractor basin & CSD tests
     ├── test_null_models.py                # 5-surrogate model tests
     ├── test_discovery.py
     ├── test_stability.py
@@ -258,6 +273,12 @@ python3 scripts/phone_edge_stream_daemon.py --simulate --max-frames 150
 
 # Live sensor tailing mode (on-device GrapheneOS / Termux runtime)
 python3 scripts/phone_edge_stream_daemon.py --follow
+```
+
+### F. Run Dynamical Energy Manifold & Longitudinal Attractor Drift Audit
+Quantize multimodal streams using kinetic momentum geodesics, reconstruct 2D quasi-potential energy landscapes, track longitudinal attractor drift, and detect Critical Slowing Down (CSD) alerts:
+```bash
+python3 scripts/audit_manifold_dynamics.py
 ```
 
 ---
