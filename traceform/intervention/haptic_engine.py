@@ -22,8 +22,15 @@ from traceform.intervention.resonance_hooks import ResonanceTriggerType
 
 
 class HapticEngine:
-    def __init__(self, debounce_seconds: float = 300.0) -> None:
+    def __init__(
+        self,
+        debounce_seconds: float = 300.0,
+        enabled: bool = True,
+        silent_flag_file: Optional[str] = None,
+    ) -> None:
         self.debounce_seconds = debounce_seconds
+        self.enabled = enabled
+        self.silent_flag_file = silent_flag_file
 
         # Ensure Termux bin is in PATH if running on Android/Termux
         termux_bin = "/data/data/com.termux/files/usr/bin"
@@ -52,8 +59,15 @@ class HapticEngine:
 
     def trigger(self, event_type: str, level: str, message: str) -> None:
         """
-        Enqueues a haptic trigger asynchronously. Applies debouncing.
+        Enqueues a haptic trigger asynchronously. Applies debouncing and silence checks.
         """
+        if not self.enabled:
+            return
+        if os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in ("1", "true", "yes"):
+            return
+        if self.silent_flag_file and os.path.exists(str(self.silent_flag_file)):
+            return
+
         now = time.time()
         last_t = self._last_triggered.get(event_type, 0.0)
         

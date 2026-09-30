@@ -76,6 +76,7 @@ def main():
     parser.add_argument("--max-frames", type=int, default=100, help="Maximum frames to process in simulation mode")
     parser.add_argument("--buffer-size", type=int, default=60, help="Ring buffer size for CSD estimation")
     parser.add_argument("--dwell-steps", type=int, default=60, help="Dwell alert threshold steps")
+    parser.add_argument("--disable-haptics", action="store_true", help="Disable haptic vibration and notification feedback")
     args = parser.parse_args()
 
     print("=" * 76)
@@ -127,7 +128,10 @@ def main():
     processed_count = 0
     total_latency_ms = 0.0
     total_events_count = 0
-    haptics = HapticEngine()
+    haptics = HapticEngine(
+        enabled=not args.disable_haptics,
+        silent_flag_file=str(args.output_stream.parent / ".silent"),
+    )
 
 
     try:
