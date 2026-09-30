@@ -37,6 +37,7 @@ from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 from traceform.streaming.edge_manifold_daemon import EdgeManifoldDaemon, EdgeDaemonEvent
 
 from traceform.intervention.haptic_engine import HapticEngine
+from traceform.probes.digital_sensorium import DigitalSensoriumProbe
 
 
 def main():
@@ -135,6 +136,8 @@ def main():
     )
 
 
+    digital_probe = DigitalSensoriumProbe()
+
     try:
         with args.raw_ledger.open("r", encoding="utf-8") as in_f:
             if args.follow:
@@ -156,6 +159,9 @@ def main():
                     obs = json.loads(line_str)
                 except Exception:
                     continue
+
+                if "digital_context" not in obs and args.follow:
+                    obs["digital_context"] = digital_probe.sample_digital_interaction_metrics()
 
                 payload, events = daemon.process_observation(obs)
                 processed_count += 1

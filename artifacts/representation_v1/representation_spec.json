@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.representation-spec.v1",
   "representation_identity": "representation_14d_v1",
-  "frozen_at_utc": "2026-09-30T19:26:30.722306+00:00",
+  "frozen_at_utc": "2026-09-30T21:22:30.422770+00:00",
   "discovery_fit_window": {
     "start_utc": "2026-09-02T22:48:12.694637+00:00",
     "end_utc": "2026-09-09T22:48:12.694637+00:00",
@@ -23,7 +23,12 @@
       "audio_rms_loudness",
       "audio_spectral_entropy",
       "conn_wifi_connected",
-      "conn_wifi_rssi_norm"
+      "conn_wifi_rssi_norm",
+      "screen_on_ratio",
+      "app_switch_rate",
+      "unlock_burst_count",
+      "audio_immersion_state",
+      "circadian_sin_phase"
     ],
     "medians": {
       "motion_accel_magnitude": 9.6922,
@@ -40,7 +45,12 @@
       "audio_rms_loudness": 0.0,
       "audio_spectral_entropy": 0.0,
       "conn_wifi_connected": 1.0,
-      "conn_wifi_rssi_norm": 0.714286
+      "conn_wifi_rssi_norm": 0.714286,
+      "screen_on_ratio": 0.0,
+      "app_switch_rate": 0.0,
+      "unlock_burst_count": 0.0,
+      "audio_immersion_state": 0.0,
+      "circadian_sin_phase": -0.261698
     },
     "iqrs": {
       "motion_accel_magnitude": 0.0096,
@@ -57,7 +67,12 @@
       "audio_rms_loudness": 1.0,
       "audio_spectral_entropy": 1.0,
       "conn_wifi_connected": 1.0,
-      "conn_wifi_rssi_norm": 0.085714
+      "conn_wifi_rssi_norm": 0.085714,
+      "screen_on_ratio": 1.0,
+      "app_switch_rate": 1.0,
+      "unlock_burst_count": 1.0,
+      "audio_immersion_state": 1.0,
+      "circadian_sin_phase": 1.57602
     },
     "fitted_observation_count": 3147,
     "fit_window_description": "Day 1\u20137 Discovery Window (3,147 observations)"
@@ -582,7 +597,7 @@
     }
   },
   "cryptographic_signatures": {
-    "state_sequence_sha256": "285ad1a5b0643a367a8a830660513d77077f597ae93ec4b8cf6d44113fc80237"
+    "state_sequence_sha256": "5569a123dce6273c2540dcfc48b87181db0b6ba7b37272c9deb9615dff039114"
   },
   "discipline_attestation": {
     "predefined_semantics_injected": false,

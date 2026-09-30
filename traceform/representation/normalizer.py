@@ -34,6 +34,14 @@ CONTINUOUS_FEATURE_NAMES = [
     # Connectivity metrics
     "conn_wifi_connected",
     "conn_wifi_rssi_norm",
+    # Digital & Cognitive features (16-18)
+    "screen_on_ratio",
+    "app_switch_rate",
+    "unlock_burst_count",
+    # Headset & Immersion (19)
+    "audio_immersion_state",
+    # Circadian phase (20)
+    "circadian_sin_phase",
 ]
 
 
@@ -121,6 +129,38 @@ class MultimodalNormalizer:
         else:
             wifi_rssi_norm = 0.0
 
+        # 6. Digital & Cognitive Features (16-18)
+        dig = obs.get("digital_context", {})
+        screen_ratio = float(dig.get("screen_on_ratio", 0.0))
+        # Fallback to device_relation.screen_state if available
+        if "screen_on_ratio" not in dig:
+            screen_state = dev.get("screen_state", "UNKNOWN")
+            if screen_state == "ON":
+                screen_ratio = 1.0
+            elif screen_state == "DOZING":
+                screen_ratio = 0.2
+            else:
+                screen_ratio = 0.0
+        app_switch_rate = float(dig.get("app_switch_rate", 0.0))
+        unlock_burst_count = float(dig.get("unlock_burst_count", 0.0))
+
+        # 7. Audio Immersion State (19)
+        # 1.0 if wired headset or bluetooth A2DP audio active
+        is_immersed = 1.0 if (dev.get("wired_headset") or dev.get("bluetooth_a2dp")) else 0.0
+
+        # 8. Circadian Sine Phase (20)
+        # Smooth continuous mapping of daily solar cycle in [-1.0, 1.0]
+        ts_str = obs.get("timestamp_utc", "")
+        sin_phase = 0.0
+        if ts_str:
+            try:
+                import datetime
+                dt = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                seconds_in_day = dt.hour * 3600 + dt.minute * 60 + dt.second
+                sin_phase = math.sin(2.0 * math.pi * (seconds_in_day / 86400.0))
+            except Exception:
+                pass
+
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
             "motion_accel_rms": accel_rms,
@@ -137,6 +177,11 @@ class MultimodalNormalizer:
             "audio_spectral_entropy": spectral_entropy,
             "conn_wifi_connected": wifi_conn,
             "conn_wifi_rssi_norm": wifi_rssi_norm,
+            "screen_on_ratio": screen_ratio,
+            "app_switch_rate": app_switch_rate,
+            "unlock_burst_count": unlock_burst_count,
+            "audio_immersion_state": is_immersed,
+            "circadian_sin_phase": sin_phase,
         }
 
         # Topological & Categorical identifiers
@@ -209,9 +254,11 @@ class MultimodalNormalizer:
         vector: List[float] = []
 
         for k in self.params.feature_names:
-            raw_val = c_map[k]
-            med = self.params.medians[k]
-            iqr = self.params.iqrs[k]
+            raw_val = c_map.get(k, 0.0)
+            med = self.params.medians.get(k, 0.0)
+            iqr = self.params.iqrs.get(k, 1.0)
+            if iqr < 1e-6:
+                iqr = 1.0
             # Robust scaling: (x - median) / IQR
             scaled = (raw_val - med) / iqr
             # Bound extremes to [-10.0, 10.0] to prevent outlier distortion
