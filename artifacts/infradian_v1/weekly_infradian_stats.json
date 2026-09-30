@@ -1,0 +1,62 @@
+{
+  "protocol": "pixel-sensorium.weekly-infradian-stats.v1",
+  "metrics": {
+    "weekday_observation_count": 4336,
+    "weekend_observation_count": 1625,
+    "weekday_unique_states": 47,
+    "weekend_unique_states": 24,
+    "shared_states_count": 15,
+    "stationary_rank_correlation": 1.0,
+    "distribution_cosine_similarity": 0.9182,
+    "transition_matrix_jsd": 0.0306,
+    "weekday_determinism_ratio": 0.8879,
+    "weekend_determinism_ratio": 0.9193,
+    "is_distinct_bistable_attractor": false
+  },
+  "details": {
+    "top_weekday_states": [
+      [
+        "S01",
+        0.3494
+      ],
+      [
+        "S02",
+        0.2655
+      ],
+      [
+        "S04",
+        0.1285
+      ],
+      [
+        "S03",
+        0.1026
+      ],
+      [
+        "S05",
+        0.0406
+      ]
+    ],
+    "top_weekend_states": [
+      [
+        "S01",
+        0.5692
+      ],
+      [
+        "S02",
+        0.1908
+      ],
+      [
+        "S06",
+        0.0622
+      ],
+      [
+        "S03",
+        0.0591
+      ],
+      [
+        "S04",
+        0.0529
+      ]
+    ]
+  }
+}

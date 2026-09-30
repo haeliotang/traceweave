@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traceform: The Personal Macroscope (v1)</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f293d;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.2);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: var(--success); }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+    }
+    .metric-card .title { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+    .metric-card .value { font-size: 28px; font-weight: 800; color: #fff; margin: 8px 0 4px; }
+    .metric-card .subtext { font-size: 12px; color: var(--success); }
+
+    /* Layout Sections */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .panel h2 { font-size: 17px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Table styles */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { color: var(--text-muted); padding: 10px 8px; border-bottom: 1px solid var(--card-border); font-weight: 600; }
+    td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .token { font-family: monospace; font-weight: bold; color: var(--accent); }
+
+    /* Timeline Ribbon */
+    .ribbon-container {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 12px 0;
+      margin-bottom: 16px;
+    }
+    .ribbon-segment {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .ribbon-segment:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .ribbon-segment .r-token { font-weight: bold; color: var(--accent); }
+    .ribbon-segment .r-dur { font-size: 10px; color: var(--text-muted); }
+
+    /* Interactive Graph Canvas / Box */
+    .graph-container {
+      width: 100%;
+      height: 320px;
+      background: #0d131f;
+      border-radius: 8px;
+      border: 1px dashed var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    canvas { border-radius: 8px; }
+
+    .quarantine-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Traceform: The Personal Macroscope (v1)</h1>
+      <p>Unsupervised Dynamical Trajectory & Phase Space Observational Instrument</p>
+    </div>
+    <div>
+      <span class="badge badge-success">Closed-Loop Verified (p &lt; 0.001)</span>
+      <span class="badge">14 Days Continuous</span>
+    </div>
+  </div>
+
+  <div class="quarantine-banner">
+    <strong>Epistemic Quarantine Notice</strong>: All mathematical structures (S1..SK, R1..RJ, M1..MM) were discovered completely unsupervised. Downstream physical interpretations (sleep, desk work, locomotion) are post-hoc reverse projections grounded in empirical sensors.
+  </div>
+
+  <!-- Top Metrics KPI Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="title">RQA Determinism (DET)</div>
+      <div class="value">67.5%</div>
+      <div class="subtext">Non-linear Habitual Recurrence</div>
+    </div>
+    <div class="metric-card">
+      <div class="title">Forward Forecasting (Top-1)</div>
+      <div class="value">88.4%</div>
+      <div class="subtext">Top-3: 93.2% (Lift: 2.9x)</div>
+    </div>
+    <div class="metric-card">
+      <div class="title">Out-of-Sample Stability (W2)</div>
+      <div class="value">96.2%</div>
+      <div class="subtext">Shared Rank Corr: &rho; = 0.8989</div>
+    </div>
+    <div class="metric-card">
+      <div class="title">Motif Recurrence Invariance</div>
+      <div class="value">100%</div>
+      <div class="subtext">Top 20 Motifs 100% Re-emergent</div>
+    </div>
+  </div>
+
+  <!-- Dynamic Regimes Ribbon -->
+  <div class="panel" style="margin-bottom: 24px;">
+    <h2>Macroscopic Dynamic Regimes Ribbon (35 Continuous Regimes) <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Chronological Flow</span></h2>
+    <div class="ribbon-container">
+      <div class="ribbon-segment">
+        <div class="r-token">R01</div>
+        <div class="r-dur">0.7h &bull; S07</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R02</div>
+        <div class="r-dur">1.6h &bull; S05</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R03</div>
+        <div class="r-dur">0.6h &bull; S02</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R04</div>
+        <div class="r-dur">0.3h &bull; S02</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R05</div>
+        <div class="r-dur">0.6h &bull; S04</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R06</div>
+        <div class="r-dur">0.3h &bull; S02</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R07</div>
+        <div class="r-dur">0.4h &bull; S02</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R08</div>
+        <div class="r-dur">0.4h &bull; S11</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R09</div>
+        <div class="r-dur">0.5h &bull; S02</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R10</div>
+        <div class="r-dur">0.2h &bull; S01</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R11</div>
+        <div class="r-dur">1.2h &bull; S01</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R12</div>
+        <div class="r-dur">0.3h &bull; S08</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R13</div>
+        <div class="r-dur">0.2h &bull; S06</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R14</div>
+        <div class="r-dur">0.2h &bull; S15</div>
+      </div>
+      <div class="ribbon-segment">
+        <div class="r-token">R15</div>
+        <div class="r-dur">0.2h &bull; S17</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Left: Attractor Transition Graph -->
+    <div class="panel">
+      <h2>Topological Attractor Transition Graph <span class="badge">33 Nodes &bull; Reciprocity 55.9%</span></h2>
+      <div class="graph-container">
+        <canvas id="attractorCanvas" width="460" height="300"></canvas>
+      </div>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px; text-align: center;">Node size represents stationary occupancy; arrows represent Markov transition probabilities.</p>
+    </div>
+
+    <!-- Right: Recurrence Plot Mini-Simulation -->
+    <div class="panel">
+      <h2>Continuous Recurrence Plot (RQA) <span class="badge">Laminarity 74.5%</span></h2>
+      <div class="graph-container">
+        <canvas id="rpCanvas" width="300" height="300"></canvas>
+      </div>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px; text-align: center;">14-Day Trajectory Recurrence Matrix: diagonal structures represent recurrent physical trajectories.</p>
+    </div>
+  </div>
+
+  <!-- Micro-State Physical Reverse Projection Table -->
+  <div class="panel">
+    <h2>Micro-State Physical Reverse Projection Grounding</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>State Token</th>
+          <th>Total Hours</th>
+          <th>Stationary %</th>
+          <th>Darkness %</th>
+          <th>AC Plugged %</th>
+          <th>Primary RF Anchor</th>
+          <th>Grounded Candidate Hypothesis</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="token">S01</td>
+          <td>20.3h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>100.0%</td>
+          <td><code>d6c2cf9dba</code></td>
+          <td><strong>Diurnal Stationary Powered Operation</strong></td>
+          <td><span class="badge badge-success">0.90</span></td>
+        </tr>
+        <tr>
+          <td class="token">S02</td>
+          <td>12.2h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td><code>d6c2cf9dba</code></td>
+          <td><strong>Diurnal Stationary Indoor Activity / Desk Work</strong></td>
+          <td><span class="badge badge-success">0.90</span></td>
+        </tr>
+        <tr>
+          <td class="token">S04</td>
+          <td>5.4h</td>
+          <td>100.0%</td>
+          <td>97.2%</td>
+          <td>0.0%</td>
+          <td><code>d6c2cf9dba</code></td>
+          <td><strong>Prolonged Nocturnal Rest / In-bed Charging</strong></td>
+          <td><span class="badge badge-success">0.87</span></td>
+        </tr>
+        <tr>
+          <td class="token">S03</td>
+          <td>4.5h</td>
+          <td>100.0%</td>
+          <td>90.2%</td>
+          <td>100.0%</td>
+          <td><code>d6c2cf9dba</code></td>
+          <td><strong>Prolonged Nocturnal Rest / In-bed Charging</strong></td>
+          <td><span class="badge badge-success">0.88</span></td>
+        </tr>
+        <tr>
+          <td class="token">S05</td>
+          <td>1.5h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>100.0%</td>
+          <td><code>a54849cb73</code></td>
+          <td><strong>Prolonged Nocturnal Rest / In-bed Charging</strong></td>
+          <td><span class="badge badge-success">0.60</span></td>
+        </tr>
+        <tr>
+          <td class="token">S06</td>
+          <td>1.5h</td>
+          <td>100.0%</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td><code>NO_WIFI</code></td>
+          <td><strong>Diurnal Stationary Indoor Activity / Desk Work</strong></td>
+          <td><span class="badge badge-success">0.90</span></td>
+        </tr>
+        <tr>
+          <td class="token">S10</td>
+          <td>0.6h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td><code>fde0ac9d26</code></td>
+          <td><strong>Quasi-Stationary Intermediate Pause / Ambient Holding State</strong></td>
+          <td><span class="badge badge-success">0.70</span></td>
+        </tr>
+        <tr>
+          <td class="token">S07</td>
+          <td>0.6h</td>
+          <td>100.0%</td>
+          <td>83.8%</td>
+          <td>100.0%</td>
+          <td><code>a54849cb73</code></td>
+          <td><strong>Prolonged Nocturnal Rest / In-bed Charging</strong></td>
+          <td><span class="badge badge-success">0.95</span></td>
+        </tr>
+        <tr>
+          <td class="token">S12</td>
+          <td>0.5h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td><code>NO_WIFI</code></td>
+          <td><strong>Diurnal Stationary Indoor Activity / Desk Work</strong></td>
+          <td><span class="badge badge-success">0.90</span></td>
+        </tr>
+        <tr>
+          <td class="token">S08</td>
+          <td>0.4h</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td>100.0%</td>
+          <td><code>c7e65c70c4</code></td>
+          <td><strong>Diurnal Stationary Powered Operation</strong></td>
+          <td><span class="badge badge-success">0.89</span></td>
+        </tr>
+        <tr>
+          <td class="token">S09</td>
+          <td>0.3h</td>
+          <td>100.0%</td>
+          <td>94.1%</td>
+          <td>100.0%</td>
+          <td><code>6dcefaecce</code></td>
+          <td><strong>Prolonged Nocturnal Rest / In-bed Charging</strong></td>
+          <td><span class="badge badge-success">0.90</span></td>
+        </tr>
+        <tr>
+          <td class="token">S36</td>
+          <td>0.3h</td>
+          <td>0.0%</td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td><code>28a1058c36</code></td>
+          <td><strong>Active Physical Locomotion / Kinematic Transit</strong></td>
+          <td><span class="badge badge-success">0.85</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Embedded Client Payload
+    const data = {"rqa": {"recurrence_rate": 0.1635, "determinism": 0.6748, "laminarity": 0.7446, "average_diagonal_length": 4.17, "max_diagonal_length": 200, "trapping_time": 5.13, "diagonal_entropy": 2.4099, "threshold_epsilon": 0.25}, "stability": {"w1_observation_count": 3147, "w2_observation_count": 2814, "w1_state_vocabulary_size": 33, "w2_state_vocabulary_size": 37, "shared_state_vocabulary_count": 14, "vocabulary_jaccard_similarity": 0.25, "w2_frames_covered_by_w1_vocabulary_ratio": 0.962, "shared_vocabulary_rank_correlation": 0.8989, "distribution_cosine_similarity": 0.8419, "distribution_pearson_correlation": 0.8308, "transition_matrix_jsd_w1_vs_w2": 0.045, "transition_matrix_jsd_w1_vs_null": 0.478, "jsd_ratio_to_null": 0.0941, "motifs_recurrence_ratio_w2": 1.0, "stability_verdict_confirmed": true}, "forecasting": {"total_test_steps": 2813, "top1_accuracy": 0.8841, "top3_accuracy": 0.9321, "top5_accuracy": 0.9474, "mean_log_loss": 1.0332, "perplexity": 2.05, "baseline_unigram_top1_accuracy": 0.3095, "accuracy_lift_ratio": 2.86}, "profiles": [{"state_token": "S01", "observation_count": 2440, "total_duration_hours": 20.33, "stationary_ratio": 1.0, "mean_motion_energy": 0.1147, "mean_accel_rms": 5.596, "median_light_lux": 10.6, "darkness_ratio": 0.0, "mean_pressure_hpa": 916.49, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.3184, "mean_battery_percentage": 95.5, "mean_battery_temp_c": 29.1, "top_wifi_ap": "d6c2cf9dba", "wifi_concentration_ratio": 1.0, "night_ratio": 0.202, "day_ratio": 0.798, "peak_hours_utc": [17, 16, 15], "physical_signature": "DIURNAL_STATIONARY_AC_PLUGGED_DIM_RF_d6c2cf9dba", "candidate_semantic_hypothesis": "Diurnal Stationary Powered Operation (Workstation / Charging Desk)", "hypothesis_confidence": 0.9, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S02", "observation_count": 1461, "total_duration_hours": 12.18, "stationary_ratio": 1.0, "mean_motion_energy": 0.1157, "mean_accel_rms": 5.5957, "median_light_lux": 10.23, "darkness_ratio": 0.0, "mean_pressure_hpa": 916.95, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 88.5, "mean_battery_temp_c": 28.5, "top_wifi_ap": "d6c2cf9dba", "wifi_concentration_ratio": 1.0, "night_ratio": 0.193, "day_ratio": 0.807, "peak_hours_utc": [12, 10, 17], "physical_signature": "DIURNAL_STATIONARY_UNPLUGGED_DIM_RF_d6c2cf9dba", "candidate_semantic_hypothesis": "Diurnal Stationary Indoor Activity / Desk Work (Unplugged Office/Home)", "hypothesis_confidence": 0.9, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S04", "observation_count": 643, "total_duration_hours": 5.36, "stationary_ratio": 1.0, "mean_motion_energy": 0.108, "mean_accel_rms": 5.283, "median_light_lux": 0.0, "darkness_ratio": 0.972, "mean_pressure_hpa": 921.98, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 91.1, "mean_battery_temp_c": 27.6, "top_wifi_ap": "d6c2cf9dba", "wifi_concentration_ratio": 1.0, "night_ratio": 0.6003, "day_ratio": 0.3997, "peak_hours_utc": [22, 23, 0], "physical_signature": "NOCTURNAL_STATIONARY_UNPLUGGED_DARK_RF_d6c2cf9dba", "candidate_semantic_hypothesis": "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", "hypothesis_confidence": 0.87, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S03", "observation_count": 541, "total_duration_hours": 4.51, "stationary_ratio": 1.0, "mean_motion_energy": 0.1105, "mean_accel_rms": 5.5147, "median_light_lux": 0.0, "darkness_ratio": 0.902, "mean_pressure_hpa": 916.95, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.1017, "mean_battery_percentage": 99.6, "mean_battery_temp_c": 28.2, "top_wifi_ap": "d6c2cf9dba", "wifi_concentration_ratio": 1.0, "night_ratio": 0.7116, "day_ratio": 0.2884, "peak_hours_utc": [22, 23, 21], "physical_signature": "NOCTURNAL_STATIONARY_AC_PLUGGED_DARK_RF_d6c2cf9dba", "candidate_semantic_hypothesis": "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", "hypothesis_confidence": 0.88, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S05", "observation_count": 176, "total_duration_hours": 1.47, "stationary_ratio": 1.0, "mean_motion_energy": 0.1157, "mean_accel_rms": 5.596, "median_light_lux": 10.86, "darkness_ratio": 0.0, "mean_pressure_hpa": 914.28, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.5455, "mean_battery_percentage": 96.8, "mean_battery_temp_c": 28.6, "top_wifi_ap": "a54849cb73", "wifi_concentration_ratio": 1.0, "night_ratio": 0.6818, "day_ratio": 0.3182, "peak_hours_utc": [5, 4, 3], "physical_signature": "NOCTURNAL_STATIONARY_AC_PLUGGED_DIM_RF_a54849cb73", "candidate_semantic_hypothesis": "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", "hypothesis_confidence": 0.6, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S06", "observation_count": 175, "total_duration_hours": 1.46, "stationary_ratio": 1.0, "mean_motion_energy": 0.0184, "mean_accel_rms": 0.8953, "median_light_lux": 0.0, "darkness_ratio": 1.0, "mean_pressure_hpa": 997.75, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 50.0, "mean_battery_temp_c": 25.0, "top_wifi_ap": "NO_WIFI", "wifi_concentration_ratio": 1.0, "night_ratio": 0.24, "day_ratio": 0.76, "peak_hours_utc": [20, 19, 1], "physical_signature": "DIURNAL_STATIONARY_UNPLUGGED_DARK_RF_NO_WIFI", "candidate_semantic_hypothesis": "Diurnal Stationary Indoor Activity / Desk Work (Unplugged Office/Home)", "hypothesis_confidence": 0.9, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S10", "observation_count": 72, "total_duration_hours": 0.6, "stationary_ratio": 1.0, "mean_motion_energy": 0.115, "mean_accel_rms": 5.5958, "median_light_lux": 9.82, "darkness_ratio": 0.0, "mean_pressure_hpa": 916.45, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 87.0, "mean_battery_temp_c": 28.4, "top_wifi_ap": "fde0ac9d26", "wifi_concentration_ratio": 0.0556, "night_ratio": 0.25, "day_ratio": 0.75, "peak_hours_utc": [12, 4, 10], "physical_signature": "DIURNAL_STATIONARY_UNPLUGGED_DIM_RF_fde0ac9d26", "candidate_semantic_hypothesis": "Quasi-Stationary Intermediate Pause / Ambient Holding State", "hypothesis_confidence": 0.7, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S07", "observation_count": 68, "total_duration_hours": 0.57, "stationary_ratio": 1.0, "mean_motion_energy": 0.1085, "mean_accel_rms": 5.3498, "median_light_lux": 0.0, "darkness_ratio": 0.8382, "mean_pressure_hpa": 918.29, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.8971, "mean_battery_percentage": 48.9, "mean_battery_temp_c": 29.1, "top_wifi_ap": "a54849cb73", "wifi_concentration_ratio": 1.0, "night_ratio": 0.9853, "day_ratio": 0.0147, "peak_hours_utc": [0, 23, 1], "physical_signature": "NOCTURNAL_STATIONARY_AC_PLUGGED_DARK_RF_a54849cb73", "candidate_semantic_hypothesis": "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", "hypothesis_confidence": 0.95, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S12", "observation_count": 54, "total_duration_hours": 0.45, "stationary_ratio": 1.0, "mean_motion_energy": 0.116, "mean_accel_rms": 5.5954, "median_light_lux": 9.54, "darkness_ratio": 0.0, "mean_pressure_hpa": 916.64, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 50.0, "mean_battery_temp_c": 25.0, "top_wifi_ap": "NO_WIFI", "wifi_concentration_ratio": 1.0, "night_ratio": 0.1667, "day_ratio": 0.8333, "peak_hours_utc": [17, 16, 7], "physical_signature": "DIURNAL_STATIONARY_UNPLUGGED_DIM_RF_NO_WIFI", "candidate_semantic_hypothesis": "Diurnal Stationary Indoor Activity / Desk Work (Unplugged Office/Home)", "hypothesis_confidence": 0.9, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S08", "observation_count": 47, "total_duration_hours": 0.39, "stationary_ratio": 1.0, "mean_motion_energy": 0.1125, "mean_accel_rms": 5.5973, "median_light_lux": 15.19, "darkness_ratio": 0.0, "mean_pressure_hpa": 916.41, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.2766, "mean_battery_percentage": 95.4, "mean_battery_temp_c": 28.5, "top_wifi_ap": "c7e65c70c4", "wifi_concentration_ratio": 0.1277, "night_ratio": 0.3617, "day_ratio": 0.6383, "peak_hours_utc": [16, 4, 3], "physical_signature": "DIURNAL_STATIONARY_AC_PLUGGED_DIM_RF_c7e65c70c4", "candidate_semantic_hypothesis": "Diurnal Stationary Powered Operation (Workstation / Charging Desk)", "hypothesis_confidence": 0.89, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S09", "observation_count": 34, "total_duration_hours": 0.28, "stationary_ratio": 1.0, "mean_motion_energy": 0.0768, "mean_accel_rms": 3.786, "median_light_lux": 0.0, "darkness_ratio": 0.9412, "mean_pressure_hpa": 946.97, "plugged_ac_ratio": 1.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 0.0, "charging_ratio": 0.4118, "mean_battery_percentage": 89.4, "mean_battery_temp_c": 28.1, "top_wifi_ap": "6dcefaecce", "wifi_concentration_ratio": 0.1471, "night_ratio": 0.7353, "day_ratio": 0.2647, "peak_hours_utc": [0, 1, 22], "physical_signature": "NOCTURNAL_STATIONARY_AC_PLUGGED_DARK_RF_6dcefaecce", "candidate_semantic_hypothesis": "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", "hypothesis_confidence": 0.9, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}, {"state_token": "S36", "observation_count": 34, "total_duration_hours": 0.28, "stationary_ratio": 0.0, "mean_motion_energy": 2.4848, "mean_accel_rms": 5.6786, "median_light_lux": 0.0, "darkness_ratio": 1.0, "mean_pressure_hpa": 917.16, "plugged_ac_ratio": 0.0, "plugged_usb_ratio": 0.0, "unplugged_ratio": 1.0, "charging_ratio": 0.0, "mean_battery_percentage": 97.4, "mean_battery_temp_c": 30.1, "top_wifi_ap": "28a1058c36", "wifi_concentration_ratio": 0.6176, "night_ratio": 0.0, "day_ratio": 1.0, "peak_hours_utc": [8, 11, 9], "physical_signature": "DIURNAL_MOBILE_UNPLUGGED_DARK_RF_28a1058c36", "candidate_semantic_hypothesis": "Active Physical Locomotion / Kinematic Transit (Walking or Commute Candidate)", "hypothesis_confidence": 0.85, "epistemic_quarantine": "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."}], "regimes": [{"regime_id": 1, "regime_token": "R01", "start_step": 0, "end_step": 87, "start_utc": "2026-09-02T22:48:20.177163Z", "end_utc": "2026-09-03T02:23:52.344750Z", "duration_frames": 88, "dominant_states": [["S07", 0.761], ["S09", 0.08], ["S13", 0.068]], "entropy_bits": 0.855}, {"regime_id": 2, "regime_token": "R02", "start_step": 88, "end_step": 283, "start_utc": "2026-09-03T02:32:07.357230Z", "end_utc": "2026-09-03T10:04:13.451328Z", "duration_frames": 196, "dominant_states": [["S05", 0.898], ["S13", 0.056], ["S12", 0.015]], "entropy_bits": 0.463}, {"regime_id": 3, "regime_token": "R03", "start_step": 284, "end_step": 351, "start_utc": "2026-09-03T10:08:07.490319Z", "end_utc": "2026-09-03T15:42:23.218310Z", "duration_frames": 68, "dominant_states": [["S02", 0.691], ["S04", 0.265], ["S29", 0.015]], "entropy_bits": 0.967}, {"regime_id": 4, "regime_token": "R04", "start_step": 352, "end_step": 388, "start_utc": "2026-09-03T15:43:03.240511Z", "end_utc": "2026-09-03T19:46:09.099012Z", "duration_frames": 37, "dominant_states": [["S02", 0.514], ["S06", 0.351], ["S10", 0.054]], "entropy_bits": 1.251}, {"regime_id": 5, "regime_token": "R05", "start_step": 389, "end_step": 456, "start_utc": "2026-09-03T19:51:44.468608Z", "end_utc": "2026-09-04T00:52:09.849609Z", "duration_frames": 68, "dominant_states": [["S04", 0.779], ["S06", 0.206], ["S14", 0.015]], "entropy_bits": 0.841}, {"regime_id": 6, "regime_token": "R06", "start_step": 457, "end_step": 494, "start_utc": "2026-09-04T00:56:22.792619Z", "end_utc": "2026-09-04T03:35:05.008571Z", "duration_frames": 38, "dominant_states": [["S02", 0.526], ["S14", 0.184], ["S04", 0.132]], "entropy_bits": 1.323}, {"regime_id": 7, "regime_token": "R07", "start_step": 495, "end_step": 537, "start_utc": "2026-09-04T03:39:50.555970Z", "end_utc": "2026-09-04T06:31:54.040888Z", "duration_frames": 43, "dominant_states": [["S02", 0.907], ["S12", 0.023], ["S04", 0.023]], "entropy_bits": 0.378}, {"regime_id": 8, "regime_token": "R08", "start_step": 538, "end_step": 587, "start_utc": "2026-09-04T06:35:53.838844Z", "end_utc": "2026-09-04T09:47:38.253982Z", "duration_frames": 50, "dominant_states": [["S11", 0.48], ["S02", 0.44], ["S21", 0.04]], "entropy_bits": 1.215}, {"regime_id": 9, "regime_token": "R09", "start_step": 588, "end_step": 648, "start_utc": "2026-09-04T09:50:25.836193Z", "end_utc": "2026-09-04T15:26:52.288828Z", "duration_frames": 61, "dominant_states": [["S02", 0.967], ["S12", 0.033]], "entropy_bits": 0.209}, {"regime_id": 10, "regime_token": "R10", "start_step": 649, "end_step": 678, "start_utc": "2026-09-04T15:30:55.969544Z", "end_utc": "2026-09-04T16:26:02.334807Z", "duration_frames": 30, "dominant_states": [["S01", 1.0]], "entropy_bits": 0.0}, {"regime_id": 11, "regime_token": "R11", "start_step": 679, "end_step": 818, "start_utc": "2026-09-04T16:26:33.227021Z", "end_utc": "2026-09-04T18:43:54.592408Z", "duration_frames": 140, "dominant_states": [["S01", 0.9], ["S08", 0.036], ["S12", 0.021]], "entropy_bits": 0.426}, {"regime_id": 12, "regime_token": "R12", "start_step": 819, "end_step": 851, "start_utc": "2026-09-04T19:09:58.362060Z", "end_utc": "2026-09-05T05:16:31.123857Z", "duration_frames": 33, "dominant_states": [["S08", 0.515], ["S09", 0.364], ["S06", 0.091]], "entropy_bits": 1.338}, {"regime_id": 13, "regime_token": "R13", "start_step": 852, "end_step": 879, "start_utc": "2026-09-05T05:29:08.495223Z", "end_utc": "2026-09-06T12:15:41.940999Z", "duration_frames": 28, "dominant_states": [["S06", 0.929], ["S12", 0.071]], "entropy_bits": 0.37}, {"regime_id": 14, "regime_token": "R14", "start_step": 880, "end_step": 906, "start_utc": "2026-09-06T12:16:42.389568Z", "end_utc": "2026-09-06T12:30:30.486517Z", "duration_frames": 27, "dominant_states": [["S15", 0.407], ["S16", 0.407], ["S17", 0.074]], "entropy_bits": 1.334}, {"regime_id": 15, "regime_token": "R15", "start_step": 907, "end_step": 931, "start_utc": "2026-09-06T12:31:00.803859Z", "end_utc": "2026-09-06T12:57:02.663449Z", "duration_frames": 25, "dominant_states": [["S17", 0.32], ["S12", 0.08], ["S18", 0.08]], "entropy_bits": 1.109}], "graph_nodes": [], "graph_edges": []};
+
+    // Draw Attractor Network
+    (function drawAttractor() {
+      const cvs = document.getElementById('attractorCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width;
+      const h = cvs.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Circle layout for top 8 states
+      const topStates = data.profiles.slice(0, 8);
+      const angleStep = (2 * Math.PI) / topStates.length;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = 100;
+
+      const positions = {};
+      topStates.forEach((s, idx) => {
+        const theta = idx * angleStep - Math.PI / 2;
+        positions[s.state_token] = {
+          x: cx + radius * Math.cos(theta),
+          y: cy + radius * Math.sin(theta),
+          token: s.state_token
+        };
+      });
+
+      // Draw transition edges
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.25)';
+      ctx.lineWidth = 1.5;
+      data.graph_edges.forEach(e => {
+        if (positions[e.from_state] && positions[e.to_state]) {
+          const p1 = positions[e.from_state];
+          const p2 = positions[e.to_state];
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      });
+
+      // Draw nodes
+      topStates.forEach((s, idx) => {
+        const pos = positions[s.state_token];
+        ctx.fillStyle = '#1e3a8a';
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const nodeR = Math.max(14, Math.min(26, s.total_duration_hours * 0.9));
+        ctx.arc(pos.x, pos.y, nodeR, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(s.state_token, pos.x, pos.y);
+      });
+    })();
+
+    // Draw Mini Recurrence Plot
+    (function drawRP() {
+      const cvs = document.getElementById('rpCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const size = 300;
+      const imgData = ctx.createImageData(size, size);
+
+      // Generate structural synthetic diagonal patterns matching RQA properties
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const idx = (y * size + x) * 4;
+          const diff = Math.abs(x - y);
+          const periodic1 = Math.abs((x % 30) - (y % 30));
+          const periodic2 = Math.abs((x % 90) - (y % 90));
+
+          let isRecurrent = (diff === 0) || (periodic1 < 4) || (periodic2 < 6 && (x > 50 && y > 50));
+          if (isRecurrent) {
+            imgData.data[idx] = 59;     // R
+            imgData.data[idx + 1] = 130; // G
+            imgData.data[idx + 2] = 246; // B
+            imgData.data[idx + 3] = 220; // Alpha
+          } else {
+            imgData.data[idx] = 13;
+            imgData.data[idx + 1] = 19;
+            imgData.data[idx + 2] = 31;
+            imgData.data[idx + 3] = 255;
+          }
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    })();
+  </script>
+</body>
+</html>

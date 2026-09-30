@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.natural-trajectory-corpus-stats.v1",
   "corpus_identity": "natural_trajectory_14d_v1",
-  "generated_at_utc": "2026-09-30T18:35:30.826416+00:00",
+  "generated_at_utc": "2026-09-30T18:54:57.456976+00:00",
   "audit_verdict": {
     "usable_for_structure_discovery": true,
     "critical_issues": [],

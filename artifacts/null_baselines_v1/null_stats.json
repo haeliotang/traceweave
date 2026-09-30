@@ -1,6 +1,6 @@
 {
   "protocol": "pixel-sensorium.null-baselines-stats.v1",
-  "generated_at_utc": "2026-09-30T18:35:32.446061+00:00",
+  "generated_at_utc": "2026-09-30T18:54:59.115965+00:00",
   "num_surrogates": 100,
   "empirical_metrics": {
     "transition_entropy_rate_bits": 0.4189,

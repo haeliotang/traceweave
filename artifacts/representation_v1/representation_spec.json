@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.representation-spec.v1",
   "representation_identity": "representation_14d_v1",
-  "frozen_at_utc": "2026-09-30T18:35:31.162804+00:00",
+  "frozen_at_utc": "2026-09-30T18:54:57.822074+00:00",
   "discovery_fit_window": {
     "start_utc": "2026-09-02T22:48:12.694637+00:00",
     "end_utc": "2026-09-09T22:48:12.694637+00:00",

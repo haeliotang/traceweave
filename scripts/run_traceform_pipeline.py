@@ -2,13 +2,17 @@
 """
 Traceform Master End-to-End Pipeline CLI.
 
-Executes the complete scientific closed loop:
+Executes the complete scientific closed loop & three-layer expansion:
   Stage 1: Corpus Freeze + Audit v1
   Stage 2: Multimodal Representation Freeze v1
   Stage 3: Null / Surrogate Baseline Engine v1
   Stage 4: Trajectory Structure Discovery v1
   Stage 5: Out-of-Sample Temporal Stability Verification v1
   Stage 6: Candidate Semantic Physical Reverse Projection v1
+  Stage 7: Trajectory Forecasting & Hitting Times v1
+  Stage 8: Phase Transitions & Bifurcation Detection v1
+  Stage 9: Weekly Infradian Dynamics Audit v1
+  Stage 10: Personal Macroscope Interactive Dashboard Compilation v1
 """
 
 from __future__ import annotations
@@ -29,6 +33,10 @@ STAGES = [
     ("Stage 4: Trajectory Structure Discovery", [sys.executable, str(REPO_ROOT / "scripts" / "run_structure_discovery.py")]),
     ("Stage 5: Temporal Stability Verification", [sys.executable, str(REPO_ROOT / "scripts" / "verify_temporal_stability.py")]),
     ("Stage 6: Candidate Semantic Projection", [sys.executable, str(REPO_ROOT / "scripts" / "project_candidate_semantics.py")]),
+    ("Stage 7: Trajectory Forecasting & Hitting Times", [sys.executable, str(REPO_ROOT / "scripts" / "run_trajectory_forecasting.py")]),
+    ("Stage 8: Phase Transitions & Bifurcations", [sys.executable, str(REPO_ROOT / "scripts" / "detect_phase_transitions.py")]),
+    ("Stage 9: Weekly Infradian Dynamics", [sys.executable, str(REPO_ROOT / "scripts" / "audit_weekly_infradian.py")]),
+    ("Stage 10: Personal Macroscope Dashboard", [sys.executable, str(REPO_ROOT / "scripts" / "generate_macroscope_ui.py")]),
 ]
 
 
@@ -42,13 +50,13 @@ def run_unit_tests() -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Traceform Scientific Pipeline Runner")
-    parser.add_argument("--all", action="store_true", help="Run all 6 pipeline stages sequentially.")
-    parser.add_argument("--stage", type=int, choices=range(1, 7), help="Run a specific stage (1 to 6).")
+    parser.add_argument("--all", action="store_true", help="Run all pipeline stages sequentially.")
+    parser.add_argument("--stage", type=int, choices=range(1, len(STAGES) + 1), help=f"Run a specific stage (1 to {len(STAGES)}).")
     parser.add_argument("--dry-run", action="store_true", help="Validate test suite and artifact manifests.")
     args = parser.parse_args()
 
     print("=" * 70)
-    print(" Traceform: Continuous Trajectory Structure Discovery Pipeline")
+    print(" Traceform: Continuous Trajectory Structure Discovery & Dynamics Pipeline")
     print(" Scientific Mission: Zero Predefined Semantics -> Latent Structure Discovery")
     print("=" * 70)
 
@@ -96,11 +104,11 @@ def main() -> None:
     print(" Pipeline Execution Summary")
     print("=" * 70)
     for name, status, elapsed in results:
-        print(f"  - {name:<45} : [{status}] in {elapsed:.2f}s")
+        print(f"  - {name:<48} : [{status}] in {elapsed:.2f}s")
     print("-" * 70)
     print(f"  Total Pipeline Wall Time: {total_time:.2f}s")
     print("=" * 70)
-    print("\n[+] Full scientific pipeline closed loop verified successfully.")
+    print("\n[+] Complete scientific pipeline & three-layer expansion verified successfully.")
 
 
 if __name__ == "__main__":

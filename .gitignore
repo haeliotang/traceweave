@@ -35,6 +35,10 @@ venv.bak/
 *.wav
 *.mp3
 
+# Runtime streaming dumps
+data/realtime_state_stream.jsonl
+
+
 # macOS
 .DS_Store
 .AppleDouble

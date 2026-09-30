@@ -1,0 +1,303 @@
+{
+  "protocol": "pixel-sensorium.trajectory-forecasting-stats.v1",
+  "evaluation_scope": "W1_train_W2_test",
+  "metrics": {
+    "total_test_steps": 2813,
+    "top1_accuracy": 0.8841,
+    "top3_accuracy": 0.9321,
+    "top5_accuracy": 0.9474,
+    "mean_log_loss": 1.0332,
+    "perplexity": 2.05,
+    "baseline_unigram_top1_accuracy": 0.3095,
+    "accuracy_lift_ratio": 2.86
+  },
+  "hitting_times_to_targets": {
+    "target_states": [
+      "S36",
+      "S08",
+      "S10"
+    ],
+    "table": {
+      "S01": {
+        "expected_steps": 119.58,
+        "expected_minutes": 59.8,
+        "is_target": 0.0
+      },
+      "S02": {
+        "expected_steps": 84.14,
+        "expected_minutes": 42.1,
+        "is_target": 0.0
+      },
+      "S03": {
+        "expected_steps": 151.67,
+        "expected_minutes": 75.8,
+        "is_target": 0.0
+      },
+      "S04": {
+        "expected_steps": 112.37,
+        "expected_minutes": 56.2,
+        "is_target": 0.0
+      },
+      "S05": {
+        "expected_steps": 79.04,
+        "expected_minutes": 39.5,
+        "is_target": 0.0
+      },
+      "S06": {
+        "expected_steps": 116.99,
+        "expected_minutes": 58.5,
+        "is_target": 0.0
+      },
+      "S07": {
+        "expected_steps": 103.59,
+        "expected_minutes": 51.8,
+        "is_target": 0.0
+      },
+      "S08": {
+        "expected_steps": 0.0,
+        "expected_minutes": 0.0,
+        "is_target": 1.0
+      },
+      "S09": {
+        "expected_steps": 94.83,
+        "expected_minutes": 47.4,
+        "is_target": 0.0
+      },
+      "S10": {
+        "expected_steps": 0.0,
+        "expected_minutes": 0.0,
+        "is_target": 1.0
+      },
+      "S11": {
+        "expected_steps": 110.61,
+        "expected_minutes": 55.3,
+        "is_target": 0.0
+      },
+      "S12": {
+        "expected_steps": 107.02,
+        "expected_minutes": 53.5,
+        "is_target": 0.0
+      },
+      "S13": {
+        "expected_steps": 72.24,
+        "expected_minutes": 36.1,
+        "is_target": 0.0
+      },
+      "S14": {
+        "expected_steps": 111.34,
+        "expected_minutes": 55.7,
+        "is_target": 0.0
+      },
+      "S15": {
+        "expected_steps": 132.9,
+        "expected_minutes": 66.5,
+        "is_target": 0.0
+      },
+      "S16": {
+        "expected_steps": 135.6,
+        "expected_minutes": 67.8,
+        "is_target": 0.0
+      },
+      "S17": {
+        "expected_steps": 135.1,
+        "expected_minutes": 67.5,
+        "is_target": 0.0
+      },
+      "S18": {
+        "expected_steps": 125.26,
+        "expected_minutes": 62.6,
+        "is_target": 0.0
+      },
+      "S19": {
+        "expected_steps": 92.31,
+        "expected_minutes": 46.2,
+        "is_target": 0.0
+      },
+      "S20": {
+        "expected_steps": 85.13,
+        "expected_minutes": 42.6,
+        "is_target": 0.0
+      },
+      "S21": {
+        "expected_steps": 112.58,
+        "expected_minutes": 56.3,
+        "is_target": 0.0
+      },
+      "S22": {
+        "expected_steps": 129.78,
+        "expected_minutes": 64.9,
+        "is_target": 0.0
+      },
+      "S23": {
+        "expected_steps": 132.32,
+        "expected_minutes": 66.2,
+        "is_target": 0.0
+      },
+      "S24": {
+        "expected_steps": 124.51,
+        "expected_minutes": 62.3,
+        "is_target": 0.0
+      },
+      "S25": {
+        "expected_steps": 126.48,
+        "expected_minutes": 63.2,
+        "is_target": 0.0
+      },
+      "S26": {
+        "expected_steps": 94.29,
+        "expected_minutes": 47.1,
+        "is_target": 0.0
+      },
+      "S27": {
+        "expected_steps": 93.3,
+        "expected_minutes": 46.6,
+        "is_target": 0.0
+      },
+      "S28": {
+        "expected_steps": 104.58,
+        "expected_minutes": 52.3,
+        "is_target": 0.0
+      },
+      "S29": {
+        "expected_steps": 73.23,
+        "expected_minutes": 36.6,
+        "is_target": 0.0
+      },
+      "S30": {
+        "expected_steps": 113.36,
+        "expected_minutes": 56.7,
+        "is_target": 0.0
+      },
+      "S31": {
+        "expected_steps": 126.48,
+        "expected_minutes": 63.2,
+        "is_target": 0.0
+      },
+      "S32": {
+        "expected_steps": 125.49,
+        "expected_minutes": 62.7,
+        "is_target": 0.0
+      },
+      "S33": {
+        "expected_steps": 120.57,
+        "expected_minutes": 60.3,
+        "is_target": 0.0
+      },
+      "S34": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S35": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S36": {
+        "expected_steps": 0.0,
+        "expected_minutes": 0.0,
+        "is_target": 1.0
+      },
+      "S37": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S38": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S39": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S40": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S41": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S42": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S43": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S44": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S45": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S46": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S47": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S48": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S49": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S50": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S51": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S52": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S53": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S54": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S55": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      },
+      "S56": {
+        "expected_steps": 510.0,
+        "expected_minutes": 255.0,
+        "is_target": 0.0
+      }
+    }
+  }
+}
