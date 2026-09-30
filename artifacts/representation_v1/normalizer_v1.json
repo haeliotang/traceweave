@@ -61,7 +61,16 @@
     "wifi_rssi_distribution_skewness",
     "thermodynamic_joule_heat_loss_watts",
     "phase_space_kinetic_velocity",
-    "neuromotor_tap_recoil_intensity"
+    "neuromotor_tap_recoil_intensity",
+    "kinematic_trajectory_torsion",
+    "phase_space_correlation_dimension",
+    "photometric_flicker_kurtosis",
+    "acoustic_spectral_flatness",
+    "wifi_rssi_distribution_kurtosis",
+    "geomagnetic_total_field_flux",
+    "thermodynamic_dissipation_ratio",
+    "neuromotor_microslip_angular_velocity",
+    "circadian_phase_disruption_index"
   ],
   "medians": {
     "motion_accel_magnitude": 9.8093,
@@ -120,12 +129,21 @@
     "geomagnetic_field_dip_angle_deg": 45.0,
     "kinematic_trajectory_curvature": 0.0,
     "barometric_turbulence_variance": 0.0028,
-    "photometric_contrast_ratio": 0.133,
+    "photometric_contrast_ratio": 0.142,
     "acoustic_spectral_bandwidth_khz": 0.8,
     "wifi_rssi_distribution_skewness": -0.857,
     "thermodynamic_joule_heat_loss_watts": 0.01638,
     "phase_space_kinetic_velocity": 0.007,
-    "neuromotor_tap_recoil_intensity": 0.012
+    "neuromotor_tap_recoil_intensity": 0.012,
+    "kinematic_trajectory_torsion": 0.0,
+    "phase_space_correlation_dimension": 0.15,
+    "photometric_flicker_kurtosis": -1.1465,
+    "acoustic_spectral_flatness": 0.05,
+    "wifi_rssi_distribution_kurtosis": -0.466,
+    "geomagnetic_total_field_flux": 100.0,
+    "thermodynamic_dissipation_ratio": 0.0,
+    "neuromotor_microslip_angular_velocity": 0.0,
+    "circadian_phase_disruption_index": 0.254
   },
   "iqrs": {
     "motion_accel_magnitude": 0.0197,
@@ -184,13 +202,22 @@
     "geomagnetic_field_dip_angle_deg": 1.0,
     "kinematic_trajectory_curvature": 1.0,
     "barometric_turbulence_variance": 0.0019,
-    "photometric_contrast_ratio": 0.128,
+    "photometric_contrast_ratio": 0.129,
     "acoustic_spectral_bandwidth_khz": 1.0,
     "wifi_rssi_distribution_skewness": 1.0,
     "thermodynamic_joule_heat_loss_watts": 1.0,
     "phase_space_kinetic_velocity": 0.0083,
-    "neuromotor_tap_recoil_intensity": 0.015
+    "neuromotor_tap_recoil_intensity": 0.015,
+    "kinematic_trajectory_torsion": 0.0039,
+    "phase_space_correlation_dimension": 1.0,
+    "photometric_flicker_kurtosis": 0.581,
+    "acoustic_spectral_flatness": 1.0,
+    "wifi_rssi_distribution_kurtosis": 1.0,
+    "geomagnetic_total_field_flux": 1.0,
+    "thermodynamic_dissipation_ratio": 0.0167,
+    "neuromotor_microslip_angular_velocity": 1.0,
+    "circadian_phase_disruption_index": 0.276
   },
   "fitted_observation_count": 1200,
-  "fit_window_description": "Day 1\u20137 Discovery Window (62D Canonical Trans-Spectral Sensorium)"
+  "fit_window_description": "Day 1\u20137 Discovery Window (71D Canonical Ultra-Manifold Sensorium)"
 }

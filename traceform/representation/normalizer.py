@@ -127,6 +127,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "phase_space_kinetic_velocity",
     # Neuromotor touch tap recoil deceleration intensity (62)
     "neuromotor_tap_recoil_intensity",
+    # Kinematic 3D trajectory Frenet torsion in m^-1 (63)
+    "kinematic_trajectory_torsion",
+    # Phase-space Grassberger-Procaccia correlation dimension estimate (64)
+    "phase_space_correlation_dimension",
+    # Photometric ambient dynamic excess kurtosis (65)
+    "photometric_flicker_kurtosis",
+    # Acoustic spectral flatness measure / Wiener entropy (66)
+    "acoustic_spectral_flatness",
+    # Wi-Fi multi-AP RSSI distribution excess kurtosis (67)
+    "wifi_rssi_distribution_kurtosis",
+    # Geomagnetic total field intensity flux anomaly in uT (68)
+    "geomagnetic_total_field_flux",
+    # Thermodynamic thermal-to-electrical dissipation ratio (69)
+    "thermodynamic_dissipation_ratio",
+    # Neuromotor touch micro-slip rotational angular velocity in rad/s (70)
+    "neuromotor_microslip_angular_velocity",
+    # Circadian phase disruption / chrono-entropy index (71)
+    "circadian_phase_disruption_index",
 ]
 
 
@@ -181,10 +199,11 @@ class MultimodalNormalizer:
         self._last_touch_ts: Optional[float] = None
         self._recent_coords: deque[Tuple[float, Tuple[float, ...]]] = deque(maxlen=20)
         self._pressure_window: deque[float] = deque(maxlen=6)
-        self._lux_window: deque[float] = deque(maxlen=6)
+        self._lux_window: deque[float] = deque(maxlen=10)
         self._last_vec_summary: Optional[Tuple[float, ...]] = None
         self._last_vec_ts: Optional[float] = None
         self._last_az: Optional[float] = None
+        self._last_jerk_raw: Optional[List[float]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -219,6 +238,7 @@ class MultimodalNormalizer:
         self._last_vec_summary = None
         self._last_vec_ts = None
         self._last_az = None
+        self._last_jerk_raw = None
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -712,8 +732,14 @@ class MultimodalNormalizer:
             else:
                 geomag_dip_angle = 45.0
 
-        # 38. Kinematic 3D trajectory Frenet curvature (55)
+        # 38. Kinematic 3D trajectory Frenet curvature (55) & Torsion (63)
         trajectory_curvature = 0.0
+        trajectory_torsion = 0.0
+        current_jerk: Optional[List[float]] = None
+        torsion_direct = mot.get("trajectory_torsion") or mot.get("kinematic_trajectory_torsion")
+        if torsion_direct is not None:
+            trajectory_torsion = round(max(-10.0, min(10.0, safe_float(torsion_direct, 0.0))), 4)
+
         if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
             curr_a = [safe_float(accel_raw[0], 0.0), safe_float(accel_raw[1], 0.0), safe_float(accel_raw[2], 9.8)]
             if self._last_accel_raw is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
@@ -722,12 +748,23 @@ class MultimodalNormalizer:
                     d_ax = (curr_a[0] - self._last_accel_raw[0]) / dt_s
                     d_ay = (curr_a[1] - self._last_accel_raw[1]) / dt_s
                     d_az = (curr_a[2] - self._last_accel_raw[2]) / dt_s
+                    current_jerk = [d_ax, d_ay, d_az]
                     cx = curr_a[1] * d_az - curr_a[2] * d_ay
                     cy = curr_a[2] * d_ax - curr_a[0] * d_az
                     cz = curr_a[0] * d_ay - curr_a[1] * d_ax
                     cross_mag = math.sqrt(cx * cx + cy * cy + cz * cz)
                     a_mag_cubed = (curr_a[0]**2 + curr_a[1]**2 + curr_a[2]**2) ** 1.5
                     trajectory_curvature = round(min(5.0, cross_mag / max(0.1, a_mag_cubed)), 4)
+
+                    if torsion_direct is None and self._last_jerk_raw is not None:
+                        s_x = (d_ax - self._last_jerk_raw[0]) / dt_s
+                        s_y = (d_ay - self._last_jerk_raw[1]) / dt_s
+                        s_z = (d_az - self._last_jerk_raw[2]) / dt_s
+                        dot_c_s = cx * s_x + cy * s_y + cz * s_z
+                        cross_sq = cross_mag * cross_mag
+                        if cross_sq > 0.001:
+                            raw_torsion = dot_c_s / cross_sq
+                            trajectory_torsion = round(max(-10.0, min(10.0, raw_torsion)), 4)
 
         # 39. Barometric high-frequency pressure turbulence variance in hPa^2 (56)
         if pressure > 0.0:
@@ -799,6 +836,128 @@ class MultimodalNormalizer:
         else:
             self._last_az = None
 
+        # 46. Kinematic 3D trajectory Frenet torsion (63) is computed above as trajectory_torsion
+
+        # 47. Phase-space Grassberger-Procaccia correlation dimension estimate (64)
+        corr_dim_direct = mot.get("phase_space_correlation_dimension") or dig.get("correlation_dimension")
+        if corr_dim_direct is not None:
+            corr_dimension = round(max(0.0, min(5.0, safe_float(corr_dim_direct, 1.2))), 3)
+        else:
+            if len(self._recent_coords) >= 6:
+                dists = [
+                    math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(c_i, c_j)))
+                    for i, (_, c_i) in enumerate(self._recent_coords)
+                    for j, (_, c_j) in enumerate(self._recent_coords)
+                    if i < j
+                ]
+                n1 = sum(1 for d in dists if d < 1.0)
+                n2 = sum(1 for d in dists if d < 3.0)
+                if n1 > 0 and n2 > n1:
+                    raw_d2 = math.log(float(n2) / float(n1)) / math.log(3.0)
+                    corr_dimension = round(min(5.0, max(0.0, raw_d2)), 3)
+                else:
+                    corr_dimension = 0.15 if stat_like >= 0.8 else round(min(4.0, 1.2 + 1.8 * min(1.0, mot_energy)), 3)
+            else:
+                corr_dimension = 0.15 if stat_like >= 0.8 else round(min(4.0, 1.2 + 1.8 * min(1.0, mot_energy)), 3)
+
+        # 48. Photometric ambient dynamic excess kurtosis (65)
+        lux_kurt_direct = env.get("photometric_flicker_kurtosis") or env.get("lux_kurtosis")
+        if lux_kurt_direct is not None:
+            flicker_kurtosis = round(max(-2.0, min(10.0, safe_float(lux_kurt_direct, 0.0))), 3)
+        else:
+            if len(self._lux_window) >= 4:
+                n_lux = len(self._lux_window)
+                m_lux = sum(self._lux_window) / n_lux
+                var_lux = sum((x - m_lux) ** 2 for x in self._lux_window) / n_lux
+                if var_lux > 1e-4:
+                    m4_lux = sum((x - m_lux) ** 4 for x in self._lux_window) / n_lux
+                    kurt_val = (m4_lux / (var_lux ** 2)) - 3.0
+                    flicker_kurtosis = round(max(-2.0, min(10.0, kurt_val)), 3)
+                else:
+                    flicker_kurtosis = 0.0
+            else:
+                flicker_kurtosis = 0.0
+
+        # 49. Acoustic spectral flatness measure / Wiener entropy (66)
+        aud_flat_direct = aud.get("spectral_flatness") or aud.get("wiener_entropy")
+        if aud_flat_direct is not None:
+            spectral_flatness = round(max(0.0, min(1.0, safe_float(aud_flat_direct, 0.1))), 3)
+        else:
+            if silence_like >= 0.95 or rms_loudness <= 0.0005:
+                spectral_flatness = 0.05
+            else:
+                raw_flatness = 0.12 + 0.72 * spectral_entropy - 0.15 * min(1.0, rms_loudness * 10.0)
+                spectral_flatness = round(min(1.0, max(0.01, raw_flatness)), 3)
+
+        # 50. Wi-Fi multi-AP RSSI distribution excess kurtosis (67)
+        wifi_kurt_direct = conn.get("wifi_rssi_distribution_kurtosis") or conn.get("wifi_kurtosis")
+        if wifi_kurt_direct is not None:
+            wifi_kurtosis = round(max(-2.0, min(8.0, safe_float(wifi_kurt_direct, 0.0))), 3)
+        else:
+            if wifi_conn > 0.0:
+                calc_kurt = max(-2.0, min(8.0, (wifi_skewness ** 2) - 1.2))
+                wifi_kurtosis = round(calc_kurt, 3)
+            else:
+                wifi_kurtosis = 0.0
+
+        # 51. Geomagnetic total field intensity flux anomaly in uT (68)
+        mag_flux_direct = env.get("geomagnetic_total_field_flux") or env.get("mag_flux_anomaly")
+        if mag_flux_direct is not None:
+            mag_total_flux = round(max(0.0, min(100.0, safe_float(mag_flux_direct, 5.0))), 2)
+        else:
+            if mag_raw and isinstance(mag_raw, (list, tuple)) and len(mag_raw) >= 3:
+                bx = safe_float(mag_raw[0], 0.0)
+                by = safe_float(mag_raw[1], 0.0)
+                bz = safe_float(mag_raw[2], 50.0)
+                b_mag = math.sqrt(bx * bx + by * by + bz * bz)
+                mag_total_flux = round(min(100.0, max(0.0, abs(b_mag - 50.0))), 2)
+            else:
+                mag_total_flux = round(min(100.0, mag_divergence * 6.0), 2)
+
+        # 52. Thermodynamic thermal-to-electrical dissipation ratio (69)
+        dissip_direct = dig.get("thermodynamic_dissipation_ratio") or env.get("dissipation_ratio")
+        if dissip_direct is not None:
+            thermo_dissipation_ratio = round(max(0.0, min(5.0, safe_float(dissip_direct, 0.5))), 4)
+        else:
+            p_elec = (voltage_mv * 1e-3) * (abs(battery_current_ua) * 1e-6)
+            p_thermal = 80.0 * (max(0.0, conduction_rate) / 3600.0)
+            ratio_calc = p_thermal / max(0.05, p_elec + compute_power_w)
+            thermo_dissipation_ratio = round(min(5.0, max(0.0, ratio_calc)), 4)
+
+        # 53. Neuromotor touch micro-slip rotational angular velocity in rad/s (70)
+        slip_direct = dig.get("neuromotor_microslip_angular_velocity") or mot.get("microslip_ang_vel")
+        if slip_direct is not None:
+            microslip_vel = round(max(0.0, min(10.0, safe_float(slip_direct, 0.05))), 3)
+        else:
+            if gyro_raw and isinstance(gyro_raw, (list, tuple)) and len(gyro_raw) >= 3:
+                gx = safe_float(gyro_raw[0], 0.0)
+                gy = safe_float(gyro_raw[1], 0.0)
+                gz = safe_float(gyro_raw[2], 0.0)
+                norm_gyro = math.sqrt(gx * gx + gy * gy + gz * gz)
+                if has_touch_interaction or touch_velocity > 0.0:
+                    raw_slip = norm_gyro * min(1.0, 0.4 + touch_velocity * 0.3)
+                else:
+                    raw_slip = 0.05 * norm_gyro
+                microslip_vel = round(min(10.0, max(0.0, raw_slip)), 3)
+            else:
+                microslip_vel = 0.0
+
+        # 54. Circadian phase disruption / chrono-entropy index (71)
+        chrono_direct = dig.get("circadian_phase_disruption_index") or dig.get("chrono_entropy")
+        if chrono_direct is not None:
+            circadian_disruption = round(max(0.0, min(1.0, safe_float(chrono_direct, 0.05))), 3)
+        else:
+            is_night = (cos_phase > 0.6)
+            if is_night:
+                disrupt_val = 0.45 * screen_ratio + 0.35 * min(1.0, log_lux / 2.5) + 0.20 * min(1.0, mot_energy / 0.4)
+            else:
+                is_midday = (cos_phase < -0.5)
+                if is_midday and log_lux <= 0.1 and stat_like >= 0.9 and screen_ratio <= 0.05:
+                    disrupt_val = 0.5 * stat_like
+                else:
+                    disrupt_val = 0.02
+            circadian_disruption = round(min(1.0, max(0.0, disrupt_val)), 3)
+
         # Update persistent state across frames
         if current_ts_seconds is not None and (self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds):
             self._last_ts_seconds = current_ts_seconds
@@ -814,6 +973,7 @@ class MultimodalNormalizer:
                 ]
             else:
                 self._last_accel_raw = None
+            self._last_jerk_raw = current_jerk
 
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
@@ -878,6 +1038,15 @@ class MultimodalNormalizer:
             "thermodynamic_joule_heat_loss_watts": joule_heat_w,
             "phase_space_kinetic_velocity": phase_velocity,
             "neuromotor_tap_recoil_intensity": tap_recoil,
+            "kinematic_trajectory_torsion": trajectory_torsion,
+            "phase_space_correlation_dimension": corr_dimension,
+            "photometric_flicker_kurtosis": flicker_kurtosis,
+            "acoustic_spectral_flatness": spectral_flatness,
+            "wifi_rssi_distribution_kurtosis": wifi_kurtosis,
+            "geomagnetic_total_field_flux": mag_total_flux,
+            "thermodynamic_dissipation_ratio": thermo_dissipation_ratio,
+            "neuromotor_microslip_angular_velocity": microslip_vel,
+            "circadian_phase_disruption_index": circadian_disruption,
         }
 
         # Topological & Categorical identifiers
