@@ -36,26 +36,7 @@ from traceform.representation.normalizer import MultimodalNormalizer
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 from traceform.streaming.edge_manifold_daemon import EdgeManifoldDaemon, EdgeDaemonEvent
 
-
-def trigger_termux_haptic(pattern_ms: int = 150) -> None:
-    """Invokes Termux vibration API if running on Android/Termux."""
-    try:
-        subprocess.run(["termux-vibrate", "-d", str(pattern_ms)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        pass
-
-
-def trigger_termux_notification(title: str, content: str) -> None:
-    """Invokes Termux notification API if running on Android/Termux."""
-    try:
-        subprocess.run(
-            ["termux-notification", "--title", title, "--content", content, "--id", "traceform_csd"],
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except Exception:
-        pass
+from traceform.intervention.haptic_engine import HapticEngine
 
 
 def main():
@@ -146,6 +127,8 @@ def main():
     processed_count = 0
     total_latency_ms = 0.0
     total_events_count = 0
+    haptics = HapticEngine()
+
 
     try:
         with args.raw_ledger.open("r", encoding="utf-8") as in_f:
@@ -184,12 +167,8 @@ def main():
                         events_out.flush()
                         print(f"  >>> [{ev.warning_level}] {ev.event_type} at {ev.timestamp_utc}: {ev.message}")
 
-                        if ev.warning_level in ["CRITICAL", "ELEVATED"]:
-                            trigger_termux_haptic(pattern_ms=250)
-                            trigger_termux_notification(
-                                title=f"Traceform {ev.event_type}",
-                                content=ev.message,
-                            )
+                        if ev.warning_level in ["CRITICAL", "ELEVATED", "NOTICE", "ADAPTATION"]:
+                            haptics.trigger(ev.event_type, ev.warning_level, ev.message)
 
                 if processed_count % 25 == 0 or processed_count == 1:
                     avg_lat = total_latency_ms / processed_count
@@ -208,6 +187,8 @@ def main():
     finally:
         stream_out.close()
         events_out.close()
+        haptics.shutdown()
+
 
     avg_lat = total_latency_ms / max(1, processed_count)
     print("\n" + "=" * 76)
