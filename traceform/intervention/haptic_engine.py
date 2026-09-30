@@ -10,6 +10,7 @@ main-thread throughput.
 from __future__ import annotations
 
 import logging
+import os
 import queue
 import shutil
 import subprocess
@@ -23,6 +24,11 @@ from traceform.intervention.resonance_hooks import ResonanceTriggerType
 class HapticEngine:
     def __init__(self, debounce_seconds: float = 300.0) -> None:
         self.debounce_seconds = debounce_seconds
+
+        # Ensure Termux bin is in PATH if running on Android/Termux
+        termux_bin = "/data/data/com.termux/files/usr/bin"
+        if os.path.isdir(termux_bin) and termux_bin not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = f"{termux_bin}:{os.environ.get('PATH', '')}"
         
         # Check Termux API availability
         self.has_vibrate = shutil.which("termux-vibrate") is not None
