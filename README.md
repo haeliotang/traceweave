@@ -167,8 +167,10 @@ traceform/
 │   ├── audit_weekly_infradian.py          # Stage 9 runner
 │   ├── generate_macroscope_ui.py          # Stage 10 runner
 │   ├── phone_edge_stream_daemon.py        # Edge streaming daemon
+│   ├── benchmark_dual_quantization.py     # Dual-Track Quantization Benchmark (Lattice vs Data-Driven)
 │   └── run_traceform_pipeline.py          # Master End-to-End Pipeline CLI (10 Stages)
 ├── artifacts/                             # Immutable audit reports & specifications
+│   ├── quantization_benchmark_v1/         # Dual-track benchmark specifications & report
 │   ├── trajectory_corpus_v1/              # Stage 1 audit reports & manifest
 │   ├── representation_v1/                 # Stage 2 state sequence & specs
 │   ├── null_baselines_v1/                 # Stage 3 null benchmark reports

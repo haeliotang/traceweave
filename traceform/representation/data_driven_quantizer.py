@@ -4,10 +4,13 @@ import math
 import random
 from typing import List, Dict, Any, Tuple, Optional, Union
 
-def _euclidean_distance(v1: List[float], v2: List[float]) -> float:
-    return math.sqrt(sum((a - b) ** 2 for a, b in zip(v1, v2)))
+def _sq_dist(v1: List[float], v2: List[float]) -> float:
+    return sum((a - b) ** 2 for a, b in zip(v1, v2))
 
-def _k_means(data: List[List[float]], k: int, max_iters: int = 100) -> Tuple[List[List[float]], List[int]]:
+def _euclidean_distance(v1: List[float], v2: List[float]) -> float:
+    return math.sqrt(_sq_dist(v1, v2))
+
+def _k_means(data: List[List[float]], k: int, max_iters: int = 50) -> Tuple[List[List[float]], List[int]]:
     if not data or k <= 0:
         return [], []
     k = min(k, len(data))
@@ -19,8 +22,14 @@ def _k_means(data: List[List[float]], k: int, max_iters: int = 100) -> Tuple[Lis
     for _ in range(max_iters):
         new_labels = []
         for point in data:
-            distances = [_euclidean_distance(point, c) for c in centroids]
-            new_labels.append(distances.index(min(distances)))
+            min_d = float('inf')
+            best_idx = 0
+            for c_idx, c in enumerate(centroids):
+                d = _sq_dist(point, c)
+                if d < min_d:
+                    min_d = d
+                    best_idx = c_idx
+            new_labels.append(best_idx)
             
         if new_labels == labels:
             break
@@ -44,7 +53,7 @@ def _k_means(data: List[List[float]], k: int, max_iters: int = 100) -> Tuple[Lis
         
     return centroids, labels
 
-def _silhouette_score(data: List[List[float]], labels: List[int], k: int) -> float:
+def _silhouette_score(data: List[List[float]], labels: List[int], k: int, max_samples: int = 300) -> float:
     if k <= 1 or k >= len(data):
         return -1.0
         
@@ -52,8 +61,16 @@ def _silhouette_score(data: List[List[float]], labels: List[int], k: int) -> flo
     for idx, label in enumerate(labels):
         cluster_points[label].append(idx)
         
+    # Sample points if data is large to keep computation sub-second
+    if len(data) > max_samples:
+        eval_indices = random.sample(range(len(data)), max_samples)
+    else:
+        eval_indices = list(range(len(data)))
+
     score_sum = 0.0
-    for idx, (point, label) in enumerate(zip(data, labels)):
+    for idx in eval_indices:
+        point = data[idx]
+        label = labels[idx]
         points_in_same_cluster = cluster_points[label]
         
         if len(points_in_same_cluster) <= 1:
@@ -76,7 +93,7 @@ def _silhouette_score(data: List[List[float]], labels: List[int], k: int) -> flo
             s = (b - a) / max_ab if max_ab > 0 else 0.0
         score_sum += s
         
-    return score_sum / len(data) if data else 0.0
+    return score_sum / len(eval_indices) if eval_indices else 0.0
 
 class DataDrivenQuantizer:
     """
@@ -109,14 +126,25 @@ class DataDrivenQuantizer:
             
             if min_k >= 2 and max_k >= min_k:
                 best_score = -2.0
-                for k in range(min_k, max_k + 1):
-                    centroids, labels = _k_means(data, k)
-                    score = _silhouette_score(data, labels, k)
+                if num_points <= 50:
+                    k_candidates = list(range(min_k, max_k + 1))
+                    eval_data = data
+                else:
+                    grid = [5, 8, 12, 16, 20, 24, 28, 33, 40]
+                    k_candidates = [k for k in grid if min_k <= k <= max_k]
+                    if not k_candidates:
+                        k_candidates = [min_k, max_k]
+                    eval_data = random.sample(data, min(500, num_points))
+
+                for k in k_candidates:
+                    centroids, labels = _k_means(eval_data, k, max_iters=12)
+                    score = _silhouette_score(eval_data, labels, k, max_samples=300)
                     if score > best_score:
                         best_score = score
                         best_k = k
-                        best_centroids = centroids
-                        best_labels = labels
+
+                # Final convergence pass on full dataset with selected best_k
+                best_centroids, best_labels = _k_means(data, best_k, max_iters=35)
             else:
                 best_k = min(5, num_points)
                 best_centroids, best_labels = _k_means(data, best_k)
