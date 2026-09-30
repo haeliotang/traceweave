@@ -1,0 +1,107 @@
+{
+  "protocol": "pixel-sensorium.multiscale-diffusion-spec.v1",
+  "generated_at_utc": "2026-09-30T20:10:04.363711+00:00",
+  "audit_duration_seconds": 0.0391,
+  "msd_lags": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
+  "coarse_graining_scales": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "multiscale_metrics": {
+    "record_count": 5961,
+    "diffusion_regime": {
+      "hurst_exponent": 0.0541,
+      "r_squared": 0.8153,
+      "regime_type": "SUB_DIFFUSIVE",
+      "interpretation": "Sub-diffusive trapping (H=0.054 < 0.5): Trajectory is strongly confined inside potential well attractors.",
+      "msd_by_lag": {
+        "1": 2.5091,
+        "2": 1.9048,
+        "4": 2.2119,
+        "8": 2.4557,
+        "16": 2.6222,
+        "32": 2.9184,
+        "64": 3.3312,
+        "128": 3.6235,
+        "256": 3.7257,
+        "512": 3.8102,
+        "1024": 4.1039
+      }
+    },
+    "coarse_grained_scales": [
+      {
+        "scale_factor": 1,
+        "scale_duration_seconds": 30.0,
+        "state_vocabulary_size": 16,
+        "transition_determinism": 0.5005,
+        "mean_transition_entropy": 2.1392
+      },
+      {
+        "scale_factor": 2,
+        "scale_duration_seconds": 60.0,
+        "state_vocabulary_size": 16,
+        "transition_determinism": 0.5086,
+        "mean_transition_entropy": 2.2465
+      },
+      {
+        "scale_factor": 4,
+        "scale_duration_seconds": 120.0,
+        "state_vocabulary_size": 16,
+        "transition_determinism": 0.4837,
+        "mean_transition_entropy": 2.071
+      },
+      {
+        "scale_factor": 8,
+        "scale_duration_seconds": 240.0,
+        "state_vocabulary_size": 16,
+        "transition_determinism": 0.5551,
+        "mean_transition_entropy": 1.7458
+      },
+      {
+        "scale_factor": 16,
+        "scale_duration_seconds": 480.0,
+        "state_vocabulary_size": 15,
+        "transition_determinism": 0.5882,
+        "mean_transition_entropy": 1.5346
+      },
+      {
+        "scale_factor": 32,
+        "scale_duration_seconds": 960.0,
+        "state_vocabulary_size": 15,
+        "transition_determinism": 0.587,
+        "mean_transition_entropy": 1.3759
+      },
+      {
+        "scale_factor": 64,
+        "scale_duration_seconds": 1920.0,
+        "state_vocabulary_size": 12,
+        "transition_determinism": 0.5074,
+        "mean_transition_entropy": 1.5369
+      }
+    ],
+    "optimal_scale": {
+      "scale_factor": 16,
+      "scale_duration_seconds": 480.0,
+      "state_vocabulary_size": 15,
+      "transition_determinism": 0.5882,
+      "mean_transition_entropy": 1.5346
+    }
+  }
+}

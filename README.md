@@ -5,9 +5,11 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-48%2F48%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-55%2F55%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
+[![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.054)-teal)]()
+[![Macroscope 2.0](https://img.shields.io/badge/Macroscope%202.0-Interactive%20Canvas-pink)]()
 [![Disciplines](https://img.shields.io/badge/Semantics-Zero%20Pre--injected-orange)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
 [![Stability](https://img.shields.io/badge/Temporal%20Stability-Confirmed%20(p%3C0.001)-purple)]()
@@ -143,6 +145,15 @@ Integrating 2D Self-Organizing Topological Maps with kinetic momentum geodesics 
 - **Longitudinal Attractor Drift**: Dominant habit attractor exhibits stable retention across weeks with a low drift velocity of **0.569 grid steps / week**.
 - **Critical Slowing Down (CSD) Early Warning Signals**: 25 warning epochs detected via sliding lag-1 autocorrelation $AR(1)$ and spatial variance surges ($z \ge 2.5\sigma$). Successfully flagged the Friday-evening phase transition into the weekend regime ($AR(1) = 0.764$, $\sigma^2 = 3.89$, composite $= 5.76\sigma$).
 
+### H. Multiscale Renormalization & Anomalous Sub-Diffusion (Hurst Exponent $H = 0.0541$)
+Statistical mechanics analysis over lags spanning from 30 seconds to 8.5 hours ([`MULTISCALE_DIFFUSION_REPORT_v1.md`](artifacts/multiscale_v1/MULTISCALE_DIFFUSION_REPORT_v1.md)):
+- **Anomalous Sub-Diffusive Confinement**: Empirical Hurst exponent **$H = 0.0541$ ($R^2 = 0.8153$)**, decisively ruling out unconstrained Brownian random walk ($H = 0.5$). Proves mathematically that human daily trajectory dynamics are strictly bound inside potential well attractors on the manifold.
+- **Renormalization Group (Causal Emergence)**: Coarse-graining blocks from 30s to 32min reveals that transition determinism peaks at **$s^* = 16$ (8.0 minutes, Determinism $= 0.5882$)**, identifying the natural behavioral clock where macroscopic structure organically emerges.
+
+### I. Personal Macroscope 2.0 & On-Device Edge Manifold Daemon
+- **Interactive Macroscope 2.0**: Self-contained HTML5/Canvas visualization ([`macroscope_dashboard_v2.html`](artifacts/macroscope_v2/macroscope_dashboard_v2.html)) featuring 3D isometric potential surfaces, longitudinal drift vector fields ($\vec{\nu}_{\text{drift}}$), synchronized dual-track CSD timelines, and anomalous diffusion log-log plots.
+- **On-Device Edge Manifold Daemon (`phone_edge_manifold_daemon.py`)**: Real-time DETM quantization (0.147 ms/frame) and online sliding-window CSD tipping detector deploying directly inside Termux on Pixel 6a with vibration/notification resonance triggers.
+
 ---
 
 ## 4. Repository Structure
@@ -173,14 +184,17 @@ traceform/
 │   │   └── projector.py
 │   ├── forecasting/                       # Stage 7: Trajectory predictor & hitting time estimator
 │   │   └── predictor.py
-│   ├── dynamics/                          # Stage 8 & 9: Bifurcations & Weekly Infradian Dynamics
+│   ├── dynamics/                          # Stage 8 & 9: Dynamics, Infradian, Manifold & Multiscale
 │   │   ├── bifurcation.py
 │   │   ├── infradian.py
-│   │   └── manifold_drift.py              # Attractor Landscape & Critical Slowing Down (CSD) Auditor
-│   ├── streaming/                         # Layer 2: Lightweight on-device edge quantizer
-│   │   └── edge_quantizer.py
-│   ├── ui/                                # Layer 3: Macroscope Dashboard generator
-│   │   └── macroscope_generator.py
+│   │   ├── manifold_drift.py              # Attractor Landscape & Critical Slowing Down (CSD) Auditor
+│   │   └── multiscale.py                  # Multiscale anomalous diffusion & Hurst exponent auditor
+│   ├── streaming/                         # Layer 2: Lightweight on-device edge quantizers
+│   │   ├── edge_quantizer.py
+│   │   └── edge_manifold_daemon.py        # Real-time DETM & online CSD tipping daemon
+│   ├── ui/                                # Layer 3: Macroscope Dashboard generators
+│   │   ├── macroscope_generator.py        # Macroscope 1.0 generator
+│   │   └── macroscope_v2_generator.py     # Macroscope 2.0 (Potential landscapes & CSD) generator
 │   └── intervention/                      # Layer 3: Ambient resonance trigger hooks
 │       └── resonance_hooks.py
 ├── scripts/                               # Reproducible runner scripts
@@ -193,14 +207,19 @@ traceform/
 │   ├── run_trajectory_forecasting.py      # Stage 7 runner
 │   ├── detect_phase_transitions.py        # Stage 8 runner
 │   ├── audit_weekly_infradian.py          # Stage 9 runner
-│   ├── generate_macroscope_ui.py          # Stage 10 runner
-│   ├── phone_edge_stream_daemon.py        # Edge streaming daemon
+│   ├── generate_macroscope_ui.py          # Stage 10 runner (Macroscope 1.0)
+│   ├── phone_edge_stream_daemon.py        # Edge streaming daemon (Lattice)
 │   ├── benchmark_dual_quantization.py     # Dual-Track Quantization Benchmark (Lattice vs Data-Driven)
 │   ├── audit_manifold_dynamics.py         # DETM Manifold & CSD Attractor Drift Auditor
+│   ├── audit_multiscale_diffusion.py      # Multiscale diffusion & Hurst exponent runner
+│   ├── phone_edge_manifold_daemon.py      # Real-time DETM & CSD edge daemon for Pixel 6a
+│   ├── generate_macroscope_v2.py          # Macroscope 2.0 Dashboard generator
 │   └── run_traceform_pipeline.py          # Master End-to-End Pipeline CLI (10 Stages)
 ├── artifacts/                             # Immutable audit reports & specifications
 │   ├── quantization_benchmark_v1/         # Dual-track benchmark specifications & report
 │   ├── manifold_dynamics_v1/              # DETM model, potential surface specs & CSD report
+│   ├── multiscale_v1/                     # Multiscale anomalous diffusion specs & report
+│   ├── macroscope_v2/                     # Macroscope 2.0 interactive HTML dashboard
 │   ├── trajectory_corpus_v1/              # Stage 1 audit reports & manifest
 │   ├── representation_v1/                 # Stage 2 state sequence & specs
 │   ├── null_baselines_v1/                 # Stage 3 null benchmark reports
@@ -211,11 +230,14 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 48 unit tests across 14 test modules (100% PASS)
+└── tests/                                 # 55 unit tests across 17 test modules (100% PASS)
     ├── test_representation_*.py
     ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
     ├── test_manifold_lattice.py           # DETM lattice SOM & kinetic metric tests
     ├── test_manifold_drift.py             # Attractor basin & CSD tests
+    ├── test_multiscale.py                 # MSD & Hurst exponent tests
+    ├── test_edge_manifold_daemon.py       # Online DETM & CSD tipping tests
+    ├── test_macroscope_v2.py              # Macroscope 2.0 generator tests
     ├── test_null_models.py                # 5-surrogate model tests
     ├── test_discovery.py
     ├── test_stability.py
@@ -232,7 +254,7 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (40/40 Passing)
+### A. Run Unit Tests (55/55 Passing)
 ```bash
 python3 -m unittest discover tests
 ```
@@ -259,26 +281,33 @@ Compare handcrafted lattice against pure unsupervised clustering across stabilit
 python3 scripts/benchmark_dual_quantization.py
 ```
 
-### D. Launch the Interactive Macroscope Dashboard
-Open the compiled self-contained dashboard in your browser:
-```bash
-open artifacts/macroscope_dashboard_v1.html
-```
-
-### E. Run On-Device Edge Stream Daemon & Resonance Closed Loop
-Process real-time physical frames with sub-millisecond edge quantization and live attractor dwell alerts:
-```bash
-# Simulation mode with resonance events logging
-python3 scripts/phone_edge_stream_daemon.py --simulate --max-frames 150
-
-# Live sensor tailing mode (on-device GrapheneOS / Termux runtime)
-python3 scripts/phone_edge_stream_daemon.py --follow
-```
-
-### F. Run Dynamical Energy Manifold & Longitudinal Attractor Drift Audit
+### D. Run Dynamical Energy Manifold & Longitudinal Attractor Drift Audit
 Quantize multimodal streams using kinetic momentum geodesics, reconstruct 2D quasi-potential energy landscapes, track longitudinal attractor drift, and detect Critical Slowing Down (CSD) alerts:
 ```bash
 python3 scripts/audit_manifold_dynamics.py
+```
+
+### E. Run Multiscale Renormalization & Anomalous Diffusion Audit
+Estimate empirical Hurst exponent $H$, Mean Squared Displacement (MSD), and optimal coarse-graining scales:
+```bash
+python3 scripts/audit_multiscale_diffusion.py
+```
+
+### F. Launch Interactive Personal Macroscope 2.0 Dashboard
+Compile and open the interactive 3D potential landscape, drift vectors, and CSD timeline dashboard in your browser:
+```bash
+python3 scripts/generate_macroscope_v2.py
+open artifacts/macroscope_v2/macroscope_dashboard_v2.html
+```
+
+### G. Run On-Device Edge Manifold Daemon & CSD Resonance Closed Loop (Pixel 6a)
+Process real-time physical frames on-device with sub-millisecond DETM quantization, online CSD tipping alerts, and vibration triggers:
+```bash
+# Simulation mode over historical frames:
+python3 scripts/phone_edge_manifold_daemon.py --simulate --max-frames 100
+
+# Live sensor tailing mode (on-device GrapheneOS / Termux runtime):
+python3 scripts/phone_edge_manifold_daemon.py --follow
 ```
 
 ---

@@ -38,6 +38,8 @@ venv.bak/
 # Runtime streaming dumps
 data/realtime_state_stream.jsonl
 data/resonance_events.jsonl
+data/realtime_manifold_stream.jsonl
+data/manifold_events.jsonl
 
 
 # macOS

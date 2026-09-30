@@ -63,6 +63,14 @@ class MultimodalNormalizer:
     def __init__(self, params: Optional[NormalizationParams] = None):
         self.params = params
 
+    def to_dict(self) -> Dict[str, Any]:
+        return self.params.to_dict() if self.params else {}
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "MultimodalNormalizer":
+        params = NormalizationParams.from_dict(d)
+        return cls(params=params)
+
     def extract_raw_features(self, obs: Dict[str, Any]) -> Tuple[Dict[str, float], Dict[str, str]]:
         """
         Extracts raw continuous features and topological categorical keys from an observation frame.

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traceform Macroscope 2.0 — Potential Landscapes & Critical Dynamics</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f293d;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px; }
+    .header { margin-bottom: 24px; border-bottom: 1px solid var(--card-border); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .title { font-size: 26px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 12px; }
+    .tag { font-size: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); padding: 4px 10px; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .subtitle { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
+
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 1024px) { .grid-container { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; }
+    .card-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-group { display: flex; gap: 6px; }
+    .btn { background: #1f2937; border: 1px solid #374151; color: var(--text-muted); font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .btn.active, .btn:hover { background: var(--accent-blue); color: #000; font-weight: 600; border-color: var(--accent-blue); }
+
+    canvas { width: 100%; border-radius: 8px; background: #070a13; display: block; }
+    .canvas-container { position: relative; width: 100%; height: 320px; }
+
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 14px; }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-val { font-size: 22px; font-weight: 700; color: #fff; margin-top: 4px; }
+    .stat-sub { font-size: 11px; color: var(--accent-blue); margin-top: 4px; }
+
+    .timeline-container { position: relative; height: 160px; width: 100%; }
+    .alert-badge { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px; }
+    .alert-critical { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+    .alert-elevated { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+
+    .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="title">
+        Traceform Personal Macroscope 2.0
+        <span class="tag">Topological Dynamics & Tipping Alerts</span>
+      </div>
+      <div class="subtitle">
+        Physical Sensorium Trajectory Stream &bull; Quasi-Potential Energy Landscapes &bull; Anomalous Sub-Diffusion
+      </div>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); text-align: right;">
+      Edge Engine: <b>Pixel 6a Termux</b> &bull; Zero Pre-injected Semantics
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Hurst Exponent (H)</div>
+      <div class="stat-val" id="stat-hurst">0.0541</div>
+      <div class="stat-sub">Sub-Diffusive Trapping (H &ll; 0.5)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Attractor Drift Velocity</div>
+      <div class="stat-val" id="stat-drift">0.569</div>
+      <div class="stat-sub">Lattice Units / Week (High Stability)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Quantization Latency</div>
+      <div class="stat-val">0.072 ms</div>
+      <div class="stat-sub">13,800 FPS Edge Throughput</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">CSD Phase Tipping Events</div>
+      <div class="stat-val" id="stat-csd-count">25 Alerts</div>
+      <div class="stat-sub">7 Critical (Peak z = 5.76&sigma;)</div>
+    </div>
+  </div>
+
+  <div class="grid-container">
+    <!-- Card 1: 3D / Contour Quasi-Potential Surface -->
+    <div class="card">
+      <div class="card-title">
+        <span>Quasi-Potential Energy Landscape <code style="color: var(--accent-blue);">U(u,v) = -ln P(u,v)</code></span>
+        <div class="btn-group">
+          <button class="btn active" id="btn-w1" onclick="setLandscape('w1')">Week 1</button>
+          <button class="btn" id="btn-w2" onclick="setLandscape('w2')">Week 2</button>
+          <button class="btn" id="btn-diff" onclick="setLandscape('diff')">&Delta;U Drift</button>
+        </div>
+      </div>
+      <div class="canvas-container">
+        <canvas id="potCanvas" width="600" height="320"></canvas>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: #1e3a8a;"></div>Deep Attractor Well</div>
+        <div class="legend-item"><div class="legend-color" style="background: #eab308;"></div>Intermediate Saddle</div>
+        <div class="legend-item"><div class="legend-color" style="background: #ef4444;"></div>High Energy Barrier</div>
+        <div class="legend-item"><div class="legend-color" style="background: #a855f7;"></div>&rarr; Drift Vector &nu;</div>
+      </div>
+    </div>
+
+    <!-- Card 2: Multiscale Diffusion Log-Log Scaling -->
+    <div class="card">
+      <div class="card-title">
+        <span>Anomalous Diffusion Scaling: Mean Squared Displacement (MSD)</span>
+        <span class="tag" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.3);">ln(MSD) vs ln(&tau;)</span>
+      </div>
+      <div class="canvas-container">
+        <canvas id="msdCanvas" width="600" height="320"></canvas>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div>Empirical MSD &tau;</div>
+        <div class="legend-item"><div class="legend-color" style="background: #4b5563;"></div>-- Brownian Reference (H=0.5)</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent-pink);"></div>Coarse-Graining Peak Determinism</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Synchronized Critical Slowing Down (CSD) Timeline -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-title">
+      <span>Critical Slowing Down (CSD) Phase Transition Alerts &bull; Sliding Timeline</span>
+      <span style="font-size: 12px; color: var(--text-muted);">Lag-1 Autocorrelation AR(1) &bull; Spatial Variance &sigma;&sup2;</span>
+    </div>
+    <div class="timeline-container">
+      <canvas id="csdCanvas" width="1200" height="160"></canvas>
+    </div>
+    <div class="legend" style="justify-content: space-between;">
+      <div style="display: flex; gap: 16px;">
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div>Lag-1 Autocorrelation AR(1)</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent-amber);"></div>Spatial Variance &sigma;&sup2;</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--accent-red); border-radius: 50%;"></div>Phase Tipping Alert (&ge; 2.5&sigma;)</div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted);">
+        Friday Evening Tipping Peak: <b>2026-09-04 19:26 UTC</b> &bull; AR(1)=0.764, Var=3.89, Composite=<b>5.76&sigma;</b>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DATA = {"dynamics": {"protocol": "pixel-sensorium.manifold-dynamics-spec.v1", "generated_at_utc": "2026-09-30T19:57:46.430982+00:00", "manifold_config": {"grid_height": 4, "grid_width": 4, "k_states": 16, "beta_kinetic": 0.25, "fit_duration_seconds": 2.279, "quantization_ms_per_frame": 0.0718}, "w1_attractor_basins": [{"basin_id": "B01", "grid_coord": [0, 0], "state_token": "M01", "potential_depth": 1.2833, "stationary_probability": 0.0525}, {"basin_id": "B04", "grid_coord": [1, 3], "state_token": "M08", "potential_depth": 0.572, "stationary_probability": 0.1669}, {"basin_id": "B05", "grid_coord": [3, 0], "state_token": "M13", "potential_depth": 0.4826, "stationary_probability": 0.0405}, {"basin_id": "B03", "grid_coord": [1, 1], "state_token": "M06", "potential_depth": 0.4321, "stationary_probability": 0.1325}, {"basin_id": "B06", "grid_coord": [3, 3], "state_token": "M16", "potential_depth": 0.4233, "stationary_probability": 0.0806}, {"basin_id": "B02", "grid_coord": [0, 2], "state_token": "M03", "potential_depth": 0.2245, "stationary_probability": 0.1179}], "w2_attractor_basins": [{"basin_id": "B02", "grid_coord": [1, 1], "state_token": "M06", "potential_depth": 1.4094, "stationary_probability": 0.2633}, {"basin_id": "B04", "grid_coord": [3, 0], "state_token": "M13", "potential_depth": 0.9008, "stationary_probability": 0.0452}, {"basin_id": "B01", "grid_coord": [0, 0], "state_token": "M01", "potential_depth": 0.539, "stationary_probability": 0.0254}, {"basin_id": "B03", "grid_coord": [1, 3], "state_token": "M08", "potential_depth": 0.1622, "stationary_probability": 0.1841}], "attractor_drift": {"primary_attractor_drift_distance": 1.414, "mean_grid_drift_distance": 0.569, "landscape_drift_velocity_steps_per_week": 0.569, "basin_drift_details": [{"w1_basin": {"basin_id": "B01", "grid_coord": [0, 0], "state_token": "M01", "potential_depth": 1.2833, "stationary_probability": 0.0525}, "matched_w2_basin": {"basin_id": "B01", "grid_coord": [0, 0], "state_token": "M01", "potential_depth": 0.539, "stationary_probability": 0.0254}, "grid_drift_distance": 0.0, "potential_depth_change": -0.7443}, {"w1_basin": {"basin_id": "B04", "grid_coord": [1, 3], "state_token": "M08", "potential_depth": 0.572, "stationary_probability": 0.1669}, "matched_w2_basin": {"basin_id": "B03", "grid_coord": [1, 3], "state_token": "M08", "potential_depth": 0.1622, "stationary_probability": 0.1841}, "grid_drift_distance": 0.0, "potential_depth_change": -0.4098}, {"w1_basin": {"basin_id": "B05", "grid_coord": [3, 0], "state_token": "M13", "potential_depth": 0.4826, "stationary_probability": 0.0405}, "matched_w2_basin": {"basin_id": "B04", "grid_coord": [3, 0], "state_token": "M13", "potential_depth": 0.9008, "stationary_probability": 0.0452}, "grid_drift_distance": 0.0, "potential_depth_change": 0.4182}, {"w1_basin": {"basin_id": "B03", "grid_coord": [1, 1], "state_token": "M06", "potential_depth": 0.4321, "stationary_probability": 0.1325}, "matched_w2_basin": {"basin_id": "B02", "grid_coord": [1, 1], "state_token": "M06", "potential_depth": 1.4094, "stationary_probability": 0.2633}, "grid_drift_distance": 0.0, "potential_depth_change": 0.9773}, {"w1_basin": {"basin_id": "B06", "grid_coord": [3, 3], "state_token": "M16", "potential_depth": 0.4233, "stationary_probability": 0.0806}, "matched_w2_basin": {"basin_id": "B03", "grid_coord": [1, 3], "state_token": "M08", "potential_depth": 0.1622, "stationary_probability": 0.1841}, "grid_drift_distance": 2.0, "potential_depth_change": -0.2611}, {"w1_basin": {"basin_id": "B02", "grid_coord": [0, 2], "state_token": "M03", "potential_depth": 0.2245, "stationary_probability": 0.1179}, "matched_w2_basin": {"basin_id": "B02", "grid_coord": [1, 1], "state_token": "M06", "potential_depth": 1.4094, "stationary_probability": 0.2633}, "grid_drift_distance": 1.41, "potential_depth_change": 1.1849}]}, "potential_surfaces": {"w1_potential_matrix": [[2.9473, 5.0148, 2.1377, 2.3622], [4.2306, 2.0214, 2.4535, 1.7902], [5.1148, 2.9904, 2.751, 2.9413], [3.2072, 3.6898, 4.6253, 2.518]], "w2_potential_matrix": [[3.6714, 5.1148, 3.8209, 3.4372], [4.2104, 1.3346, 2.744, 1.6923], [3.9968, 7.948, 2.2713, 1.8545], [3.096, 7.948, 3.959, 3.1038]]}, "critical_slowing_down": {"total_alerts": 25, "critical_alerts_count": 7, "elevated_alerts_count": 18, "alerts": [{"window_index": 14, "timestamp_utc": "2026-09-03T14:34:57.249699Z", "lag1_autocorrelation": 0.3763, "spatial_variance": 3.1593, "csd_composite_score": 3.55, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.376, Var=3.16, Composite=3.55\u03c3"}, {"window_index": 15, "timestamp_utc": "2026-09-03T16:38:24.304160Z", "lag1_autocorrelation": 0.4116, "spatial_variance": 2.8669, "csd_composite_score": 3.3, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.412, Var=2.87, Composite=3.30\u03c3"}, {"window_index": 16, "timestamp_utc": "2026-09-03T18:50:34.407341Z", "lag1_autocorrelation": 0.4529, "spatial_variance": 2.5445, "csd_composite_score": 3.02, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.453, Var=2.54, Composite=3.02\u03c3"}, {"window_index": 31, "timestamp_utc": "2026-09-04T16:27:05.379677Z", "lag1_autocorrelation": 0.4688, "spatial_variance": 2.3604, "csd_composite_score": 2.84, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.469, Var=2.36, Composite=2.84\u03c3"}, {"window_index": 32, "timestamp_utc": "2026-09-04T16:37:17.786237Z", "lag1_autocorrelation": 0.5424, "spatial_variance": 2.1781, "csd_composite_score": 2.85, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.542, Var=2.18, Composite=2.85\u03c3"}, {"window_index": 33, "timestamp_utc": "2026-09-04T16:48:58.165097Z", "lag1_autocorrelation": 0.6128, "spatial_variance": 2.0957, "csd_composite_score": 2.98, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.613, Var=2.10, Composite=2.98\u03c3"}, {"window_index": 34, "timestamp_utc": "2026-09-04T17:15:02.249462Z", "lag1_autocorrelation": 0.6094, "spatial_variance": 1.9268, "csd_composite_score": 2.75, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.609, Var=1.93, Composite=2.75\u03c3"}, {"window_index": 36, "timestamp_utc": "2026-09-04T17:35:52.849971Z", "lag1_autocorrelation": 0.4148, "spatial_variance": 3.1775, "csd_composite_score": 3.7, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.415, Var=3.18, Composite=3.70\u03c3"}, {"window_index": 37, "timestamp_utc": "2026-09-04T17:52:45.020220Z", "lag1_autocorrelation": 0.4917, "spatial_variance": 3.7151, "csd_composite_score": 4.64, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.492, Var=3.72, Composite=4.64\u03c3"}, {"window_index": 38, "timestamp_utc": "2026-09-04T19:26:44.874746Z", "lag1_autocorrelation": 0.7642, "spatial_variance": 3.8922, "csd_composite_score": 5.76, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.764, Var=3.89, Composite=5.76\u03c3"}, {"window_index": 39, "timestamp_utc": "2026-09-05T01:33:44.768387Z", "lag1_autocorrelation": 0.7131, "spatial_variance": 3.6346, "csd_composite_score": 5.26, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.713, Var=3.63, Composite=5.26\u03c3"}, {"window_index": 40, "timestamp_utc": "2026-09-05T11:52:04.608625Z", "lag1_autocorrelation": 0.5634, "spatial_variance": 2.9577, "csd_composite_score": 3.91, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.563, Var=2.96, Composite=3.91\u03c3"}, {"window_index": 41, "timestamp_utc": "2026-09-06T12:16:42.389568Z", "lag1_autocorrelation": 0.5795, "spatial_variance": 2.9293, "csd_composite_score": 3.93, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.580, Var=2.93, Composite=3.93\u03c3"}, {"window_index": 42, "timestamp_utc": "2026-09-06T12:27:26.928179Z", "lag1_autocorrelation": 0.6289, "spatial_variance": 3.5629, "csd_composite_score": 4.89, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.629, Var=3.56, Composite=4.89\u03c3"}, {"window_index": 43, "timestamp_utc": "2026-09-06T12:50:12.577111Z", "lag1_autocorrelation": 0.6325, "spatial_variance": 3.2457, "csd_composite_score": 4.5, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.633, Var=3.25, Composite=4.50\u03c3"}, {"window_index": 44, "timestamp_utc": "2026-09-06T13:03:18.324050Z", "lag1_autocorrelation": 0.3969, "spatial_variance": 3.2325, "csd_composite_score": 3.71, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.397, Var=3.23, Composite=3.71\u03c3"}, {"window_index": 45, "timestamp_utc": "2026-09-06T13:21:48.110274Z", "lag1_autocorrelation": 0.4624, "spatial_variance": 2.9286, "csd_composite_score": 3.54, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.462, Var=2.93, Composite=3.54\u03c3"}, {"window_index": 46, "timestamp_utc": "2026-09-06T13:39:52.176861Z", "lag1_autocorrelation": 0.6985, "spatial_variance": 2.1117, "csd_composite_score": 3.28, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.698, Var=2.11, Composite=3.28\u03c3"}, {"window_index": 47, "timestamp_utc": "2026-09-06T13:50:06.612793Z", "lag1_autocorrelation": 0.9328, "spatial_variance": 1.2028, "csd_composite_score": 2.89, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.933, Var=1.20, Composite=2.89\u03c3"}, {"window_index": 48, "timestamp_utc": "2026-09-06T14:00:15.146290Z", "lag1_autocorrelation": 0.9361, "spatial_variance": 1.2602, "csd_composite_score": 2.97, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.936, Var=1.26, Composite=2.97\u03c3"}, {"window_index": 73, "timestamp_utc": "2026-09-06T18:12:53.889828Z", "lag1_autocorrelation": 0.8262, "spatial_variance": 1.7574, "csd_composite_score": 3.25, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.826, Var=1.76, Composite=3.25\u03c3"}, {"window_index": 74, "timestamp_utc": "2026-09-06T18:23:00.825946Z", "lag1_autocorrelation": 0.8853, "spatial_variance": 2.4436, "csd_composite_score": 4.31, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.885, Var=2.44, Composite=4.31\u03c3"}, {"window_index": 75, "timestamp_utc": "2026-09-06T19:14:44.844837Z", "lag1_autocorrelation": 0.8939, "spatial_variance": 2.5539, "csd_composite_score": 4.48, "warning_level": "CRITICAL", "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.894, Var=2.55, Composite=4.48\u03c3"}, {"window_index": 76, "timestamp_utc": "2026-09-06T19:35:53.367330Z", "lag1_autocorrelation": 0.8236, "spatial_variance": 2.2653, "csd_composite_score": 3.88, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.824, Var=2.27, Composite=3.88\u03c3"}, {"window_index": 77, "timestamp_utc": "2026-09-06T20:30:06.531380Z", "lag1_autocorrelation": 0.6784, "spatial_variance": 1.6719, "csd_composite_score": 2.65, "warning_level": "ELEVATED", "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.678, Var=1.67, Composite=2.65\u03c3"}]}}, "multiscale": {"protocol": "pixel-sensorium.multiscale-diffusion-spec.v1", "generated_at_utc": "2026-09-30T20:10:04.363711+00:00", "audit_duration_seconds": 0.0391, "msd_lags": [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024], "coarse_graining_scales": [1, 2, 4, 8, 16, 32, 64], "multiscale_metrics": {"record_count": 5961, "diffusion_regime": {"hurst_exponent": 0.0541, "r_squared": 0.8153, "regime_type": "SUB_DIFFUSIVE", "interpretation": "Sub-diffusive trapping (H=0.054 < 0.5): Trajectory is strongly confined inside potential well attractors.", "msd_by_lag": {"1": 2.5091, "2": 1.9048, "4": 2.2119, "8": 2.4557, "16": 2.6222, "32": 2.9184, "64": 3.3312, "128": 3.6235, "256": 3.7257, "512": 3.8102, "1024": 4.1039}}, "coarse_grained_scales": [{"scale_factor": 1, "scale_duration_seconds": 30.0, "state_vocabulary_size": 16, "transition_determinism": 0.5005, "mean_transition_entropy": 2.1392}, {"scale_factor": 2, "scale_duration_seconds": 60.0, "state_vocabulary_size": 16, "transition_determinism": 0.5086, "mean_transition_entropy": 2.2465}, {"scale_factor": 4, "scale_duration_seconds": 120.0, "state_vocabulary_size": 16, "transition_determinism": 0.4837, "mean_transition_entropy": 2.071}, {"scale_factor": 8, "scale_duration_seconds": 240.0, "state_vocabulary_size": 16, "transition_determinism": 0.5551, "mean_transition_entropy": 1.7458}, {"scale_factor": 16, "scale_duration_seconds": 480.0, "state_vocabulary_size": 15, "transition_determinism": 0.5882, "mean_transition_entropy": 1.5346}, {"scale_factor": 32, "scale_duration_seconds": 960.0, "state_vocabulary_size": 15, "transition_determinism": 0.587, "mean_transition_entropy": 1.3759}, {"scale_factor": 64, "scale_duration_seconds": 1920.0, "state_vocabulary_size": 12, "transition_determinism": 0.5074, "mean_transition_entropy": 1.5369}], "optimal_scale": {"scale_factor": 16, "scale_duration_seconds": 480.0, "state_vocabulary_size": 15, "transition_determinism": 0.5882, "mean_transition_entropy": 1.5346}}}};
+
+    let currentLandscapeMode = 'w1';
+
+    function setLandscape(mode) {
+      currentLandscapeMode = mode;
+      document.getElementById('btn-w1').classList.toggle('active', mode === 'w1');
+      document.getElementById('btn-w2').classList.toggle('active', mode === 'w2');
+      document.getElementById('btn-diff').classList.toggle('active', mode === 'diff');
+      drawPotentialLandscape();
+    }
+
+    function drawPotentialLandscape() {
+      const cvs = document.getElementById('potCanvas');
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width;
+      const h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const pots = DATA.dynamics.potential_surfaces || {};
+      const w1 = pots.w1_potential_matrix || [[2, 3], [3, 2]];
+      const w2 = pots.w2_potential_matrix || [[3, 2], [2, 3]];
+
+      let matrix = w1;
+      if (currentLandscapeMode === 'w2') matrix = w2;
+      if (currentLandscapeMode === 'diff') {
+        matrix = w1.map((row, i) => row.map((val, j) => (w2[i] ? w2[i][j] - val : 0)));
+      }
+
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+
+      // Isometric projection grid
+      const originX = w / 2;
+      const originY = 60;
+      const cellW = 55;
+      const cellH = 28;
+
+      let minVal = Infinity, maxVal = -Infinity;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matrix[r][c] < minVal) minVal = matrix[r][c];
+          if (matrix[r][c] > maxVal) maxVal = matrix[r][c];
+        }
+      }
+
+      function toIso(r, c, val) {
+        const norm = (val - minVal) / Math.max(0.1, maxVal - minVal);
+        const zOffset = (1.0 - norm) * 45; // deep well goes down
+        const x = originX + (c - r) * cellW;
+        const y = originY + (c + r) * cellH - zOffset;
+        return { x, y, norm };
+      }
+
+      // Draw wireframe tiles
+      for (let r = 0; r < rows - 1; r++) {
+        for (let c = 0; c < cols - 1; c++) {
+          const p00 = toIso(r, c, matrix[r][c]);
+          const p01 = toIso(r, c + 1, matrix[r][c + 1]);
+          const p11 = toIso(r + 1, c + 1, matrix[r + 1][c + 1]);
+          const p10 = toIso(r + 1, c, matrix[r + 1][c]);
+
+          ctx.beginPath();
+          ctx.moveTo(p00.x, p00.y);
+          ctx.lineTo(p01.x, p01.y);
+          ctx.lineTo(p11.x, p11.y);
+          ctx.lineTo(p10.x, p10.y);
+          ctx.closePath();
+
+          const avgNorm = (p00.norm + p01.norm + p11.norm + p10.norm) / 4;
+          // Color ramp: Blue (deep attractor) -> Green/Yellow -> Red (high barrier)
+          let fillR = Math.floor(avgNorm * 239);
+          let fillG = Math.floor((1 - avgNorm) * 180 + 40);
+          let fillB = Math.floor((1 - avgNorm) * 220);
+          ctx.fillStyle = `rgba(${fillR}, ${fillG}, ${fillB}, 0.75)`;
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
+      // Draw Attractor Basins
+      const basins = (currentLandscapeMode === 'w2') ? (DATA.dynamics.w2_attractor_basins || []) : (DATA.dynamics.w1_attractor_basins || []);
+      basins.forEach((b, idx) => {
+        const r = b.grid_coord[0];
+        const c = b.grid_coord[1];
+        if (r < rows && c < cols) {
+          const pt = toIso(r, c, matrix[r][c]);
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = '#38bdf8';
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '10px monospace';
+          ctx.fillText(`${b.state_token}`, pt.x + 8, pt.y + 3);
+        }
+      });
+
+      // Draw Longitudinal Drift Vector
+      if (currentLandscapeMode !== 'diff') {
+        const drift = DATA.dynamics.attractor_drift || {};
+        const details = drift.basin_drift_details || [];
+        if (details.length > 0 && details[0].matched_w2_basin) {
+          const b1 = details[0].w1_basin.grid_coord;
+          const b2 = details[0].matched_w2_basin.grid_coord;
+          const p1 = toIso(b1[0], b1[1], matrix[b1[0]][b1[1]]);
+          const p2 = toIso(b2[0], b2[1], matrix[b2[0]][b2[1]]);
+
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = '#a855f7';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Arrowhead
+          ctx.beginPath();
+          ctx.arc(p2.x, p2.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#ec4899';
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawMSDPlot() {
+      const cvs = document.getElementById('msdCanvas');
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width;
+      const h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const ms = DATA.multiscale.multiscale_metrics || {};
+      const regime = ms.diffusion_regime || {};
+      const msdMap = regime.msd_by_lag || { 1: 0.5, 2: 0.6, 4: 0.7, 8: 0.8, 16: 0.85, 32: 0.9 };
+
+      const lags = Object.keys(msdMap).map(Number).sort((a,b) => a - b);
+      if (lags.length < 2) return;
+
+      const pad = 40;
+      const plotW = w - pad * 2;
+      const plotH = h - pad * 2;
+
+      const minX = Math.log(lags[0]);
+      const maxX = Math.log(lags[lags.length - 1]);
+      let minY = Infinity, maxY = -Infinity;
+      lags.forEach(l => {
+        const v = Math.log(Math.max(1e-4, msdMap[l]));
+        if (v < minY) minY = v;
+        if (v > maxY) maxY = v;
+      });
+      minY = Math.min(minY, -1.0);
+      maxY = Math.max(maxY, 2.0);
+
+      function mapCoord(xVal, yVal) {
+        const px = pad + ((xVal - minX) / (maxX - minX)) * plotW;
+        const py = h - pad - ((yVal - minY) / (maxY - minY)) * plotH;
+        return { px, py };
+      }
+
+      // Grid lines
+      ctx.strokeStyle = '#1f293d';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = pad + (plotH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(pad, y);
+        ctx.lineTo(w - pad, y);
+        ctx.stroke();
+      }
+
+      // Brownian reference line H = 0.5 (slope = 1.0)
+      ctx.strokeStyle = '#4b5563';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      const pB1 = mapCoord(minX, minY);
+      const pB2 = mapCoord(maxX, minY + (maxX - minX) * 1.0);
+      ctx.moveTo(pB1.px, pB1.py);
+      ctx.lineTo(pB2.px, pB2.py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Empirical MSD curve
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      lags.forEach((l, idx) => {
+        const lx = Math.log(l);
+        const ly = Math.log(Math.max(1e-4, msdMap[l]));
+        const pt = mapCoord(lx, ly);
+        if (idx === 0) ctx.moveTo(pt.px, pt.py);
+        else ctx.lineTo(pt.px, pt.py);
+      });
+      ctx.stroke();
+
+      // Points
+      lags.forEach(l => {
+        const lx = Math.log(l);
+        const ly = Math.log(Math.max(1e-4, msdMap[l]));
+        const pt = mapCoord(lx, ly);
+        ctx.beginPath();
+        ctx.arc(pt.px, pt.py, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#a855f7';
+        ctx.fill();
+      });
+
+      // Labels
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('ln(tau)', w / 2, h - 10);
+      ctx.save();
+      ctx.translate(12, h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('ln(MSD)', 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '12px monospace';
+      ctx.fillText(`H = ${regime.hurst_exponent || 0.0541} (Sub-Diffusive Trapping)`, pad + 10, pad + 20);
+    }
+
+    function drawCSDTimeline() {
+      const cvs = document.getElementById('csdCanvas');
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width;
+      const h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const csd = DATA.dynamics.critical_slowing_down || {};
+      const alerts = csd.alerts || [];
+
+      const pad = 40;
+      const plotW = w - pad * 2;
+      const plotH = h - pad * 2;
+
+      // Draw axis
+      ctx.strokeStyle = '#1f293d';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(w - pad, h - pad);
+      ctx.stroke();
+
+      if (alerts.length === 0) return;
+
+      const n = alerts.length;
+      alerts.forEach((a, i) => {
+        const x = pad + (i / Math.max(1, n - 1)) * plotW;
+        const ar1Norm = Math.max(0, Math.min(1, a.lag1_autocorrelation));
+        const varNorm = Math.min(1, a.spatial_variance / 4.0);
+
+        const yAr1 = h - pad - ar1Norm * (plotH * 0.7);
+        const yVar = h - pad - varNorm * (plotH * 0.8);
+
+        // Draw AR(1) bar
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x - 2, yAr1, 4, h - pad - yAr1);
+
+        // Draw Alert Badge
+        if (a.warning_level === 'CRITICAL' || a.csd_composite_score >= 4.0) {
+          ctx.beginPath();
+          ctx.arc(x, pad + 15, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#ef4444';
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 8;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('14-Day Timeline (2026-09-02 to 2026-09-16)', pad, h - 12);
+      ctx.fillText('Critical Phase Transitions (CSD Alert Peaks)', w - pad - 240, 20);
+    }
+
+    window.onload = function() {
+      drawPotentialLandscape();
+      drawMSDPlot();
+      drawCSDTimeline();
+    };
+  </script>
+</body>
+</html>
