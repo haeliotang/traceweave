@@ -113,7 +113,24 @@ Hypothesis testing against 5 Monte Carlo surrogate ensembles (100 iterations eac
 - **Top-3 Accuracy**: **93.21%**; **Top-5 Accuracy**: **94.74%**.
 - **Perplexity**: Reduced to **2.05** (vs uniform $\sim 33.0$).
 
-### E. On-Device Edge Streaming Performance (GrapheneOS / Pixel 6a)
+### E. Dual-Track Quantization Benchmark: Handcrafted vs. Unsupervised Clustering
+A head-to-head empirical evaluation ([`DUAL_QUANTIZATION_BENCHMARK_v1.md`](artifacts/quantization_benchmark_v1/DUAL_QUANTIZATION_BENCHMARK_v1.md)) testing whether persistent structure survives the complete removal of handcrafted thresholds (WiFi/Cell/motion/light/power):
+
+| Metric | Track A (Handcrafted Lattice) | Track B (Data-Driven K=56) | Track C (Data-Driven Auto-K=16) |
+| :--- | :---: | :---: | :---: |
+| **Prior Semantics Injected** | WiFi/Lux/Kinetic Priors | **Zero (K-Means on continuous vectors)** | **Zero (Silhouette Auto-K)** |
+| **$W_2$ Sample-Out Coverage** | `96.20%` | **`100.00%`** | **`100.00%`** |
+| **Stationary Cosine Similarity** | `0.8419` | `0.6035` | **`0.8533` (Exceeds Track A)** |
+| **$W_2$ Motif Recurrence Ratio** | **`100.0%`** | `70.0%` | **`100.0%` (100% Re-emergence)** |
+| **Self-Transition Ratio (Inertia)** | `91.58%` | `39.89%` | `41.67%` |
+| **Naive Persist Baseline Acc** | `87.59%` | `20.23%` | `26.31%` |
+| **Top-1 Forward Accuracy** | `88.41%` | `33.99%` | `46.07%` |
+| **Active Lift over Persist** | `1.0094x` (+0.9%) | **`1.6802x` (+68.0%)** | **`1.7510x` (+75.1% Lift)** |
+
+* **Resolving the "Inertia Illusion"**: Handcrafted categorical lattices (Track A) over-index on static WiFi pinning, artificially inflating the naive persist baseline to 87.59%.
+* **Proof of Objective Structure**: When all human thresholds are eliminated (Track C), the algorithm autonomously converges to **16 natural dynamical states**, achieving **100% motif recurrence in Week 2** and **1.75x active predictive lift** over physical inertia.
+
+### F. On-Device Edge Streaming Performance (GrapheneOS / Pixel 6a)
 - **Sub-Millisecond Edge Inference**: Average latency of **0.008 ms/frame** (8 microseconds) with peak latency $< 0.040\text{ ms}$.
 - **Zero-CPU Overhead**: Capable of streaming micro-state quantization inside Termux background runtime without battery penalty.
 
@@ -220,7 +237,13 @@ Run a specific stage (1 to 10):
 python3 scripts/run_traceform_pipeline.py --stage 7
 ```
 
-### C. Launch the Interactive Macroscope Dashboard
+### C. Run the Dual-Track Quantization Benchmark (Lattice vs Unsupervised)
+Compare handcrafted lattice against pure unsupervised clustering across stability, recurrence, and forecasting:
+```bash
+python3 scripts/benchmark_dual_quantization.py
+```
+
+### D. Launch the Interactive Macroscope Dashboard
 Open the compiled self-contained dashboard in your browser:
 ```bash
 open artifacts/macroscope_dashboard_v1.html
