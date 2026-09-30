@@ -79,7 +79,16 @@
       "geomagnetic_total_field_flux",
       "thermodynamic_dissipation_ratio",
       "neuromotor_microslip_angular_velocity",
-      "circadian_phase_disruption_index"
+      "circadian_phase_disruption_index",
+      "kinematic_snap_metric",
+      "acoustic_harmonic_to_noise_ratio",
+      "photometric_spectral_warmth_index",
+      "barometric_buoyancy_energy_flux",
+      "geomagnetic_quadrupole_anisotropy_ratio",
+      "wifi_channel_dispersion_entropy",
+      "thermodynamic_battery_stress_index",
+      "neuromotor_tremor_lyapunov_exponent",
+      "phase_space_information_flow_rate"
     ],
     "medians": {
       "motion_accel_magnitude": 9.8093,
@@ -152,7 +161,16 @@
       "geomagnetic_total_field_flux": 100.0,
       "thermodynamic_dissipation_ratio": 0.0,
       "neuromotor_microslip_angular_velocity": 0.0,
-      "circadian_phase_disruption_index": 0.254
+      "circadian_phase_disruption_index": 0.254,
+      "kinematic_snap_metric": 0.0001,
+      "acoustic_harmonic_to_noise_ratio": 0.0,
+      "photometric_spectral_warmth_index": 1.858,
+      "barometric_buoyancy_energy_flux": 0.0008,
+      "geomagnetic_quadrupole_anisotropy_ratio": 5.378,
+      "wifi_channel_dispersion_entropy": 3.84,
+      "thermodynamic_battery_stress_index": 2.62135,
+      "neuromotor_tremor_lyapunov_exponent": 0.0001,
+      "phase_space_information_flow_rate": 0.0043
     },
     "iqrs": {
       "motion_accel_magnitude": 0.0197,
@@ -225,10 +243,19 @@
       "geomagnetic_total_field_flux": 1.0,
       "thermodynamic_dissipation_ratio": 0.0167,
       "neuromotor_microslip_angular_velocity": 1.0,
-      "circadian_phase_disruption_index": 0.276
+      "circadian_phase_disruption_index": 0.276,
+      "kinematic_snap_metric": 0.0002,
+      "acoustic_harmonic_to_noise_ratio": 1.0,
+      "photometric_spectral_warmth_index": 0.445,
+      "barometric_buoyancy_energy_flux": 0.0013,
+      "geomagnetic_quadrupole_anisotropy_ratio": 1.0,
+      "wifi_channel_dispersion_entropy": 1.0,
+      "thermodynamic_battery_stress_index": 0.2921,
+      "neuromotor_tremor_lyapunov_exponent": 0.01,
+      "phase_space_information_flow_rate": 0.0058
     },
     "fitted_observation_count": 1200,
-    "fit_window_description": "Day 1\u20137 Discovery Window (71D Canonical Ultra-Manifold Sensorium)"
+    "fit_window_description": "Day 1\u20137 Discovery Window (80D Canonical Holo-Cosmic Sensorium)"
   },
   "metric_weights": {
     "weight_topology": 0.3,
@@ -757,7 +784,7 @@
     "w1_w2_leakage_prevented": true,
     "strictly_deterministic": true
   },
-  "continuous_feature_count": 71,
+  "continuous_feature_count": 80,
   "continuous_feature_names": [
     "motion_accel_magnitude",
     "motion_accel_rms",
@@ -829,6 +856,15 @@
     "geomagnetic_total_field_flux",
     "thermodynamic_dissipation_ratio",
     "neuromotor_microslip_angular_velocity",
-    "circadian_phase_disruption_index"
+    "circadian_phase_disruption_index",
+    "kinematic_snap_metric",
+    "acoustic_harmonic_to_noise_ratio",
+    "photometric_spectral_warmth_index",
+    "barometric_buoyancy_energy_flux",
+    "geomagnetic_quadrupole_anisotropy_ratio",
+    "wifi_channel_dispersion_entropy",
+    "thermodynamic_battery_stress_index",
+    "neuromotor_tremor_lyapunov_exponent",
+    "phase_space_information_flow_rate"
   ]
 }

@@ -145,6 +145,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "neuromotor_microslip_angular_velocity",
     # Circadian phase disruption / chrono-entropy index (71)
     "circadian_phase_disruption_index",
+    # Kinematic 3D trajectory fourth-order snap/jounce metric in m/s^4 (72)
+    "kinematic_snap_metric",
+    # Acoustic harmonic-to-noise ratio in dB (73)
+    "acoustic_harmonic_to_noise_ratio",
+    # Photometric dynamic spectral warmth / CCT evolution index (74)
+    "photometric_spectral_warmth_index",
+    # Barometric vertical atmospheric buoyancy energy flux in mW/kg (75)
+    "barometric_buoyancy_energy_flux",
+    # Geomagnetic horizontal-vertical quadrupole anisotropy ratio (76)
+    "geomagnetic_quadrupole_anisotropy_ratio",
+    # Wi-Fi cross-band RF channel dispersion Shannon entropy (77)
+    "wifi_channel_dispersion_entropy",
+    # Thermodynamic electrochemical battery overpotential stress index (78)
+    "thermodynamic_battery_stress_index",
+    # Neuromotor physiological micro-tremor Lyapunov exponent in s^-1 (79)
+    "neuromotor_tremor_lyapunov_exponent",
+    # Multimodal phase-space non-equilibrium information flow rate in nats/s (80)
+    "phase_space_information_flow_rate",
 ]
 
 
@@ -204,6 +222,7 @@ class MultimodalNormalizer:
         self._last_vec_ts: Optional[float] = None
         self._last_az: Optional[float] = None
         self._last_jerk_raw: Optional[List[float]] = None
+        self._last_tremor_energy: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -239,6 +258,7 @@ class MultimodalNormalizer:
         self._last_vec_ts = None
         self._last_az = None
         self._last_jerk_raw = None
+        self._last_tremor_energy = None
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -732,13 +752,17 @@ class MultimodalNormalizer:
             else:
                 geomag_dip_angle = 45.0
 
-        # 38. Kinematic 3D trajectory Frenet curvature (55) & Torsion (63)
+        # 38. Kinematic 3D trajectory Frenet curvature (55), Torsion (63) & Snap (72)
         trajectory_curvature = 0.0
         trajectory_torsion = 0.0
+        snap_metric = 0.0
         current_jerk: Optional[List[float]] = None
         torsion_direct = mot.get("trajectory_torsion") or mot.get("kinematic_trajectory_torsion")
         if torsion_direct is not None:
             trajectory_torsion = round(max(-10.0, min(10.0, safe_float(torsion_direct, 0.0))), 4)
+        snap_direct = mot.get("kinematic_snap_metric") or mot.get("snap_metric")
+        if snap_direct is not None:
+            snap_metric = round(max(0.0, min(50.0, safe_float(snap_direct, 0.0))), 4)
 
         if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
             curr_a = [safe_float(accel_raw[0], 0.0), safe_float(accel_raw[1], 0.0), safe_float(accel_raw[2], 9.8)]
@@ -756,15 +780,19 @@ class MultimodalNormalizer:
                     a_mag_cubed = (curr_a[0]**2 + curr_a[1]**2 + curr_a[2]**2) ** 1.5
                     trajectory_curvature = round(min(5.0, cross_mag / max(0.1, a_mag_cubed)), 4)
 
-                    if torsion_direct is None and self._last_jerk_raw is not None:
+                    if self._last_jerk_raw is not None:
                         s_x = (d_ax - self._last_jerk_raw[0]) / dt_s
                         s_y = (d_ay - self._last_jerk_raw[1]) / dt_s
                         s_z = (d_az - self._last_jerk_raw[2]) / dt_s
-                        dot_c_s = cx * s_x + cy * s_y + cz * s_z
-                        cross_sq = cross_mag * cross_mag
-                        if cross_sq > 0.001:
-                            raw_torsion = dot_c_s / cross_sq
-                            trajectory_torsion = round(max(-10.0, min(10.0, raw_torsion)), 4)
+                        if snap_direct is None:
+                            snap_metric = round(min(50.0, math.sqrt(s_x * s_x + s_y * s_y + s_z * s_z)), 4)
+
+                        if torsion_direct is None:
+                            dot_c_s = cx * s_x + cy * s_y + cz * s_z
+                            cross_sq = cross_mag * cross_mag
+                            if cross_sq > 0.001:
+                                raw_torsion = dot_c_s / cross_sq
+                                trajectory_torsion = round(max(-10.0, min(10.0, raw_torsion)), 4)
 
         # 39. Barometric high-frequency pressure turbulence variance in hPa^2 (56)
         if pressure > 0.0:
@@ -958,6 +986,97 @@ class MultimodalNormalizer:
                     disrupt_val = 0.02
             circadian_disruption = round(min(1.0, max(0.0, disrupt_val)), 3)
 
+        # 55. Acoustic harmonic-to-noise ratio in dB (73)
+        hnr_direct = aud.get("harmonic_to_noise_ratio") or aud.get("hnr_db")
+        if hnr_direct is not None:
+            hnr_db = round(max(-10.0, min(30.0, safe_float(hnr_direct, 5.0))), 2)
+        else:
+            if silence_like >= 0.95 or rms_loudness <= 0.0005:
+                hnr_db = 0.0
+            else:
+                raw_hnr = 18.0 * (1.0 - spectral_flatness) + 4.0 * min(3.0, max(0.0, acoustic_crest - 1.0)) - 10.0 * spectral_entropy
+                hnr_db = round(max(-10.0, min(30.0, raw_hnr)), 2)
+
+        # 56. Photometric dynamic spectral warmth / CCT evolution index (74)
+        warmth_direct = env.get("photometric_spectral_warmth_index") or env.get("color_temperature_warmth")
+        if warmth_direct is not None:
+            warmth_index = round(max(0.0, min(5.0, safe_float(warmth_direct, 1.0))), 3)
+        else:
+            cct_val = env.get("cct_k") or env.get("color_temperature")
+            if cct_val is not None:
+                calc_warmth = 6500.0 / max(1500.0, safe_float(cct_val, 4500.0))
+                warmth_index = round(min(5.0, max(0.0, calc_warmth)), 3)
+            else:
+                daily_frac = (daily_fraction if 'daily_fraction' in locals() else 0.5)
+                warmth_est = 1.0 + 0.8 * max(0.0, math.cos(daily_frac * 2.0 * math.pi)) + 0.4 * (1.0 - min(1.0, log_lux / 4.0))
+                warmth_index = round(min(5.0, max(0.0, warmth_est)), 3)
+
+        # 57. Barometric vertical atmospheric buoyancy energy flux in mW/kg (75)
+        buoyancy_direct = env.get("barometric_buoyancy_energy_flux") or env.get("buoyancy_flux")
+        if buoyancy_direct is not None:
+            buoyancy_flux = round(max(0.0, min(10.0, safe_float(buoyancy_direct, 0.0))), 4)
+        else:
+            flux_val = 9.81 * abs(vertical_velocity) * math.sqrt(max(0.0, baro_turbulence)) * 0.1
+            buoyancy_flux = round(min(10.0, max(0.0, flux_val)), 4)
+
+        # 58. Geomagnetic horizontal-vertical quadrupole anisotropy ratio (76)
+        aniso_direct = env.get("geomagnetic_quadrupole_anisotropy_ratio") or env.get("mag_anisotropy_ratio")
+        if aniso_direct is not None:
+            quadrupole_aniso = round(max(0.0, min(10.0, safe_float(aniso_direct, 1.0))), 3)
+        else:
+            if mag_raw and isinstance(mag_raw, (list, tuple)) and len(mag_raw) >= 3:
+                bx = safe_float(mag_raw[0], 0.0)
+                by = safe_float(mag_raw[1], 0.0)
+                bz = safe_float(mag_raw[2], 40.0)
+                bh = math.sqrt(bx * bx + by * by)
+                quadrupole_aniso = round(min(10.0, max(0.0, bh / max(0.5, abs(bz)))), 3)
+            else:
+                quadrupole_aniso = round(min(10.0, max(0.0, 1.0 + 0.2 * mag_divergence)), 3)
+
+        # 59. Wi-Fi cross-band RF channel dispersion Shannon entropy (77)
+        disp_direct = conn.get("wifi_channel_dispersion_entropy") or conn.get("wifi_channel_entropy")
+        if disp_direct is not None:
+            channel_entropy = round(max(0.0, min(5.0, safe_float(disp_direct, 0.0))), 3)
+        else:
+            if wifi_conn > 0.0:
+                ap_cnt = safe_float(conn.get("wifi_ap_count"), 1.0)
+                calc_disp = min(4.5, 0.4 * wifi_shannon_entropy + 0.8 * math.log(1.0 + max(0.0, ap_cnt * 0.5)))
+                channel_entropy = round(max(0.0, calc_disp), 3)
+            else:
+                channel_entropy = 0.0
+
+        # 60. Thermodynamic electrochemical battery overpotential stress index (78)
+        stress_direct = dig.get("thermodynamic_battery_stress_index") or env.get("battery_stress_index")
+        if stress_direct is not None:
+            battery_stress = round(max(0.0, min(5.0, safe_float(stress_direct, 0.2))), 4)
+        else:
+            p_elec_w = (voltage_mv * 1e-3) * (abs(battery_current_ua) * 1e-6)
+            temp_delta = max(0.0, dev_temp - 25.0)
+            raw_stress = p_elec_w * (1.0 + 0.1 * temp_delta) * (1.0 + (1.0 - battery_frac) * 0.5)
+            battery_stress = round(min(5.0, max(0.0, raw_stress)), 4)
+
+        # 61. Neuromotor physiological micro-tremor Lyapunov exponent in s^-1 (79)
+        lyap_direct = dig.get("neuromotor_tremor_lyapunov_exponent") or mot.get("tremor_lyapunov_exponent")
+        if lyap_direct is not None:
+            tremor_lyapunov = round(max(-2.0, min(5.0, safe_float(lyap_direct, -0.2))), 4)
+        else:
+            tremor_lyapunov = 0.0
+            if self._last_tremor_energy is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+                dt_s = current_ts_seconds - self._last_ts_seconds
+                if 2.0 <= dt_s <= 300.0:
+                    r_tremor = max(0.001, physio_tremor) / max(0.001, self._last_tremor_energy)
+                    tremor_lyapunov = round(max(-2.0, min(5.0, math.log(r_tremor) / dt_s)), 4)
+            if tremor_lyapunov == 0.0:
+                tremor_lyapunov = -0.25 if stat_like >= 0.8 else round(min(3.0, 0.15 + 0.35 * min(1.0, mot_energy)), 4)
+
+        # 62. Multimodal phase-space non-equilibrium information flow rate in nats/s (80)
+        flow_direct = mot.get("phase_space_information_flow_rate") or dig.get("information_flow_rate")
+        if flow_direct is not None:
+            information_flow = round(max(0.0, min(5.0, safe_float(flow_direct, 0.1))), 4)
+        else:
+            raw_flow = 0.5 * phase_velocity + 0.2 * (abs(conduction_rate) / 30.0) + 0.3 * (jerk_metric * 0.1)
+            information_flow = round(min(5.0, max(0.0, raw_flow)), 4)
+
         # Update persistent state across frames
         if current_ts_seconds is not None and (self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds):
             self._last_ts_seconds = current_ts_seconds
@@ -974,6 +1093,7 @@ class MultimodalNormalizer:
             else:
                 self._last_accel_raw = None
             self._last_jerk_raw = current_jerk
+            self._last_tremor_energy = physio_tremor
 
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
@@ -1047,6 +1167,15 @@ class MultimodalNormalizer:
             "thermodynamic_dissipation_ratio": thermo_dissipation_ratio,
             "neuromotor_microslip_angular_velocity": microslip_vel,
             "circadian_phase_disruption_index": circadian_disruption,
+            "kinematic_snap_metric": snap_metric,
+            "acoustic_harmonic_to_noise_ratio": hnr_db,
+            "photometric_spectral_warmth_index": warmth_index,
+            "barometric_buoyancy_energy_flux": buoyancy_flux,
+            "geomagnetic_quadrupole_anisotropy_ratio": quadrupole_aniso,
+            "wifi_channel_dispersion_entropy": channel_entropy,
+            "thermodynamic_battery_stress_index": battery_stress,
+            "neuromotor_tremor_lyapunov_exponent": tremor_lyapunov,
+            "phase_space_information_flow_rate": information_flow,
         }
 
         # Topological & Categorical identifiers
