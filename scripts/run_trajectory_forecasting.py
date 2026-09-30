@@ -67,6 +67,8 @@ def main() -> None:
     print(f"  - Top-5 Accuracy: {metrics.top5_accuracy * 100:.2f}%")
     print(f"  - Perplexity:     {metrics.perplexity:.2f}")
     print(f"  - Accuracy Lift:  {metrics.accuracy_lift_ratio:.2f}x over unigram prior")
+    print(f"  - Persist Baseline (predict same): {metrics.baseline_persist_top1_accuracy * 100:.2f}%")
+    print(f"  - Lift over Persist: {metrics.accuracy_lift_over_persist:.4f}x")
 
     # 3. Compute Hitting Times to Key Kinematic Targets
     print("[*] Computing expected hitting times (first passage times)...")

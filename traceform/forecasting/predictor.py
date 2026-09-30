@@ -23,6 +23,8 @@ class ForecastingEvaluationMetrics:
     perplexity: float
     baseline_unigram_top1_accuracy: float
     accuracy_lift_ratio: float
+    baseline_persist_top1_accuracy: float
+    accuracy_lift_over_persist: float
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -137,6 +139,11 @@ class VariableOrderPredictor:
         perplexity = round(2.0 ** min(30.0, mean_loss), 2)
         lift = round(top1_acc / max(1e-4, baseline_acc), 2)
 
+        # Persist baseline: predict next = current (strongest trivial baseline for self-correlated sequences)
+        persist_hits = sum(1 for i in range(1, len(test_tokens)) if test_tokens[i] == test_tokens[i - 1])
+        persist_acc = round(persist_hits / eval_steps, 4)
+        lift_over_persist = round(top1_acc / max(1e-4, persist_acc), 4)
+
         return ForecastingEvaluationMetrics(
             total_test_steps=eval_steps,
             top1_accuracy=top1_acc,
@@ -146,6 +153,8 @@ class VariableOrderPredictor:
             perplexity=perplexity,
             baseline_unigram_top1_accuracy=baseline_acc,
             accuracy_lift_ratio=lift,
+            baseline_persist_top1_accuracy=persist_acc,
+            accuracy_lift_over_persist=lift_over_persist,
         )
 
 

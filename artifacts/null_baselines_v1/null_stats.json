@@ -1,6 +1,6 @@
 {
   "protocol": "pixel-sensorium.null-baselines-stats.v1",
-  "generated_at_utc": "2026-09-30T19:08:04.195795+00:00",
+  "generated_at_utc": "2026-09-30T19:19:56.365731+00:00",
   "num_surrogates": 100,
   "empirical_metrics": {
     "transition_entropy_rate_bits": 0.4189,
@@ -36,7 +36,7 @@
       }
     },
     "model_1_markov": {
-      "description": "First-Order Markov Null (Preserves 1-step transitions, destroys higher-order structure)",
+      "description": "First-Order Markov Null (Preserves 1-step transitions, destroys higher-order structure) - MARKOV NULL PENETRATED (Structure explainable by 1st-order Markov)",
       "entropy_rate_test": {
         "mean": 0.4048,
         "std": 0.0587,
@@ -92,8 +92,9 @@
   },
   "scientific_verdict": {
     "reject_null_0_permutation": true,
-    "reject_null_1_markov": true,
+    "reject_null_1_markov": false,
     "reject_null_2_circadian": true,
-    "latent_structure_confirmed_above_chance": true
+    "latent_structure_confirmed_above_chance": false,
+    "markov_null_penetrated": true
   }
 }

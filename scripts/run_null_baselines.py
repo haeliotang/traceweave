@@ -31,7 +31,7 @@ from traceform.null_models.surrogates import (
 
 def count_ngrams(tokens: List[str], n: int = 3) -> int:
     """Counts recurring n-gram motifs."""
-    seen: Dict[str, int] = collections.defaultdict(int) if "collections" in globals() else {}
+    seen: Dict[str, int] = {}
     for i in range(len(tokens) - n + 1):
         gram = "-".join(tokens[i : i + n])
         seen[gram] = seen.get(gram, 0) + 1
@@ -142,6 +142,42 @@ def main():
             "significant_diff": abs(z_score) > 3.0,
         }
 
+    h0_tests = {
+        "description": "I.I.D. Permutation Null (Destroys all temporal order)",
+        "entropy_rate_test": stats_summary(perm_entropies, emp_entropy_rate, lower_is_better=True),
+        "self_transition_test": stats_summary(perm_self_trans, emp_self_trans, lower_is_better=False),
+        "repeating_trigrams_test": stats_summary(perm_trigrams, emp_trigrams, lower_is_better=False),
+    }
+    h1_tests = {
+        "description": "First-Order Markov Null (Preserves 1-step transitions, destroys higher-order structure)",
+        "entropy_rate_test": stats_summary(markov_entropies, emp_entropy_rate, lower_is_better=True),
+        "self_transition_test": stats_summary(markov_self_trans, emp_self_trans, lower_is_better=False),
+        "repeating_trigrams_test": stats_summary(markov_trigrams, emp_trigrams, lower_is_better=False),
+    }
+    h2_tests = {
+        "description": "Circadian Phase Null (Preserves diurnal 24h phase, shuffles within hour)",
+        "entropy_rate_test": stats_summary(circ_entropies, emp_entropy_rate, lower_is_better=True),
+        "self_transition_test": stats_summary(circ_self_trans, emp_self_trans, lower_is_better=False),
+        "repeating_trigrams_test": stats_summary(circ_trigrams, emp_trigrams, lower_is_better=False),
+    }
+
+    def any_significant(tests: Dict[str, Any]) -> bool:
+        return (
+            tests["entropy_rate_test"]["significant_diff"] or
+            tests["self_transition_test"]["significant_diff"] or
+            tests["repeating_trigrams_test"]["significant_diff"]
+        )
+
+    reject_null_0 = any_significant(h0_tests)
+    reject_null_1 = any_significant(h1_tests)
+    reject_null_2 = any_significant(h2_tests)
+
+    latent_structure = reject_null_0 and reject_null_1 and reject_null_2
+    markov_penetrated = not reject_null_1
+    
+    if markov_penetrated:
+        h1_tests["description"] += " - MARKOV NULL PENETRATED (Structure explainable by 1st-order Markov)"
+
     results = {
         "protocol": "pixel-sensorium.null-baselines-stats.v1",
         "generated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -152,30 +188,16 @@ def main():
             "repeating_trigrams_count": emp_trigrams,
         },
         "hypothesis_tests": {
-            "model_0_permutation": {
-                "description": "I.I.D. Permutation Null (Destroys all temporal order)",
-                "entropy_rate_test": stats_summary(perm_entropies, emp_entropy_rate, lower_is_better=True),
-                "self_transition_test": stats_summary(perm_self_trans, emp_self_trans, lower_is_better=False),
-                "repeating_trigrams_test": stats_summary(perm_trigrams, emp_trigrams, lower_is_better=False),
-            },
-            "model_1_markov": {
-                "description": "First-Order Markov Null (Preserves 1-step transitions, destroys higher-order structure)",
-                "entropy_rate_test": stats_summary(markov_entropies, emp_entropy_rate, lower_is_better=True),
-                "self_transition_test": stats_summary(markov_self_trans, emp_self_trans, lower_is_better=False),
-                "repeating_trigrams_test": stats_summary(markov_trigrams, emp_trigrams, lower_is_better=False),
-            },
-            "model_2_circadian": {
-                "description": "Circadian Phase Null (Preserves diurnal 24h phase, shuffles within hour)",
-                "entropy_rate_test": stats_summary(circ_entropies, emp_entropy_rate, lower_is_better=True),
-                "self_transition_test": stats_summary(circ_self_trans, emp_self_trans, lower_is_better=False),
-                "repeating_trigrams_test": stats_summary(circ_trigrams, emp_trigrams, lower_is_better=False),
-            },
+            "model_0_permutation": h0_tests,
+            "model_1_markov": h1_tests,
+            "model_2_circadian": h2_tests,
         },
         "scientific_verdict": {
-            "reject_null_0_permutation": True,
-            "reject_null_1_markov": True,
-            "reject_null_2_circadian": True,
-            "latent_structure_confirmed_above_chance": True,
+            "reject_null_0_permutation": reject_null_0,
+            "reject_null_1_markov": reject_null_1,
+            "reject_null_2_circadian": reject_null_2,
+            "latent_structure_confirmed_above_chance": latent_structure,
+            "markov_null_penetrated": markov_penetrated,
         },
     }
 

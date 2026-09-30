@@ -9,7 +9,9 @@
     "mean_log_loss": 1.0332,
     "perplexity": 2.05,
     "baseline_unigram_top1_accuracy": 0.3095,
-    "accuracy_lift_ratio": 2.86
+    "accuracy_lift_ratio": 2.86,
+    "baseline_persist_top1_accuracy": 0.8759,
+    "accuracy_lift_over_persist": 1.0094
   },
   "hitting_times_to_targets": {
     "target_states": [

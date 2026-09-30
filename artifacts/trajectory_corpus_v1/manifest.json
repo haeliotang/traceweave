@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.natural-trajectory-corpus-manifest.v1",
   "corpus_identity": "natural_trajectory_14d_v1",
-  "created_at_utc": "2026-09-30T19:08:02.555681+00:00",
+  "created_at_utc": "2026-09-30T19:19:54.752419+00:00",
   "corpus_window": {
     "start_utc": "2026-09-02T22:48:12.694637+00:00",
     "end_utc": "2026-09-16T22:48:12.694637+00:00",
