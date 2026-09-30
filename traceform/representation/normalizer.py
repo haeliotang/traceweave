@@ -569,8 +569,9 @@ class MultimodalNormalizer:
                 dwell_sec = max(0.0, current_ts_seconds - self._residence_start_ts)
                 residence_persistence_hours = round(min(24.0, dwell_sec / 3600.0), 3)
             else:
-                self._residence_regime = current_regime
-                self._residence_start_ts = current_ts_seconds
+                if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+                    self._residence_regime = current_regime
+                    self._residence_start_ts = current_ts_seconds
                 residence_persistence_hours = 0.0
         else:
             residence_persistence_hours = 0.0
@@ -611,9 +612,11 @@ class MultimodalNormalizer:
                     d_gz = current_gyro[2] - self._last_gyro_raw[2]
                     jerk_g_calc = math.sqrt(d_gx * d_gx + d_gy * d_gy + d_gz * d_gz) / dt_s
                     rot_jerk = round(min(25.0, jerk_g_calc), 4)
-            self._last_gyro_raw = current_gyro
+            if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+                self._last_gyro_raw = current_gyro
         else:
-            self._last_gyro_raw = None
+            if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+                self._last_gyro_raw = None
 
         # 31. Acoustic spectral roll-off 85% quantile in kHz (48)
         aud_rolloff_direct = aud.get("spectral_rolloff_hz") or aud.get("rolloff_khz")
@@ -641,10 +644,11 @@ class MultimodalNormalizer:
             if 2.0 <= dt_s <= 300.0:
                 d_rate = conduction_rate - self._last_conduction_rate
                 thermal_accel_dt2 = round(max(-2.0, min(2.0, d_rate / dt_s)), 5)
-        if self._last_temp is not None:
-            self._last_conduction_rate = conduction_rate
-        else:
-            self._last_conduction_rate = None
+        if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+            if self._last_temp is not None:
+                self._last_conduction_rate = conduction_rate
+            else:
+                self._last_conduction_rate = None
 
         # 34. Ambient Wi-Fi spatial multi-path Shannon entropy in nats (51)
         wifi_ent_direct = conn.get("wifi_spatial_shannon_entropy") or dig.get("wifi_spatial_shannon_entropy")
@@ -661,7 +665,7 @@ class MultimodalNormalizer:
         # 35. Continuous touch engagement decay factor [0, 1] (52)
         has_touch_interaction = (touch_velocity > 0.0 or app_switch_rate > 0.0 or unlock_burst_count > 0.0)
         if has_touch_interaction:
-            if current_ts_seconds is not None:
+            if current_ts_seconds is not None and (self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds):
                 self._last_touch_ts = current_ts_seconds
             touch_engagement = 1.0
         else:
@@ -796,7 +800,7 @@ class MultimodalNormalizer:
             self._last_az = None
 
         # Update persistent state across frames
-        if current_ts_seconds is not None:
+        if current_ts_seconds is not None and (self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds):
             self._last_ts_seconds = current_ts_seconds
             self._last_pressure = pressure
             self._last_temp = dev_temp

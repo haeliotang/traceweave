@@ -57,7 +57,7 @@ def _silhouette_score(data: List[List[float]], labels: List[int], k: int, max_sa
     if k <= 1 or k >= len(data):
         return -1.0
         
-    cluster_points = {i: [] for i in range(k)}
+    cluster_points: Dict[int, List[int]] = {i: [] for i in range(k)}
     for idx, label in enumerate(labels):
         cluster_points[label].append(idx)
         
@@ -115,8 +115,8 @@ class DataDrivenQuantizer:
         data = [normalizer.transform(obs)[0] for obs in observations]
         
         best_k = 1
-        best_centroids = []
-        best_labels = []
+        best_centroids: List[List[float]] = []
+        best_labels: List[int] = []
         
         num_points = len(data)
         

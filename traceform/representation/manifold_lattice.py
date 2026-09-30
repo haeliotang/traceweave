@@ -208,7 +208,7 @@ class DynamicalEnergyManifold:
             rng.shuffle(indices)
             for idx in indices:
                 x = vectors[idx]
-                v = velocities[idx]
+                vel = velocities[idx]
 
                 # Progressive cooling of learning rate and topological neighborhood radius
                 frac = step / max(1, total_steps)
@@ -217,7 +217,7 @@ class DynamicalEnergyManifold:
 
                 # Find Best Matching Unit (BMU) minimizing energy distance
                 best_node = min(
-                    self.nodes, key=lambda nd: self.compute_energy_distance(x, v, nd)
+                    self.nodes, key=lambda nd: self.compute_energy_distance(x, vel, nd)
                 )
                 bu, bv = best_node.grid_coord
 
@@ -229,7 +229,7 @@ class DynamicalEnergyManifold:
                     if weight > 1e-4:
                         for d in range(dim):
                             nd.center_x[d] += weight * (x[d] - nd.center_x[d])
-                            nd.center_v[d] += weight * (v[d] - nd.center_v[d])
+                            nd.center_v[d] += weight * (vel[d] - nd.center_v[d])
 
                 step += 1
 
