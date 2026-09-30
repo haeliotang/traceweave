@@ -73,7 +73,7 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :---: |
 | **Stage 1** | **14-Day Corpus Freeze & Audit** | [`scripts/audit_trajectory_corpus.py`](scripts/audit_trajectory_corpus.py) | 5,961 obs, 791 trans, 1,433 episodes. 0 duplicates, 0 non-monotonic steps, single boot ID (`5a6d0da0-...`). Raw ledgers locked (`chmod 444`). | **AUDIT PASS** |
 | **Stage 2** | **Representation Freeze** | [`traceform/representation/`](traceform/representation/)<br>[`scripts/freeze_representation.py`](scripts/freeze_representation.py) | 15-dim multimodal normalizer & topological-kinetic lattice fit strictly on $W_1$ (Day 1–7). 33 micro-states ($S_{01}..S_{33}$) discovered. | **LOCKED** |
-| **Stage 3** | **Null / Surrogate Baselines** | [`traceform/null_models/`](traceform/null_models/)<br>[`scripts/run_null_baselines.py`](scripts/run_null_baselines.py) | 100 Monte Carlo runs across Permutation, Markov, and Diurnal Phase nulls. Transition entropy: 0.419 bits vs Permutation 2.492 bits ($z = -398.73$). | **ALL NULLS REJECTED ($p < 0.001$)** |
+| **Stage 3** | **Null / Surrogate Baselines** | [`traceform/null_models/`](traceform/null_models/)<br>[`scripts/run_null_baselines.py`](scripts/run_null_baselines.py) | 100 Monte Carlo runs across 5 surrogate models (Permutation, Markov 1st/2nd, Circadian, Block Bootstrap). Rejects noise & diurnal nulls ($p < 0.001$). | **QUALIFIED NULL REJECTION** |
 | **Stage 4** | **Trajectory Structure Discovery** | [`traceform/discovery/`](traceform/discovery/)<br>[`scripts/run_structure_discovery.py`](scripts/run_structure_discovery.py) | Non-linear RQA: $DET=67.48\%$, $LAM=74.46\%$. 35 dynamic regimes ($R_{01}..R_{35}$), 20 trajectory motifs ($M_{01}..M_{20}$), 33-node ergodic graph. | **STRUCTURE DISCOVERED** |
 | **Stage 5** | **Out-of-Sample Stability Test** | [`traceform/stability/`](traceform/stability/)<br>[`scripts/verify_temporal_stability.py`](scripts/verify_temporal_stability.py) | $W_1 \to W_2$ validation. $96.2\%$ $W_2$ frames covered by $W_1$ vocab. Rank corr $\rho = 0.8989$. JSD to Null ratio $0.0941$. $100\%$ motif recurrence. | **CONFIRMED STABLE** |
 | **Stage 6** | **Candidate Semantic Projection** | [`traceform/semantics/`](traceform/semantics/)<br>[`scripts/project_candidate_semantics.py`](scripts/project_candidate_semantics.py) | Post-hoc reverse projection of $S_k, R_j, M_m$ to physical observables (lux, accel, charging, RF) under strict epistemic quarantine. | **SYNTHESIZED** |
@@ -179,9 +179,10 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 31 unit tests across 10 test modules (100% PASS)
+└── tests/                                 # 37 unit tests across 11 test modules (100% PASS)
     ├── test_representation_*.py
-    ├── test_null_models.py
+    ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
+    ├── test_null_models.py                # 5-surrogate model tests
     ├── test_discovery.py
     ├── test_stability.py
     ├── test_semantics.py
@@ -196,12 +197,12 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (31/31 Passing)
+### A. Run Unit Tests (37/37 Passing)
 ```bash
 python3 -m unittest discover tests
 ```
 
-### B. Run the Master End-to-End Pipeline (All 10 Stages in ~7.8s)
+### B. Run the Master End-to-End Pipeline (All 10 Stages in ~9.9s)
 Execute all 10 stages sequentially in a single automated run:
 ```bash
 python3 scripts/run_traceform_pipeline.py --all
