@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-37%2F37%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-40%2F40%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Disciplines](https://img.shields.io/badge/Semantics-Zero%20Pre--injected-orange)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
@@ -198,7 +198,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 37 unit tests across 11 test modules (100% PASS)
+└── tests/                                 # 40 unit tests across 12 test modules (100% PASS)
     ├── test_representation_*.py
     ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
     ├── test_null_models.py                # 5-surrogate model tests
@@ -209,14 +209,15 @@ traceform/
     ├── test_dynamics.py
     ├── test_edge_quantizer.py
     ├── test_open_world.py
-    └── test_intervention.py
+    ├── test_intervention.py
+    └── test_phone_daemon.py              # Live edge daemon & resonance trigger tests
 ```
 
 ---
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (37/37 Passing)
+### A. Run Unit Tests (40/40 Passing)
 ```bash
 python3 -m unittest discover tests
 ```
@@ -247,6 +248,16 @@ python3 scripts/benchmark_dual_quantization.py
 Open the compiled self-contained dashboard in your browser:
 ```bash
 open artifacts/macroscope_dashboard_v1.html
+```
+
+### E. Run On-Device Edge Stream Daemon & Resonance Closed Loop
+Process real-time physical frames with sub-millisecond edge quantization and live attractor dwell alerts:
+```bash
+# Simulation mode with resonance events logging
+python3 scripts/phone_edge_stream_daemon.py --simulate --max-frames 150
+
+# Live sensor tailing mode (on-device GrapheneOS / Termux runtime)
+python3 scripts/phone_edge_stream_daemon.py --follow
 ```
 
 ---
