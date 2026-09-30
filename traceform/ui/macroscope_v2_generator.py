@@ -192,6 +192,34 @@ class MacroscopeV2Generator:
     const DATA = {data_json};
 
     let currentLandscapeMode = 'w1';
+    let camScale = 1.0;
+    let camOffsetX = 0;
+    let camOffsetY = 0;
+    let isDragging = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+
+    // Need to wait for DOM load to add listeners, so we will do it in a self-executing block or just rely on the script being at the bottom of body.
+    window.addEventListener('DOMContentLoaded', () => {{
+      const potCvs = document.getElementById('potCanvas');
+      potCvs.addEventListener('mousedown', (e) => {{ isDragging = true; lastMouseX = e.offsetX; lastMouseY = e.offsetY; }});
+      potCvs.addEventListener('mouseup', () => {{ isDragging = false; }});
+      potCvs.addEventListener('mouseleave', () => {{ isDragging = false; }});
+      potCvs.addEventListener('mousemove', (e) => {{
+        if (!isDragging) return;
+        camOffsetX += (e.offsetX - lastMouseX);
+        camOffsetY += (e.offsetY - lastMouseY);
+        lastMouseX = e.offsetX;
+        lastMouseY = e.offsetY;
+        drawPotentialLandscape();
+      }});
+      potCvs.addEventListener('wheel', (e) => {{
+        e.preventDefault();
+        camScale += e.deltaY * -0.001;
+        camScale = Math.min(Math.max(0.2, camScale), 4.0);
+        drawPotentialLandscape();
+      }});
+    }});
 
     function setLandscape(mode) {{
       currentLandscapeMode = mode;
@@ -221,11 +249,11 @@ class MacroscopeV2Generator:
       const rows = matrix.length;
       const cols = matrix[0].length;
 
-      // Isometric projection grid
-      const originX = w / 2;
-      const originY = 60;
-      const cellW = 55;
-      const cellH = 28;
+      // Isometric projection grid with Pan & Zoom
+      const originX = w / 2 + camOffsetX;
+      const originY = 60 + camOffsetY;
+      const cellW = 55 * camScale;
+      const cellH = 28 * camScale;
 
       let minVal = Infinity, maxVal = -Infinity;
       for (let r = 0; r < rows; r++) {{
@@ -237,7 +265,7 @@ class MacroscopeV2Generator:
 
       function toIso(r, c, val) {{
         const norm = (val - minVal) / Math.max(0.1, maxVal - minVal);
-        const zOffset = (1.0 - norm) * 45; // deep well goes down
+        const zOffset = (1.0 - norm) * 45 * camScale; // deep well goes down
         const x = originX + (c - r) * cellW;
         const y = originY + (c + r) * cellH - zOffset;
         return {{ x, y, norm }};

@@ -48,7 +48,8 @@ class TestMultiscaleDiffusion(unittest.TestCase):
     def test_coarse_grained_determinism(self):
         # Strongly periodic deterministic sequence A -> B -> A -> B
         tokens = ["M01", "M02"] * 50
-        scales = self.auditor.compute_coarse_grained_determinism(tokens, scales=[1, 2])
+        coords = [(1.0, 1.0), (2.0, 2.0)] * 50
+        scales = self.auditor.compute_coarse_grained_determinism(tokens, coords, scales=[1, 2])
         self.assertEqual(len(scales), 2)
         # Scale 1 has high determinism
         self.assertGreater(scales[0].transition_determinism, 0.9)

@@ -40,6 +40,7 @@ class CoarseGrainedScale:
     state_vocabulary_size: int
     transition_determinism: float
     mean_transition_entropy: float
+    mean_micro_volatility: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -48,6 +49,7 @@ class CoarseGrainedScale:
             "state_vocabulary_size": self.state_vocabulary_size,
             "transition_determinism": round(self.transition_determinism, 4),
             "mean_transition_entropy": round(self.mean_transition_entropy, 4),
+            "mean_micro_volatility": round(self.mean_micro_volatility, 4),
         }
 
 
@@ -78,7 +80,8 @@ class MultiscaleDiffusionAuditor:
         msd_map: Dict[int, float] = {}
 
         for tau in lags:
-            if tau >= n:
+            # Statistical power constraint: tau should not exceed N / 4
+            if tau >= n or tau > n // 4:
                 continue
 
             sq_dists = []
@@ -161,10 +164,11 @@ class MultiscaleDiffusionAuditor:
     def compute_coarse_grained_determinism(
         self,
         tokens: List[str],
+        coords: List[Tuple[float, float]],
         scales: Optional[List[int]] = None,
     ) -> List[CoarseGrainedScale]:
         """
-        Computes transition determinism and entropy across temporal coarse-graining scales.
+        Computes transition determinism, entropy, and micro-volatility across temporal coarse-graining scales.
         """
         if scales is None:
             scales = [1, 2, 4, 8, 16, 32]
@@ -176,15 +180,28 @@ class MultiscaleDiffusionAuditor:
             if s > n // 2:
                 continue
 
-            # Coarse-grain sequence by taking the mode / most frequent token in each block
+            # Coarse-grain sequence by taking the mode, and track max spatial deviation (volatility)
             coarse_tokens: List[str] = []
+            block_volatilities: List[float] = []
+
             for b in range(0, n - s + 1, s):
                 block = tokens[b : b + s]
+                block_coords = coords[b : b + s]
+
                 counts: Dict[str, int] = {}
                 for tok in block:
                     counts[tok] = counts.get(tok, 0) + 1
                 mode_tok = max(counts.items(), key=lambda kv: kv[1])[0]
                 coarse_tokens.append(mode_tok)
+
+                # Micro-volatility: max distance from the block's mean coordinate
+                if block_coords:
+                    mean_u = sum(c[0] for c in block_coords) / len(block_coords)
+                    mean_v = sum(c[1] for c in block_coords) / len(block_coords)
+                    max_sq_dist = max((c[0] - mean_u)**2 + (c[1] - mean_v)**2 for c in block_coords)
+                    block_volatilities.append(math.sqrt(max_sq_dist))
+
+            mean_vol = sum(block_volatilities) / len(block_volatilities) if block_volatilities else 0.0
 
             # Build transition matrix
             trans_counts: Dict[str, Dict[str, int]] = {}
@@ -219,6 +236,7 @@ class MultiscaleDiffusionAuditor:
                     state_vocabulary_size=len(vocab),
                     transition_determinism=mean_det,
                     mean_transition_entropy=mean_ent,
+                    mean_micro_volatility=mean_vol,
                 )
             )
 
@@ -251,7 +269,7 @@ class MultiscaleDiffusionAuditor:
         regime = self.estimate_hurst_exponent(msd)
 
         # 3. Coarse-graining
-        cg_scales = self.compute_coarse_grained_determinism(tokens, scales)
+        cg_scales = self.compute_coarse_grained_determinism(tokens, coords, scales)
 
         # Find optimal scale maximizing determinism / vocab retention
         optimal_scale = max(cg_scales, key=lambda s: s.transition_determinism) if cg_scales else None

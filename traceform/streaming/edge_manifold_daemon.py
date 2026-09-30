@@ -58,7 +58,7 @@ class EdgeManifoldDaemon:
         self,
         normalizer: MultimodalNormalizer,
         manifold: DynamicalEnergyManifold,
-        ring_buffer_size: int = 60,
+        ring_buffer_size: int = 300,
         dwell_threshold_steps: int = 60,
         csd_threshold_sigma: float = 2.5,
     ) -> None:
@@ -73,8 +73,8 @@ class EdgeManifoldDaemon:
         self.timestamps: Deque[str] = deque(maxlen=ring_buffer_size)
 
         # Baseline running statistics for z-score standardization
-        self.var_history: Deque[float] = deque(maxlen=120)
-        self.ar1_history: Deque[float] = deque(maxlen=120)
+        self.var_history: Deque[float] = deque(maxlen=300)
+        self.ar1_history: Deque[float] = deque(maxlen=300)
 
         # Dwell tracking
         self.current_token: Optional[str] = None
@@ -120,23 +120,41 @@ class EdgeManifoldDaemon:
                 )
             )
 
-        # 2. Online CSD Tipping Evaluation
+        # 2. Online CSD Tipping Evaluation with Linear Detrending (Fixing Non-stationarity)
         if len(self.coord_buffer) >= 20:
             u_vals = [pt[0] for pt in self.coord_buffer]
             v_vals = [pt[1] for pt in self.coord_buffer]
             proj_vals = [pt[2] for pt in self.coord_buffer]
 
-            var_u = statistics.variance(u_vals) if len(u_vals) > 1 else 0.0
-            var_v = statistics.variance(v_vals) if len(v_vals) > 1 else 0.0
+            n_pts = len(self.coord_buffer)
+            x_vals = list(range(n_pts))
+            mean_x = sum(x_vals) / n_pts
+            ss_xx = sum((x - mean_x) ** 2 for x in x_vals)
+
+            def get_residuals(y_vals: List[float]) -> List[float]:
+                if ss_xx < 1e-9:
+                    return y_vals
+                mean_y = sum(y_vals) / n_pts
+                ss_xy = sum((x - mean_x) * (y - mean_y) for x, y in zip(x_vals, y_vals))
+                slope = ss_xy / ss_xx
+                intercept = mean_y - slope * mean_x
+                return [y - (slope * x + intercept) for x, y in zip(x_vals, y_vals)]
+
+            detrended_u = get_residuals(u_vals)
+            detrended_v = get_residuals(v_vals)
+            detrended_proj = get_residuals(proj_vals)
+
+            var_u = sum(x**2 for x in detrended_u) / n_pts if n_pts > 1 else 0.0
+            var_v = sum(x**2 for x in detrended_v) / n_pts if n_pts > 1 else 0.0
             tot_var = var_u + var_v
 
-            # Lag-1 Autocorrelation AR(1)
-            p_mean = statistics.mean(proj_vals)
-            cov_0 = sum((x - p_mean) ** 2 for x in proj_vals) / len(proj_vals)
+            # Lag-1 Autocorrelation AR(1) on detrended residuals
+            # Since residuals have mean ~ 0, we can just use dot products
+            cov_0 = sum(x**2 for x in detrended_proj) / n_pts
             cov_1 = (
-                sum((proj_vals[i] - p_mean) * (proj_vals[i + 1] - p_mean) for i in range(len(proj_vals) - 1))
-                / (len(proj_vals) - 1)
-                if len(proj_vals) > 1
+                sum(detrended_proj[i] * detrended_proj[i + 1] for i in range(n_pts - 1))
+                / (n_pts - 1)
+                if n_pts > 1
                 else 0.0
             )
             ar1 = max(-1.0, min(1.0, cov_1 / max(1e-6, cov_0)))
