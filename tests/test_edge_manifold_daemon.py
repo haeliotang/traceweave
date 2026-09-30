@@ -122,6 +122,24 @@ class TestEdgeManifoldDaemon(unittest.TestCase):
             self.assertEqual(len(d.coord_buffer), 0)
             self.assertEqual(d.consecutive_dwell_steps, 0)
 
+    def test_negative_clock_jump_continuity_reset(self):
+        obs1 = {
+            "timestamp_utc": "2026-09-03T10:05:00Z",
+            "observation_id": "clock-jump-1",
+            "motion": {"stationary_likelihood": 0.9, "motion_energy": 0.05},
+        }
+        for _ in range(5):
+            self.daemon.process_observation(obs1)
+        self.assertEqual(self.daemon.consecutive_dwell_steps, 5)
+
+        # NTP clock rollback: -120 seconds backwards
+        obs2 = dict(obs1)
+        obs2["timestamp_utc"] = "2026-09-03T10:03:00Z"
+        obs2["observation_id"] = "clock-jump-2"
+        self.daemon.process_observation(obs2)
+        # Should reset continuity instead of continuing or computing negative time intervals
+        self.assertEqual(self.daemon.consecutive_dwell_steps, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

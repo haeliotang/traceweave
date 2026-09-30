@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import json
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -36,6 +37,16 @@ class MicroState:
             light_mode=d["light_mode"],
             signature=d["signature"],
         )
+
+
+def safe_float(val: Any, default: float) -> float:
+    if val is None:
+        return default
+    try:
+        f = float(val)
+        return default if math.isnan(f) or math.isinf(f) else f
+    except (ValueError, TypeError):
+        return default
 
 
 class TopologicalKineticLattice:
@@ -68,8 +79,8 @@ class TopologicalKineticLattice:
 
         # 2. Kinetic Mode (from stationary likelihood & energy)
         mot = obs.get("motion", {})
-        stat_like = float(mot.get("stationary_likelihood", 1.0))
-        mot_energy = float(mot.get("motion_energy", 0.0))
+        stat_like = safe_float(mot.get("stationary_likelihood"), 1.0)
+        mot_energy = safe_float(mot.get("motion_energy"), 0.0)
 
         if stat_like >= 0.85 and mot_energy < 0.2:
             kin_mode = "K0_STATIONARY"
@@ -89,8 +100,7 @@ class TopologicalKineticLattice:
 
         # 4. Light Mode (Log-lux based)
         env = obs.get("environment", {})
-        lux_raw = env.get("ambient_light_lux")
-        lux_val = float(lux_raw) if lux_raw is not None else 0.0
+        lux_val = safe_float(env.get("ambient_light_lux"), 0.0)
         if lux_val <= 3.0:
             light_mode = "L0_DARK"
         elif lux_val <= 60.0:

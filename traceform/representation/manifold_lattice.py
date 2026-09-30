@@ -263,12 +263,12 @@ class DynamicalEnergyManifold:
         dim = len(vector)
 
         # Estimate instantaneous velocity from previous state
-        if self.last_obs_vector is not None:
+        if self.last_obs_vector is not None and len(self.last_obs_vector) == dim:
             raw_v = [
                 (vector[d] - self.last_obs_vector[d]) / max(0.1, dt_seconds)
                 for d in range(dim)
             ]
-            if self.last_velocity is not None:
+            if self.last_velocity is not None and len(self.last_velocity) == dim:
                 velocity = [
                     self.ema_alpha * raw_v[d] + (1.0 - self.ema_alpha) * self.last_velocity[d]
                     for d in range(dim)

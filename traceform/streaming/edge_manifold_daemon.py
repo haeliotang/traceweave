@@ -134,6 +134,8 @@ class EdgeManifoldDaemon:
         """Resets velocity, ring buffer, and dwell steps across reboots or long downtimes."""
         self.coord_buffer.clear()
         self.timestamps.clear()
+        self.var_history.clear()
+        self.ar1_history.clear()
         self.consecutive_dwell_steps = 0
         self.current_token = None
         if hasattr(self.manifold, "last_obs_vector"):
@@ -165,7 +167,8 @@ class EdgeManifoldDaemon:
             pass
 
         if self.last_observation_ts is not None and obs_time is not None:
-            if (obs_time - self.last_observation_ts) > self.max_gap_seconds:
+            gap = obs_time - self.last_observation_ts
+            if gap > self.max_gap_seconds or gap < -60.0:
                 self.reset_continuity()
         self.last_observation_ts = obs_time
 

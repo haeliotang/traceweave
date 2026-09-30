@@ -215,6 +215,66 @@ class TestCanonicalSensorium26D(unittest.TestCase):
         self.assertEqual(len(coord), 2)
         self.assertGreaterEqual(dist, 0.0)
 
+    def test_null_nan_and_unparseable_resilience(self):
+        corrupted_obs = {
+            "protocol": "pixel-sensorium.physical-observation.v1",
+            "observation_id": "test-corrupted-001",
+            "timestamp_utc": "2026-10-01T06:00:00Z",
+            "motion": {
+                "accel_magnitude": None,
+                "accel_rms": float("nan"),
+                "motion_energy": "invalid-str",
+                "stationary_likelihood": None,
+            },
+            "environment": {
+                "ambient_light_lux": None,
+                "pressure_hpa": float("inf"),
+                "device_temp_c": None,
+            },
+            "device_relation": {
+                "battery_percentage": None,
+                "current_ua": "null",
+                "plugged": None,
+                "status": None,
+                "screen_state": None,
+            },
+            "audio_context": {
+                "silence_likelihood": None,
+                "rms_loudness": None,
+                "spectral_entropy": None,
+            },
+            "connectivity": {
+                "wifi_connected": None,
+                "wifi_rssi": None,
+                "wifi_ap_count": None,
+            },
+            "place": {
+                "latitude": None,
+                "longitude": None,
+                "spatial_cell": None,
+            },
+            "digital_context": {
+                "screen_on_ratio": None,
+                "app_switch_rate": None,
+                "unlock_burst_count": None,
+                "touch_interaction_velocity": None,
+                "ambient_social_ble_density": None,
+            },
+        }
+        # Must not raise TypeError, ValueError, or any unhandled exception
+        c_map, topo_map = self.normalizer.extract_raw_features(corrupted_obs)
+        self.assertEqual(len(c_map), 26)
+        for k, v in c_map.items():
+            self.assertFalse(math.isnan(v), f"Feature {k} is NaN")
+            self.assertFalse(math.isinf(v), f"Feature {k} is Inf")
+
+        self.normalizer.fit_discovery_window([self.sample_obs])
+        vec, topo = self.normalizer.transform(corrupted_obs)
+        self.assertEqual(len(vec), 26)
+        for val in vec:
+            self.assertFalse(math.isnan(val))
+            self.assertFalse(math.isinf(val))
+
 
 if __name__ == "__main__":
     unittest.main()

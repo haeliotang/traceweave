@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -124,6 +125,24 @@ def main():
     args.output_stream.parent.mkdir(parents=True, exist_ok=True)
     args.events_file.parent.mkdir(parents=True, exist_ok=True)
 
+    # Acquire single-instance process lock to prevent duplicate daemons
+    lock_path = args.output_stream.parent / "edge_manifold_daemon.lock"
+    pid_path = args.output_stream.parent / "edge_manifold_daemon.pid"
+    lock_file = lock_path.open("w")
+    try:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except (BlockingIOError, OSError):
+        existing_pid = pid_path.read_text(encoding="utf-8").strip() if pid_path.exists() else "unknown"
+        print(f"[*] Edge manifold daemon already active (PID={existing_pid}). Exiting gracefully.")
+        return 0
+
+    pid_path.write_text(str(os.getpid()), encoding="utf-8")
+
+    # Ensure raw ledger exists before attempting to open
+    args.raw_ledger.parent.mkdir(parents=True, exist_ok=True)
+    if not args.raw_ledger.exists():
+        args.raw_ledger.touch()
+
     stream_out = args.output_stream.open("a", encoding="utf-8")
     events_out = args.events_file.open("a", encoding="utf-8")
 
@@ -200,6 +219,13 @@ def main():
         stream_out.close()
         events_out.close()
         haptics.shutdown()
+        try:
+            if pid_path.exists():
+                pid_path.unlink()
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+            lock_file.close()
+        except Exception:
+            pass
 
 
     avg_lat = total_latency_ms / max(1, processed_count)

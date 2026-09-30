@@ -130,10 +130,12 @@ class TestPhysicalRunnerSupervisionContractV1(unittest.TestCase):
         # Call observe_physical_runner
         with patch.object(sup, "DEFAULT_PHYSICAL_DIR", self.mock_physical_dir):
             with patch("fcntl.flock", side_effect=BlockingIOError):
-                obs = sup.observe_physical_runner()
-                self.assertEqual(obs["status"], "STALE_WARNING")
-                self.assertFalse(obs["healthy"])
-                self.assertTrue(obs["seconds_since_last_observation"] > 300.0)
+                with patch.object(sup, "get_kernel_boot_id", return_value="a1b2c3d4-e5f6-7890-abcd-ef1234567890"):
+                    obs = sup.observe_physical_runner(supervision_root=self.temp_dir)
+                    self.assertEqual(obs["status"], "RUNNING")
+                    self.assertFalse(obs["healthy"])
+                    self.assertEqual(obs["health_error"], "OBSERVATION_STALE")
+                    self.assertTrue(obs["seconds_since_last_observation"] > 300.0)
 
     def test_06_recovery_backoff_cooldown(self):
         """Tests exponential backoff cooldown calculation across failure increments."""

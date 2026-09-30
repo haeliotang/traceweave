@@ -75,8 +75,11 @@ class DigitalSensoriumProbe:
                                 ble_count += float(line.split(":")[-1].strip())
                             except Exception:
                                 pass
-                        elif "BLE_ON" in line or "EnableBle" in line:
-                            ble_count += 1.0
+                        elif "Bonded devices:" in line or "Other devices:" in line:
+                            try:
+                                ble_count += float(line.split(":")[-1].strip())
+                            except Exception:
+                                pass
             except Exception:
                 pass
 
@@ -129,8 +132,14 @@ class DigitalSensoriumProbe:
             )
             if res.returncode == 0 and res.stdout:
                 lines = res.stdout.splitlines()
-                # Focus on recent 120 lines of events to prevent CPU overhead
-                recent_lines = lines[:120] if len(lines) > 120 else lines
+                # Focus on recent events before "In-memory daily stats"
+                event_lines = []
+                for line in lines:
+                    if "In-memory daily stats" in line:
+                        break
+                    if "time=" in line and "type=" in line:
+                        event_lines.append(line)
+                recent_lines = event_lines[-120:] if len(event_lines) > 120 else event_lines
 
                 app_switches = 0
                 unlock_events = 0

@@ -35,9 +35,14 @@ if os.path.isdir(termux_bin) and termux_bin not in os.environ.get("PATH", ""):
 from traceform.evolution.autonomous_learner import AutonomousLearner
 
 
-def run_cmd(cmd: list[str], cwd: Path) -> tuple[int, str]:
-    res = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    return res.returncode, res.stdout.strip()
+def run_cmd(cmd: list[str], cwd: Path, timeout: float = 45.0) -> tuple[int, str]:
+    try:
+        res = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout)
+        return res.returncode, res.stdout.strip()
+    except subprocess.TimeoutExpired:
+        return 124, f"Command timed out after {timeout}s"
+    except Exception as e:
+        return 1, str(e)
 
 
 def main():
@@ -149,14 +154,18 @@ def main():
 
         # Pull rebase
         c_pull, pull_out = run_cmd(["git", "pull", "--rebase", "origin", "main"], PROJECT_ROOT)
-        print(f"    - Git Pull: {pull_out.splitlines()[-1] if pull_out else 'OK'}")
-
-        # Push
-        c_push, push_out = run_cmd(["git", "push", "origin", "main"], PROJECT_ROOT)
-        if c_push == 0:
-            print(f"    [✓] Successfully pushed field telemetry to GitHub (haeliotang/traceform)")
+        if c_pull != 0:
+            print(f"    [!] Git pull --rebase failed: {pull_out.splitlines()[-1] if pull_out else 'Error'}")
+            run_cmd(["git", "rebase", "--abort"], PROJECT_ROOT)
         else:
-            print(f"    [!] Git push error: {push_out}")
+            print(f"    - Git Pull: {pull_out.splitlines()[-1] if pull_out else 'OK'}")
+
+            # Push only if pull was successful
+            c_push, push_out = run_cmd(["git", "push", "origin", "main"], PROJECT_ROOT)
+            if c_push == 0:
+                print(f"    [✓] Successfully pushed field telemetry to GitHub (haeliotang/traceform)")
+            else:
+                print(f"    [!] Git push error: {push_out}")
 
     print("\n" + "=" * 76)
     print(" [✓] Field Telemetry & Autonomous Sync Completed.")

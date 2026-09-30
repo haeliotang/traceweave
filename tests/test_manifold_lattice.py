@@ -104,6 +104,20 @@ class TestManifoldLattice(unittest.TestCase):
         self.assertLess(h_adjacent, h_center)
         self.assertLess(h_corner, h_adjacent)
 
+    def test_quantize_dimension_safety(self):
+        manifold = DynamicalEnergyManifold(grid_height=2, grid_width=2)
+        manifold.fit_discovery_window(self.obs_seq, self.normalizer, epochs=2, seed=42)
+
+        # Force last_obs_vector and last_velocity to an older / mismatched dimension (e.g. 5D instead of 26D)
+        manifold.last_obs_vector = [0.1, 0.2, 0.3, 0.4, 0.5]
+        manifold.last_velocity = [0.01, 0.02, 0.03, 0.04, 0.05]
+
+        # Quantizing with normalizer expecting 26D should not raise IndexError
+        tok, coord, dist = manifold.quantize(self.obs_seq[0], self.normalizer)
+        self.assertTrue(tok.startswith("M"))
+        self.assertEqual(len(manifold.last_obs_vector), len(self.normalizer.params.feature_names))
+        self.assertEqual(len(manifold.last_velocity), len(self.normalizer.params.feature_names))
+
 
 if __name__ == "__main__":
     unittest.main()

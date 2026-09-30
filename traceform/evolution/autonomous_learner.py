@@ -9,6 +9,7 @@ windows, and tracks longitudinal drift.
 
 from __future__ import annotations
 
+from collections import deque
 import datetime
 import json
 import math
@@ -58,17 +59,14 @@ class AutonomousLearner:
         with self.current_model_path.open("r", encoding="utf-8") as f:
             manifold = DynamicalEnergyManifold.from_dict(json.load(f))
 
-        # Read last N lines
-        lines: List[str] = []
+        # Stream last N lines using bounded deque
+        recent_lines: deque[str] = deque(maxlen=sample_size)
         with self.raw_ledger_path.open("r", encoding="utf-8") as f:
             for line in f:
                 s = line.strip()
                 if s:
-                    lines.append(s)
-                    if len(lines) > sample_size * 2:
-                        lines.pop(0)
+                    recent_lines.append(s)
 
-        recent_lines = lines[-sample_size:] if len(lines) >= sample_size else lines
         observations = []
         for l in recent_lines:
             try:
@@ -106,18 +104,20 @@ class AutonomousLearner:
                 "strain": round(avg_strain, 4),
             }
 
-        # Load observations for fitting
-        all_lines: List[str] = []
+        # Stream observations for fitting using bounded deque
+        fit_lines: deque[str] = deque(maxlen=window_size)
         with self.raw_ledger_path.open("r", encoding="utf-8") as f:
             for line in f:
                 s = line.strip()
                 if s:
-                    all_lines.append(s)
-                    if len(all_lines) > window_size * 2:
-                        all_lines.pop(0)
+                    fit_lines.append(s)
 
-        fit_lines = all_lines[-window_size:] if len(all_lines) >= window_size else all_lines
-        observations = [json.loads(l) for l in fit_lines if l]
+        observations = []
+        for l in fit_lines:
+            try:
+                observations.append(json.loads(l))
+            except Exception:
+                continue
 
         if len(observations) < 50:
             return {

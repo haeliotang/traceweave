@@ -117,20 +117,36 @@ class HapticEngine:
         # Execute pattern
         for duration, pause in pattern:
             if self.has_vibrate:
-                subprocess.run(["termux-vibrate", "-d", str(duration), "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                try:
+                    subprocess.run(
+                        ["termux-vibrate", "-d", str(duration), "-f"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=2.0,
+                    )
+                except Exception as exc:
+                    logging.warning(f"[HapticEngine] Vibration dispatch failed: {exc}")
             else:
                 print(f"[HapticEngine-SIM] Vibrating for {duration}ms")
-                
+
             if pause > 0:
                 time.sleep(pause / 1000.0)
-                
+
         # Optional Notification
         if notify and self.has_notification:
-            subprocess.run([
-                "termux-notification", 
-                "-t", "Traceform Intervention", 
-                "-c", task.get("message", "Critical dynamic threshold crossed."),
-                "--priority", "high"
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                subprocess.run(
+                    [
+                        "termux-notification",
+                        "-t", "Traceform Intervention",
+                        "-c", task.get("message", "Critical dynamic threshold crossed."),
+                        "--priority", "high",
+                    ],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=2.0,
+                )
+            except Exception as exc:
+                logging.warning(f"[HapticEngine] Notification dispatch failed: {exc}")
         elif notify:
             print(f"[HapticEngine-SIM] NOTIFICATION: {task.get('message')}")

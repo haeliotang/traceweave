@@ -80,6 +80,17 @@ class NormalizationParams:
         )
 
 
+def safe_float(val: Any, default: float) -> float:
+    """Safely converts arbitrary input to bounded float without raising TypeError or ValueError."""
+    if val is None:
+        return default
+    try:
+        f = float(val)
+        return default if math.isnan(f) or math.isinf(f) else f
+    except (ValueError, TypeError):
+        return default
+
+
 class MultimodalNormalizer:
     def __init__(self, params: Optional[NormalizationParams] = None):
         self.params = params
@@ -112,36 +123,29 @@ class MultimodalNormalizer:
         """
         # 1. Motion
         mot = obs.get("motion", {})
-        accel_mag = float(mot.get("accel_magnitude", 9.8))
-        accel_rms = float(mot.get("accel_rms", 5.6))
-        mot_energy = float(mot.get("motion_energy", 0.0))
-        stat_like = float(mot.get("stationary_likelihood", 1.0))
+        accel_mag = safe_float(mot.get("accel_magnitude"), 9.8)
+        accel_rms = safe_float(mot.get("accel_rms"), 5.6)
+        mot_energy = safe_float(mot.get("motion_energy"), 0.0)
+        stat_like = safe_float(mot.get("stationary_likelihood"), 1.0)
 
         # 2. Environment
         env = obs.get("environment", {})
-        lux_raw = env.get("ambient_light_lux")
-        lux_val = float(lux_raw) if lux_raw is not None else 0.0
+        lux_val = safe_float(env.get("ambient_light_lux"), 0.0)
         log_lux = math.log(max(0.0, lux_val) + 1.0)
-        pressure = float(env.get("pressure_hpa", 915.0) if env.get("pressure_hpa") is not None else 915.0)
-        dev_temp = float(env.get("device_temp_c", 30.0) if env.get("device_temp_c") is not None else 30.0)
+        pressure = safe_float(env.get("pressure_hpa"), 915.0)
+        dev_temp = safe_float(env.get("device_temp_c"), 30.0)
 
         # 3. Device Relation
         dev = obs.get("device_relation", {})
         bat_raw = dev.get("battery_percentage")
-        battery_frac = (float(bat_raw) / 100.0) if bat_raw is not None else 0.5
+        battery_frac = (safe_float(bat_raw, 50.0) / 100.0) if bat_raw is not None else 0.5
         plugged_str = str(dev.get("plugged", "UNPLUGGED"))
         is_plugged = 0.0 if plugged_str == "UNPLUGGED" else 1.0
         status_str = str(dev.get("status", "DISCHARGING"))
         is_charging = 1.0 if status_str == "CHARGING" else 0.0
 
         # Microampere current (23) - signed physical rate of discharge/charge
-        raw_current = dev.get("current_ua", 0.0)
-        try:
-            battery_current_ua = float(raw_current) if raw_current is not None else 0.0
-            if math.isnan(battery_current_ua):
-                battery_current_ua = 0.0
-        except (ValueError, TypeError):
-            battery_current_ua = 0.0
+        battery_current_ua = safe_float(dev.get("current_ua"), 0.0)
 
         # 4. Audio Context
         aud = obs.get("audio_context", {})
@@ -150,9 +154,9 @@ class MultimodalNormalizer:
             rms_loudness = 0.0
             spectral_entropy = 0.0
         else:
-            silence_like = float(aud.get("silence_likelihood", 1.0))
-            rms_loudness = float(aud.get("rms_loudness", 0.0))
-            spectral_entropy = float(aud.get("spectral_entropy", 0.0))
+            silence_like = safe_float(aud.get("silence_likelihood"), 1.0)
+            rms_loudness = safe_float(aud.get("rms_loudness"), 0.0)
+            spectral_entropy = safe_float(aud.get("spectral_entropy"), 0.0)
 
         # 5. Connectivity
         conn = obs.get("connectivity", {})
@@ -160,14 +164,14 @@ class MultimodalNormalizer:
         wifi_rssi_raw = conn.get("wifi_rssi")
         # Normalize RSSI [-100, -30] to [0.0, 1.0]
         if wifi_rssi_raw is not None:
-            rssi_val = float(wifi_rssi_raw)
+            rssi_val = safe_float(wifi_rssi_raw, -100.0)
             wifi_rssi_norm = max(0.0, min(1.0, (rssi_val + 100.0) / 70.0))
         else:
             wifi_rssi_norm = 0.0
 
         # 6. Digital & Cognitive Features (16-18, 25-26)
         dig = obs.get("digital_context", {})
-        screen_ratio = float(dig.get("screen_on_ratio", 0.0))
+        screen_ratio = safe_float(dig.get("screen_on_ratio"), 0.0)
         # Fallback to device_relation.screen_state if available
         if "screen_on_ratio" not in dig:
             screen_state = dev.get("screen_state", "UNKNOWN")
@@ -177,11 +181,11 @@ class MultimodalNormalizer:
                 screen_ratio = 0.2
             else:
                 screen_ratio = 0.0
-        app_switch_rate = float(dig.get("app_switch_rate", 0.0))
-        unlock_burst_count = float(dig.get("unlock_burst_count", 0.0))
+        app_switch_rate = safe_float(dig.get("app_switch_rate"), 0.0)
+        unlock_burst_count = safe_float(dig.get("unlock_burst_count"), 0.0)
 
         # Touch interaction velocity (25)
-        touch_velocity = float(dig.get("touch_interaction_velocity", 0.0))
+        touch_velocity = safe_float(dig.get("touch_interaction_velocity"), 0.0)
         if "touch_interaction_velocity" not in dig:
             if screen_ratio > 0.0:
                 touch_velocity = round(min(10.0, 1.0 + app_switch_rate * 0.4 + unlock_burst_count * 0.3), 3)
@@ -189,11 +193,11 @@ class MultimodalNormalizer:
                 touch_velocity = 0.0
 
         # Ambient social BLE / RF density (26)
-        ambient_ble = float(dig.get("ambient_social_ble_density", 0.0))
+        ambient_ble = safe_float(dig.get("ambient_social_ble_density"), 0.0)
         if "ambient_social_ble_density" not in dig:
-            wifi_cnt = conn.get("wifi_ap_count", 0)
-            if wifi_cnt and isinstance(wifi_cnt, (int, float)) and wifi_cnt > 0:
-                ambient_ble = round(min(30.0, float(wifi_cnt) / 3.0), 2)
+            wifi_cnt = safe_float(conn.get("wifi_ap_count"), 0.0)
+            if wifi_cnt > 0:
+                ambient_ble = round(min(30.0, wifi_cnt / 3.0), 2)
             else:
                 ambient_ble = 0.0
 
@@ -224,7 +228,7 @@ class MultimodalNormalizer:
         plc = obs.get("place", {})
         rg_direct = plc.get("radius_of_gyration")
         if rg_direct is not None:
-            radius_of_gyration = float(rg_direct)
+            radius_of_gyration = safe_float(rg_direct, 0.05)
         else:
             lat = plc.get("latitude")
             lon = plc.get("longitude")
