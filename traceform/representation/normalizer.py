@@ -91,6 +91,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "acoustic_crest_factor",
     # Current macro-state residence persistence in hours (44)
     "state_residence_persistence_hours",
+    # Physiological micro-tremor to motion spectral ratio (45)
+    "neuromotor_tremor_spectral_ratio",
+    # Screen plane gravity projection alignment cosine (46)
+    "device_screen_gravity_alignment",
+    # Rotational angular jerk vector derivative in rad/s^2 (47)
+    "rotational_angular_jerk",
+    # Acoustic spectral roll-off 85% quantile in kHz (48)
+    "acoustic_spectral_rolloff_khz",
+    # Acoustic time-domain zero crossing rate (49)
+    "acoustic_zero_crossing_rate",
+    # Second-order thermal conduction acceleration in degC/s^2 (50)
+    "thermal_flux_acceleration_dt2",
+    # Ambient Wi-Fi spatial multi-path Shannon entropy in nats (51)
+    "wifi_spatial_shannon_entropy",
+    # Continuous touch engagement decay factor [0, 1] (52)
+    "touch_engagement_decay_factor",
+    # Rolling phase-space recurrence density (53)
+    "phase_space_recurrence_density",
 ]
 
 
@@ -140,6 +158,10 @@ class MultimodalNormalizer:
         self._last_current_ua: Optional[float] = None
         self._residence_regime: Optional[str] = None
         self._residence_start_ts: Optional[float] = None
+        self._last_gyro_raw: Optional[List[float]] = None
+        self._last_conduction_rate: Optional[float] = None
+        self._last_touch_ts: Optional[float] = None
+        self._recent_coords: deque[Tuple[float, Tuple[float, ...]]] = deque(maxlen=20)
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -165,6 +187,10 @@ class MultimodalNormalizer:
         self._last_current_ua = None
         self._residence_regime = None
         self._residence_start_ts = None
+        self._last_gyro_raw = None
+        self._last_conduction_rate = None
+        self._last_touch_ts = None
+        self._recent_coords.clear()
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -524,6 +550,122 @@ class MultimodalNormalizer:
         else:
             residence_persistence_hours = 0.0
 
+        # 28. Physiological micro-tremor to motion spectral ratio (45)
+        tremor_ratio_direct = dig.get("neuromotor_tremor_spectral_ratio") or mot.get("neuromotor_tremor_spectral_ratio")
+        if tremor_ratio_direct is not None:
+            neuromotor_ratio = safe_float(tremor_ratio_direct, 0.35)
+        else:
+            neuromotor_ratio = round(min(5.0, physio_tremor / max(0.015, mot_energy * 0.4 + 0.02)), 3)
+
+        # 29. Screen plane gravity projection alignment cosine (46)
+        if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+            ax_g = safe_float(accel_raw[0], 0.0)
+            ay_g = safe_float(accel_raw[1], 0.0)
+            az_g = safe_float(accel_raw[2], 9.8)
+            norm_g = math.sqrt(ax_g * ax_g + ay_g * ay_g + az_g * az_g)
+            if norm_g > 0.1:
+                screen_alignment = round(max(-1.0, min(1.0, az_g / norm_g)), 3)
+            else:
+                screen_alignment = 0.0
+        else:
+            screen_alignment = 0.0
+
+        # 30. Rotational angular jerk vector derivative in rad/s^2 (47)
+        rot_jerk = 0.0
+        if gyro_raw and isinstance(gyro_raw, (list, tuple)) and len(gyro_raw) >= 3:
+            current_gyro = [
+                safe_float(gyro_raw[0], 0.0),
+                safe_float(gyro_raw[1], 0.0),
+                safe_float(gyro_raw[2], 0.0),
+            ]
+            if self._last_gyro_raw is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+                dt_s = current_ts_seconds - self._last_ts_seconds
+                if 2.0 <= dt_s <= 300.0:
+                    d_gx = current_gyro[0] - self._last_gyro_raw[0]
+                    d_gy = current_gyro[1] - self._last_gyro_raw[1]
+                    d_gz = current_gyro[2] - self._last_gyro_raw[2]
+                    jerk_g_calc = math.sqrt(d_gx * d_gx + d_gy * d_gy + d_gz * d_gz) / dt_s
+                    rot_jerk = round(min(25.0, jerk_g_calc), 4)
+            self._last_gyro_raw = current_gyro
+        else:
+            self._last_gyro_raw = None
+
+        # 31. Acoustic spectral roll-off 85% quantile in kHz (48)
+        aud_rolloff_direct = aud.get("spectral_rolloff_hz") or aud.get("rolloff_khz")
+        if aud_rolloff_direct is not None:
+            rolloff_val = safe_float(aud_rolloff_direct, 1800.0)
+            rolloff_khz = round(min(12.0, max(0.1, rolloff_val / 1000.0 if rolloff_val > 50.0 else rolloff_val)), 3)
+        else:
+            rolloff_khz = round(min(12.0, max(0.2, acoustic_centroid_khz * (1.2 + 0.8 * spectral_entropy))), 3)
+
+        # 32. Acoustic time-domain zero crossing rate (49)
+        aud_zcr_direct = aud.get("zero_crossing_rate") or aud.get("zcr")
+        if aud_zcr_direct is not None:
+            acoustic_zcr = round(min(1.0, max(0.0, safe_float(aud_zcr_direct, 0.08))), 3)
+        else:
+            if silence_like >= 0.95 or rms_loudness <= 0.0005:
+                acoustic_zcr = 0.01
+            else:
+                raw_zcr = 0.04 + 0.03 * min(5.0, acoustic_centroid_khz) + 0.15 * min(1.0, rms_loudness * 8.0)
+                acoustic_zcr = round(min(0.9, max(0.01, raw_zcr)), 3)
+
+        # 33. Second-order thermal conduction acceleration in (deg C / hr) / s (50)
+        thermal_accel_dt2 = 0.0
+        if self._last_conduction_rate is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+            dt_s = current_ts_seconds - self._last_ts_seconds
+            if 2.0 <= dt_s <= 300.0:
+                d_rate = conduction_rate - self._last_conduction_rate
+                thermal_accel_dt2 = round(max(-2.0, min(2.0, d_rate / dt_s)), 5)
+        if self._last_temp is not None:
+            self._last_conduction_rate = conduction_rate
+        else:
+            self._last_conduction_rate = None
+
+        # 34. Ambient Wi-Fi spatial multi-path Shannon entropy in nats (51)
+        wifi_ent_direct = conn.get("wifi_spatial_shannon_entropy") or dig.get("wifi_spatial_shannon_entropy")
+        if wifi_ent_direct is not None:
+            wifi_shannon_entropy = round(max(0.0, min(6.0, safe_float(wifi_ent_direct, 1.2))), 3)
+        else:
+            wifi_ap_num = safe_float(conn.get("wifi_ap_count"), 0.0)
+            if wifi_conn > 0.0:
+                calc_wifi_ent = min(5.0, ambient_rf_entropy * 0.85 + 0.2 * math.log(1.0 + max(0.0, wifi_ap_num)))
+                wifi_shannon_entropy = round(max(0.0, calc_wifi_ent), 3)
+            else:
+                wifi_shannon_entropy = 0.0
+
+        # 35. Continuous touch engagement decay factor [0, 1] (52)
+        has_touch_interaction = (touch_velocity > 0.0 or app_switch_rate > 0.0 or unlock_burst_count > 0.0)
+        if has_touch_interaction:
+            if current_ts_seconds is not None:
+                self._last_touch_ts = current_ts_seconds
+            touch_engagement = 1.0
+        else:
+            if self._last_touch_ts is not None and current_ts_seconds is not None and current_ts_seconds >= self._last_touch_ts:
+                idle_sec = current_ts_seconds - self._last_touch_ts
+                touch_engagement = round(math.exp(-idle_sec / 600.0), 3)
+            else:
+                touch_engagement = 0.5 if screen_ratio > 0.5 else 0.0
+
+        # 36. Rolling phase-space recurrence density (53)
+        coord_summary = (
+            round(accel_mag, 2),
+            round(dev_temp, 1),
+            round(battery_frac, 2),
+            round(log_lux, 2),
+            round(stat_like, 2),
+        )
+        t_entry = current_ts_seconds if current_ts_seconds is not None else 0.0
+        if self._recent_coords and self._recent_coords[-1][0] == t_entry:
+            self._recent_coords[-1] = (t_entry, coord_summary)
+        else:
+            self._recent_coords.append((t_entry, coord_summary))
+
+        rec_count = sum(
+            1 for _, prev_c in self._recent_coords
+            if sum((c1 - c2) ** 2 for c1, c2 in zip(coord_summary, prev_c)) <= 4.0
+        )
+        recurrence_density = round(float(rec_count) / float(len(self._recent_coords)), 3)
+
         # Update persistent state across frames
         if current_ts_seconds is not None:
             self._last_ts_seconds = current_ts_seconds
@@ -577,6 +719,15 @@ class MultimodalNormalizer:
             "acoustic_spectral_centroid_khz": acoustic_centroid_khz,
             "acoustic_crest_factor": acoustic_crest,
             "state_residence_persistence_hours": residence_persistence_hours,
+            "neuromotor_tremor_spectral_ratio": neuromotor_ratio,
+            "device_screen_gravity_alignment": screen_alignment,
+            "rotational_angular_jerk": rot_jerk,
+            "acoustic_spectral_rolloff_khz": rolloff_khz,
+            "acoustic_zero_crossing_rate": acoustic_zcr,
+            "thermal_flux_acceleration_dt2": thermal_accel_dt2,
+            "wifi_spatial_shannon_entropy": wifi_shannon_entropy,
+            "touch_engagement_decay_factor": touch_engagement,
+            "phase_space_recurrence_density": recurrence_density,
         }
 
         # Topological & Categorical identifiers

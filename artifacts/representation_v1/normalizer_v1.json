@@ -43,7 +43,16 @@
     "ble_rssi_spatial_variance",
     "acoustic_spectral_centroid_khz",
     "acoustic_crest_factor",
-    "state_residence_persistence_hours"
+    "state_residence_persistence_hours",
+    "neuromotor_tremor_spectral_ratio",
+    "device_screen_gravity_alignment",
+    "rotational_angular_jerk",
+    "acoustic_spectral_rolloff_khz",
+    "acoustic_zero_crossing_rate",
+    "thermal_flux_acceleration_dt2",
+    "wifi_spatial_shannon_entropy",
+    "touch_engagement_decay_factor",
+    "phase_space_recurrence_density"
   ],
   "medians": {
     "motion_accel_magnitude": 9.8093,
@@ -89,7 +98,16 @@
     "ble_rssi_spatial_variance": 14.93,
     "acoustic_spectral_centroid_khz": 0.4,
     "acoustic_crest_factor": 1.0,
-    "state_residence_persistence_hours": 4.996
+    "state_residence_persistence_hours": 4.996,
+    "neuromotor_tremor_spectral_ratio": 1.343,
+    "device_screen_gravity_alignment": 1.0,
+    "rotational_angular_jerk": 0.0,
+    "acoustic_spectral_rolloff_khz": 0.592,
+    "acoustic_zero_crossing_rate": 0.02,
+    "thermal_flux_acceleration_dt2": 0.0,
+    "wifi_spatial_shannon_entropy": 4.183,
+    "touch_engagement_decay_factor": 0.0,
+    "phase_space_recurrence_density": 1.0
   },
   "iqrs": {
     "motion_accel_magnitude": 0.0197,
@@ -135,8 +153,17 @@
     "ble_rssi_spatial_variance": 1.0,
     "acoustic_spectral_centroid_khz": 1.0,
     "acoustic_crest_factor": 1.0,
-    "state_residence_persistence_hours": 5.0
+    "state_residence_persistence_hours": 5.0,
+    "neuromotor_tremor_spectral_ratio": 0.141,
+    "device_screen_gravity_alignment": 1.0,
+    "rotational_angular_jerk": 1.0,
+    "acoustic_spectral_rolloff_khz": 1.0,
+    "acoustic_zero_crossing_rate": 1.0,
+    "thermal_flux_acceleration_dt2": 0.08,
+    "wifi_spatial_shannon_entropy": 1.0,
+    "touch_engagement_decay_factor": 1.0,
+    "phase_space_recurrence_density": 1.0
   },
   "fitted_observation_count": 1200,
-  "fit_window_description": "Day 1\u20137 Discovery Window (44D Unified Phase-Space Holo-Sensorium)"
+  "fit_window_description": "Day 1\u20137 Discovery Window (53D Deep-Phase Topological Sensorium)"
 }
