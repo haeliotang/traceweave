@@ -16,8 +16,8 @@
   "hitting_times_to_targets": {
     "target_states": [
       "S36",
-      "S08",
-      "S10"
+      "S10",
+      "S08"
     ],
     "table": {
       "S01": {

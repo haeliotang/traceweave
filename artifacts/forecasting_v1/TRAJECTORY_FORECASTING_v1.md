@@ -9,10 +9,11 @@
 
 ## 1. Executive Summary
 
-| Forecasting Metric | Empirical Result | Baseline (Unigram Prior) | Lift / Performance |
+| Forecasting Metric | Empirical Result | Baseline | Lift / Performance |
 | :--- | :--- | :--- | :--- |
-| **Top-1 Forward Accuracy** | `88.41%` | `30.95%` | **2.86x Improvement** |
-| **Top-3 Forward Accuracy** | `93.21%` | ~60% | **Exceptional Coverage** |
+| **Top-1 Forward Accuracy** | `88.41%` | Unigram: `30.95%` | **2.86x Lift over Unigram** |
+| **Top-1 vs Persist Baseline** | `88.41%` | Persist: `87.59%` | **1.0094x Lift over Inertia** |
+| **Top-3 Forward Accuracy** | `93.21%` | ~60% (Unigram top-3) | **93.2% Predictive Envelope** |
 | **Top-5 Forward Accuracy** | `94.74%` | ~75% | **Near-Total Envelope** |
 | **Sequence Perplexity** | `2.05` | ~33.0 (uniform) | **High Determinism** |
 | **Mean Log-Loss** | `1.0332 bits` | > 5.0 bits | **Low Predictive Uncertainty** |
@@ -23,14 +24,16 @@
 
 1. **High Predictive Generalization**:
    The transition rules extracted entirely without supervision from Week 1 successfully anticipate next-step physical states in Week 2 with **88.41% Top-1 accuracy** and **93.21% Top-3 accuracy**.
-2. **Predictive Horizon vs Randomness**:
-   Compared to a memoryless state frequency prior (30.9%), incorporating temporal Markov trajectory context achieves a **2.86x lift**, proving that human trajectories possess strong forward causal structure.
+2. **Inertia vs Active Prediction (Persist Baseline)**:
+   Because human physical trajectories possess high temporal auto-correlation, a naive persist strategy ("predict state will remain identical to current") achieves **87.59%**. The variable-order Markov predictor exceeds this ceiling (88.41%), resolving active bifurcation points where the trajectory transitions between distinct states.
+3. **Information Gain over Prior**:
+   Compared to a memoryless stationary prior (30.9%), incorporating multi-step temporal context provides a **2.86x lift**, confirming strong forward temporal structure.
 
 ---
 
 ## 3. Expected First Passage Times (Hitting Times to Kinematic Targets)
 
-Expected duration required to transition from stationary holding attractors into dynamic transit / locomotion states (`S36, S08, S10`):
+Expected duration required to transition from stationary holding attractors into dynamic transit / locomotion states (`S36, S10, S08`):
 
 | Starting Micro-State | Expected Steps | Expected Time (Minutes) | Type |
 | :--- | :--- | :--- | :--- |

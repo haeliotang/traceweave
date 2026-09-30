@@ -168,3 +168,86 @@ def generate_circadian_surrogate(
         bin_pointers[h] += 1
 
     return surrogate
+
+
+def generate_block_bootstrap_surrogate(
+    state_tokens: List[str],
+    block_size: int = 30,
+    seed: Optional[int] = None,
+) -> List[str]:
+    """
+    Model 3: Block bootstrap surrogate.
+    Splits the sequence into contiguous blocks of `block_size`, randomly shuffles
+    the block order, and concatenates. Preserves local temporal structure within
+    blocks but destroys long-range inter-block patterns.
+    """
+    if not state_tokens:
+        return []
+
+    rng = random.Random(seed)
+    n = len(state_tokens)
+    blocks: List[List[str]] = []
+    for i in range(0, n, block_size):
+        blocks.append(state_tokens[i : i + block_size])
+
+    rng.shuffle(blocks)
+    surrogate: List[str] = []
+    for blk in blocks:
+        surrogate.extend(blk)
+
+    return surrogate[:n]
+
+
+def generate_second_order_markov_surrogate(
+    state_tokens: List[str],
+    vocabulary: Optional[List[str]] = None,
+    seed: Optional[int] = None,
+) -> List[str]:
+    """
+    Model 4: Second-order Markov surrogate.
+    Builds 2nd-order (trigram) transition probabilities P(S_t | S_{t-1}, S_{t-2})
+    and generates a surrogate sequence. Tests whether empirical structure exceeds
+    2-step memory.
+    """
+    if len(state_tokens) < 3:
+        return list(state_tokens)
+
+    rng = random.Random(seed)
+    vocab = sorted(list(set(state_tokens) if vocabulary is None else set(vocabulary)))
+
+    # Build bigram-conditioned counts
+    trigram_counts: Dict[Tuple[str, str], Dict[str, int]] = {}
+    for i in range(len(state_tokens) - 2):
+        ctx = (state_tokens[i], state_tokens[i + 1])
+        nxt = state_tokens[i + 2]
+        if ctx not in trigram_counts:
+            trigram_counts[ctx] = {}
+        trigram_counts[ctx][nxt] = trigram_counts[ctx].get(nxt, 0) + 1
+
+    # Fallback to 1st-order if context not seen
+    bigram_counts: Dict[str, Dict[str, int]] = {}
+    for i in range(len(state_tokens) - 1):
+        prev = state_tokens[i]
+        curr = state_tokens[i + 1]
+        if prev not in bigram_counts:
+            bigram_counts[prev] = {}
+        bigram_counts[prev][curr] = bigram_counts[prev].get(curr, 0) + 1
+
+    surrogate: List[str] = [state_tokens[0], state_tokens[1]]
+    for _ in range(2, len(state_tokens)):
+        ctx = (surrogate[-2], surrogate[-1])
+        if ctx in trigram_counts:
+            counts = trigram_counts[ctx]
+        elif surrogate[-1] in bigram_counts:
+            counts = bigram_counts[surrogate[-1]]
+        else:
+            surrogate.append(surrogate[-1])
+            continue
+
+        choices = list(counts.keys())
+        weights = list(counts.values())
+        next_state = rng.choices(choices, weights=weights, k=1)[0]
+        surrogate.append(next_state)
+
+    return surrogate
+

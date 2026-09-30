@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-31%2F31%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-37%2F37%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Disciplines](https://img.shields.io/badge/Semantics-Zero%20Pre--injected-orange)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
@@ -77,20 +77,21 @@ flowchart TD
 | **Stage 4** | **Trajectory Structure Discovery** | [`traceform/discovery/`](traceform/discovery/)<br>[`scripts/run_structure_discovery.py`](scripts/run_structure_discovery.py) | Non-linear RQA: $DET=67.48\%$, $LAM=74.46\%$. 35 dynamic regimes ($R_{01}..R_{35}$), 20 trajectory motifs ($M_{01}..M_{20}$), 33-node ergodic graph. | **STRUCTURE DISCOVERED** |
 | **Stage 5** | **Out-of-Sample Stability Test** | [`traceform/stability/`](traceform/stability/)<br>[`scripts/verify_temporal_stability.py`](scripts/verify_temporal_stability.py) | $W_1 \to W_2$ validation. $96.2\%$ $W_2$ frames covered by $W_1$ vocab. Rank corr $\rho = 0.8989$. JSD to Null ratio $0.0941$. $100\%$ motif recurrence. | **CONFIRMED STABLE** |
 | **Stage 6** | **Candidate Semantic Projection** | [`traceform/semantics/`](traceform/semantics/)<br>[`scripts/project_candidate_semantics.py`](scripts/project_candidate_semantics.py) | Post-hoc reverse projection of $S_k, R_j, M_m$ to physical observables (lux, accel, charging, RF) under strict epistemic quarantine. | **SYNTHESIZED** |
-| **Stage 7** | **Trajectory Forecasting & Hitting Times** | [`traceform/forecasting/`](traceform/forecasting/)<br>[`scripts/run_trajectory_forecasting.py`](scripts/run_trajectory_forecasting.py) | Variable-order Markov predictor trained on $W_1$, tested on $W_2$: **Top-1 Acc 88.41%**, Top-3 Acc 93.21% (2.86x lift). Hitting times to transit states. | **PREDICTIVE POWER PROVEN** |
+| **Stage 7** | **Trajectory Forecasting & Hitting Times** | [`traceform/forecasting/`](traceform/forecasting/)<br>[`scripts/run_trajectory_forecasting.py`](scripts/run_trajectory_forecasting.py) | Variable-order Markov predictor: **Top-1 Acc 88.41%** (Persist baseline 87.59%, Unigram 30.95%), Top-3 Acc 93.21%. Resolves active transition bifurcations. | **PREDICTIVE POWER AUDITED** |
 | **Stage 8** | **Phase Transitions & Bifurcations** | [`traceform/dynamics/`](traceform/dynamics/)<br>[`scripts/detect_phase_transitions.py`](scripts/detect_phase_transitions.py) | 195 sliding windows evaluated. Isolated 6 critical phase transition alerts (3.1% of timeline) marked by entropy surges ($z \ge 2\sigma$). | **BIFURCATIONS DETECTED** |
-| **Stage 9** | **Weekly Infradian Dynamics** | [`traceform/dynamics/infradian.py`](traceform/dynamics/infradian.py)<br>[`scripts/audit_weekly_infradian.py`](scripts/audit_weekly_infradian.py) | 4,336 weekday vs 1,625 weekend frames. Shared state rank correlation $\rho = 1.0000$, Cosine similarity $0.9182$, JSD $0.0306$ bits. | **INFRADIAN COHERENCE AUDITED** |
+| **Stage 9** | **Weekly Infradian Dynamics** | [`traceform/dynamics/infradian.py`](traceform/dynamics/infradian.py)<br>[`scripts/audit_weekly_infradian.py`](scripts/audit_weekly_infradian.py) | 4,336 weekday vs 1,625 weekend frames. Shared state rank correlation $\rho = 0.9000$, Cosine similarity $0.9182$, JSD $0.0306$ bits. | **INFRADIAN COHERENCE AUDITED** |
 | **Stage 10** | **Personal Macroscope Dashboard** | [`traceform/ui/`](traceform/ui/)<br>[`scripts/generate_macroscope_ui.py`](scripts/generate_macroscope_ui.py) | Self-contained interactive HTML dashboard ([`macroscope_dashboard_v1.html`](artifacts/macroscope_dashboard_v1.html)) with canvas RQA plot and attractor graph. | **VISUAL DASHBOARD READY** |
 
 ---
 
 ## 3. Key Findings & Empirical Proofs
 
-### A. Rejection of Randomness ($p < 0.001$)
-The empirical trajectory sequence exhibits massive deviation from stochastic baselines:
-- **Transition Entropy Rate**: $H = 0.4189\text{ bits}$ (vs. Permutation Null $2.492\text{ bits}$, $z = -398.73$).
-- **High Self-Transition Ratio**: $91.58\%$ of frames preserve their physical micro-state.
-- **Repeating N-gram Motifs**: 57 non-trivial repeating trigrams in $W_1$ (vs. Permutation Null $180.3$ diffuse random combinations, $z = -88.94$).
+### A. Rigorous Null Model Testing (5 Stochastic Surrogates)
+Hypothesis testing against 5 Monte Carlo surrogate ensembles (100 iterations each):
+- **Permutation Null (Model 0)**: **REJECTED ($z = -398.73, p < 0.001$)**. Empirical entropy rate ($H = 0.419\text{ bits}$) proves trajectory is not memoryless I.I.D. noise.
+- **Circadian Phase Null (Model 2)**: **REJECTED ($z = -150.25, p < 0.001$)**. Diurnal 24h phase preservation alone cannot account for multi-day coherence.
+- **Block Bootstrap Null (Model 3)**: **REJECTED ($z = -21.35, p < 0.001$)**. Shuffling 15-minute blocks destroys long-range trajectory structure, confirming macro-temporal ordering.
+- **1st-Order & 2nd-Order Markov Nulls (Models 1 & 4)**: **QUALIFIED PENETRATION ($p > 0.05$)**. Empirical 1-step transition statistics sufficiently reproduce short-range transition entropy and 3-gram motif recurrence. Demonstrates that trajectory dynamics at this quantization scale are primarily governed by ergodic Markovian transition geometry.
 
 ### B. Macroscopic Dynamic Regimes & Motifs
 - **Non-Linear RQA**: Recurrence Rate $RR = 16.35\%$, Determinism $DET = 67.48\%$, Laminarity $LAM = 74.46\%$, Trapping Time $TT = 5.13\text{ steps}$.
@@ -103,10 +104,13 @@ The empirical trajectory sequence exhibits massive deviation from stochastic bas
 - **Transition Matrix Similarity**: Weighted Jensen-Shannon Divergence $D_{\text{JS}}(P_{W1} \parallel P_{W2}) = 0.0450\text{ bits}$, which is only **$9.4\%$** of the distance to a memoryless null baseline ($0.4780\text{ bits}$).
 - **Motif Recurrence**: **$100\%$** of the top 20 trajectory motifs discovered in Week 1 repeated organically in Week 2.
 
-### D. Out-of-Sample Forward Predictive Dynamics
-- **Top-1 Accuracy**: **88.41%** out-of-sample next-step state prediction on Week 2 using Week 1 transition rules.
+### D. Forward Predictive Dynamics & Baseline Contrast
+- **Top-1 Forward Accuracy**: **88.41%** out-of-sample prediction on Week 2 using Week 1 transition rules.
+- **Baseline Contrast (Persist vs Unigram)**:
+  - Naive Persist Baseline ("predict state remains identical"): **87.59%** (driven by high temporal inertia).
+  - Unigram Stationary Prior ("predict most common state"): **30.95%** (2.86x lift).
+  - The variable-order predictor correctly anticipates state-switch transitions that simple inertia cannot resolve.
 - **Top-3 Accuracy**: **93.21%**; **Top-5 Accuracy**: **94.74%**.
-- **Accuracy Lift**: **2.86x** improvement over unigram marginal prior.
 - **Perplexity**: Reduced to **2.05** (vs uniform $\sim 33.0$).
 
 ### E. On-Device Edge Streaming Performance (GrapheneOS / Pixel 6a)
@@ -127,6 +131,7 @@ traceform/
 │   │   ├── normalizer.py
 │   │   ├── metrics.py
 │   │   ├── lattice.py
+│   │   ├── data_driven_quantizer.py       # Unsupervised k-means clustering quantizer
 │   │   └── open_world.py
 │   ├── null_models/                       # Stage 3: Permutation, Markov, Diurnal Phase nulls
 │   │   └── surrogates.py

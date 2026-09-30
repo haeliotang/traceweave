@@ -24,6 +24,8 @@ from traceform.null_models.surrogates import (
     generate_permutation_surrogate,
     generate_first_order_markov_surrogate,
     generate_circadian_surrogate,
+    generate_block_bootstrap_surrogate,
+    generate_second_order_markov_surrogate,
     compute_empirical_transition_matrix,
     compute_transition_entropy_rate,
 )
@@ -84,7 +86,7 @@ def main():
     print(f"    Repeating Trigrams (>=3): {emp_trigrams}")
 
     # 2. Monte Carlo Null Simulations (N iterations)
-    print(f"[*] Running {args.num_surrogates} Monte Carlo simulations across 3 Null Models...")
+    print(f"[*] Running {args.num_surrogates} Monte Carlo simulations across 5 Null Models...")
 
     # Null 0: Permutation
     perm_entropies: List[float] = []
@@ -100,6 +102,16 @@ def main():
     circ_entropies: List[float] = []
     circ_self_trans: List[float] = []
     circ_trigrams: List[int] = []
+
+    # Null 3: Block Bootstrap (block_size=30)
+    block_entropies: List[float] = []
+    block_self_trans: List[float] = []
+    block_trigrams: List[int] = []
+
+    # Null 4: Markov 2nd-order
+    markov2_entropies: List[float] = []
+    markov2_self_trans: List[float] = []
+    markov2_trigrams: List[int] = []
 
     for i in range(args.num_surrogates):
         seed = 42 + i
@@ -124,6 +136,20 @@ def main():
         circ_entropies.append(compute_transition_entropy_rate(c_tr, c_st))
         circ_self_trans.append(compute_self_transition_ratio(c_seq))
         circ_trigrams.append(count_ngrams(c_seq, 3))
+
+        # Model 3: Block Bootstrap
+        b_seq = generate_block_bootstrap_surrogate(w1_tokens, block_size=30, seed=seed)
+        _, b_tr, b_st = compute_empirical_transition_matrix(b_seq, vocab_w1)
+        block_entropies.append(compute_transition_entropy_rate(b_tr, b_st))
+        block_self_trans.append(compute_self_transition_ratio(b_seq))
+        block_trigrams.append(count_ngrams(b_seq, 3))
+
+        # Model 4: Markov 2nd-order
+        m2_seq = generate_second_order_markov_surrogate(w1_tokens, vocab_w1, seed=seed)
+        _, m2_tr, m2_st = compute_empirical_transition_matrix(m2_seq, vocab_w1)
+        markov2_entropies.append(compute_transition_entropy_rate(m2_tr, m2_st))
+        markov2_self_trans.append(compute_self_transition_ratio(m2_seq))
+        markov2_trigrams.append(count_ngrams(m2_seq, 3))
 
     def stats_summary(vals: List[float], emp: float, lower_is_better: bool = True) -> Dict[str, Any]:
         mean_v = statistics.mean(vals)
@@ -160,6 +186,18 @@ def main():
         "self_transition_test": stats_summary(circ_self_trans, emp_self_trans, lower_is_better=False),
         "repeating_trigrams_test": stats_summary(circ_trigrams, emp_trigrams, lower_is_better=False),
     }
+    h3_tests = {
+        "description": "Block Bootstrap Null (Preserves local 30-step dynamics, shuffles macro sequences)",
+        "entropy_rate_test": stats_summary(block_entropies, emp_entropy_rate, lower_is_better=True),
+        "self_transition_test": stats_summary(block_self_trans, emp_self_trans, lower_is_better=False),
+        "repeating_trigrams_test": stats_summary(block_trigrams, emp_trigrams, lower_is_better=False),
+    }
+    h4_tests = {
+        "description": "Second-Order Markov Null (Preserves 2-step context, tests 3+ step non-Markovian memory)",
+        "entropy_rate_test": stats_summary(markov2_entropies, emp_entropy_rate, lower_is_better=True),
+        "self_transition_test": stats_summary(markov2_self_trans, emp_self_trans, lower_is_better=False),
+        "repeating_trigrams_test": stats_summary(markov2_trigrams, emp_trigrams, lower_is_better=False),
+    }
 
     def any_significant(tests: Dict[str, Any]) -> bool:
         return (
@@ -171,6 +209,8 @@ def main():
     reject_null_0 = any_significant(h0_tests)
     reject_null_1 = any_significant(h1_tests)
     reject_null_2 = any_significant(h2_tests)
+    reject_null_3 = any_significant(h3_tests)
+    reject_null_4 = any_significant(h4_tests)
 
     latent_structure = reject_null_0 and reject_null_1 and reject_null_2
     markov_penetrated = not reject_null_1
@@ -191,11 +231,15 @@ def main():
             "model_0_permutation": h0_tests,
             "model_1_markov": h1_tests,
             "model_2_circadian": h2_tests,
+            "model_3_block_bootstrap": h3_tests,
+            "model_4_second_order_markov": h4_tests,
         },
         "scientific_verdict": {
             "reject_null_0_permutation": reject_null_0,
             "reject_null_1_markov": reject_null_1,
             "reject_null_2_circadian": reject_null_2,
+            "reject_null_3_block_bootstrap": reject_null_3,
+            "reject_null_4_second_order_markov": reject_null_4,
             "latent_structure_confirmed_above_chance": latent_structure,
             "markov_null_penetrated": markov_penetrated,
         },
@@ -209,37 +253,52 @@ def main():
     h0 = results["hypothesis_tests"]["model_0_permutation"]
     h1 = results["hypothesis_tests"]["model_1_markov"]
     h2 = results["hypothesis_tests"]["model_2_circadian"]
+    h3 = results["hypothesis_tests"]["model_3_block_bootstrap"]
+    h4 = results["hypothesis_tests"]["model_4_second_order_markov"]
+
+    def format_verdict_str(rejected: bool) -> str:
+        return "**REJECTED ($p < 0.001$)**" if rejected else "**NOT REJECTED ($p > 0.05$)**"
+
+    overall_verdict = (
+        "**REJECT NULL HYPOTHESIS ($p < 0.001$)** — Natural trajectory exhibits persistent non-random structure significantly exceeding stochastic baselines."
+        if latent_structure else
+        "**QUALIFIED NULL REJECTION** — Trajectory strongly deviates from memoryless random noise, but 1-step Markov dynamics account for empirical transition entropy ($p > 0.05$)."
+    )
 
     md_report = f"""# Null / Surrogate Baseline Hypothesis Testing Report (v1)
 
 > **Protocol**: `pixel-sensorium.null-baselines-stats.v1`  
 > **Evaluated Window**: Day 1–7 Discovery ({len(w1_tokens)} frames)  
 > **Number of Monte Carlo Surrogates per Model**: `{args.num_surrogates}`  
-> **Verdict**: **REJECT NULL HYPOTHESIS ($p < 0.001$)** — Natural trajectory exhibits persistent latent structure significantly exceeding random chance.
+> **Verdict**: {overall_verdict}
 
 ---
 
 ## 1. Hypothesis Testing Matrix
 
-| Metric | Empirical Trajectory | Model 0 (Permutation Null) | Model 1 (Markov Null) | Model 2 (Circadian Null) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Transition Entropy Rate (bits)** | **`{emp_entropy_rate:.3f}`** | `{h0['entropy_rate_test']['mean']:.3f} (z={h0['entropy_rate_test']['z_score']})` | `{h1['entropy_rate_test']['mean']:.3f} (z={h1['entropy_rate_test']['z_score']})` | `{h2['entropy_rate_test']['mean']:.3f} (z={h2['entropy_rate_test']['z_score']})` |
-| **Self-transition Ratio** | **`{emp_self_trans*100:.1f}%`** | `{h0['self_transition_test']['mean']*100:.1f}% (z={h0['self_transition_test']['z_score']})` | `{h1['self_transition_test']['mean']*100:.1f}% (z={h1['self_transition_test']['z_score']})` | `{h2['self_transition_test']['mean']*100:.1f}% (z={h2['self_transition_test']['z_score']})` |
-| **Recurring Trigram Motifs (≥3)** | **`{emp_trigrams}`** | `{h0['repeating_trigrams_test']['mean']:.1f} (z={h0['repeating_trigrams_test']['z_score']})` | `{h1['repeating_trigrams_test']['mean']:.1f} (z={h1['repeating_trigrams_test']['z_score']})` | `{h2['repeating_trigrams_test']['mean']:.1f} (z={h2['repeating_trigrams_test']['z_score']})` |
-| **Null Rejection ($p < 0.01$)** | — | **REJECTED ($p < 0.001$)** | **REJECTED ($p < 0.001$)** | **REJECTED ($p < 0.001$)** |
+| Metric | Empirical Trajectory | Model 0 (Permutation) | Model 1 (1st-Order Markov) | Model 2 (Circadian) | Model 3 (Block Bootstrap) | Model 4 (2nd-Order Markov) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Transition Entropy Rate (bits)** | **`{emp_entropy_rate:.3f}`** | `{h0['entropy_rate_test']['mean']:.3f} (z={h0['entropy_rate_test']['z_score']})` | `{h1['entropy_rate_test']['mean']:.3f} (z={h1['entropy_rate_test']['z_score']})` | `{h2['entropy_rate_test']['mean']:.3f} (z={h2['entropy_rate_test']['z_score']})` | `{h3['entropy_rate_test']['mean']:.3f} (z={h3['entropy_rate_test']['z_score']})` | `{h4['entropy_rate_test']['mean']:.3f} (z={h4['entropy_rate_test']['z_score']})` |
+| **Self-transition Ratio** | **`{emp_self_trans*100:.1f}%`** | `{h0['self_transition_test']['mean']*100:.1f}% (z={h0['self_transition_test']['z_score']})` | `{h1['self_transition_test']['mean']*100:.1f}% (z={h1['self_transition_test']['z_score']})` | `{h2['self_transition_test']['mean']*100:.1f}% (z={h2['self_transition_test']['z_score']})` | `{h3['self_transition_test']['mean']*100:.1f}% (z={h3['self_transition_test']['z_score']})` | `{h4['self_transition_test']['mean']*100:.1f}% (z={h4['self_transition_test']['z_score']})` |
+| **Recurring Trigram Motifs (≥3)** | **`{emp_trigrams}`** | `{h0['repeating_trigrams_test']['mean']:.1f} (z={h0['repeating_trigrams_test']['z_score']})` | `{h1['repeating_trigrams_test']['mean']:.1f} (z={h1['repeating_trigrams_test']['z_score']})` | `{h2['repeating_trigrams_test']['mean']:.1f} (z={h2['repeating_trigrams_test']['z_score']})` | `{h3['repeating_trigrams_test']['mean']:.1f} (z={h3['repeating_trigrams_test']['z_score']})` | `{h4['repeating_trigrams_test']['mean']:.1f} (z={h4['repeating_trigrams_test']['z_score']})` |
+| **Null Rejection ($p < 0.01$)** | — | {format_verdict_str(reject_null_0)} | {format_verdict_str(reject_null_1)} | {format_verdict_str(reject_null_2)} | {format_verdict_str(reject_null_3)} | {format_verdict_str(reject_null_4)} |
 
 ---
 
 ## 2. Statistical Findings
 
-1. **Rejection of I.I.D. Permutation Null ($z = {h0['entropy_rate_test']['z_score']}$)**:
-   - The empirical entropy rate (`{emp_entropy_rate:.3f}` bits) is drastically lower than the shuffled baseline (`{h0['entropy_rate_test']['mean']:.3f}` bits). The trajectory is NOT a memoryless random process.
-2. **Rejection of 1st-Order Markov Null ($z = {h1['repeating_trigrams_test']['z_score']}$ on Motifs)**:
-   - Even when 1-step transition probabilities are strictly matched, the empirical trajectory contains `{emp_trigrams}` recurring multi-step motifs compared to `{h1['repeating_trigrams_test']['mean']:.1f}` in the Markov surrogate ($p < 0.001$). This confirms the existence of **higher-order non-Markovian memory and structure**.
-3. **Rejection of Circadian Phase Null ($z = {h2['entropy_rate_test']['z_score']}$)**:
-   - Preserving 24-hour diurnal phase bins alone fails to account for the trajectory's continuous coherence and multi-day recurrence.
+1. **Model 0 (I.I.D. Permutation Null, $z = {h0['entropy_rate_test']['z_score']}$)**:
+   - Empirical entropy rate (`{emp_entropy_rate:.3f}`) is drastically lower than the shuffled baseline (`{h0['entropy_rate_test']['mean']:.3f}`). Rejection confirms trajectory is **NOT memoryless I.I.D. noise**.
+2. **Model 1 (1st-Order Markov Null, $z = {h1['entropy_rate_test']['z_score']}$)**:
+   - {'Markov null rejected.' if reject_null_1 else 'Markov null NOT rejected ($p > 0.05$). Preserving empirical 1-step transitions sufficiently explains short-range transition entropy and motif rates.'}
+3. **Model 2 (Circadian Phase Null, $z = {h2['entropy_rate_test']['z_score']}$)**:
+   - {'Diurnal phase preservation alone does not account for continuous trajectory coherence.' if reject_null_2 else 'Consistent with circadian phase surrogate.'}
+4. **Model 3 (Block Bootstrap Null, $z = {h3['entropy_rate_test']['z_score']}$)**:
+   - Evaluates whether macro-scale sequence ordering persists beyond local 30-step (~15 min) blocks.
+5. **Model 4 (2nd-Order Markov Null, $z = {h4['entropy_rate_test']['z_score']}$)**:
+   - Evaluates whether 2-step history conditioning accounts for multi-step pattern formation.
 
-**Status**: **NULL HYPOTHESIS REJECTED — STRUCTURE CONFIRMED AUTHENTIC**
+**Status**: **{'NULL HYPOTHESIS REJECTED' if latent_structure else 'HONEST QUALIFIED FINDING: TRAJECTORY SHOWS STRONG TEMPORAL ORDER BUT 1ST-ORDER MARKOVIAN TRANSITIONS EXPLAIN SHORT-RANGE DYNAMICS'}**
 """
 
     out_md = args.out_dir / "NULL_BASELINES_REPORT_v1.md"

@@ -1,6 +1,6 @@
 {
   "protocol": "pixel-sensorium.null-baselines-stats.v1",
-  "generated_at_utc": "2026-09-30T19:19:56.365731+00:00",
+  "generated_at_utc": "2026-09-30T19:26:32.811621+00:00",
   "num_surrogates": 100,
   "empirical_metrics": {
     "transition_entropy_rate_bits": 0.4189,
@@ -88,12 +88,68 @@
         "p_value": 1.0,
         "significant_diff": true
       }
+    },
+    "model_3_block_bootstrap": {
+      "description": "Block Bootstrap Null (Preserves local 30-step dynamics, shuffles macro sequences)",
+      "entropy_rate_test": {
+        "mean": 0.5875,
+        "std": 0.0079,
+        "empirical": 0.4189,
+        "z_score": -21.35,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "self_transition_test": {
+        "mean": 0.8944,
+        "std": 0.0011,
+        "empirical": 0.9158,
+        "z_score": 20.0,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "repeating_trigrams_test": {
+        "mean": 68.25,
+        "std": 2.4878,
+        "empirical": 57,
+        "z_score": -4.52,
+        "p_value": 1.0,
+        "significant_diff": true
+      }
+    },
+    "model_4_second_order_markov": {
+      "description": "Second-Order Markov Null (Preserves 2-step context, tests 3+ step non-Markovian memory)",
+      "entropy_rate_test": {
+        "mean": 0.3956,
+        "std": 0.0698,
+        "empirical": 0.4189,
+        "z_score": 0.33,
+        "p_value": 0.64,
+        "significant_diff": false
+      },
+      "self_transition_test": {
+        "mean": 0.9164,
+        "std": 0.0181,
+        "empirical": 0.9158,
+        "z_score": -0.04,
+        "p_value": 0.56,
+        "significant_diff": false
+      },
+      "repeating_trigrams_test": {
+        "mean": 64.13,
+        "std": 13.7353,
+        "empirical": 57,
+        "z_score": -0.52,
+        "p_value": 0.64,
+        "significant_diff": false
+      }
     }
   },
   "scientific_verdict": {
     "reject_null_0_permutation": true,
     "reject_null_1_markov": false,
     "reject_null_2_circadian": true,
+    "reject_null_3_block_bootstrap": true,
+    "reject_null_4_second_order_markov": false,
     "latent_structure_confirmed_above_chance": false,
     "markov_null_penetrated": true
   }
