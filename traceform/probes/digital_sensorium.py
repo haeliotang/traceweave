@@ -109,6 +109,7 @@ class DigitalSensoriumProbe:
             "ambient_rf_shannon_entropy": 0.0,
             "touch_interval_jitter": 0.0,
             "attention_fragmentation_entropy": 0.0,
+            "ble_rssi_spatial_variance": 0.0,
         }
 
         # Check immediate screen state
@@ -121,6 +122,8 @@ class DigitalSensoriumProbe:
             metrics["screen_on_ratio"] = 0.0
 
         metrics["ambient_social_ble_density"] = self.sample_social_ble_density(fallback_wifi_ap_count)
+        if metrics["ambient_social_ble_density"] > 1.0:
+            metrics["ble_rssi_spatial_variance"] = round(min(25.0, metrics["ambient_social_ble_density"] * 1.6), 2)
 
         if fallback_wifi_ap_count > 0:
             metrics["ambient_rf_shannon_entropy"] = round(min(5.0, math.log2(float(fallback_wifi_ap_count) + 1.0) * 0.85), 3)

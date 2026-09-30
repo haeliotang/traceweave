@@ -43,7 +43,16 @@
       "ambient_rf_shannon_entropy",
       "cellular_tower_churn_rate",
       "touch_interval_jitter",
-      "attention_fragmentation_entropy"
+      "attention_fragmentation_entropy",
+      "compute_power_dissipation_watts",
+      "battery_internal_impedance_miliohm",
+      "rotational_kinetic_energy",
+      "kinematic_jerk_metric",
+      "rf_spectral_penetration_ratio",
+      "ble_rssi_spatial_variance",
+      "acoustic_spectral_centroid_khz",
+      "acoustic_crest_factor",
+      "state_residence_persistence_hours"
     ],
     "medians": {
       "motion_accel_magnitude": 9.8093,
@@ -80,7 +89,16 @@
       "ambient_rf_shannon_entropy": 4.129,
       "cellular_tower_churn_rate": 0.0,
       "touch_interval_jitter": 0.0,
-      "attention_fragmentation_entropy": 0.0
+      "attention_fragmentation_entropy": 0.0,
+      "compute_power_dissipation_watts": 0.35,
+      "battery_internal_impedance_miliohm": 160.0,
+      "rotational_kinetic_energy": 0.0,
+      "kinematic_jerk_metric": 0.0018,
+      "rf_spectral_penetration_ratio": 1.229,
+      "ble_rssi_spatial_variance": 14.93,
+      "acoustic_spectral_centroid_khz": 0.4,
+      "acoustic_crest_factor": 1.0,
+      "state_residence_persistence_hours": 4.996
     },
     "iqrs": {
       "motion_accel_magnitude": 0.0197,
@@ -117,10 +135,19 @@
       "ambient_rf_shannon_entropy": 1.0,
       "cellular_tower_churn_rate": 1.0,
       "touch_interval_jitter": 1.0,
-      "attention_fragmentation_entropy": 1.0
+      "attention_fragmentation_entropy": 1.0,
+      "compute_power_dissipation_watts": 1.0,
+      "battery_internal_impedance_miliohm": 1.0,
+      "rotational_kinetic_energy": 1.0,
+      "kinematic_jerk_metric": 0.0012,
+      "rf_spectral_penetration_ratio": 1.0,
+      "ble_rssi_spatial_variance": 1.0,
+      "acoustic_spectral_centroid_khz": 1.0,
+      "acoustic_crest_factor": 1.0,
+      "state_residence_persistence_hours": 5.0
     },
     "fitted_observation_count": 1200,
-    "fit_window_description": "Day 1\u20137 Discovery Window (35D Holo-Sensorium)"
+    "fit_window_description": "Day 1\u20137 Discovery Window (44D Unified Phase-Space Holo-Sensorium)"
   },
   "metric_weights": {
     "weight_topology": 0.3,
@@ -649,7 +676,7 @@
     "w1_w2_leakage_prevented": true,
     "strictly_deterministic": true
   },
-  "continuous_feature_count": 35,
+  "continuous_feature_count": 44,
   "continuous_feature_names": [
     "motion_accel_magnitude",
     "motion_accel_rms",
@@ -685,6 +712,15 @@
     "ambient_rf_shannon_entropy",
     "cellular_tower_churn_rate",
     "touch_interval_jitter",
-    "attention_fragmentation_entropy"
+    "attention_fragmentation_entropy",
+    "compute_power_dissipation_watts",
+    "battery_internal_impedance_miliohm",
+    "rotational_kinetic_energy",
+    "kinematic_jerk_metric",
+    "rf_spectral_penetration_ratio",
+    "ble_rssi_spatial_variance",
+    "acoustic_spectral_centroid_khz",
+    "acoustic_crest_factor",
+    "state_residence_persistence_hours"
   ]
 }

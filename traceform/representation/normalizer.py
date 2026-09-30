@@ -73,6 +73,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "touch_interval_jitter",
     # Multitask attention fragmentation entropy (35)
     "attention_fragmentation_entropy",
+    # Estimated SoC computational power dissipation in Watts (36)
+    "compute_power_dissipation_watts",
+    # Battery dynamic electrochemical internal impedance in mOhm (37)
+    "battery_internal_impedance_miliohm",
+    # 3D rotational kinetic energy in rad^2/s^2 (38)
+    "rotational_kinetic_energy",
+    # Kinematic jerk vector derivative in m/s^3 (39)
+    "kinematic_jerk_metric",
+    # Dual-band RF 2.4GHz vs 5GHz propagation ratio (40)
+    "rf_spectral_penetration_ratio",
+    # Micro-spatial BLE RSSI variance in dB^2 (41)
+    "ble_rssi_spatial_variance",
+    # Acoustic spectral centroid brightness in kHz (42)
+    "acoustic_spectral_centroid_khz",
+    # Acoustic crest factor peak-to-RMS ratio (43)
+    "acoustic_crest_factor",
+    # Current macro-state residence persistence in hours (44)
+    "state_residence_persistence_hours",
 ]
 
 
@@ -117,6 +135,11 @@ class MultimodalNormalizer:
         self._last_temp: Optional[float] = None
         self._last_ts_seconds: Optional[float] = None
         self._cell_history: deque[Tuple[float, str]] = deque(maxlen=100)
+        self._last_accel_raw: Optional[List[float]] = None
+        self._last_voltage_mv: Optional[float] = None
+        self._last_current_ua: Optional[float] = None
+        self._residence_regime: Optional[str] = None
+        self._residence_start_ts: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -137,6 +160,11 @@ class MultimodalNormalizer:
         self._last_temp = None
         self._last_ts_seconds = None
         self._cell_history.clear()
+        self._last_accel_raw = None
+        self._last_voltage_mv = None
+        self._last_current_ua = None
+        self._residence_regime = None
+        self._residence_start_ts = None
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -387,11 +415,122 @@ class MultimodalNormalizer:
             else:
                 attention_frag_entropy = 0.0
 
+        # 19. Estimated SoC computational power dissipation in Watts (36)
+        comp_power_direct = dev.get("compute_power_w")
+        if comp_power_direct is not None:
+            compute_power_w = safe_float(comp_power_direct, 0.5)
+        else:
+            base_idle = 0.35
+            screen_pwr = 0.85 * screen_ratio
+            audio_pwr = 0.25 * is_immersed
+            switch_pwr = 0.20 * min(1.0, app_switch_rate / 8.0)
+            compute_power_w = round(min(15.0, max(0.1, base_idle + screen_pwr + audio_pwr + switch_pwr)), 3)
+
+        # 20. Battery dynamic electrochemical internal impedance in mOhm (37)
+        r_int_direct = dev.get("internal_resistance_miliohm")
+        voltage_mv = safe_float(dev.get("voltage_mv"), 4000.0)
+        if r_int_direct is not None:
+            battery_impedance = safe_float(r_int_direct, 180.0)
+        else:
+            battery_impedance = 180.0
+            if self._last_voltage_mv is not None and self._last_current_ua is not None:
+                d_i_ua = abs(battery_current_ua - self._last_current_ua)
+                d_v_mv = abs(voltage_mv - self._last_voltage_mv)
+                if d_i_ua >= 40000.0:
+                    calc_r = (d_v_mv / d_i_ua) * 1000000.0
+                    battery_impedance = round(max(50.0, min(800.0, calc_r)), 1)
+                else:
+                    battery_impedance = round(max(80.0, 160.0 + max(0.0, 30.0 - dev_temp) * 6.0), 1)
+            else:
+                battery_impedance = round(max(80.0, 160.0 + max(0.0, 30.0 - dev_temp) * 6.0), 1)
+
+        # 21. 3D rotational kinetic energy in rad^2/s^2 (38)
+        gyro_raw = mot.get("gyro_raw")
+        if gyro_raw and isinstance(gyro_raw, (list, tuple)) and len(gyro_raw) >= 3:
+            gx = safe_float(gyro_raw[0], 0.0)
+            gy = safe_float(gyro_raw[1], 0.0)
+            gz = safe_float(gyro_raw[2], 0.0)
+            rot_energy = round(min(50.0, 0.5 * (gx * gx + gy * gy + gz * gz)), 5)
+        else:
+            g_energy = safe_float(mot.get("gyro_energy"), 0.0)
+            rot_energy = round(min(50.0, g_energy), 5)
+
+        # 22. Kinematic jerk vector derivative in m/s^3 (39)
+        jerk_metric = 0.0
+        accel_raw = mot.get("accel_raw")
+        if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+            current_accel = [
+                safe_float(accel_raw[0], 0.0),
+                safe_float(accel_raw[1], 0.0),
+                safe_float(accel_raw[2], 9.8),
+            ]
+            if self._last_accel_raw is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+                dt_s = current_ts_seconds - self._last_ts_seconds
+                if 2.0 <= dt_s <= 300.0:
+                    d_ax = current_accel[0] - self._last_accel_raw[0]
+                    d_ay = current_accel[1] - self._last_accel_raw[1]
+                    d_az = current_accel[2] - self._last_accel_raw[2]
+                    jerk_calc = math.sqrt(d_ax * d_ax + d_ay * d_ay + d_az * d_az) / dt_s
+                    jerk_metric = round(min(20.0, jerk_calc), 4)
+            self._last_accel_raw = current_accel
+        else:
+            self._last_accel_raw = None
+
+        # 23. Dual-band RF 2.4GHz vs 5GHz propagation ratio (40)
+        wifi_freq = safe_float(conn.get("wifi_frequency_mhz"), 2412.0)
+        if wifi_conn > 0.0:
+            if wifi_freq >= 4900.0:
+                rf_penetration = round(max(0.1, min(2.0, 0.6 + wifi_rssi_norm * 0.8)), 3)
+            else:
+                rf_penetration = round(max(0.1, min(2.0, 1.1 + wifi_rssi_norm * 0.7)), 3)
+        else:
+            rf_penetration = 0.0
+
+        # 24. Micro-spatial BLE RSSI variance in dB^2 (41)
+        ble_var_direct = dig.get("ble_rssi_spatial_variance")
+        if ble_var_direct is not None:
+            ble_variance = safe_float(ble_var_direct, 0.0)
+        else:
+            if ambient_ble > 1.0:
+                ble_variance = round(min(25.0, ambient_ble * 1.6), 2)
+            else:
+                ble_variance = 0.0
+
+        # 25. Acoustic spectral centroid brightness in kHz (42)
+        aud_cent_direct = aud.get("spectral_centroid_hz")
+        if aud_cent_direct is not None:
+            acoustic_centroid_khz = round(min(10.0, safe_float(aud_cent_direct, 300.0) / 1000.0), 3)
+        else:
+            acoustic_centroid_khz = round(min(10.0, 0.3 + 3.5 * spectral_entropy), 3)
+
+        # 26. Acoustic crest factor peak-to-RMS ratio (43)
+        peak_level = safe_float(aud.get("peak_level"), 0.0)
+        if silence_like >= 0.95 or rms_loudness <= 0.0005:
+            acoustic_crest = 1.0
+        else:
+            raw_crest = peak_level / max(0.001, rms_loudness)
+            acoustic_crest = round(max(1.0, min(25.0, raw_crest)), 2)
+
+        # 27. Current macro-state residence persistence in hours (44)
+        current_regime = "STATIONARY" if stat_like >= 0.8 else "DYNAMIC"
+        if current_ts_seconds is not None:
+            if self._residence_regime == current_regime and self._residence_start_ts is not None:
+                dwell_sec = max(0.0, current_ts_seconds - self._residence_start_ts)
+                residence_persistence_hours = round(min(24.0, dwell_sec / 3600.0), 3)
+            else:
+                self._residence_regime = current_regime
+                self._residence_start_ts = current_ts_seconds
+                residence_persistence_hours = 0.0
+        else:
+            residence_persistence_hours = 0.0
+
         # Update persistent state across frames
         if current_ts_seconds is not None:
             self._last_ts_seconds = current_ts_seconds
             self._last_pressure = pressure
             self._last_temp = dev_temp
+            self._last_voltage_mv = voltage_mv
+            self._last_current_ua = battery_current_ua
 
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
@@ -429,6 +568,15 @@ class MultimodalNormalizer:
             "cellular_tower_churn_rate": cellular_churn,
             "touch_interval_jitter": touch_interval_jitter,
             "attention_fragmentation_entropy": attention_frag_entropy,
+            "compute_power_dissipation_watts": compute_power_w,
+            "battery_internal_impedance_miliohm": battery_impedance,
+            "rotational_kinetic_energy": rot_energy,
+            "kinematic_jerk_metric": jerk_metric,
+            "rf_spectral_penetration_ratio": rf_penetration,
+            "ble_rssi_spatial_variance": ble_variance,
+            "acoustic_spectral_centroid_khz": acoustic_centroid_khz,
+            "acoustic_crest_factor": acoustic_crest,
+            "state_residence_persistence_hours": residence_persistence_hours,
         }
 
         # Topological & Categorical identifiers
