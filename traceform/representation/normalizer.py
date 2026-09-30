@@ -109,6 +109,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "touch_engagement_decay_factor",
     # Rolling phase-space recurrence density (53)
     "phase_space_recurrence_density",
+    # Geomagnetic 3D dip inclination angle in degrees [-90, 90] (54)
+    "geomagnetic_field_dip_angle_deg",
+    # Kinematic 3D trajectory Frenet curvature (55)
+    "kinematic_trajectory_curvature",
+    # Barometric high-frequency pressure turbulence variance in hPa^2 (56)
+    "barometric_turbulence_variance",
+    # Photometric ambient dynamic contrast ratio (57)
+    "photometric_contrast_ratio",
+    # Acoustic second-order spectral bandwidth in kHz (58)
+    "acoustic_spectral_bandwidth_khz",
+    # Wi-Fi multi-AP RSSI distribution skewness (59)
+    "wifi_rssi_distribution_skewness",
+    # Battery internal electrochemical Joule heat loss in Watts (60)
+    "thermodynamic_joule_heat_loss_watts",
+    # Multi-modal phase space kinetic migration velocity in s^-1 (61)
+    "phase_space_kinetic_velocity",
+    # Neuromotor touch tap recoil deceleration intensity (62)
+    "neuromotor_tap_recoil_intensity",
 ]
 
 
@@ -162,6 +180,11 @@ class MultimodalNormalizer:
         self._last_conduction_rate: Optional[float] = None
         self._last_touch_ts: Optional[float] = None
         self._recent_coords: deque[Tuple[float, Tuple[float, ...]]] = deque(maxlen=20)
+        self._pressure_window: deque[float] = deque(maxlen=6)
+        self._lux_window: deque[float] = deque(maxlen=6)
+        self._last_vec_summary: Optional[Tuple[float, ...]] = None
+        self._last_vec_ts: Optional[float] = None
+        self._last_az: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -191,6 +214,11 @@ class MultimodalNormalizer:
         self._last_conduction_rate = None
         self._last_touch_ts = None
         self._recent_coords.clear()
+        self._pressure_window.clear()
+        self._lux_window.clear()
+        self._last_vec_summary = None
+        self._last_vec_ts = None
+        self._last_az = None
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -498,9 +526,6 @@ class MultimodalNormalizer:
                     d_az = current_accel[2] - self._last_accel_raw[2]
                     jerk_calc = math.sqrt(d_ax * d_ax + d_ay * d_ay + d_az * d_az) / dt_s
                     jerk_metric = round(min(20.0, jerk_calc), 4)
-            self._last_accel_raw = current_accel
-        else:
-            self._last_accel_raw = None
 
         # 23. Dual-band RF 2.4GHz vs 5GHz propagation ratio (40)
         wifi_freq = safe_float(conn.get("wifi_frequency_mhz"), 2412.0)
@@ -666,6 +691,110 @@ class MultimodalNormalizer:
         )
         recurrence_density = round(float(rec_count) / float(len(self._recent_coords)), 3)
 
+        # 37. Geomagnetic 3D dip inclination angle in degrees [-90, 90] (54)
+        mag_dip_direct = env.get("geomagnetic_dip_angle_deg") or mot.get("geomagnetic_dip_angle_deg")
+        if mag_dip_direct is not None:
+            geomag_dip_angle = round(max(-90.0, min(90.0, safe_float(mag_dip_direct, 45.0))), 2)
+        else:
+            if mag_raw and isinstance(mag_raw, (list, tuple)) and len(mag_raw) >= 3:
+                bx = safe_float(mag_raw[0], 0.0)
+                by = safe_float(mag_raw[1], 0.0)
+                bz = safe_float(mag_raw[2], 45.0)
+                bh = math.sqrt(bx * bx + by * by)
+                if bh > 0.1:
+                    geomag_dip_angle = round(math.degrees(math.atan2(bz, bh)), 2)
+                else:
+                    geomag_dip_angle = 90.0 if bz >= 0 else -90.0
+            else:
+                geomag_dip_angle = 45.0
+
+        # 38. Kinematic 3D trajectory Frenet curvature (55)
+        trajectory_curvature = 0.0
+        if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+            curr_a = [safe_float(accel_raw[0], 0.0), safe_float(accel_raw[1], 0.0), safe_float(accel_raw[2], 9.8)]
+            if self._last_accel_raw is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+                dt_s = current_ts_seconds - self._last_ts_seconds
+                if 2.0 <= dt_s <= 300.0:
+                    d_ax = (curr_a[0] - self._last_accel_raw[0]) / dt_s
+                    d_ay = (curr_a[1] - self._last_accel_raw[1]) / dt_s
+                    d_az = (curr_a[2] - self._last_accel_raw[2]) / dt_s
+                    cx = curr_a[1] * d_az - curr_a[2] * d_ay
+                    cy = curr_a[2] * d_ax - curr_a[0] * d_az
+                    cz = curr_a[0] * d_ay - curr_a[1] * d_ax
+                    cross_mag = math.sqrt(cx * cx + cy * cy + cz * cz)
+                    a_mag_cubed = (curr_a[0]**2 + curr_a[1]**2 + curr_a[2]**2) ** 1.5
+                    trajectory_curvature = round(min(5.0, cross_mag / max(0.1, a_mag_cubed)), 4)
+
+        # 39. Barometric high-frequency pressure turbulence variance in hPa^2 (56)
+        if pressure > 0.0:
+            if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+                self._pressure_window.append(pressure)
+            if len(self._pressure_window) >= 2:
+                p_mean = sum(self._pressure_window) / len(self._pressure_window)
+                p_var = sum((x - p_mean) ** 2 for x in self._pressure_window) / len(self._pressure_window)
+                baro_turbulence = round(min(10.0, p_var), 4)
+            else:
+                baro_turbulence = 0.0
+        else:
+            baro_turbulence = 0.0
+
+        # 40. Photometric ambient dynamic contrast ratio (57)
+        if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+            self._lux_window.append(lux_val)
+        if len(self._lux_window) >= 2:
+            lux_mean = sum(self._lux_window) / len(self._lux_window)
+            contrast_val = math.log(1.0 + abs(lux_val - lux_mean) / (lux_mean + 1.0))
+            photo_contrast = round(min(6.0, max(0.0, contrast_val)), 3)
+        else:
+            photo_contrast = 0.0
+
+        # 41. Acoustic second-order spectral bandwidth in kHz (58)
+        aud_bw_direct = aud.get("spectral_bandwidth_hz") or aud.get("bandwidth_khz")
+        if aud_bw_direct is not None:
+            bw_val = safe_float(aud_bw_direct, 1200.0)
+            spectral_bandwidth_khz = round(min(8.0, max(0.1, bw_val / 1000.0 if bw_val > 20.0 else bw_val)), 3)
+        else:
+            spectral_bandwidth_khz = round(min(8.0, max(0.1, 0.4 * acoustic_centroid_khz + 1.8 * spectral_entropy)), 3)
+
+        # 42. Wi-Fi multi-AP RSSI distribution skewness (59)
+        wifi_skew_direct = conn.get("wifi_rssi_distribution_skewness") or dig.get("wifi_rssi_distribution_skewness")
+        if wifi_skew_direct is not None:
+            wifi_skewness = round(max(-3.0, min(3.0, safe_float(wifi_skew_direct, 0.0))), 3)
+        else:
+            if wifi_conn > 0.0:
+                wifi_skewness = round(max(-2.5, min(2.5, (0.5 - wifi_rssi_norm) * 3.0)), 3)
+            else:
+                wifi_skewness = 0.0
+
+        # 43. Battery internal electrochemical Joule heat loss in Watts (60)
+        i_amp = abs(battery_current_ua) * 1e-6
+        r_ohm = battery_impedance * 1e-3
+        joule_heat_w = round(min(5.0, (i_amp ** 2) * r_ohm), 5)
+
+        # 44. Multi-modal phase space kinetic migration velocity in s^-1 (61)
+        phase_velocity = 0.0
+        summary_5d = (accel_mag, dev_temp, battery_frac, log_lux, stat_like)
+        if self._last_vec_summary is not None and self._last_vec_ts is not None and current_ts_seconds is not None:
+            dt_s = current_ts_seconds - self._last_vec_ts
+            if 2.0 <= dt_s <= 300.0:
+                dist_sum = math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(summary_5d, self._last_vec_summary)))
+                phase_velocity = round(min(5.0, dist_sum / dt_s), 4)
+        if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+            self._last_vec_summary = summary_5d
+            self._last_vec_ts = current_ts_seconds
+
+        # 45. Neuromotor touch tap recoil deceleration intensity (62)
+        tap_recoil = 0.0
+        if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+            az_raw_val = safe_float(accel_raw[2], 9.8)
+            if self._last_az is not None:
+                d_az = abs(az_raw_val - self._last_az)
+                tap_recoil = round(min(8.0, d_az / (1.0 + touch_velocity * 0.5)), 3)
+            if self._last_ts_seconds is None or current_ts_seconds != self._last_ts_seconds:
+                self._last_az = az_raw_val
+        else:
+            self._last_az = None
+
         # Update persistent state across frames
         if current_ts_seconds is not None:
             self._last_ts_seconds = current_ts_seconds
@@ -673,6 +802,14 @@ class MultimodalNormalizer:
             self._last_temp = dev_temp
             self._last_voltage_mv = voltage_mv
             self._last_current_ua = battery_current_ua
+            if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+                self._last_accel_raw = [
+                    safe_float(accel_raw[0], 0.0),
+                    safe_float(accel_raw[1], 0.0),
+                    safe_float(accel_raw[2], 9.8),
+                ]
+            else:
+                self._last_accel_raw = None
 
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
@@ -728,6 +865,15 @@ class MultimodalNormalizer:
             "wifi_spatial_shannon_entropy": wifi_shannon_entropy,
             "touch_engagement_decay_factor": touch_engagement,
             "phase_space_recurrence_density": recurrence_density,
+            "geomagnetic_field_dip_angle_deg": geomag_dip_angle,
+            "kinematic_trajectory_curvature": trajectory_curvature,
+            "barometric_turbulence_variance": baro_turbulence,
+            "photometric_contrast_ratio": photo_contrast,
+            "acoustic_spectral_bandwidth_khz": spectral_bandwidth_khz,
+            "wifi_rssi_distribution_skewness": wifi_skewness,
+            "thermodynamic_joule_heat_loss_watts": joule_heat_w,
+            "phase_space_kinetic_velocity": phase_velocity,
+            "neuromotor_tap_recoil_intensity": tap_recoil,
         }
 
         # Topological & Categorical identifiers

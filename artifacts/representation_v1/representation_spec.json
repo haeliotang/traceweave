@@ -61,7 +61,16 @@
       "thermal_flux_acceleration_dt2",
       "wifi_spatial_shannon_entropy",
       "touch_engagement_decay_factor",
-      "phase_space_recurrence_density"
+      "phase_space_recurrence_density",
+      "geomagnetic_field_dip_angle_deg",
+      "kinematic_trajectory_curvature",
+      "barometric_turbulence_variance",
+      "photometric_contrast_ratio",
+      "acoustic_spectral_bandwidth_khz",
+      "wifi_rssi_distribution_skewness",
+      "thermodynamic_joule_heat_loss_watts",
+      "phase_space_kinetic_velocity",
+      "neuromotor_tap_recoil_intensity"
     ],
     "medians": {
       "motion_accel_magnitude": 9.8093,
@@ -116,7 +125,16 @@
       "thermal_flux_acceleration_dt2": 0.0,
       "wifi_spatial_shannon_entropy": 4.183,
       "touch_engagement_decay_factor": 0.0,
-      "phase_space_recurrence_density": 1.0
+      "phase_space_recurrence_density": 1.0,
+      "geomagnetic_field_dip_angle_deg": 45.0,
+      "kinematic_trajectory_curvature": 0.0,
+      "barometric_turbulence_variance": 0.0028,
+      "photometric_contrast_ratio": 0.133,
+      "acoustic_spectral_bandwidth_khz": 0.8,
+      "wifi_rssi_distribution_skewness": -0.857,
+      "thermodynamic_joule_heat_loss_watts": 0.01638,
+      "phase_space_kinetic_velocity": 0.007,
+      "neuromotor_tap_recoil_intensity": 0.012
     },
     "iqrs": {
       "motion_accel_magnitude": 0.0197,
@@ -171,10 +189,19 @@
       "thermal_flux_acceleration_dt2": 0.08,
       "wifi_spatial_shannon_entropy": 1.0,
       "touch_engagement_decay_factor": 1.0,
-      "phase_space_recurrence_density": 1.0
+      "phase_space_recurrence_density": 1.0,
+      "geomagnetic_field_dip_angle_deg": 1.0,
+      "kinematic_trajectory_curvature": 1.0,
+      "barometric_turbulence_variance": 0.0019,
+      "photometric_contrast_ratio": 0.128,
+      "acoustic_spectral_bandwidth_khz": 1.0,
+      "wifi_rssi_distribution_skewness": 1.0,
+      "thermodynamic_joule_heat_loss_watts": 1.0,
+      "phase_space_kinetic_velocity": 0.0083,
+      "neuromotor_tap_recoil_intensity": 0.015
     },
     "fitted_observation_count": 1200,
-    "fit_window_description": "Day 1\u20137 Discovery Window (53D Deep-Phase Topological Sensorium)"
+    "fit_window_description": "Day 1\u20137 Discovery Window (62D Canonical Trans-Spectral Sensorium)"
   },
   "metric_weights": {
     "weight_topology": 0.3,
@@ -703,7 +730,7 @@
     "w1_w2_leakage_prevented": true,
     "strictly_deterministic": true
   },
-  "continuous_feature_count": 53,
+  "continuous_feature_count": 62,
   "continuous_feature_names": [
     "motion_accel_magnitude",
     "motion_accel_rms",
@@ -757,6 +784,15 @@
     "thermal_flux_acceleration_dt2",
     "wifi_spatial_shannon_entropy",
     "touch_engagement_decay_factor",
-    "phase_space_recurrence_density"
+    "phase_space_recurrence_density",
+    "geomagnetic_field_dip_angle_deg",
+    "kinematic_trajectory_curvature",
+    "barometric_turbulence_variance",
+    "photometric_contrast_ratio",
+    "acoustic_spectral_bandwidth_khz",
+    "wifi_rssi_distribution_skewness",
+    "thermodynamic_joule_heat_loss_watts",
+    "phase_space_kinetic_velocity",
+    "neuromotor_tap_recoil_intensity"
   ]
 }
