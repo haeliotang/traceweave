@@ -12,6 +12,7 @@ Extracts non-invasive, unsemantic digital interaction metrics from Android OS:
 from __future__ import annotations
 
 import datetime
+import math
 from pathlib import Path
 import re
 import shutil
@@ -105,6 +106,9 @@ class DigitalSensoriumProbe:
             "unlock_burst_count": 0.0,
             "touch_interaction_velocity": 0.0,
             "ambient_social_ble_density": 0.0,
+            "ambient_rf_shannon_entropy": 0.0,
+            "touch_interval_jitter": 0.0,
+            "attention_fragmentation_entropy": 0.0,
         }
 
         # Check immediate screen state
@@ -117,6 +121,9 @@ class DigitalSensoriumProbe:
             metrics["screen_on_ratio"] = 0.0
 
         metrics["ambient_social_ble_density"] = self.sample_social_ble_density(fallback_wifi_ap_count)
+
+        if fallback_wifi_ap_count > 0:
+            metrics["ambient_rf_shannon_entropy"] = round(min(5.0, math.log2(float(fallback_wifi_ap_count) + 1.0) * 0.85), 3)
 
         if not self.has_dumpsys:
             return metrics
@@ -143,10 +150,15 @@ class DigitalSensoriumProbe:
 
                 app_switches = 0
                 unlock_events = 0
+                package_counts: Dict[str, int] = {}
 
                 for line in recent_lines:
                     if "type=ACTIVITY_RESUMED" in line:
                         app_switches += 1
+                        m = re.search(r"package=([^\s]+)", line)
+                        if m:
+                            pkg = m.group(1)
+                            package_counts[pkg] = package_counts.get(pkg, 0) + 1
                     elif "type=SCREEN_INTERACTIVE" in line or "type=KEYGUARD_HIDDEN" in line:
                         unlock_events += 1
 
@@ -154,11 +166,24 @@ class DigitalSensoriumProbe:
                 metrics["app_switch_rate"] = float(min(50, app_switches))
                 metrics["unlock_burst_count"] = float(min(20, unlock_events))
 
-                # Touch velocity cadence estimation: combines screen active state with switch flux
+                # Touch velocity cadence & motor jitter estimation
                 if screen_state == "ON":
                     metrics["touch_interaction_velocity"] = round(min(10.0, 1.0 + app_switches * 0.4 + unlock_events * 0.3), 3)
+                    jitter_val = (app_switches * 0.25 + unlock_events * 0.2) / (1.0 + metrics["touch_interaction_velocity"] * 0.2)
+                    metrics["touch_interval_jitter"] = round(min(2.0, jitter_val), 3)
                 else:
                     metrics["touch_interaction_velocity"] = 0.0
+                    metrics["touch_interval_jitter"] = 0.0
+
+                # Compute Attention Fragmentation Entropy from active package distribution
+                if package_counts and app_switches > 0:
+                    total_p = float(sum(package_counts.values()))
+                    ent = 0.0
+                    for cnt in package_counts.values():
+                        p = cnt / total_p
+                        if p > 0.0:
+                            ent -= p * math.log2(p)
+                    metrics["attention_fragmentation_entropy"] = round(min(4.0, ent), 3)
         except Exception:
             pass
 

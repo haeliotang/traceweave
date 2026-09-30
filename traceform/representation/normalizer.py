@@ -55,6 +55,24 @@ CONTINUOUS_FEATURE_NAMES = [
     "touch_interaction_velocity",
     # Ambient social BLE / RF density (26)
     "ambient_social_ble_density",
+    # Physiological micro-tremor & ballistocardiogram (27)
+    "physio_ballisto_tremor_energy",
+    # Net thermal conduction gradient rate (28)
+    "thermal_conduction_rate_dt",
+    # 3D gravity tilt zenith angle (29)
+    "device_zenith_tilt_angle",
+    # Geomagnetic indoor structural anomaly flux (30)
+    "geomagnetic_flux_divergence",
+    # Barometric vertical ascent/descent velocity (31)
+    "barometric_vertical_velocity",
+    # Ambient RF Shannon information entropy (32)
+    "ambient_rf_shannon_entropy",
+    # Cellular base station handover churn rate (33)
+    "cellular_tower_churn_rate",
+    # Touch motor interval jitter / CV (34)
+    "touch_interval_jitter",
+    # Multitask attention fragmentation entropy (35)
+    "attention_fragmentation_entropy",
 ]
 
 
@@ -95,6 +113,10 @@ class MultimodalNormalizer:
     def __init__(self, params: Optional[NormalizationParams] = None):
         self.params = params
         self._geo_window: deque[Tuple[float, float]] = deque(maxlen=60)
+        self._last_pressure: Optional[float] = None
+        self._last_temp: Optional[float] = None
+        self._last_ts_seconds: Optional[float] = None
+        self._cell_history: deque[Tuple[float, str]] = deque(maxlen=100)
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -107,6 +129,14 @@ class MultimodalNormalizer:
     def reset_geo_window(self) -> None:
         """Resets the sliding spatial coordinate buffer for radius of gyration."""
         self._geo_window.clear()
+
+    def reset_state(self) -> None:
+        """Resets all sliding buffers and derivative states across reboots or discontinuous sessions."""
+        self._geo_window.clear()
+        self._last_pressure = None
+        self._last_temp = None
+        self._last_ts_seconds = None
+        self._cell_history.clear()
 
     @staticmethod
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -211,6 +241,7 @@ class MultimodalNormalizer:
         sin_phase = 0.0
         cos_phase = 1.0
         weekly_phase = 0.0
+        current_ts_seconds: Optional[float] = None
         if ts_str:
             try:
                 import datetime
@@ -221,6 +252,7 @@ class MultimodalNormalizer:
                 cos_phase = math.cos(2.0 * math.pi * daily_fraction)
                 weekly_fraction = (dt.weekday() + daily_fraction) / 7.0
                 weekly_phase = math.sin(2.0 * math.pi * weekly_fraction)
+                current_ts_seconds = dt.timestamp()
             except Exception:
                 pass
 
@@ -253,6 +285,114 @@ class MultimodalNormalizer:
                 # Nominal indoor micro-oscillation fallback (Defect 1)
                 radius_of_gyration = 0.05
 
+        # 10. Physiological micro-tremor & ballistocardiogram (27)
+        physio_direct = mot.get("ballisto_energy")
+        if physio_direct is not None:
+            physio_tremor = safe_float(physio_direct, 0.0)
+        else:
+            gyro_energy = safe_float(mot.get("gyro_energy"), 0.0)
+            if stat_like >= 0.8:
+                physio_tremor = round(min(1.0, mot_energy * stat_like * max(0.0, 1.0 - 50.0 * gyro_energy)), 4)
+            else:
+                physio_tremor = 0.0
+
+        # 11. Net thermal conduction gradient rate (28) in deg C / hour
+        conduction_rate = 0.0
+        if self._last_temp is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+            dt_s = current_ts_seconds - self._last_ts_seconds
+            if 5.0 <= dt_s <= 3600.0:
+                raw_rate = ((dev_temp - self._last_temp) / dt_s) * 3600.0
+                internal_bias = (1.5 if is_charging > 0.0 else 0.0) + (0.8 if screen_ratio > 0.0 else 0.0)
+                conduction_rate = round(max(-10.0, min(10.0, raw_rate - internal_bias)), 3)
+
+        # 12. 3D gravity tilt zenith angle (29) in degrees [0, 180]
+        accel_raw = mot.get("accel_raw")
+        if accel_raw and isinstance(accel_raw, (list, tuple)) and len(accel_raw) >= 3:
+            ax = safe_float(accel_raw[0], 0.0)
+            ay = safe_float(accel_raw[1], 0.0)
+            az = safe_float(accel_raw[2], 9.8)
+            norm = math.sqrt(ax * ax + ay * ay + az * az)
+            if norm > 0.1:
+                cos_zenith = max(-1.0, min(1.0, az / norm))
+                tilt_angle = round(math.degrees(math.acos(cos_zenith)), 2)
+            else:
+                tilt_angle = 0.0
+        else:
+            tilt_angle = 0.0
+
+        # 13. Geomagnetic indoor structural anomaly flux (30) in uT
+        mag_raw = mot.get("mag_raw") or env.get("magnetic_field_ut")
+        if mag_raw is not None:
+            if isinstance(mag_raw, (list, tuple)) and len(mag_raw) >= 3:
+                bx = safe_float(mag_raw[0], 0.0)
+                by = safe_float(mag_raw[1], 0.0)
+                bz = safe_float(mag_raw[2], 45.0)
+                b_mag = math.sqrt(bx * bx + by * by + bz * bz)
+                mag_divergence = round(abs(b_mag - 45.0), 2)
+            else:
+                mag_divergence = round(abs(safe_float(mag_raw, 45.0) - 45.0), 2)
+        else:
+            wifi_cnt = safe_float(conn.get("wifi_ap_count"), 0.0)
+            mag_divergence = round(min(50.0, math.log(1.0 + wifi_cnt) * 6.5), 2)
+
+        # 14. Barometric vertical ascent/descent velocity (31) in m/s
+        vertical_velocity = 0.0
+        if self._last_pressure is not None and self._last_ts_seconds is not None and current_ts_seconds is not None:
+            dt_s = current_ts_seconds - self._last_ts_seconds
+            if 5.0 <= dt_s <= 600.0:
+                dp = pressure - self._last_pressure
+                vz_calc = -8.43 * (dp / dt_s)
+                vertical_velocity = round(max(-5.0, min(5.0, vz_calc)), 3)
+
+        # 15. Ambient RF Shannon information entropy (32) in bits [0, 5]
+        rf_ent_direct = dig.get("ambient_rf_shannon_entropy")
+        if rf_ent_direct is not None:
+            ambient_rf_entropy = safe_float(rf_ent_direct, 0.0)
+        else:
+            wifi_cnt = safe_float(conn.get("wifi_ap_count"), 0.0)
+            ambient_rf_entropy = round(min(5.0, math.log2(wifi_cnt + 1.0) * 0.85), 3) if wifi_cnt > 0 else 0.0
+
+        # 16. Cellular base station handover churn rate (33) in handovers/hr
+        cell_fp = conn.get("cellular_cell_fingerprint") or "NO_CELL"
+        if current_ts_seconds is not None:
+            self._cell_history.append((current_ts_seconds, str(cell_fp)))
+            cutoff = current_ts_seconds - 3600.0
+            recent_cells = [c for t, c in self._cell_history if t >= cutoff and c != "NO_CELL"]
+            if len(recent_cells) >= 2:
+                handovers = sum(1 for i in range(1, len(recent_cells)) if recent_cells[i] != recent_cells[i-1])
+                dt_hr = max(0.1, (current_ts_seconds - cutoff) / 3600.0)
+                cellular_churn = round(min(30.0, float(handovers) / dt_hr), 2)
+            else:
+                cellular_churn = 0.0
+        else:
+            cellular_churn = 0.0
+
+        # 17. Touch motor interval jitter / CV (34) [0, 2]
+        touch_jitter_direct = dig.get("touch_interval_jitter")
+        if touch_jitter_direct is not None:
+            touch_interval_jitter = safe_float(touch_jitter_direct, 0.0)
+        else:
+            if screen_ratio > 0.0:
+                touch_interval_jitter = round(min(2.0, (app_switch_rate * 0.25 + unlock_burst_count * 0.2) / (1.0 + touch_velocity * 0.2)), 3)
+            else:
+                touch_interval_jitter = 0.0
+
+        # 18. Multitask attention fragmentation entropy (35) in bits [0, 4]
+        attention_ent_direct = dig.get("attention_fragmentation_entropy")
+        if attention_ent_direct is not None:
+            attention_frag_entropy = safe_float(attention_ent_direct, 0.0)
+        else:
+            if app_switch_rate > 1.0:
+                attention_frag_entropy = round(min(4.0, math.log2(min(16.0, app_switch_rate))), 3)
+            else:
+                attention_frag_entropy = 0.0
+
+        # Update persistent state across frames
+        if current_ts_seconds is not None:
+            self._last_ts_seconds = current_ts_seconds
+            self._last_pressure = pressure
+            self._last_temp = dev_temp
+
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
             "motion_accel_rms": accel_rms,
@@ -280,6 +420,15 @@ class MultimodalNormalizer:
             "spatial_radius_of_gyration": radius_of_gyration,
             "touch_interaction_velocity": touch_velocity,
             "ambient_social_ble_density": ambient_ble,
+            "physio_ballisto_tremor_energy": physio_tremor,
+            "thermal_conduction_rate_dt": conduction_rate,
+            "device_zenith_tilt_angle": tilt_angle,
+            "geomagnetic_flux_divergence": mag_divergence,
+            "barometric_vertical_velocity": vertical_velocity,
+            "ambient_rf_shannon_entropy": ambient_rf_entropy,
+            "cellular_tower_churn_rate": cellular_churn,
+            "touch_interval_jitter": touch_interval_jitter,
+            "attention_fragmentation_entropy": attention_frag_entropy,
         }
 
         # Topological & Categorical identifiers
@@ -304,7 +453,7 @@ class MultimodalNormalizer:
         if not observations:
             raise ValueError("Cannot fit normalizer on empty observation list.")
 
-        self.reset_geo_window()
+        self.reset_state()
         feature_values: Dict[str, List[float]] = {name: [] for name in CONTINUOUS_FEATURE_NAMES}
 
         for obs in observations:
