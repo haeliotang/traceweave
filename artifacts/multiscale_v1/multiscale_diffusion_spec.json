@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.multiscale-diffusion-spec.v1",
-  "generated_at_utc": "2026-09-30T20:10:04.363711+00:00",
-  "audit_duration_seconds": 0.0391,
+  "generated_at_utc": "2026-09-30T20:36:35.292684+00:00",
+  "audit_duration_seconds": 0.0312,
   "msd_lags": [
     1,
     2,
@@ -51,49 +51,56 @@
         "scale_duration_seconds": 30.0,
         "state_vocabulary_size": 16,
         "transition_determinism": 0.5005,
-        "mean_transition_entropy": 2.1392
+        "mean_transition_entropy": 2.1392,
+        "mean_micro_volatility": 0.0
       },
       {
         "scale_factor": 2,
         "scale_duration_seconds": 60.0,
         "state_vocabulary_size": 16,
         "transition_determinism": 0.5086,
-        "mean_transition_entropy": 2.2465
+        "mean_transition_entropy": 2.2465,
+        "mean_micro_volatility": 0.5739
       },
       {
         "scale_factor": 4,
         "scale_duration_seconds": 120.0,
         "state_vocabulary_size": 16,
         "transition_determinism": 0.4837,
-        "mean_transition_entropy": 2.071
+        "mean_transition_entropy": 2.071,
+        "mean_micro_volatility": 1.0462
       },
       {
         "scale_factor": 8,
         "scale_duration_seconds": 240.0,
         "state_vocabulary_size": 16,
         "transition_determinism": 0.5551,
-        "mean_transition_entropy": 1.7458
+        "mean_transition_entropy": 1.7458,
+        "mean_micro_volatility": 1.3546
       },
       {
         "scale_factor": 16,
         "scale_duration_seconds": 480.0,
         "state_vocabulary_size": 15,
         "transition_determinism": 0.5882,
-        "mean_transition_entropy": 1.5346
+        "mean_transition_entropy": 1.5346,
+        "mean_micro_volatility": 1.655
       },
       {
         "scale_factor": 32,
         "scale_duration_seconds": 960.0,
         "state_vocabulary_size": 15,
         "transition_determinism": 0.587,
-        "mean_transition_entropy": 1.3759
+        "mean_transition_entropy": 1.3759,
+        "mean_micro_volatility": 1.9966
       },
       {
         "scale_factor": 64,
         "scale_duration_seconds": 1920.0,
         "state_vocabulary_size": 12,
         "transition_determinism": 0.5074,
-        "mean_transition_entropy": 1.5369
+        "mean_transition_entropy": 1.5369,
+        "mean_micro_volatility": 2.328
       }
     ],
     "optimal_scale": {
@@ -101,7 +108,8 @@
       "scale_duration_seconds": 480.0,
       "state_vocabulary_size": 15,
       "transition_determinism": 0.5882,
-      "mean_transition_entropy": 1.5346
+      "mean_transition_entropy": 1.5346,
+      "mean_micro_volatility": 1.655
     }
   }
 }

@@ -1,13 +1,13 @@
 {
   "protocol": "pixel-sensorium.manifold-dynamics-spec.v1",
-  "generated_at_utc": "2026-09-30T19:57:46.430982+00:00",
+  "generated_at_utc": "2026-09-30T20:36:34.597765+00:00",
   "manifold_config": {
     "grid_height": 4,
     "grid_width": 4,
     "k_states": 16,
     "beta_kinetic": 0.25,
-    "fit_duration_seconds": 2.279,
-    "quantization_ms_per_frame": 0.0718
+    "fit_duration_seconds": 2.286,
+    "quantization_ms_per_frame": 0.072
   },
   "w1_attractor_basins": [
     {

@@ -131,7 +131,7 @@ class TestPhysicalRunnerSupervisionContractV1(unittest.TestCase):
         with patch.object(sup, "DEFAULT_PHYSICAL_DIR", self.mock_physical_dir):
             with patch("fcntl.flock", side_effect=BlockingIOError):
                 obs = sup.observe_physical_runner()
-                self.assertEqual(obs["status"], "RUNNING")
+                self.assertEqual(obs["status"], "STALE_WARNING")
                 self.assertFalse(obs["healthy"])
                 self.assertTrue(obs["seconds_since_last_observation"] > 300.0)
 
