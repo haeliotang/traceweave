@@ -140,6 +140,8 @@ class EdgeManifoldDaemon:
             self.manifold.last_obs_vector = None
         if hasattr(self.manifold, "last_velocity"):
             self.manifold.last_velocity = None
+        if hasattr(self.normalizer, "reset_geo_window"):
+            self.normalizer.reset_geo_window()
 
     def process_observation(
         self,

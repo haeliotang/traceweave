@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.multiscale-diffusion-spec.v1",
-  "generated_at_utc": "2026-09-30T21:22:34.984492+00:00",
-  "audit_duration_seconds": 0.0327,
+  "generated_at_utc": "2026-09-30T21:34:38.678312+00:00",
+  "audit_duration_seconds": 0.0333,
   "msd_lags": [
     1,
     2,
@@ -27,22 +27,22 @@
   "multiscale_metrics": {
     "record_count": 5961,
     "diffusion_regime": {
-      "hurst_exponent": 0.0339,
-      "r_squared": 0.644,
+      "hurst_exponent": 0.0623,
+      "r_squared": 0.7944,
       "regime_type": "SUB_DIFFUSIVE",
-      "interpretation": "Sub-diffusive trapping (H=0.034 < 0.5): Trajectory is strongly confined inside potential well attractors.",
+      "interpretation": "Sub-diffusive trapping (H=0.062 < 0.5): Trajectory is strongly confined inside potential well attractors.",
       "msd_by_lag": {
-        "1": 3.4183,
-        "2": 2.5717,
-        "4": 2.7945,
-        "8": 3.0726,
-        "16": 3.1976,
-        "32": 3.4265,
-        "64": 3.7156,
-        "128": 4.006,
-        "256": 4.1835,
-        "512": 4.2689,
-        "1024": 4.3
+        "1": 2.0852,
+        "2": 1.512,
+        "4": 1.7855,
+        "8": 1.9676,
+        "16": 2.0976,
+        "32": 2.3307,
+        "64": 2.7121,
+        "128": 3.0655,
+        "256": 3.4876,
+        "512": 3.5225,
+        "1024": 3.8746
       }
     },
     "coarse_grained_scales": [
@@ -50,66 +50,66 @@
         "scale_factor": 1,
         "scale_duration_seconds": 30.0,
         "state_vocabulary_size": 16,
-        "transition_determinism": 0.4515,
-        "mean_transition_entropy": 2.2837,
+        "transition_determinism": 0.5459,
+        "mean_transition_entropy": 1.9896,
         "mean_micro_volatility": 0.0
       },
       {
         "scale_factor": 2,
         "scale_duration_seconds": 60.0,
         "state_vocabulary_size": 16,
-        "transition_determinism": 0.4908,
-        "mean_transition_entropy": 2.2859,
-        "mean_micro_volatility": 0.6775
+        "transition_determinism": 0.558,
+        "mean_transition_entropy": 2.0388,
+        "mean_micro_volatility": 0.5025
       },
       {
         "scale_factor": 4,
         "scale_duration_seconds": 120.0,
-        "state_vocabulary_size": 16,
-        "transition_determinism": 0.524,
-        "mean_transition_entropy": 2.0298,
-        "mean_micro_volatility": 1.2489
+        "state_vocabulary_size": 15,
+        "transition_determinism": 0.5677,
+        "mean_transition_entropy": 1.8771,
+        "mean_micro_volatility": 0.9166
       },
       {
         "scale_factor": 8,
         "scale_duration_seconds": 240.0,
         "state_vocabulary_size": 15,
-        "transition_determinism": 0.5459,
-        "mean_transition_entropy": 1.8412,
-        "mean_micro_volatility": 1.5567
+        "transition_determinism": 0.5958,
+        "mean_transition_entropy": 1.6613,
+        "mean_micro_volatility": 1.1779
       },
       {
         "scale_factor": 16,
         "scale_duration_seconds": 480.0,
         "state_vocabulary_size": 15,
-        "transition_determinism": 0.5899,
-        "mean_transition_entropy": 1.5843,
-        "mean_micro_volatility": 1.8186
+        "transition_determinism": 0.645,
+        "mean_transition_entropy": 1.3467,
+        "mean_micro_volatility": 1.4554
       },
       {
         "scale_factor": 32,
         "scale_duration_seconds": 960.0,
         "state_vocabulary_size": 15,
-        "transition_determinism": 0.5972,
-        "mean_transition_entropy": 1.3736,
-        "mean_micro_volatility": 2.0996
+        "transition_determinism": 0.6799,
+        "mean_transition_entropy": 1.1391,
+        "mean_micro_volatility": 1.7624
       },
       {
         "scale_factor": 64,
         "scale_duration_seconds": 1920.0,
         "state_vocabulary_size": 12,
-        "transition_determinism": 0.536,
-        "mean_transition_entropy": 1.5281,
-        "mean_micro_volatility": 2.3857
+        "transition_determinism": 0.617,
+        "mean_transition_entropy": 1.2888,
+        "mean_micro_volatility": 2.1277
       }
     ],
     "optimal_scale": {
       "scale_factor": 32,
       "scale_duration_seconds": 960.0,
       "state_vocabulary_size": 15,
-      "transition_determinism": 0.5972,
-      "mean_transition_entropy": 1.3736,
-      "mean_micro_volatility": 2.0996
+      "transition_determinism": 0.6799,
+      "mean_transition_entropy": 1.1391,
+      "mean_micro_volatility": 1.7624
     }
   }
 }

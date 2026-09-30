@@ -9,8 +9,8 @@
 > **Vocabulary Retention Rate (W1 in W2)**: `58.93%`  
 
 ## Hash Manifest
-- `representation_spec.json`: `a668fa044cfa36d58250eec2cf6282b43eb23ed3f83a143250971ea49e543221`
-- `state_sequence_14d_v1.jsonl`: `5569a123dce6273c2540dcfc48b87181db0b6ba7b37272c9deb9615dff039114`
+- `representation_spec.json`: `3672b71be07a0bdcfbaf6bab822068820d487a7239b3c6f1097655bd85cfd237`
+- `state_sequence_14d_v1.jsonl`: `a7c572d2074c8ec15bc1f7a47e02a9034ac0503c304f63e2c55593c14ac2dc30`
 
 ## State Vocabulary Top 10 (Canonical Rank in Discovery Window)
 | State Token | Signature |

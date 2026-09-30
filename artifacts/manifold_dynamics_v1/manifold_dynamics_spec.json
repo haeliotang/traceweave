@@ -1,45 +1,15 @@
 {
   "protocol": "pixel-sensorium.manifold-dynamics-spec.v1",
-  "generated_at_utc": "2026-09-30T21:22:34.145528+00:00",
+  "generated_at_utc": "2026-09-30T21:34:34.849899+00:00",
   "manifold_config": {
     "grid_height": 4,
     "grid_width": 4,
     "k_states": 16,
     "beta_kinetic": 0.25,
-    "fit_duration_seconds": 2.845,
-    "quantization_ms_per_frame": 0.0921
+    "fit_duration_seconds": 3.778,
+    "quantization_ms_per_frame": 0.1541
   },
   "w1_attractor_basins": [
-    {
-      "basin_id": "B01",
-      "grid_coord": [
-        0,
-        0
-      ],
-      "state_token": "M01",
-      "potential_depth": 1.2932,
-      "stationary_probability": 0.0519
-    },
-    {
-      "basin_id": "B03",
-      "grid_coord": [
-        2,
-        3
-      ],
-      "state_token": "M12",
-      "potential_depth": 0.4355,
-      "stationary_probability": 0.1334
-    },
-    {
-      "basin_id": "B04",
-      "grid_coord": [
-        3,
-        1
-      ],
-      "state_token": "M14",
-      "potential_depth": 0.3747,
-      "stationary_probability": 0.1568
-    },
     {
       "basin_id": "B02",
       "grid_coord": [
@@ -47,30 +17,60 @@
         3
       ],
       "state_token": "M04",
-      "potential_depth": 0.2671,
-      "stationary_probability": 0.0405
+      "potential_depth": 1.2618,
+      "stationary_probability": 0.0525
+    },
+    {
+      "basin_id": "B01",
+      "grid_coord": [
+        0,
+        0
+      ],
+      "state_token": "M01",
+      "potential_depth": 0.3241,
+      "stationary_probability": 0.056
+    },
+    {
+      "basin_id": "B03",
+      "grid_coord": [
+        3,
+        1
+      ],
+      "state_token": "M14",
+      "potential_depth": 0.0275,
+      "stationary_probability": 0.1401
     }
   ],
   "w2_attractor_basins": [
     {
-      "basin_id": "B04",
+      "basin_id": "B01",
       "grid_coord": [
-        2,
-        3
+        0,
+        1
       ],
-      "state_token": "M12",
-      "potential_depth": 1.9824,
-      "stationary_probability": 0.1873
+      "state_token": "M02",
+      "potential_depth": 1.9076,
+      "stationary_probability": 0.0452
+    },
+    {
+      "basin_id": "B06",
+      "grid_coord": [
+        3,
+        1
+      ],
+      "state_token": "M14",
+      "potential_depth": 0.7949,
+      "stationary_probability": 0.1972
     },
     {
       "basin_id": "B03",
       "grid_coord": [
         1,
-        1
+        2
       ],
-      "state_token": "M06",
-      "potential_depth": 1.0351,
-      "stationary_probability": 0.1025
+      "state_token": "M07",
+      "potential_depth": 0.7491,
+      "stationary_probability": 0.2011
     },
     {
       "basin_id": "B02",
@@ -79,35 +79,59 @@
         3
       ],
       "state_token": "M04",
-      "potential_depth": 0.9008,
-      "stationary_probability": 0.0452
-    },
-    {
-      "basin_id": "B01",
-      "grid_coord": [
-        0,
-        0
-      ],
-      "state_token": "M01",
-      "potential_depth": 0.7801,
+      "potential_depth": 0.4265,
       "stationary_probability": 0.0254
     },
     {
       "basin_id": "B05",
       "grid_coord": [
-        3,
-        1
+        2,
+        3
       ],
-      "state_token": "M14",
-      "potential_depth": 0.0087,
-      "stationary_probability": 0.1629
+      "state_token": "M12",
+      "potential_depth": 0.1354,
+      "stationary_probability": 0.1088
+    },
+    {
+      "basin_id": "B04",
+      "grid_coord": [
+        2,
+        0
+      ],
+      "state_token": "M09",
+      "potential_depth": 0.069,
+      "stationary_probability": 0.0954
     }
   ],
   "attractor_drift": {
-    "primary_attractor_drift_distance": 3.606,
-    "mean_grid_drift_distance": 0.0,
-    "landscape_drift_velocity_steps_per_week": 0.0,
+    "primary_attractor_drift_distance": 2.0,
+    "mean_grid_drift_distance": 0.333,
+    "landscape_drift_velocity_steps_per_week": 0.333,
     "basin_drift_details": [
+      {
+        "w1_basin": {
+          "basin_id": "B02",
+          "grid_coord": [
+            0,
+            3
+          ],
+          "state_token": "M04",
+          "potential_depth": 1.2618,
+          "stationary_probability": 0.0525
+        },
+        "matched_w2_basin": {
+          "basin_id": "B02",
+          "grid_coord": [
+            0,
+            3
+          ],
+          "state_token": "M04",
+          "potential_depth": 0.4265,
+          "stationary_probability": 0.0254
+        },
+        "grid_drift_distance": 0.0,
+        "potential_depth_change": -0.8353
+      },
       {
         "w1_basin": {
           "basin_id": "B01",
@@ -116,397 +140,232 @@
             0
           ],
           "state_token": "M01",
-          "potential_depth": 1.2932,
-          "stationary_probability": 0.0519
+          "potential_depth": 0.3241,
+          "stationary_probability": 0.056
         },
         "matched_w2_basin": {
           "basin_id": "B01",
           "grid_coord": [
             0,
-            0
+            1
           ],
-          "state_token": "M01",
-          "potential_depth": 0.7801,
-          "stationary_probability": 0.0254
+          "state_token": "M02",
+          "potential_depth": 1.9076,
+          "stationary_probability": 0.0452
         },
-        "grid_drift_distance": 0.0,
-        "potential_depth_change": -0.5131
+        "grid_drift_distance": 1.0,
+        "potential_depth_change": 1.5835
       },
       {
         "w1_basin": {
           "basin_id": "B03",
           "grid_coord": [
-            2,
-            3
+            3,
+            1
           ],
-          "state_token": "M12",
-          "potential_depth": 0.4355,
-          "stationary_probability": 0.1334
+          "state_token": "M14",
+          "potential_depth": 0.0275,
+          "stationary_probability": 0.1401
         },
         "matched_w2_basin": {
-          "basin_id": "B04",
-          "grid_coord": [
-            2,
-            3
-          ],
-          "state_token": "M12",
-          "potential_depth": 1.9824,
-          "stationary_probability": 0.1873
-        },
-        "grid_drift_distance": 0.0,
-        "potential_depth_change": 1.5469
-      },
-      {
-        "w1_basin": {
-          "basin_id": "B04",
+          "basin_id": "B06",
           "grid_coord": [
             3,
             1
           ],
           "state_token": "M14",
-          "potential_depth": 0.3747,
-          "stationary_probability": 0.1568
-        },
-        "matched_w2_basin": {
-          "basin_id": "B05",
-          "grid_coord": [
-            3,
-            1
-          ],
-          "state_token": "M14",
-          "potential_depth": 0.0087,
-          "stationary_probability": 0.1629
+          "potential_depth": 0.7949,
+          "stationary_probability": 0.1972
         },
         "grid_drift_distance": 0.0,
-        "potential_depth_change": -0.366
-      },
-      {
-        "w1_basin": {
-          "basin_id": "B02",
-          "grid_coord": [
-            0,
-            3
-          ],
-          "state_token": "M04",
-          "potential_depth": 0.2671,
-          "stationary_probability": 0.0405
-        },
-        "matched_w2_basin": {
-          "basin_id": "B02",
-          "grid_coord": [
-            0,
-            3
-          ],
-          "state_token": "M04",
-          "potential_depth": 0.9008,
-          "stationary_probability": 0.0452
-        },
-        "grid_drift_distance": 0.0,
-        "potential_depth_change": 0.6337
+        "potential_depth_change": 0.7674
       }
     ]
   },
   "potential_surfaces": {
     "w1_potential_matrix": [
       [
-        2.9594,
-        4.2526,
-        5.1148,
-        3.2072
+        2.8831,
+        3.2072,
+        6.673,
+        2.9473
       ],
       [
-        5.4943,
-        2.5954,
-        2.9533,
-        3.4743
+        5.0635,
+        3.7155,
+        2.698,
+        4.2091
       ],
       [
-        2.4758,
-        2.2274,
-        2.4498,
-        2.0143
+        2.6566,
+        2.4461,
+        2.106,
+        2.5102
       ],
       [
-        2.9118,
-        1.8527,
-        2.3928,
-        4.4758
+        4.5935,
+        1.9657,
+        1.9932,
+        2.3998
       ]
     ],
     "w2_potential_matrix": [
       [
-        3.6714,
-        4.4515,
-        3.9968,
-        3.096
+        7.948,
+        3.096,
+        6.8494,
+        3.6714
       ],
       [
-        5.1754,
-        2.2782,
-        5.4631,
-        6.1563
+        3.9777,
+        5.0036,
+        1.6042,
+        4.0979
       ],
       [
-        2.2082,
-        3.3133,
-        3.9227,
-        1.6752
+        2.3496,
+        2.4186,
+        2.3533,
+        2.2179
       ],
       [
-        1.8233,
-        1.8146,
-        2.51,
-        3.6576
+        3.6173,
+        1.6237,
+        3.5172,
+        3.1522
       ]
     ]
   },
   "critical_slowing_down": {
-    "total_alerts": 27,
-    "critical_alerts_count": 1,
-    "elevated_alerts_count": 26,
+    "total_alerts": 14,
+    "critical_alerts_count": 7,
+    "elevated_alerts_count": 7,
     "alerts": [
       {
-        "window_index": 16,
-        "timestamp_utc": "2026-09-03T18:50:34.407341Z",
-        "lag1_autocorrelation": 0.5393,
-        "spatial_variance": 2.6973,
-        "csd_composite_score": 2.6,
+        "window_index": 9,
+        "timestamp_utc": "2026-09-03T07:01:46.648418Z",
+        "lag1_autocorrelation": 0.7912,
+        "spatial_variance": 1.6327,
+        "csd_composite_score": 3.06,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.539, Var=2.70, Composite=2.60\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.791, Var=1.63, Composite=3.06\u03c3"
       },
       {
-        "window_index": 17,
-        "timestamp_utc": "2026-09-03T21:22:53.656835Z",
-        "lag1_autocorrelation": 0.5304,
-        "spatial_variance": 2.7938,
-        "csd_composite_score": 2.68,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.530, Var=2.79, Composite=2.68\u03c3"
+        "window_index": 10,
+        "timestamp_utc": "2026-09-03T08:38:44.718287Z",
+        "lag1_autocorrelation": 0.8707,
+        "spatial_variance": 2.691,
+        "csd_composite_score": 5.11,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.871, Var=2.69, Composite=5.11\u03c3"
       },
       {
-        "window_index": 18,
-        "timestamp_utc": "2026-09-03T22:43:50.462986Z",
-        "lag1_autocorrelation": 0.5219,
-        "spatial_variance": 2.941,
-        "csd_composite_score": 2.82,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.522, Var=2.94, Composite=2.82\u03c3"
+        "window_index": 11,
+        "timestamp_utc": "2026-09-03T09:45:06.863198Z",
+        "lag1_autocorrelation": 0.8704,
+        "spatial_variance": 3.1261,
+        "csd_composite_score": 5.83,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.870, Var=3.13, Composite=5.83\u03c3"
       },
       {
-        "window_index": 19,
-        "timestamp_utc": "2026-09-03T23:54:46.678315Z",
-        "lag1_autocorrelation": 0.5452,
-        "spatial_variance": 3.1359,
-        "csd_composite_score": 3.1,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.545, Var=3.14, Composite=3.10\u03c3"
+        "window_index": 12,
+        "timestamp_utc": "2026-09-03T11:22:57.624477Z",
+        "lag1_autocorrelation": 0.8279,
+        "spatial_variance": 3.0373,
+        "csd_composite_score": 5.53,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.828, Var=3.04, Composite=5.53\u03c3"
       },
       {
-        "window_index": 23,
-        "timestamp_utc": "2026-09-04T05:16:04.161778Z",
-        "lag1_autocorrelation": 0.3024,
-        "spatial_variance": 3.2553,
-        "csd_composite_score": 2.51,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.302, Var=3.26, Composite=2.51\u03c3"
+        "window_index": 13,
+        "timestamp_utc": "2026-09-03T12:54:10.762411Z",
+        "lag1_autocorrelation": 0.6981,
+        "spatial_variance": 2.6766,
+        "csd_composite_score": 4.47,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.698, Var=2.68, Composite=4.47\u03c3"
       },
       {
-        "window_index": 31,
-        "timestamp_utc": "2026-09-04T16:27:05.379677Z",
-        "lag1_autocorrelation": 0.5913,
-        "spatial_variance": 2.5083,
-        "csd_composite_score": 2.54,
+        "window_index": 14,
+        "timestamp_utc": "2026-09-03T14:34:57.249699Z",
+        "lag1_autocorrelation": 0.3804,
+        "spatial_variance": 2.6317,
+        "csd_composite_score": 3.27,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.591, Var=2.51, Composite=2.54\u03c3"
-      },
-      {
-        "window_index": 37,
-        "timestamp_utc": "2026-09-04T17:52:45.020220Z",
-        "lag1_autocorrelation": 0.5784,
-        "spatial_variance": 2.8431,
-        "csd_composite_score": 2.88,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.578, Var=2.84, Composite=2.88\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.380, Var=2.63, Composite=3.27\u03c3"
       },
       {
         "window_index": 38,
         "timestamp_utc": "2026-09-04T19:26:44.874746Z",
-        "lag1_autocorrelation": 0.7999,
-        "spatial_variance": 3.3557,
-        "csd_composite_score": 4.12,
-        "warning_level": "CRITICAL",
-        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.800, Var=3.36, Composite=4.12\u03c3"
+        "lag1_autocorrelation": 0.7082,
+        "spatial_variance": 1.9408,
+        "csd_composite_score": 3.28,
+        "warning_level": "ELEVATED",
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.708, Var=1.94, Composite=3.28\u03c3"
       },
       {
         "window_index": 39,
         "timestamp_utc": "2026-09-05T01:33:44.768387Z",
-        "lag1_autocorrelation": 0.7119,
-        "spatial_variance": 3.3616,
-        "csd_composite_score": 3.86,
+        "lag1_autocorrelation": 0.5803,
+        "spatial_variance": 2.4335,
+        "csd_composite_score": 3.65,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.712, Var=3.36, Composite=3.86\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.580, Var=2.43, Composite=3.65\u03c3"
       },
       {
         "window_index": 40,
         "timestamp_utc": "2026-09-05T11:52:04.608625Z",
-        "lag1_autocorrelation": 0.5151,
-        "spatial_variance": 3.2109,
-        "csd_composite_score": 3.1,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.515, Var=3.21, Composite=3.10\u03c3"
+        "lag1_autocorrelation": 0.5007,
+        "spatial_variance": 2.88,
+        "csd_composite_score": 4.11,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.501, Var=2.88, Composite=4.11\u03c3"
       },
       {
         "window_index": 41,
         "timestamp_utc": "2026-09-06T12:16:42.389568Z",
-        "lag1_autocorrelation": 0.5346,
-        "spatial_variance": 3.4366,
-        "csd_composite_score": 3.41,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.535, Var=3.44, Composite=3.41\u03c3"
+        "lag1_autocorrelation": 0.4208,
+        "spatial_variance": 3.136,
+        "csd_composite_score": 4.25,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.421, Var=3.14, Composite=4.25\u03c3"
       },
       {
         "window_index": 42,
         "timestamp_utc": "2026-09-06T12:27:26.928179Z",
-        "lag1_autocorrelation": 0.6044,
-        "spatial_variance": 3.6331,
-        "csd_composite_score": 3.84,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.604, Var=3.63, Composite=3.84\u03c3"
+        "lag1_autocorrelation": 0.2948,
+        "spatial_variance": 3.2817,
+        "csd_composite_score": 4.04,
+        "warning_level": "CRITICAL",
+        "message": "Critical Slowing Down warning (CRITICAL): AR(1)=0.295, Var=3.28, Composite=4.04\u03c3"
       },
       {
         "window_index": 43,
         "timestamp_utc": "2026-09-06T12:50:12.577111Z",
-        "lag1_autocorrelation": 0.5914,
-        "spatial_variance": 3.2705,
-        "csd_composite_score": 3.39,
+        "lag1_autocorrelation": 0.1751,
+        "spatial_variance": 3.1747,
+        "csd_composite_score": 3.44,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.591, Var=3.27, Composite=3.39\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.175, Var=3.17, Composite=3.44\u03c3"
       },
       {
-        "window_index": 73,
-        "timestamp_utc": "2026-09-06T18:12:53.889828Z",
-        "lag1_autocorrelation": 0.8895,
-        "spatial_variance": 1.9373,
-        "csd_composite_score": 2.8,
+        "window_index": 253,
+        "timestamp_utc": "2026-09-14T16:16:02.887669Z",
+        "lag1_autocorrelation": 0.7929,
+        "spatial_variance": 1.6901,
+        "csd_composite_score": 3.17,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.889, Var=1.94, Composite=2.80\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.793, Var=1.69, Composite=3.17\u03c3"
       },
       {
-        "window_index": 74,
-        "timestamp_utc": "2026-09-06T18:23:00.825946Z",
-        "lag1_autocorrelation": 0.931,
-        "spatial_variance": 2.6062,
-        "csd_composite_score": 3.67,
+        "window_index": 254,
+        "timestamp_utc": "2026-09-14T17:42:28.852075Z",
+        "lag1_autocorrelation": 0.75,
+        "spatial_variance": 1.7795,
+        "csd_composite_score": 3.16,
         "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.931, Var=2.61, Composite=3.67\u03c3"
-      },
-      {
-        "window_index": 75,
-        "timestamp_utc": "2026-09-06T19:14:44.844837Z",
-        "lag1_autocorrelation": 0.9406,
-        "spatial_variance": 2.7058,
-        "csd_composite_score": 3.81,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.941, Var=2.71, Composite=3.81\u03c3"
-      },
-      {
-        "window_index": 76,
-        "timestamp_utc": "2026-09-06T19:35:53.367330Z",
-        "lag1_autocorrelation": 0.8838,
-        "spatial_variance": 2.5791,
-        "csd_composite_score": 3.5,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.884, Var=2.58, Composite=3.50\u03c3"
-      },
-      {
-        "window_index": 77,
-        "timestamp_utc": "2026-09-06T20:30:06.531380Z",
-        "lag1_autocorrelation": 0.8029,
-        "spatial_variance": 2.3192,
-        "csd_composite_score": 2.96,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.803, Var=2.32, Composite=2.96\u03c3"
-      },
-      {
-        "window_index": 78,
-        "timestamp_utc": "2026-09-06T20:51:14.612541Z",
-        "lag1_autocorrelation": 0.7983,
-        "spatial_variance": 2.2209,
-        "csd_composite_score": 2.84,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.798, Var=2.22, Composite=2.84\u03c3"
-      },
-      {
-        "window_index": 79,
-        "timestamp_utc": "2026-09-06T22:16:37.871538Z",
-        "lag1_autocorrelation": 0.8141,
-        "spatial_variance": 2.6663,
-        "csd_composite_score": 3.39,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.814, Var=2.67, Composite=3.39\u03c3"
-      },
-      {
-        "window_index": 80,
-        "timestamp_utc": "2026-09-06T23:50:19.843513Z",
-        "lag1_autocorrelation": 0.7659,
-        "spatial_variance": 2.8554,
-        "csd_composite_score": 3.45,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.766, Var=2.86, Composite=3.45\u03c3"
-      },
-      {
-        "window_index": 266,
-        "timestamp_utc": "2026-09-15T11:49:45.411918Z",
-        "lag1_autocorrelation": 0.6534,
-        "spatial_variance": 3.3974,
-        "csd_composite_score": 3.72,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.653, Var=3.40, Composite=3.72\u03c3"
-      },
-      {
-        "window_index": 267,
-        "timestamp_utc": "2026-09-15T14:06:55.961474Z",
-        "lag1_autocorrelation": 0.5859,
-        "spatial_variance": 3.6504,
-        "csd_composite_score": 3.8,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.586, Var=3.65, Composite=3.80\u03c3"
-      },
-      {
-        "window_index": 268,
-        "timestamp_utc": "2026-09-15T15:23:13.394481Z",
-        "lag1_autocorrelation": 0.5509,
-        "spatial_variance": 3.7913,
-        "csd_composite_score": 3.86,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.551, Var=3.79, Composite=3.86\u03c3"
-      },
-      {
-        "window_index": 269,
-        "timestamp_utc": "2026-09-15T17:10:47.561321Z",
-        "lag1_autocorrelation": 0.5448,
-        "spatial_variance": 3.8756,
-        "csd_composite_score": 3.93,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.545, Var=3.88, Composite=3.93\u03c3"
-      },
-      {
-        "window_index": 270,
-        "timestamp_utc": "2026-09-15T18:35:33.870265Z",
-        "lag1_autocorrelation": 0.5107,
-        "spatial_variance": 3.8105,
-        "csd_composite_score": 3.76,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.511, Var=3.81, Composite=3.76\u03c3"
-      },
-      {
-        "window_index": 271,
-        "timestamp_utc": "2026-09-15T20:09:08.974704Z",
-        "lag1_autocorrelation": 0.4806,
-        "spatial_variance": 3.7651,
-        "csd_composite_score": 3.62,
-        "warning_level": "ELEVATED",
-        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.481, Var=3.77, Composite=3.62\u03c3"
+        "message": "Critical Slowing Down warning (ELEVATED): AR(1)=0.750, Var=1.78, Composite=3.16\u03c3"
       }
     ]
   }

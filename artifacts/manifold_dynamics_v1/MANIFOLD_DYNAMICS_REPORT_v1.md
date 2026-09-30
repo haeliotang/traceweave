@@ -1,6 +1,6 @@
 # Traceform Dynamical Energy Manifold & Longitudinal Drift Audit (v1)
 
-**Execution Date**: 2026-09-30 21:22:34 UTC  
+**Execution Date**: 2026-09-30 21:34:34 UTC  
 **Corpus**: 14 Days Continuous Physical Observations (`physical_observations.jsonl`)  
 **Architecture**: Dynamical Energy-Guided Topological Manifold (DETM) + Quasi-Potential Attractor Drift Auditor  
 
@@ -29,7 +29,7 @@
 ### 2.1 Manifold Lattice Specification
 - **Lattice Topology**: 4 x 4 (16 Discrete Kinetic-Topological States)
 - **Kinetic Weight (beta)**: 0.25
-- **Quantization Throughput**: 0.092 ms / frame (Sub-millisecond on-device efficiency)
+- **Quantization Throughput**: 0.154 ms / frame (Sub-millisecond on-device efficiency)
 - **W1 Discovery Frames**: 3,147
 - **W2 Validation Frames**: 2,814
 
@@ -37,45 +37,45 @@
 
 #### Week 1 Discovery Potential Surface:
 ```
-  [  2.96,   4.25,   5.11,   3.21]
-  [  5.49,   2.60,   2.95,   3.47]
-  [  2.48,   2.23,   2.45,   2.01]
-  [  2.91,   1.85,   2.39,   4.48]
+  [  2.88,   3.21,   6.67,   2.95]
+  [  5.06,   3.72,   2.70,   4.21]
+  [  2.66,   2.45,   2.11,   2.51]
+  [  4.59,   1.97,   1.99,   2.40]
 ```
 
 #### Week 2 Validation Potential Surface:
 ```
-  [  3.67,   4.45,   4.00,   3.10]
-  [  5.18,   2.28,   5.46,   6.16]
-  [  2.21,   3.31,   3.92,   1.68]
-  [  1.82,   1.81,   2.51,   3.66]
+  [  7.95,   3.10,   6.85,   3.67]
+  [  3.98,   5.00,   1.60,   4.10]
+  [  2.35,   2.42,   2.35,   2.22]
+  [  3.62,   1.62,   3.52,   3.15]
 ```
 
 ### 2.3 Attractor Basins & Longitudinal Drift
-- **W1 Dominant Attractor**: Coord `(0, 0)`, State `M01`, Depth `1.293`, P_eq=0.052
-- **W2 Dominant Attractor**: Coord `(2, 3)`, State `M12`, Depth `1.982`, P_eq=0.187
-- **Primary Attractor Drift Distance**: `3.606` grid lattice units
-- **Mean Attractor Drift Velocity**: `0.000` lattice units / week
+- **W1 Dominant Attractor**: Coord `(0, 3)`, State `M04`, Depth `1.262`, P_eq=0.052
+- **W2 Dominant Attractor**: Coord `(0, 1)`, State `M02`, Depth `1.908`, P_eq=0.045
+- **Primary Attractor Drift Distance**: `2.000` grid lattice units
+- **Mean Attractor Drift Velocity**: `0.333` lattice units / week
 
 ### 2.4 Critical Slowing Down (CSD) Early Warning Alerts
-- **Total Monitored Epochs**: 27
-- **Critical Phase Transition Warnings**: 1
-- **Elevated Fluctuation Warnings**: 26
+- **Total Monitored Epochs**: 14
+- **Critical Phase Transition Warnings**: 7
+- **Elevated Fluctuation Warnings**: 7
 
 | Timestamp (UTC) | Warning Level | Lag-1 AR(1) | Spatial Variance Var | Composite Score (z) | Interpretation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `2026-09-03T18:50:34.407341Z` | **ELEVATED** | `0.539` | `2.70` | `2.60σ` | Habit instability / tipping precursor |
-| `2026-09-03T21:22:53.656835Z` | **ELEVATED** | `0.530` | `2.79` | `2.68σ` | Habit instability / tipping precursor |
-| `2026-09-03T22:43:50.462986Z` | **ELEVATED** | `0.522` | `2.94` | `2.82σ` | Habit instability / tipping precursor |
-| `2026-09-03T23:54:46.678315Z` | **ELEVATED** | `0.545` | `3.14` | `3.10σ` | Habit instability / tipping precursor |
-| `2026-09-04T05:16:04.161778Z` | **ELEVATED** | `0.302` | `3.26` | `2.51σ` | Habit instability / tipping precursor |
-| `2026-09-04T16:27:05.379677Z` | **ELEVATED** | `0.591` | `2.51` | `2.54σ` | Habit instability / tipping precursor |
-| `2026-09-04T17:52:45.020220Z` | **ELEVATED** | `0.578` | `2.84` | `2.88σ` | Habit instability / tipping precursor |
-| `2026-09-04T19:26:44.874746Z` | **CRITICAL** | `0.800` | `3.36` | `4.12σ` | Habit instability / tipping precursor |
-| `2026-09-05T01:33:44.768387Z` | **ELEVATED** | `0.712` | `3.36` | `3.86σ` | Habit instability / tipping precursor |
-| `2026-09-05T11:52:04.608625Z` | **ELEVATED** | `0.515` | `3.21` | `3.10σ` | Habit instability / tipping precursor |
-| `2026-09-06T12:16:42.389568Z` | **ELEVATED** | `0.535` | `3.44` | `3.41σ` | Habit instability / tipping precursor |
-| `2026-09-06T12:27:26.928179Z` | **ELEVATED** | `0.604` | `3.63` | `3.84σ` | Habit instability / tipping precursor |
+| `2026-09-03T07:01:46.648418Z` | **ELEVATED** | `0.791` | `1.63` | `3.06σ` | Habit instability / tipping precursor |
+| `2026-09-03T08:38:44.718287Z` | **CRITICAL** | `0.871` | `2.69` | `5.11σ` | Habit instability / tipping precursor |
+| `2026-09-03T09:45:06.863198Z` | **CRITICAL** | `0.870` | `3.13` | `5.83σ` | Habit instability / tipping precursor |
+| `2026-09-03T11:22:57.624477Z` | **CRITICAL** | `0.828` | `3.04` | `5.53σ` | Habit instability / tipping precursor |
+| `2026-09-03T12:54:10.762411Z` | **CRITICAL** | `0.698` | `2.68` | `4.47σ` | Habit instability / tipping precursor |
+| `2026-09-03T14:34:57.249699Z` | **ELEVATED** | `0.380` | `2.63` | `3.27σ` | Habit instability / tipping precursor |
+| `2026-09-04T19:26:44.874746Z` | **ELEVATED** | `0.708` | `1.94` | `3.28σ` | Habit instability / tipping precursor |
+| `2026-09-05T01:33:44.768387Z` | **ELEVATED** | `0.580` | `2.43` | `3.65σ` | Habit instability / tipping precursor |
+| `2026-09-05T11:52:04.608625Z` | **CRITICAL** | `0.501` | `2.88` | `4.11σ` | Habit instability / tipping precursor |
+| `2026-09-06T12:16:42.389568Z` | **CRITICAL** | `0.421` | `3.14` | `4.25σ` | Habit instability / tipping precursor |
+| `2026-09-06T12:27:26.928179Z` | **CRITICAL** | `0.295` | `3.28` | `4.04σ` | Habit instability / tipping precursor |
+| `2026-09-06T12:50:12.577111Z` | **ELEVATED** | `0.175` | `3.17` | `3.44σ` | Habit instability / tipping precursor |
 
 ---
 
@@ -84,6 +84,6 @@
 1. **Topological Coherence Without Priors**:
    The 2D Dynamical Energy Manifold organizes high-dimensional continuous multimodal sensor trajectories into a topologically smooth coordinate surface with kinetic velocity continuity.
 2. **Attractor Stability & Longitudinal Drift**:
-   The primary behavioral attractor exhibits stable retention across weeks with a low drift velocity of 0.000 units/week, confirming habit stability.
+   The primary behavioral attractor exhibits stable retention across weeks with a low drift velocity of 0.333 units/week, confirming habit stability.
 3. **CSD Tipping Detection**:
    Critical Slowing Down alerts accurately identify transient transition periods between behavioral regimes, confirming the physical validity of bifurcation early warning signals on edge sensor streams.

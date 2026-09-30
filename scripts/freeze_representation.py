@@ -161,6 +161,10 @@ def main():
     spec_file.write_text(json.dumps(spec, indent=2), encoding="utf-8")
     print(f"[+] Wrote representation spec: {spec_file}")
 
+    norm_file = args.out_dir / "normalizer_v1.json"
+    norm_file.write_text(json.dumps(norm_params.to_dict(), indent=2), encoding="utf-8")
+    print(f"[+] Wrote normalizer spec: {norm_file}")
+
     # 6. Freeze Report
     freeze_report = f"""# Representation Freeze v1 Authority
 

@@ -161,7 +161,8 @@ def main():
                     continue
 
                 if "digital_context" not in obs and args.follow:
-                    obs["digital_context"] = digital_probe.sample_digital_interaction_metrics()
+                    wifi_cnt = obs.get("connectivity", {}).get("wifi_ap_count", 0)
+                    obs["digital_context"] = digital_probe.sample_digital_interaction_metrics(fallback_wifi_ap_count=wifi_cnt)
 
                 payload, events = daemon.process_observation(obs)
                 processed_count += 1

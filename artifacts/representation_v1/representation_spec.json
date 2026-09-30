@@ -1,7 +1,7 @@
 {
   "protocol": "pixel-sensorium.representation-spec.v1",
   "representation_identity": "representation_14d_v1",
-  "frozen_at_utc": "2026-09-30T21:22:30.422770+00:00",
+  "frozen_at_utc": "2026-09-30T21:34:23.170614+00:00",
   "discovery_fit_window": {
     "start_utc": "2026-09-02T22:48:12.694637+00:00",
     "end_utc": "2026-09-09T22:48:12.694637+00:00",
@@ -28,7 +28,13 @@
       "app_switch_rate",
       "unlock_burst_count",
       "audio_immersion_state",
-      "circadian_sin_phase"
+      "circadian_sin_phase",
+      "circadian_cos_phase",
+      "infradian_weekly_phase",
+      "battery_current_ua",
+      "spatial_radius_of_gyration",
+      "touch_interaction_velocity",
+      "ambient_social_ble_density"
     ],
     "medians": {
       "motion_accel_magnitude": 9.6922,
@@ -50,7 +56,13 @@
       "app_switch_rate": 0.0,
       "unlock_burst_count": 0.0,
       "audio_immersion_state": 0.0,
-      "circadian_sin_phase": -0.261698
+      "circadian_sin_phase": -0.26165,
+      "circadian_cos_phase": -0.174368,
+      "infradian_weekly_phase": 0.250703,
+      "battery_current_ua": -5625.0,
+      "spatial_radius_of_gyration": 0.0244,
+      "touch_interaction_velocity": 0.0,
+      "ambient_social_ble_density": 21.33
     },
     "iqrs": {
       "motion_accel_magnitude": 0.0096,
@@ -72,7 +84,13 @@
       "app_switch_rate": 1.0,
       "unlock_burst_count": 1.0,
       "audio_immersion_state": 1.0,
-      "circadian_sin_phase": 1.57602
+      "circadian_sin_phase": 1.576018,
+      "circadian_cos_phase": 1.105224,
+      "infradian_weekly_phase": 1.153964,
+      "battery_current_ua": 368124.0,
+      "spatial_radius_of_gyration": 0.0089,
+      "touch_interaction_velocity": 1.0,
+      "ambient_social_ble_density": 10.34
     },
     "fitted_observation_count": 3147,
     "fit_window_description": "Day 1\u20137 Discovery Window (3,147 observations)"
@@ -597,7 +615,7 @@
     }
   },
   "cryptographic_signatures": {
-    "state_sequence_sha256": "5569a123dce6273c2540dcfc48b87181db0b6ba7b37272c9deb9615dff039114"
+    "state_sequence_sha256": "a7c572d2074c8ec15bc1f7a47e02a9034ac0503c304f63e2c55593c14ac2dc30"
   },
   "discipline_attestation": {
     "predefined_semantics_injected": false,

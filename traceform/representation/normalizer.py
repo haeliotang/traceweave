@@ -7,6 +7,7 @@ producing standardized numerical vectors and canonical topological descriptors.
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import asdict, dataclass
 import math
 import statistics
@@ -14,24 +15,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 CONTINUOUS_FEATURE_NAMES = [
-    # Motion features
+    # Motion features (1-4)
     "motion_accel_magnitude",
     "motion_accel_rms",
     "motion_energy",
     "motion_stationary_likelihood",
-    # Environment features
+    # Environment features (5-7)
     "env_log_lux",
     "env_pressure_hpa",
     "env_device_temp_c",
-    # Device state features
+    # Device state features (8-10)
     "device_battery_fraction",
     "device_is_plugged",
     "device_is_charging",
-    # Audio context features
+    # Audio context features (11-13)
     "audio_silence_likelihood",
     "audio_rms_loudness",
     "audio_spectral_entropy",
-    # Connectivity metrics
+    # Connectivity metrics (14-15)
     "conn_wifi_connected",
     "conn_wifi_rssi_norm",
     # Digital & Cognitive features (16-18)
@@ -40,8 +41,20 @@ CONTINUOUS_FEATURE_NAMES = [
     "unlock_burst_count",
     # Headset & Immersion (19)
     "audio_immersion_state",
-    # Circadian phase (20)
+    # Circadian 24-hr sine phase (20)
     "circadian_sin_phase",
+    # Circadian 24-hr cosine phase (21)
+    "circadian_cos_phase",
+    # Infradian 7-day weekly phase (22)
+    "infradian_weekly_phase",
+    # Battery instantaneous current in microamperes (23)
+    "battery_current_ua",
+    # Spatial radius of gyration in km (24)
+    "spatial_radius_of_gyration",
+    # Touch interaction motor-cadence velocity (25)
+    "touch_interaction_velocity",
+    # Ambient social BLE / RF density (26)
+    "ambient_social_ble_density",
 ]
 
 
@@ -70,6 +83,7 @@ class NormalizationParams:
 class MultimodalNormalizer:
     def __init__(self, params: Optional[NormalizationParams] = None):
         self.params = params
+        self._geo_window: deque[Tuple[float, float]] = deque(maxlen=60)
 
     def to_dict(self) -> Dict[str, Any]:
         return self.params.to_dict() if self.params else {}
@@ -78,6 +92,19 @@ class MultimodalNormalizer:
     def from_dict(cls, d: Dict[str, Any]) -> "MultimodalNormalizer":
         params = NormalizationParams.from_dict(d)
         return cls(params=params)
+
+    def reset_geo_window(self) -> None:
+        """Resets the sliding spatial coordinate buffer for radius of gyration."""
+        self._geo_window.clear()
+
+    @staticmethod
+    def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Computes great-circle distance between two GPS coordinates in kilometers."""
+        phi1, phi2 = math.radians(lat1), math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dlambda = math.radians(lon2 - lon1)
+        a = math.sin(dphi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2.0) ** 2
+        return 2.0 * 6371.0 * math.asin(math.sqrt(min(1.0, max(0.0, a))))
 
     def extract_raw_features(self, obs: Dict[str, Any]) -> Tuple[Dict[str, float], Dict[str, str]]:
         """
@@ -107,6 +134,15 @@ class MultimodalNormalizer:
         status_str = str(dev.get("status", "DISCHARGING"))
         is_charging = 1.0 if status_str == "CHARGING" else 0.0
 
+        # Microampere current (23) - signed physical rate of discharge/charge
+        raw_current = dev.get("current_ua", 0.0)
+        try:
+            battery_current_ua = float(raw_current) if raw_current is not None else 0.0
+            if math.isnan(battery_current_ua):
+                battery_current_ua = 0.0
+        except (ValueError, TypeError):
+            battery_current_ua = 0.0
+
         # 4. Audio Context
         aud = obs.get("audio_context", {})
         if aud.get("status") == "NOT_SAMPLED":
@@ -129,7 +165,7 @@ class MultimodalNormalizer:
         else:
             wifi_rssi_norm = 0.0
 
-        # 6. Digital & Cognitive Features (16-18)
+        # 6. Digital & Cognitive Features (16-18, 25-26)
         dig = obs.get("digital_context", {})
         screen_ratio = float(dig.get("screen_on_ratio", 0.0))
         # Fallback to device_relation.screen_state if available
@@ -144,22 +180,74 @@ class MultimodalNormalizer:
         app_switch_rate = float(dig.get("app_switch_rate", 0.0))
         unlock_burst_count = float(dig.get("unlock_burst_count", 0.0))
 
+        # Touch interaction velocity (25)
+        touch_velocity = float(dig.get("touch_interaction_velocity", 0.0))
+        if "touch_interaction_velocity" not in dig:
+            if screen_ratio > 0.0:
+                touch_velocity = round(min(10.0, 1.0 + app_switch_rate * 0.4 + unlock_burst_count * 0.3), 3)
+            else:
+                touch_velocity = 0.0
+
+        # Ambient social BLE / RF density (26)
+        ambient_ble = float(dig.get("ambient_social_ble_density", 0.0))
+        if "ambient_social_ble_density" not in dig:
+            wifi_cnt = conn.get("wifi_ap_count", 0)
+            if wifi_cnt and isinstance(wifi_cnt, (int, float)) and wifi_cnt > 0:
+                ambient_ble = round(min(30.0, float(wifi_cnt) / 3.0), 2)
+            else:
+                ambient_ble = 0.0
+
         # 7. Audio Immersion State (19)
         # 1.0 if wired headset or bluetooth A2DP audio active
         is_immersed = 1.0 if (dev.get("wired_headset") or dev.get("bluetooth_a2dp")) else 0.0
 
-        # 8. Circadian Sine Phase (20)
-        # Smooth continuous mapping of daily solar cycle in [-1.0, 1.0]
+        # 8. Circadian & Infradian Temporal Phases (20-22)
+        # Smooth continuous mapping of daily solar cycle and 7-day infradian cycle
         ts_str = obs.get("timestamp_utc", "")
         sin_phase = 0.0
+        cos_phase = 1.0
+        weekly_phase = 0.0
         if ts_str:
             try:
                 import datetime
                 dt = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
-                seconds_in_day = dt.hour * 3600 + dt.minute * 60 + dt.second
-                sin_phase = math.sin(2.0 * math.pi * (seconds_in_day / 86400.0))
+                seconds_in_day = dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1e6
+                daily_fraction = seconds_in_day / 86400.0
+                sin_phase = math.sin(2.0 * math.pi * daily_fraction)
+                cos_phase = math.cos(2.0 * math.pi * daily_fraction)
+                weekly_fraction = (dt.weekday() + daily_fraction) / 7.0
+                weekly_phase = math.sin(2.0 * math.pi * weekly_fraction)
             except Exception:
                 pass
+
+        # 9. Spatial Radius of Gyration Rg in km (24)
+        plc = obs.get("place", {})
+        rg_direct = plc.get("radius_of_gyration")
+        if rg_direct is not None:
+            radius_of_gyration = float(rg_direct)
+        else:
+            lat = plc.get("latitude")
+            lon = plc.get("longitude")
+            if lat is not None and lon is not None:
+                try:
+                    flat = float(lat)
+                    flon = float(lon)
+                    if not (math.isnan(flat) or math.isnan(flon)):
+                        self._geo_window.append((flat, flon))
+                except (ValueError, TypeError):
+                    pass
+
+            if len(self._geo_window) >= 2:
+                mean_lat = sum(p[0] for p in self._geo_window) / len(self._geo_window)
+                mean_lon = sum(p[1] for p in self._geo_window) / len(self._geo_window)
+                sq_dists = [
+                    self.haversine_km(p[0], p[1], mean_lat, mean_lon) ** 2
+                    for p in self._geo_window
+                ]
+                radius_of_gyration = round(math.sqrt(sum(sq_dists) / len(sq_dists)), 4)
+            else:
+                # Nominal indoor micro-oscillation fallback (Defect 1)
+                radius_of_gyration = 0.05
 
         continuous_map: Dict[str, float] = {
             "motion_accel_magnitude": accel_mag,
@@ -182,10 +270,15 @@ class MultimodalNormalizer:
             "unlock_burst_count": unlock_burst_count,
             "audio_immersion_state": is_immersed,
             "circadian_sin_phase": sin_phase,
+            "circadian_cos_phase": cos_phase,
+            "infradian_weekly_phase": weekly_phase,
+            "battery_current_ua": battery_current_ua,
+            "spatial_radius_of_gyration": radius_of_gyration,
+            "touch_interaction_velocity": touch_velocity,
+            "ambient_social_ble_density": ambient_ble,
         }
 
         # Topological & Categorical identifiers
-        plc = obs.get("place", {})
         spatial_cell = plc.get("spatial_cell", "NO_GEO")
         wifi_fp = conn.get("wifi_fingerprint") or conn.get("wifi_environment_fingerprint") or "NO_WIFI"
         cell_fp = conn.get("cellular_cell_fingerprint") or "NO_CELL"
@@ -207,6 +300,7 @@ class MultimodalNormalizer:
         if not observations:
             raise ValueError("Cannot fit normalizer on empty observation list.")
 
+        self.reset_geo_window()
         feature_values: Dict[str, List[float]] = {name: [] for name in CONTINUOUS_FEATURE_NAMES}
 
         for obs in observations:
