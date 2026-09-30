@@ -1,0 +1,1231 @@
+{
+  "protocol": "pixel-sensorium.structure-discovery-spec.v1",
+  "discovery_identity": "structure_discovery_14d_w1",
+  "generated_at_utc": "2026-09-30T18:35:37.261700+00:00",
+  "input_window": {
+    "partition": "W1_DISCOVERY",
+    "frame_count": 3147,
+    "start_utc": "2026-09-02T22:48:20.177163Z",
+    "end_utc": "2026-09-09T22:46:09.104513Z"
+  },
+  "recurrence_quantification_analysis": {
+    "recurrence_rate": 0.1635,
+    "determinism": 0.6748,
+    "laminarity": 0.7446,
+    "average_diagonal_length": 4.17,
+    "max_diagonal_length": 200,
+    "trapping_time": 5.13,
+    "diagonal_entropy": 2.4099,
+    "threshold_epsilon": 0.25
+  },
+  "dynamic_regimes": {
+    "total_regimes_count": 35,
+    "regimes_list": [
+      {
+        "regime_id": 1,
+        "regime_token": "R01",
+        "start_step": 0,
+        "end_step": 87,
+        "start_utc": "2026-09-02T22:48:20.177163Z",
+        "end_utc": "2026-09-03T02:23:52.344750Z",
+        "duration_frames": 88,
+        "dominant_states": [
+          [
+            "S07",
+            0.761
+          ],
+          [
+            "S09",
+            0.08
+          ],
+          [
+            "S13",
+            0.068
+          ]
+        ],
+        "entropy_bits": 0.855
+      },
+      {
+        "regime_id": 2,
+        "regime_token": "R02",
+        "start_step": 88,
+        "end_step": 283,
+        "start_utc": "2026-09-03T02:32:07.357230Z",
+        "end_utc": "2026-09-03T10:04:13.451328Z",
+        "duration_frames": 196,
+        "dominant_states": [
+          [
+            "S05",
+            0.898
+          ],
+          [
+            "S13",
+            0.056
+          ],
+          [
+            "S12",
+            0.015
+          ]
+        ],
+        "entropy_bits": 0.463
+      },
+      {
+        "regime_id": 3,
+        "regime_token": "R03",
+        "start_step": 284,
+        "end_step": 351,
+        "start_utc": "2026-09-03T10:08:07.490319Z",
+        "end_utc": "2026-09-03T15:42:23.218310Z",
+        "duration_frames": 68,
+        "dominant_states": [
+          [
+            "S02",
+            0.691
+          ],
+          [
+            "S04",
+            0.265
+          ],
+          [
+            "S29",
+            0.015
+          ]
+        ],
+        "entropy_bits": 0.967
+      },
+      {
+        "regime_id": 4,
+        "regime_token": "R04",
+        "start_step": 352,
+        "end_step": 388,
+        "start_utc": "2026-09-03T15:43:03.240511Z",
+        "end_utc": "2026-09-03T19:46:09.099012Z",
+        "duration_frames": 37,
+        "dominant_states": [
+          [
+            "S02",
+            0.514
+          ],
+          [
+            "S06",
+            0.351
+          ],
+          [
+            "S10",
+            0.054
+          ]
+        ],
+        "entropy_bits": 1.251
+      },
+      {
+        "regime_id": 5,
+        "regime_token": "R05",
+        "start_step": 389,
+        "end_step": 456,
+        "start_utc": "2026-09-03T19:51:44.468608Z",
+        "end_utc": "2026-09-04T00:52:09.849609Z",
+        "duration_frames": 68,
+        "dominant_states": [
+          [
+            "S04",
+            0.779
+          ],
+          [
+            "S06",
+            0.206
+          ],
+          [
+            "S14",
+            0.015
+          ]
+        ],
+        "entropy_bits": 0.841
+      },
+      {
+        "regime_id": 6,
+        "regime_token": "R06",
+        "start_step": 457,
+        "end_step": 494,
+        "start_utc": "2026-09-04T00:56:22.792619Z",
+        "end_utc": "2026-09-04T03:35:05.008571Z",
+        "duration_frames": 38,
+        "dominant_states": [
+          [
+            "S02",
+            0.526
+          ],
+          [
+            "S14",
+            0.184
+          ],
+          [
+            "S04",
+            0.132
+          ]
+        ],
+        "entropy_bits": 1.323
+      },
+      {
+        "regime_id": 7,
+        "regime_token": "R07",
+        "start_step": 495,
+        "end_step": 537,
+        "start_utc": "2026-09-04T03:39:50.555970Z",
+        "end_utc": "2026-09-04T06:31:54.040888Z",
+        "duration_frames": 43,
+        "dominant_states": [
+          [
+            "S02",
+            0.907
+          ],
+          [
+            "S12",
+            0.023
+          ],
+          [
+            "S04",
+            0.023
+          ]
+        ],
+        "entropy_bits": 0.378
+      },
+      {
+        "regime_id": 8,
+        "regime_token": "R08",
+        "start_step": 538,
+        "end_step": 587,
+        "start_utc": "2026-09-04T06:35:53.838844Z",
+        "end_utc": "2026-09-04T09:47:38.253982Z",
+        "duration_frames": 50,
+        "dominant_states": [
+          [
+            "S11",
+            0.48
+          ],
+          [
+            "S02",
+            0.44
+          ],
+          [
+            "S21",
+            0.04
+          ]
+        ],
+        "entropy_bits": 1.215
+      },
+      {
+        "regime_id": 9,
+        "regime_token": "R09",
+        "start_step": 588,
+        "end_step": 648,
+        "start_utc": "2026-09-04T09:50:25.836193Z",
+        "end_utc": "2026-09-04T15:26:52.288828Z",
+        "duration_frames": 61,
+        "dominant_states": [
+          [
+            "S02",
+            0.967
+          ],
+          [
+            "S12",
+            0.033
+          ]
+        ],
+        "entropy_bits": 0.209
+      },
+      {
+        "regime_id": 10,
+        "regime_token": "R10",
+        "start_step": 649,
+        "end_step": 678,
+        "start_utc": "2026-09-04T15:30:55.969544Z",
+        "end_utc": "2026-09-04T16:26:02.334807Z",
+        "duration_frames": 30,
+        "dominant_states": [
+          [
+            "S01",
+            1.0
+          ]
+        ],
+        "entropy_bits": 0.0
+      },
+      {
+        "regime_id": 11,
+        "regime_token": "R11",
+        "start_step": 679,
+        "end_step": 818,
+        "start_utc": "2026-09-04T16:26:33.227021Z",
+        "end_utc": "2026-09-04T18:43:54.592408Z",
+        "duration_frames": 140,
+        "dominant_states": [
+          [
+            "S01",
+            0.9
+          ],
+          [
+            "S08",
+            0.036
+          ],
+          [
+            "S12",
+            0.021
+          ]
+        ],
+        "entropy_bits": 0.426
+      },
+      {
+        "regime_id": 12,
+        "regime_token": "R12",
+        "start_step": 819,
+        "end_step": 851,
+        "start_utc": "2026-09-04T19:09:58.362060Z",
+        "end_utc": "2026-09-05T05:16:31.123857Z",
+        "duration_frames": 33,
+        "dominant_states": [
+          [
+            "S08",
+            0.515
+          ],
+          [
+            "S09",
+            0.364
+          ],
+          [
+            "S06",
+            0.091
+          ]
+        ],
+        "entropy_bits": 1.338
+      },
+      {
+        "regime_id": 13,
+        "regime_token": "R13",
+        "start_step": 852,
+        "end_step": 879,
+        "start_utc": "2026-09-05T05:29:08.495223Z",
+        "end_utc": "2026-09-06T12:15:41.940999Z",
+        "duration_frames": 28,
+        "dominant_states": [
+          [
+            "S06",
+            0.929
+          ],
+          [
+            "S12",
+            0.071
+          ]
+        ],
+        "entropy_bits": 0.37
+      },
+      {
+        "regime_id": 14,
+        "regime_token": "R14",
+        "start_step": 880,
+        "end_step": 906,
+        "start_utc": "2026-09-06T12:16:42.389568Z",
+        "end_utc": "2026-09-06T12:30:30.486517Z",
+        "duration_frames": 27,
+        "dominant_states": [
+          [
+            "S15",
+            0.407
+          ],
+          [
+            "S16",
+            0.407
+          ],
+          [
+            "S17",
+            0.074
+          ]
+        ],
+        "entropy_bits": 1.334
+      },
+      {
+        "regime_id": 15,
+        "regime_token": "R15",
+        "start_step": 907,
+        "end_step": 931,
+        "start_utc": "2026-09-06T12:31:00.803859Z",
+        "end_utc": "2026-09-06T12:57:02.663449Z",
+        "duration_frames": 25,
+        "dominant_states": [
+          [
+            "S17",
+            0.32
+          ],
+          [
+            "S12",
+            0.08
+          ],
+          [
+            "S18",
+            0.08
+          ]
+        ],
+        "entropy_bits": 1.109
+      },
+      {
+        "regime_id": 16,
+        "regime_token": "R16",
+        "start_step": 932,
+        "end_step": 1543,
+        "start_utc": "2026-09-06T12:57:12.005035Z",
+        "end_utc": "2026-09-06T18:24:31.576269Z",
+        "duration_frames": 612,
+        "dominant_states": [
+          [
+            "S01",
+            0.992
+          ],
+          [
+            "S08",
+            0.007
+          ],
+          [
+            "S33",
+            0.002
+          ]
+        ],
+        "entropy_bits": 0.08
+      },
+      {
+        "regime_id": 17,
+        "regime_token": "R17",
+        "start_step": 1544,
+        "end_step": 1621,
+        "start_utc": "2026-09-06T18:25:01.842746Z",
+        "end_utc": "2026-09-06T20:52:18.014024Z",
+        "duration_frames": 78,
+        "dominant_states": [
+          [
+            "S06",
+            0.821
+          ],
+          [
+            "S02",
+            0.167
+          ],
+          [
+            "S12",
+            0.013
+          ]
+        ],
+        "entropy_bits": 0.746
+      },
+      {
+        "regime_id": 18,
+        "regime_token": "R18",
+        "start_step": 1622,
+        "end_step": 1674,
+        "start_utc": "2026-09-06T20:53:21.401099Z",
+        "end_utc": "2026-09-07T01:19:06.452313Z",
+        "duration_frames": 53,
+        "dominant_states": [
+          [
+            "S04",
+            0.849
+          ],
+          [
+            "S06",
+            0.113
+          ],
+          [
+            "S14",
+            0.038
+          ]
+        ],
+        "entropy_bits": 0.735
+      },
+      {
+        "regime_id": 19,
+        "regime_token": "R19",
+        "start_step": 1675,
+        "end_step": 1738,
+        "start_utc": "2026-09-07T01:23:03.519705Z",
+        "end_utc": "2026-09-07T05:58:42.237950Z",
+        "duration_frames": 64,
+        "dominant_states": [
+          [
+            "S02",
+            0.953
+          ],
+          [
+            "S10",
+            0.047
+          ]
+        ],
+        "entropy_bits": 0.274
+      },
+      {
+        "regime_id": 20,
+        "regime_token": "R20",
+        "start_step": 1739,
+        "end_step": 1798,
+        "start_utc": "2026-09-07T05:59:39.257124Z",
+        "end_utc": "2026-09-07T07:22:35.750443Z",
+        "duration_frames": 60,
+        "dominant_states": [
+          [
+            "S01",
+            1.0
+          ]
+        ],
+        "entropy_bits": 0.0
+      },
+      {
+        "regime_id": 21,
+        "regime_token": "R21",
+        "start_step": 1799,
+        "end_step": 1857,
+        "start_utc": "2026-09-07T07:23:50.649124Z",
+        "end_utc": "2026-09-07T11:19:04.589305Z",
+        "duration_frames": 59,
+        "dominant_states": [
+          [
+            "S02",
+            0.932
+          ],
+          [
+            "S10",
+            0.051
+          ],
+          [
+            "S20",
+            0.017
+          ]
+        ],
+        "entropy_bits": 0.414
+      },
+      {
+        "regime_id": 22,
+        "regime_token": "R22",
+        "start_step": 1858,
+        "end_step": 2012,
+        "start_utc": "2026-09-07T11:30:37.879634Z",
+        "end_utc": "2026-09-07T20:24:41.424731Z",
+        "duration_frames": 155,
+        "dominant_states": [
+          [
+            "S01",
+            0.729
+          ],
+          [
+            "S02",
+            0.194
+          ],
+          [
+            "S04",
+            0.052
+          ]
+        ],
+        "entropy_bits": 1.013
+      },
+      {
+        "regime_id": 23,
+        "regime_token": "R23",
+        "start_step": 2013,
+        "end_step": 2071,
+        "start_utc": "2026-09-07T20:34:41.243436Z",
+        "end_utc": "2026-09-08T00:36:14.188058Z",
+        "duration_frames": 59,
+        "dominant_states": [
+          [
+            "S03",
+            0.983
+          ],
+          [
+            "S09",
+            0.017
+          ]
+        ],
+        "entropy_bits": 0.124
+      },
+      {
+        "regime_id": 24,
+        "regime_token": "R24",
+        "start_step": 2072,
+        "end_step": 2097,
+        "start_utc": "2026-09-08T00:44:03.905135Z",
+        "end_utc": "2026-09-08T02:05:40.808470Z",
+        "duration_frames": 26,
+        "dominant_states": [
+          [
+            "S01",
+            0.923
+          ],
+          [
+            "S10",
+            0.077
+          ]
+        ],
+        "entropy_bits": 0.392
+      },
+      {
+        "regime_id": 25,
+        "regime_token": "R25",
+        "start_step": 2098,
+        "end_step": 2297,
+        "start_utc": "2026-09-08T02:10:15.039024Z",
+        "end_utc": "2026-09-08T12:01:44.141376Z",
+        "duration_frames": 200,
+        "dominant_states": [
+          [
+            "S01",
+            0.915
+          ],
+          [
+            "S03",
+            0.065
+          ],
+          [
+            "S10",
+            0.02
+          ]
+        ],
+        "entropy_bits": 0.486
+      },
+      {
+        "regime_id": 26,
+        "regime_token": "R26",
+        "start_step": 2298,
+        "end_step": 2372,
+        "start_utc": "2026-09-08T12:09:46.039993Z",
+        "end_utc": "2026-09-08T17:39:12.059145Z",
+        "duration_frames": 75,
+        "dominant_states": [
+          [
+            "S02",
+            0.987
+          ],
+          [
+            "S10",
+            0.013
+          ]
+        ],
+        "entropy_bits": 0.1
+      },
+      {
+        "regime_id": 27,
+        "regime_token": "R27",
+        "start_step": 2373,
+        "end_step": 2505,
+        "start_utc": "2026-09-08T17:49:54.282711Z",
+        "end_utc": "2026-09-09T01:00:53.884470Z",
+        "duration_frames": 133,
+        "dominant_states": [
+          [
+            "S03",
+            0.91
+          ],
+          [
+            "S04",
+            0.075
+          ],
+          [
+            "S12",
+            0.008
+          ]
+        ],
+        "entropy_bits": 0.46
+      },
+      {
+        "regime_id": 28,
+        "regime_token": "R28",
+        "start_step": 2506,
+        "end_step": 2822,
+        "start_utc": "2026-09-09T01:03:32.383970Z",
+        "end_utc": "2026-09-09T07:27:54.614967Z",
+        "duration_frames": 317,
+        "dominant_states": [
+          [
+            "S01",
+            0.931
+          ],
+          [
+            "S03",
+            0.063
+          ],
+          [
+            "S09",
+            0.006
+          ]
+        ],
+        "entropy_bits": 0.392
+      },
+      {
+        "regime_id": 29,
+        "regime_token": "R29",
+        "start_step": 2823,
+        "end_step": 2881,
+        "start_utc": "2026-09-09T07:33:05.457734Z",
+        "end_utc": "2026-09-09T08:50:07.754959Z",
+        "duration_frames": 59,
+        "dominant_states": [
+          [
+            "S03",
+            0.644
+          ],
+          [
+            "S01",
+            0.305
+          ],
+          [
+            "S08",
+            0.034
+          ]
+        ],
+        "entropy_bits": 1.097
+      },
+      {
+        "regime_id": 30,
+        "regime_token": "R30",
+        "start_step": 2882,
+        "end_step": 2909,
+        "start_utc": "2026-09-09T08:50:54.281010Z",
+        "end_utc": "2026-09-09T10:35:51.949174Z",
+        "duration_frames": 28,
+        "dominant_states": [
+          [
+            "S02",
+            0.464
+          ],
+          [
+            "S04",
+            0.321
+          ],
+          [
+            "S10",
+            0.143
+          ]
+        ],
+        "entropy_bits": 1.441
+      },
+      {
+        "regime_id": 31,
+        "regime_token": "R31",
+        "start_step": 2910,
+        "end_step": 2945,
+        "start_utc": "2026-09-09T10:41:05.652132Z",
+        "end_utc": "2026-09-09T13:08:35.999248Z",
+        "duration_frames": 36,
+        "dominant_states": [
+          [
+            "S04",
+            0.833
+          ],
+          [
+            "S14",
+            0.111
+          ],
+          [
+            "S06",
+            0.056
+          ]
+        ],
+        "entropy_bits": 0.804
+      },
+      {
+        "regime_id": 32,
+        "regime_token": "R32",
+        "start_step": 2946,
+        "end_step": 2987,
+        "start_utc": "2026-09-09T13:22:24.962405Z",
+        "end_utc": "2026-09-09T13:57:36.068528Z",
+        "duration_frames": 42,
+        "dominant_states": [
+          [
+            "S01",
+            0.952
+          ],
+          [
+            "S08",
+            0.048
+          ]
+        ],
+        "entropy_bits": 0.278
+      },
+      {
+        "regime_id": 33,
+        "regime_token": "R33",
+        "start_step": 2988,
+        "end_step": 3036,
+        "start_utc": "2026-09-09T14:02:00.016049Z",
+        "end_utc": "2026-09-09T17:13:48.458812Z",
+        "duration_frames": 49,
+        "dominant_states": [
+          [
+            "S02",
+            0.796
+          ],
+          [
+            "S01",
+            0.204
+          ]
+        ],
+        "entropy_bits": 0.73
+      },
+      {
+        "regime_id": 34,
+        "regime_token": "R34",
+        "start_step": 3037,
+        "end_step": 3075,
+        "start_utc": "2026-09-09T17:17:42.480786Z",
+        "end_utc": "2026-09-09T19:07:17.400998Z",
+        "duration_frames": 39,
+        "dominant_states": [
+          [
+            "S01",
+            0.769
+          ],
+          [
+            "S02",
+            0.103
+          ],
+          [
+            "S12",
+            0.051
+          ]
+        ],
+        "entropy_bits": 0.848
+      },
+      {
+        "regime_id": 35,
+        "regime_token": "R35",
+        "start_step": 3076,
+        "end_step": 3146,
+        "start_utc": "2026-09-09T19:07:53.364651Z",
+        "end_utc": "2026-09-09T22:46:09.104513Z",
+        "duration_frames": 71,
+        "dominant_states": [
+          [
+            "S03",
+            0.535
+          ],
+          [
+            "S01",
+            0.465
+          ]
+        ],
+        "entropy_bits": 0.996
+      }
+    ]
+  },
+  "trajectory_motifs": {
+    "total_motifs_count": 20,
+    "motifs_list": [
+      {
+        "motif_id": 1,
+        "motif_token": "M01",
+        "pattern": [
+          "S08",
+          "S01",
+          "S01",
+          "S01",
+          "S01"
+        ],
+        "pattern_string": "S08 -> S01 -> S01 -> S01 -> S01",
+        "support": 11,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-04T16:26:33.227021Z",
+        "last_occurrence_utc": "2026-09-09T19:07:17.400998Z"
+      },
+      {
+        "motif_id": 2,
+        "motif_token": "M02",
+        "pattern": [
+          "S10",
+          "S02",
+          "S02",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S10 -> S02 -> S02 -> S02 -> S02",
+        "support": 10,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T16:30:31.065625Z",
+        "last_occurrence_utc": "2026-09-09T10:08:36.114852Z"
+      },
+      {
+        "motif_id": 3,
+        "motif_token": "M03",
+        "pattern": [
+          "S02",
+          "S02",
+          "S02",
+          "S02",
+          "S10"
+        ],
+        "pattern_string": "S02 -> S02 -> S02 -> S02 -> S10",
+        "support": 9,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T16:03:14.317892Z",
+        "last_occurrence_utc": "2026-09-09T09:48:44.261033Z"
+      },
+      {
+        "motif_id": 4,
+        "motif_token": "M04",
+        "pattern": [
+          "S01",
+          "S01",
+          "S01",
+          "S01",
+          "S08"
+        ],
+        "pattern_string": "S01 -> S01 -> S01 -> S01 -> S08",
+        "support": 9,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-04T16:14:35.714119Z",
+        "last_occurrence_utc": "2026-09-09T18:49:37.582412Z"
+      },
+      {
+        "motif_id": 5,
+        "motif_token": "M05",
+        "pattern": [
+          "S08",
+          "S01",
+          "S01",
+          "S01"
+        ],
+        "pattern_string": "S08 -> S01 -> S01 -> S01",
+        "support": 11,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-04T16:26:33.227021Z",
+        "last_occurrence_utc": "2026-09-09T19:07:17.400998Z"
+      },
+      {
+        "motif_id": 6,
+        "motif_token": "M06",
+        "pattern": [
+          "S02",
+          "S02",
+          "S02",
+          "S10"
+        ],
+        "pattern_string": "S02 -> S02 -> S02 -> S10",
+        "support": 10,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-03T16:08:27.157216Z",
+        "last_occurrence_utc": "2026-09-09T09:53:26.225727Z"
+      },
+      {
+        "motif_id": 7,
+        "motif_token": "M07",
+        "pattern": [
+          "S10",
+          "S02",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S10 -> S02 -> S02 -> S02",
+        "support": 10,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-03T16:30:31.065625Z",
+        "last_occurrence_utc": "2026-09-09T10:08:36.114852Z"
+      },
+      {
+        "motif_id": 8,
+        "motif_token": "M08",
+        "pattern": [
+          "S02",
+          "S02",
+          "S02",
+          "S02",
+          "S12"
+        ],
+        "pattern_string": "S02 -> S02 -> S02 -> S02 -> S12",
+        "support": 8,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T13:44:23.128843Z",
+        "last_occurrence_utc": "2026-09-09T16:54:50.400597Z"
+      },
+      {
+        "motif_id": 9,
+        "motif_token": "M09",
+        "pattern": [
+          "S02",
+          "S02",
+          "S10",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S02 -> S02 -> S10 -> S02 -> S02",
+        "support": 8,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T16:11:52.940428Z",
+        "last_occurrence_utc": "2026-09-08T15:56:16.786022Z"
+      },
+      {
+        "motif_id": 10,
+        "motif_token": "M10",
+        "pattern": [
+          "S01",
+          "S01",
+          "S01",
+          "S08"
+        ],
+        "pattern_string": "S01 -> S01 -> S01 -> S08",
+        "support": 9,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-04T16:15:44.782870Z",
+        "last_occurrence_utc": "2026-09-09T18:59:58.524586Z"
+      },
+      {
+        "motif_id": 11,
+        "motif_token": "M11",
+        "pattern": [
+          "S04",
+          "S02",
+          "S02",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S04 -> S02 -> S02 -> S02 -> S02",
+        "support": 7,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T11:48:44.108350Z",
+        "last_occurrence_utc": "2026-09-09T17:20:56.082401Z"
+      },
+      {
+        "motif_id": 12,
+        "motif_token": "M12",
+        "pattern": [
+          "S02",
+          "S02",
+          "S02",
+          "S10",
+          "S02"
+        ],
+        "pattern_string": "S02 -> S02 -> S02 -> S10 -> S02",
+        "support": 7,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T16:08:27.157216Z",
+        "last_occurrence_utc": "2026-09-08T15:53:03.412762Z"
+      },
+      {
+        "motif_id": 13,
+        "motif_token": "M13",
+        "pattern": [
+          "S02",
+          "S10",
+          "S02",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S02 -> S10 -> S02 -> S02 -> S02",
+        "support": 7,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-03T16:12:23.244992Z",
+        "last_occurrence_utc": "2026-09-08T15:57:09.028451Z"
+      },
+      {
+        "motif_id": 14,
+        "motif_token": "M14",
+        "pattern": [
+          "S01",
+          "S01",
+          "S08",
+          "S01",
+          "S01"
+        ],
+        "pattern_string": "S01 -> S01 -> S08 -> S01 -> S01",
+        "support": 7,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-04T16:22:57.556406Z",
+        "last_occurrence_utc": "2026-09-09T19:02:28.340497Z"
+      },
+      {
+        "motif_id": 15,
+        "motif_token": "M15",
+        "pattern": [
+          "S01",
+          "S08",
+          "S01",
+          "S01",
+          "S01"
+        ],
+        "pattern_string": "S01 -> S08 -> S01 -> S01 -> S01",
+        "support": 7,
+        "length": 5,
+        "first_occurrence_utc": "2026-09-04T16:26:02.334807Z",
+        "last_occurrence_utc": "2026-09-09T19:04:05.659857Z"
+      },
+      {
+        "motif_id": 16,
+        "motif_token": "M16",
+        "pattern": [
+          "S02",
+          "S02",
+          "S10"
+        ],
+        "pattern_string": "S02 -> S02 -> S10",
+        "support": 11,
+        "length": 3,
+        "first_occurrence_utc": "2026-09-03T16:11:52.940428Z",
+        "last_occurrence_utc": "2026-09-09T09:53:56.303359Z"
+      },
+      {
+        "motif_id": 17,
+        "motif_token": "M17",
+        "pattern": [
+          "S10",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S10 -> S02 -> S02",
+        "support": 11,
+        "length": 3,
+        "first_occurrence_utc": "2026-09-03T16:30:31.065625Z",
+        "last_occurrence_utc": "2026-09-09T10:08:36.114852Z"
+      },
+      {
+        "motif_id": 18,
+        "motif_token": "M18",
+        "pattern": [
+          "S08",
+          "S01",
+          "S01"
+        ],
+        "pattern_string": "S08 -> S01 -> S01",
+        "support": 11,
+        "length": 3,
+        "first_occurrence_utc": "2026-09-04T16:26:33.227021Z",
+        "last_occurrence_utc": "2026-09-09T19:07:17.400998Z"
+      },
+      {
+        "motif_id": 19,
+        "motif_token": "M19",
+        "pattern": [
+          "S04",
+          "S02",
+          "S02",
+          "S02"
+        ],
+        "pattern_string": "S04 -> S02 -> S02 -> S02",
+        "support": 8,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-03T11:48:44.108350Z",
+        "last_occurrence_utc": "2026-09-09T17:20:56.082401Z"
+      },
+      {
+        "motif_id": 20,
+        "motif_token": "M20",
+        "pattern": [
+          "S02",
+          "S02",
+          "S02",
+          "S12"
+        ],
+        "pattern_string": "S02 -> S02 -> S02 -> S12",
+        "support": 8,
+        "length": 4,
+        "first_occurrence_utc": "2026-09-03T13:49:10.775016Z",
+        "last_occurrence_utc": "2026-09-09T17:03:52.005439Z"
+      }
+    ]
+  },
+  "transition_graph": {
+    "total_nodes": 33,
+    "total_directed_edges": 111,
+    "graph_density": 0.1051,
+    "reciprocity_ratio": 0.5591,
+    "stationary_distribution": {
+      "S01": 0.49013,
+      "S02": 0.15287,
+      "S03": 0.10543,
+      "S05": 0.0603,
+      "S04": 0.05724,
+      "S06": 0.03669,
+      "S07": 0.02469,
+      "S08": 0.0108,
+      "S09": 0.00836,
+      "S10": 0.00773,
+      "S11": 0.00768,
+      "S12": 0.00707,
+      "S13": 0.0053,
+      "S14": 0.00475,
+      "S16": 0.00454,
+      "S15": 0.00449,
+      "S17": 0.00354,
+      "S18": 0.00101,
+      "S25": 0.00074,
+      "S24": 0.00073,
+      "S22": 0.00067,
+      "S19": 0.00064,
+      "S23": 0.00064,
+      "S21": 0.00063,
+      "S20": 0.00062,
+      "S29": 0.00037,
+      "S33": 0.00037,
+      "S28": 0.00036,
+      "S32": 0.00036,
+      "S31": 0.00036,
+      "S30": 0.00032,
+      "S27": 0.0003,
+      "S26": 0.00029
+    },
+    "top_transition_edges": [
+      {
+        "source": "S02",
+        "target": "S10",
+        "count": 12,
+        "probability": 0.02429
+      },
+      {
+        "source": "S10",
+        "target": "S02",
+        "count": 12,
+        "probability": 0.48
+      },
+      {
+        "source": "S14",
+        "target": "S04",
+        "count": 12,
+        "probability": 0.8
+      },
+      {
+        "source": "S08",
+        "target": "S01",
+        "count": 11,
+        "probability": 0.33333
+      },
+      {
+        "source": "S01",
+        "target": "S08",
+        "count": 10,
+        "probability": 0.00637
+      },
+      {
+        "source": "S02",
+        "target": "S12",
+        "count": 10,
+        "probability": 0.02024
+      },
+      {
+        "source": "S04",
+        "target": "S02",
+        "count": 9,
+        "probability": 0.04945
+      },
+      {
+        "source": "S04",
+        "target": "S14",
+        "count": 9,
+        "probability": 0.04945
+      },
+      {
+        "source": "S04",
+        "target": "S06",
+        "count": 8,
+        "probability": 0.04396
+      },
+      {
+        "source": "S06",
+        "target": "S04",
+        "count": 7,
+        "probability": 0.05785
+      }
+    ],
+    "strongly_connected_components_count": 1
+  }
+}

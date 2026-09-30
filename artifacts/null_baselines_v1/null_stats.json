@@ -1,0 +1,99 @@
+{
+  "protocol": "pixel-sensorium.null-baselines-stats.v1",
+  "generated_at_utc": "2026-09-30T18:35:32.446061+00:00",
+  "num_surrogates": 100,
+  "empirical_metrics": {
+    "transition_entropy_rate_bits": 0.4189,
+    "self_transition_ratio": 0.9158,
+    "repeating_trigrams_count": 57
+  },
+  "hypothesis_tests": {
+    "model_0_permutation": {
+      "description": "I.I.D. Permutation Null (Destroys all temporal order)",
+      "entropy_rate_test": {
+        "mean": 2.4922,
+        "std": 0.0052,
+        "empirical": 0.4189,
+        "z_score": -398.73,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "self_transition_test": {
+        "mean": 0.2902,
+        "std": 0.0066,
+        "empirical": 0.9158,
+        "z_score": 94.53,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "repeating_trigrams_test": {
+        "mean": 180.35,
+        "std": 6.8761,
+        "empirical": 57,
+        "z_score": -17.94,
+        "p_value": 1.0,
+        "significant_diff": true
+      }
+    },
+    "model_1_markov": {
+      "description": "First-Order Markov Null (Preserves 1-step transitions, destroys higher-order structure)",
+      "entropy_rate_test": {
+        "mean": 0.4048,
+        "std": 0.0587,
+        "empirical": 0.4189,
+        "z_score": 0.24,
+        "p_value": 0.61,
+        "significant_diff": false
+      },
+      "self_transition_test": {
+        "mean": 0.9151,
+        "std": 0.0147,
+        "empirical": 0.9158,
+        "z_score": 0.05,
+        "p_value": 0.53,
+        "significant_diff": false
+      },
+      "repeating_trigrams_test": {
+        "mean": 63.31,
+        "std": 10.0611,
+        "empirical": 57,
+        "z_score": -0.63,
+        "p_value": 0.69,
+        "significant_diff": false
+      }
+    },
+    "model_2_circadian": {
+      "description": "Circadian Phase Null (Preserves diurnal 24h phase, shuffles within hour)",
+      "entropy_rate_test": {
+        "mean": 2.1441,
+        "std": 0.0115,
+        "empirical": 0.4189,
+        "z_score": -150.25,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "self_transition_test": {
+        "mean": 0.4416,
+        "std": 0.0058,
+        "empirical": 0.9158,
+        "z_score": 81.53,
+        "p_value": 0.0,
+        "significant_diff": true
+      },
+      "repeating_trigrams_test": {
+        "mean": 151.85,
+        "std": 6.2335,
+        "empirical": 57,
+        "z_score": -15.22,
+        "p_value": 1.0,
+        "significant_diff": true
+      }
+    }
+  },
+  "scientific_verdict": {
+    "reject_null_0_permutation": true,
+    "reject_null_1_markov": true,
+    "reject_null_2_circadian": true,
+    "latent_structure_confirmed_above_chance": true
+  }
+}

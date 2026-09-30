@@ -2,7 +2,7 @@
 
 > **Corpus Identity**: `natural_trajectory_14d_v1`  
 > **Protocol**: `pixel-sensorium.natural-trajectory-corpus-manifest.v1`  
-> **Audit Date (UTC)**: `2026-09-30T18:20:19.600390+00:00`  
+> **Audit Date (UTC)**: `2026-09-30T18:35:30.826416+00:00`  
 > **Cryptographic Window Hash**: `97e4a09183c0cf12b4e6203ed3ba1403f4311a2917c7a0112878ccc312a6ff9b`  
 
 ---

@@ -1,0 +1,591 @@
+{
+  "protocol": "pixel-sensorium.representation-spec.v1",
+  "representation_identity": "representation_14d_v1",
+  "frozen_at_utc": "2026-09-30T18:35:31.162804+00:00",
+  "discovery_fit_window": {
+    "start_utc": "2026-09-02T22:48:12.694637+00:00",
+    "end_utc": "2026-09-09T22:48:12.694637+00:00",
+    "observation_count": 3147
+  },
+  "normalization_parameters": {
+    "feature_names": [
+      "motion_accel_magnitude",
+      "motion_accel_rms",
+      "motion_energy",
+      "motion_stationary_likelihood",
+      "env_log_lux",
+      "env_pressure_hpa",
+      "env_device_temp_c",
+      "device_battery_fraction",
+      "device_is_plugged",
+      "device_is_charging",
+      "audio_silence_likelihood",
+      "audio_rms_loudness",
+      "audio_spectral_entropy",
+      "conn_wifi_connected",
+      "conn_wifi_rssi_norm"
+    ],
+    "medians": {
+      "motion_accel_magnitude": 9.6922,
+      "motion_accel_rms": 5.5958,
+      "motion_energy": 0.1153,
+      "motion_stationary_likelihood": 0.942,
+      "env_log_lux": 2.375836,
+      "env_pressure_hpa": 915.0,
+      "env_device_temp_c": 26.99,
+      "device_battery_fraction": 0.98,
+      "device_is_plugged": 1.0,
+      "device_is_charging": 0.0,
+      "audio_silence_likelihood": 1.0,
+      "audio_rms_loudness": 0.0,
+      "audio_spectral_entropy": 0.0,
+      "conn_wifi_connected": 1.0,
+      "conn_wifi_rssi_norm": 0.714286
+    },
+    "iqrs": {
+      "motion_accel_magnitude": 0.0096,
+      "motion_accel_rms": 0.0055,
+      "motion_energy": 0.0097,
+      "motion_stationary_likelihood": 0.005,
+      "env_log_lux": 1.645648,
+      "env_pressure_hpa": 2.37,
+      "env_device_temp_c": 2.01,
+      "device_battery_fraction": 0.11,
+      "device_is_plugged": 1.0,
+      "device_is_charging": 1.0,
+      "audio_silence_likelihood": 1.0,
+      "audio_rms_loudness": 1.0,
+      "audio_spectral_entropy": 1.0,
+      "conn_wifi_connected": 1.0,
+      "conn_wifi_rssi_norm": 0.085714
+    },
+    "fitted_observation_count": 3147,
+    "fit_window_description": "Day 1\u20137 Discovery Window (3,147 observations)"
+  },
+  "metric_weights": {
+    "weight_topology": 0.35,
+    "weight_kinetics": 0.25,
+    "weight_device": 0.15,
+    "weight_environment": 0.15,
+    "weight_audio": 0.1
+  },
+  "micro_state_lattice": {
+    "total_vocabulary_size_w1": 33,
+    "total_vocabulary_size_14d": 56,
+    "novel_states_in_w2_count": 23,
+    "state_dictionary": {
+      "S01": {
+        "state_id": 1,
+        "state_token": "S01",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K0_STATIONARY|P1_CHARGING|L1_AMBIENT"
+      },
+      "S02": {
+        "state_id": 2,
+        "state_token": "S02",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K0_STATIONARY|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S03": {
+        "state_id": 3,
+        "state_token": "S03",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_d6c2cf9dba|K0_STATIONARY|P1_CHARGING|L0_DARK"
+      },
+      "S04": {
+        "state_id": 4,
+        "state_token": "S04",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_d6c2cf9dba|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S05": {
+        "state_id": 5,
+        "state_token": "S05",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a54849cb73|K0_STATIONARY|P1_CHARGING|L1_AMBIENT"
+      },
+      "S06": {
+        "state_id": 6,
+        "state_token": "S06",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "TOPO_DISCONNECTED|K0_STATIONARY|P1_CHARGING|L0_DARK"
+      },
+      "S07": {
+        "state_id": 7,
+        "state_token": "S07",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_a54849cb73|K0_STATIONARY|P1_CHARGING|L0_DARK"
+      },
+      "S08": {
+        "state_id": 8,
+        "state_token": "S08",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "CELL_6f0562d2fc|K0_STATIONARY|P1_CHARGING|L1_AMBIENT"
+      },
+      "S09": {
+        "state_id": 9,
+        "state_token": "S09",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_6f0562d2fc|K0_STATIONARY|P1_CHARGING|L0_DARK"
+      },
+      "S10": {
+        "state_id": 10,
+        "state_token": "S10",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "CELL_6f0562d2fc|K0_STATIONARY|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S11": {
+        "state_id": 11,
+        "state_token": "S11",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L2_BRIGHT",
+        "signature": "WIFI_d6c2cf9dba|K0_STATIONARY|P0_UNPLUGGED|L2_BRIGHT"
+      },
+      "S12": {
+        "state_id": 12,
+        "state_token": "S12",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "TOPO_DISCONNECTED|K0_STATIONARY|P1_CHARGING|L1_AMBIENT"
+      },
+      "S13": {
+        "state_id": 13,
+        "state_token": "S13",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a54849cb73|K0_STATIONARY|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S14": {
+        "state_id": 14,
+        "state_token": "S14",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_6f0562d2fc|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S15": {
+        "state_id": 15,
+        "state_token": "S15",
+        "topological_anchor": "WIFI_a93965b91d",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a93965b91d|K0_STATIONARY|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S16": {
+        "state_id": 16,
+        "state_token": "S16",
+        "topological_anchor": "WIFI_a93965b91d",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a93965b91d|K1_MODERATE|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S17": {
+        "state_id": 17,
+        "state_token": "S17",
+        "topological_anchor": "WIFI_a93965b91d",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a93965b91d|K2_DYNAMIC|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S18": {
+        "state_id": 18,
+        "state_token": "S18",
+        "topological_anchor": "CELL_1f68b37043",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_1f68b37043|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S19": {
+        "state_id": 19,
+        "state_token": "S19",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a54849cb73|K2_DYNAMIC|P1_CHARGING|L1_AMBIENT"
+      },
+      "S20": {
+        "state_id": 20,
+        "state_token": "S20",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K2_DYNAMIC|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S21": {
+        "state_id": 21,
+        "state_token": "S21",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L2_BRIGHT",
+        "signature": "CELL_6f0562d2fc|K0_STATIONARY|P0_UNPLUGGED|L2_BRIGHT"
+      },
+      "S22": {
+        "state_id": 22,
+        "state_token": "S22",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "TOPO_DISCONNECTED|K1_MODERATE|P1_CHARGING|L1_AMBIENT"
+      },
+      "S23": {
+        "state_id": 23,
+        "state_token": "S23",
+        "topological_anchor": "WIFI_a93965b91d",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_a93965b91d|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S24": {
+        "state_id": 24,
+        "state_token": "S24",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L2_BRIGHT",
+        "signature": "WIFI_d6c2cf9dba|K2_DYNAMIC|P0_UNPLUGGED|L2_BRIGHT"
+      },
+      "S25": {
+        "state_id": 25,
+        "state_token": "S25",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L2_BRIGHT",
+        "signature": "WIFI_d6c2cf9dba|K1_MODERATE|P0_UNPLUGGED|L2_BRIGHT"
+      },
+      "S26": {
+        "state_id": 26,
+        "state_token": "S26",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a54849cb73|K1_MODERATE|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S27": {
+        "state_id": 27,
+        "state_token": "S27",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_a54849cb73|K2_DYNAMIC|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S28": {
+        "state_id": 28,
+        "state_token": "S28",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_a54849cb73|K2_DYNAMIC|P1_CHARGING|L0_DARK"
+      },
+      "S29": {
+        "state_id": 29,
+        "state_token": "S29",
+        "topological_anchor": "WIFI_a54849cb73",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_a54849cb73|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S30": {
+        "state_id": 30,
+        "state_token": "S30",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L2_BRIGHT",
+        "signature": "TOPO_DISCONNECTED|K0_STATIONARY|P1_CHARGING|L2_BRIGHT"
+      },
+      "S31": {
+        "state_id": 31,
+        "state_token": "S31",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "CELL_6f0562d2fc|K2_DYNAMIC|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S32": {
+        "state_id": 32,
+        "state_token": "S32",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L2_BRIGHT",
+        "signature": "CELL_6f0562d2fc|K1_MODERATE|P0_UNPLUGGED|L2_BRIGHT"
+      },
+      "S33": {
+        "state_id": 33,
+        "state_token": "S33",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K2_DYNAMIC|P1_CHARGING|L1_AMBIENT"
+      },
+      "S34": {
+        "state_id": 34,
+        "state_token": "S34",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "WIFI_d6c2cf9dba|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S35": {
+        "state_id": 35,
+        "state_token": "S35",
+        "topological_anchor": "CELL_6f0562d2fc",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_6f0562d2fc|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S36": {
+        "state_id": 36,
+        "state_token": "S36",
+        "topological_anchor": "CELL_3285aa7c03",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_3285aa7c03|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S37": {
+        "state_id": 37,
+        "state_token": "S37",
+        "topological_anchor": "CELL_3285aa7c03",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_3285aa7c03|K1_MODERATE|P0_UNPLUGGED|L0_DARK"
+      },
+      "S38": {
+        "state_id": 38,
+        "state_token": "S38",
+        "topological_anchor": "CELL_1f68b37043",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_1f68b37043|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S39": {
+        "state_id": 39,
+        "state_token": "S39",
+        "topological_anchor": "CELL_0febad0e3d",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_0febad0e3d|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S40": {
+        "state_id": 40,
+        "state_token": "S40",
+        "topological_anchor": "CELL_8a459421e1",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_8a459421e1|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S41": {
+        "state_id": 41,
+        "state_token": "S41",
+        "topological_anchor": "CELL_57f70ba503",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_57f70ba503|K1_MODERATE|P0_UNPLUGGED|L0_DARK"
+      },
+      "S42": {
+        "state_id": 42,
+        "state_token": "S42",
+        "topological_anchor": "CELL_57f70ba503",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_57f70ba503|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S43": {
+        "state_id": 43,
+        "state_token": "S43",
+        "topological_anchor": "CELL_5a2f54179d",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_5a2f54179d|K1_MODERATE|P0_UNPLUGGED|L0_DARK"
+      },
+      "S44": {
+        "state_id": 44,
+        "state_token": "S44",
+        "topological_anchor": "CELL_9af136b9a8",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_9af136b9a8|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S45": {
+        "state_id": 45,
+        "state_token": "S45",
+        "topological_anchor": "CELL_9af136b9a8",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_9af136b9a8|K1_MODERATE|P0_UNPLUGGED|L0_DARK"
+      },
+      "S46": {
+        "state_id": 46,
+        "state_token": "S46",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "TOPO_DISCONNECTED|K1_MODERATE|P1_CHARGING|L0_DARK"
+      },
+      "S47": {
+        "state_id": 47,
+        "state_token": "S47",
+        "topological_anchor": "CELL_0009037088",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_0009037088|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S48": {
+        "state_id": 48,
+        "state_token": "S48",
+        "topological_anchor": "CELL_0009037088",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_0009037088|K1_MODERATE|P0_UNPLUGGED|L0_DARK"
+      },
+      "S49": {
+        "state_id": 49,
+        "state_token": "S49",
+        "topological_anchor": "CELL_a336e76389",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_a336e76389|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S50": {
+        "state_id": 50,
+        "state_token": "S50",
+        "topological_anchor": "CELL_0009037088",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_0009037088|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S51": {
+        "state_id": 51,
+        "state_token": "S51",
+        "topological_anchor": "TOPO_DISCONNECTED",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "TOPO_DISCONNECTED|K2_DYNAMIC|P1_CHARGING|L0_DARK"
+      },
+      "S52": {
+        "state_id": 52,
+        "state_token": "S52",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K1_MODERATE|P0_UNPLUGGED|L1_AMBIENT"
+      },
+      "S53": {
+        "state_id": 53,
+        "state_token": "S53",
+        "topological_anchor": "CELL_1f68b37043",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_1f68b37043|K0_STATIONARY|P1_CHARGING|L0_DARK"
+      },
+      "S54": {
+        "state_id": 54,
+        "state_token": "S54",
+        "topological_anchor": "CELL_b73c6f2d7b",
+        "kinetic_mode": "K2_DYNAMIC",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_b73c6f2d7b|K2_DYNAMIC|P0_UNPLUGGED|L0_DARK"
+      },
+      "S55": {
+        "state_id": 55,
+        "state_token": "S55",
+        "topological_anchor": "CELL_b73c6f2d7b",
+        "kinetic_mode": "K0_STATIONARY",
+        "power_mode": "P0_UNPLUGGED",
+        "light_mode": "L0_DARK",
+        "signature": "CELL_b73c6f2d7b|K0_STATIONARY|P0_UNPLUGGED|L0_DARK"
+      },
+      "S56": {
+        "state_id": 56,
+        "state_token": "S56",
+        "topological_anchor": "WIFI_d6c2cf9dba",
+        "kinetic_mode": "K1_MODERATE",
+        "power_mode": "P1_CHARGING",
+        "light_mode": "L1_AMBIENT",
+        "signature": "WIFI_d6c2cf9dba|K1_MODERATE|P1_CHARGING|L1_AMBIENT"
+      }
+    }
+  },
+  "cryptographic_signatures": {
+    "state_sequence_sha256": "285ad1a5b0643a367a8a830660513d77077f597ae93ec4b8cf6d44113fc80237"
+  },
+  "discipline_attestation": {
+    "predefined_semantics_injected": false,
+    "w1_w2_leakage_prevented": true,
+    "strictly_deterministic": true
+  }
+}
