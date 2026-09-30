@@ -1,0 +1,26 @@
+Pixel Sensorium v6.5.3
+Status: FROZEN BASELINE
+
+Transport acceptance:
+- Long-running passive stability: PASS
+- Bridge survival: PASS
+- Single sensor-process invariant: PASS
+- Continuous acquisition: PASS
+- Automatic restart: PASS
+- Post-restart acquisition recovery: PASS
+- Orphan-process prevention: PASS
+- Persistent acquisition ledger: PASS
+- Persistent event ledger: PASS
+
+Passive stability test:
+- Duration: ~661 seconds
+- Bridge PID remained stable
+- Sensor process count remained 1
+- Successful acquisitions continued
+- One sensor_stream_exited:0 observed
+- Automatically recovered in ~2.65 seconds
+
+Fault injection:
+- Bridge survived SIGKILL of sensor subprocess
+- No orphan process accumulation
+- Eventual acquisition recovery confirmed

@@ -1,0 +1,57 @@
+{
+  "protocol": "pixel-sensorium.natural-trajectory-corpus-manifest.v1",
+  "corpus_identity": "natural_trajectory_14d_v1",
+  "created_at_utc": "2026-09-30T18:20:19.600126+00:00",
+  "corpus_window": {
+    "start_utc": "2026-09-02T22:48:12.694637+00:00",
+    "end_utc": "2026-09-16T22:48:12.694637+00:00",
+    "duration_seconds": 1209600.0,
+    "duration_days": 14.0,
+    "timezone": "UTC"
+  },
+  "source_provenance": {
+    "hardware_device": "Google Pixel 6a (bluejay)",
+    "hardware_serial": "[REDACTED_DEVICE_SERIAL]",
+    "operating_system": "GrapheneOS (Hardened Android)",
+    "collection_runtime": "Physical Observation Stack v1 (Frozen)",
+    "supervision_subsystem": "Physical Runner Supervision v1 (Frozen / JobScheduler 7702)",
+    "kernel_boot_id": "5a6d0da0-3534-4a48-a42f-30f25c136d9e"
+  },
+  "schemas": {
+    "observation_protocol": "pixel-sensorium.physical-observation.v1",
+    "transition_protocol": "pixel-sensorium.physical-transition.v1",
+    "episode_protocol": "pixel-sensorium.physical-episode.v1",
+    "supervision_tick_protocol": "pixel-sensorium.physical-supervision-tick.v1"
+  },
+  "counts": {
+    "in_window": {
+      "observations_count": 5961,
+      "transitions_count": 791,
+      "episodes_count": 1433,
+      "supervision_ticks_count": 464
+    },
+    "raw_ledger_totals": {
+      "observations_count": 13008,
+      "transitions_count": 1342,
+      "episodes_count": 2474,
+      "supervision_ticks_count": 724
+    }
+  },
+  "cryptographic_hashes": {
+    "deterministic_window_hash": "97e4a09183c0cf12b4e6203ed3ba1403f4311a2917c7a0112878ccc312a6ff9b",
+    "authoritative_raw_ledgers": {
+      "observations_ledger_sha256": "1dc6523204151231f82a11778efa2c5825c227a526d6740ca5021179a4de1d36",
+      "transitions_ledger_sha256": "80621c967836675af456e48e91d2bde7fead2daf1b52438ab77030a8f0f2864b",
+      "episodes_ledger_sha256": "1c4166bc8c6dd807afe99e8868acb41ba37bf39fc0b420dabd9a91d64d4f6383",
+      "supervision_ticks_sha256": "436bffa8ccd40b59a05b8136bc2813a4ab78932794056c0f87f9ec3efdb4de9f",
+      "start_manifest_sha256": "4c27b7b7073e63f4086824179105f9a61d9a84fed0aeba1a33eb74964b1c8a4e"
+    }
+  },
+  "discipline_attestation": {
+    "predefined_behavioral_semantics_injected": false,
+    "raw_corpus_immutable": true,
+    "clustering_performed": false,
+    "semantic_classification_performed": false,
+    "ready_for_trajectory_structure_discovery_v1": true
+  }
+}

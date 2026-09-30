@@ -1,0 +1,459 @@
+{
+  "device_model": "Pixel 6a (bluejay)",
+  "timestamp_utc": "2026-09-02T20:23:08Z",
+  "sensors": {
+    "Dynamic Sensor Manager": {
+      "sensor_name": "Dynamic Sensor Manager",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "LSM6DSR Accelerometer": {
+      "sensor_name": "LSM6DSR Accelerometer",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.15613168478012085,
+        9.380462646484375,
+        2.6560330390930176
+      ]
+    },
+    "MMC56X3X Magnetometer": {
+      "sensor_name": "MMC56X3X Magnetometer",
+      "vendor": "MEMSIC",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        27.44999885559082,
+        -31.183198928833008,
+        -11.10200023651123
+      ]
+    },
+    "Orientation Sensor": {
+      "sensor_name": "Orientation Sensor",
+      "vendor": "Google / AOSP Fusion",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        274.2193603515625,
+        -79.43125915527344,
+        0.8825840950012207
+      ]
+    },
+    "LSM6DSR Gyroscope": {
+      "sensor_name": "LSM6DSR Gyroscope",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.013439035043120384,
+        0.003054326167330146,
+        0.007177666760981083
+      ]
+    },
+    "TMD3719 Ambient Light": {
+      "sensor_name": "TMD3719 Ambient Light",
+      "vendor": "AMS",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        3.2774999141693115
+      ]
+    },
+    "ICP10101 Pressure Sensor": {
+      "sensor_name": "ICP10101 Pressure Sensor",
+      "vendor": "TDK InvenSense",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        913.347412109375
+      ]
+    },
+    "TMD3719 Proximity (wake-up)": {
+      "sensor_name": "TMD3719 Proximity (wake-up)",
+      "vendor": "AMS",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "PASS",
+      "sample_preview": [
+        5
+      ]
+    },
+    "Gravity Sensor": {
+      "sensor_name": "Gravity Sensor",
+      "vendor": "Google / AOSP Fusion",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        -0.039815448224544525,
+        9.667015075683594,
+        1.6683357954025269
+      ]
+    },
+    "Linear Acceleration Sensor": {
+      "sensor_name": "Linear Acceleration Sensor",
+      "vendor": "Unknown",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.5910232067108154,
+        0.3189411163330078,
+        0.05161786079406738
+      ]
+    },
+    "Rotation Vector Sensor": {
+      "sensor_name": "Rotation Vector Sensor",
+      "vendor": "Unknown",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.47962164878845215,
+        0.43388378620147705,
+        0.5058305263519287,
+        0.570827066898346
+      ]
+    },
+    "MMC56X3X Magnetometer-Uncalibrated": {
+      "sensor_name": "MMC56X3X Magnetometer-Uncalibrated",
+      "vendor": "MEMSIC",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        -177.91259765625,
+        -92.67119598388672,
+        103.72439575195312,
+        -206.13356018066406
+      ]
+    },
+    "Game Rotation Vector Sensor": {
+      "sensor_name": "Game Rotation Vector Sensor",
+      "vendor": "Unknown",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.4586612284183502,
+        -0.45946332812309265,
+        -0.5383212566375732,
+        0.537339448928833
+      ]
+    },
+    "LSM6DSR Gyroscope-Uncalibrated": {
+      "sensor_name": "LSM6DSR Gyroscope-Uncalibrated",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.026572637259960175,
+        -0.012828170321881771,
+        -0.00045814894838258624,
+        -0.0008344572270289063
+      ]
+    },
+    "Significant Motion (wake-up)": {
+      "sensor_name": "Significant Motion (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Step Detector": {
+      "sensor_name": "Step Detector",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Step Counter": {
+      "sensor_name": "Step Counter",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        140
+      ]
+    },
+    "Geomagnetic Rotation Vector Sensor": {
+      "sensor_name": "Geomagnetic Rotation Vector Sensor",
+      "vendor": "Unknown",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.4852745532989502,
+        0.43475088477134705,
+        0.5045392513275146,
+        0.5665159821510315
+      ]
+    },
+    "Tilt Sensor (wake-up)": {
+      "sensor_name": "Tilt Sensor (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Device Pickup Sensor (wake-up)": {
+      "sensor_name": "Device Pickup Sensor (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Device Orientation": {
+      "sensor_name": "Device Orientation",
+      "vendor": "Google / AOSP Fusion",
+      "type": "fusion_synthetic",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0
+      ]
+    },
+    "LSM6DSR Accelerometer-Uncalibrated": {
+      "sensor_name": "LSM6DSR Accelerometer-Uncalibrated",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        0.2913261651992798,
+        9.683155059814453,
+        1.6420745849609375,
+        0
+      ]
+    },
+    "LSM6DSR Temperature": {
+      "sensor_name": "LSM6DSR Temperature",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        33.011383056640625,
+        0,
+        0,
+        0
+      ]
+    },
+    "ICP10101 Temperature": {
+      "sensor_name": "ICP10101 Temperature",
+      "vendor": "TDK InvenSense",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        37.15675354003906,
+        0,
+        0,
+        0
+      ]
+    },
+    "Camera V-Sync 0": {
+      "sensor_name": "Camera V-Sync 0",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Camera V-Sync 1": {
+      "sensor_name": "Camera V-Sync 1",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Camera V-Sync 2": {
+      "sensor_name": "Camera V-Sync 2",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Camera V-Sync 3": {
+      "sensor_name": "Camera V-Sync 3",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "LSM6DSR Motion Detect": {
+      "sensor_name": "LSM6DSR Motion Detect",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "LSM6DSR Stationary Detect": {
+      "sensor_name": "LSM6DSR Stationary Detect",
+      "vendor": "STMicroelectronics",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Double Twist (wake-up)": {
+      "sensor_name": "Double Twist (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Binned Brightness (wake-up)": {
+      "sensor_name": "Binned Brightness (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "PASS",
+      "sample_preview": [
+        1,
+        6,
+        255,
+        0
+      ]
+    },
+    "Proximity Gated Single Tap Gesture (wake-up)": {
+      "sensor_name": "Proximity Gated Single Tap Gesture (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Proximity Gated Long Press Gesture (wake-up)": {
+      "sensor_name": "Proximity Gated Long Press Gesture (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Quick Pickup Sensor (wake-up)": {
+      "sensor_name": "Quick Pickup Sensor (wake-up)",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "on-change_or_one-shot",
+      "read_probe": "FAIL",
+      "sample_preview": null
+    },
+    "Auto Brightness": {
+      "sensor_name": "Auto Brightness",
+      "vendor": "Unknown",
+      "type": "hardware",
+      "behavior": "continuous",
+      "read_probe": "PASS",
+      "sample_preview": [
+        4.375725269317627,
+        4.5199689865112305,
+        0,
+        0
+      ]
+    }
+  },
+  "modalities": {
+    "location": {
+      "status": "FAIL",
+      "provider": null,
+      "accuracy_m": null
+    },
+    "wifi": {
+      "connection_info": "PASS",
+      "scan_info": "PASS",
+      "scanned_ap_count": 35
+    },
+    "location": {
+      "status": "PASS",
+      "provider": "gps",
+      "accuracy_m": 25.94
+    },
+    "cellular": {
+      "status": "PASS"
+    },
+    "battery": {
+      "status": "PASS",
+      "temperature_c": 33.1
+    },
+    "audio": {
+      "audio_info": "PASS",
+      "microphone_record": "PASS"
+    }
+  },
+  "permissions": {
+    "SENSORS_PERMISSION": "PASS",
+    "LOCATION_PERMISSION": "PASS",
+    "BACKGROUND_LOCATION_PERMISSION": "PASS",
+    "PRECISE_LOCATION_PERMISSION": "PASS",
+    "MICROPHONE_PERMISSION": "PASS",
+    "NETWORK_PERMISSION": "PASS",
+    "BLUETOOTH_PERMISSION": "NOT_EXPOSED_VIA_TERMUX_API"
+  },
+  "summary": {
+    "total_sensors_listed": 36,
+    "working_sensors_count": 21,
+    "working_sensors": [
+      "LSM6DSR Accelerometer",
+      "MMC56X3X Magnetometer",
+      "Orientation Sensor",
+      "LSM6DSR Gyroscope",
+      "TMD3719 Ambient Light",
+      "ICP10101 Pressure Sensor",
+      "TMD3719 Proximity (wake-up)",
+      "Gravity Sensor",
+      "Linear Acceleration Sensor",
+      "Rotation Vector Sensor",
+      "MMC56X3X Magnetometer-Uncalibrated",
+      "Game Rotation Vector Sensor",
+      "LSM6DSR Gyroscope-Uncalibrated",
+      "Step Counter",
+      "Geomagnetic Rotation Vector Sensor",
+      "Device Orientation",
+      "LSM6DSR Accelerometer-Uncalibrated",
+      "LSM6DSR Temperature",
+      "ICP10101 Temperature",
+      "Binned Brightness (wake-up)",
+      "Auto Brightness"
+    ],
+    "on_change_or_idle_sensors": [
+      "Dynamic Sensor Manager",
+      "Significant Motion (wake-up)",
+      "Step Detector",
+      "Tilt Sensor (wake-up)",
+      "Device Pickup Sensor (wake-up)",
+      "Camera V-Sync 0",
+      "Camera V-Sync 1",
+      "Camera V-Sync 2",
+      "Camera V-Sync 3",
+      "LSM6DSR Motion Detect",
+      "LSM6DSR Stationary Detect",
+      "Double Twist (wake-up)",
+      "Proximity Gated Single Tap Gesture (wake-up)",
+      "Proximity Gated Long Press Gesture (wake-up)",
+      "Quick Pickup Sensor (wake-up)"
+    ]
+  }
+}

@@ -1,0 +1,518 @@
+{
+  "protocol": "pixel-sensorium.natural-trajectory-corpus-stats.v1",
+  "corpus_identity": "natural_trajectory_14d_v1",
+  "generated_at_utc": "2026-09-30T18:20:19.600390+00:00",
+  "audit_verdict": {
+    "usable_for_structure_discovery": true,
+    "critical_issues": [],
+    "warnings": [
+      "Observed 4 continuous gaps exceeding 2 hours (maximum gap: 2.85h). These correspond to natural deep doze / stationary intervals without runner crashes.",
+      "27 gaps exceeding 30 minutes occurred within single stationary episodes. Analysis layer should enforce synthetic episode boundaries across gaps > 30 minutes.",
+      "Day 03 (2026-09-04 22:48 -> 2026-09-05 22:48 UTC) exhibits reduced observation density (37 obs, 11.66% coverage) due to extended natural overnight stationary doze."
+    ],
+    "excluded_intervals": [
+      {
+        "interval_id": "gap-2026-09-05-7716.31s",
+        "start_utc": "2026-09-05T05:29:08.495223Z",
+        "end_utc": "2026-09-05T07:37:44.804763Z",
+        "duration_seconds": 7716.31,
+        "duration_hours": 2.14,
+        "reason": "NATURAL_STATIONARY_DEEP_DOZE_GAP_GT_2H",
+        "recommendation": "MASK_TRANSITION_STEP_IN_RECURRENCE_ANALYSIS"
+      },
+      {
+        "interval_id": "gap-2026-09-05-9604.09s",
+        "start_utc": "2026-09-05T16:03:10.953152Z",
+        "end_utc": "2026-09-05T18:43:15.043946Z",
+        "duration_seconds": 9604.09,
+        "duration_hours": 2.67,
+        "reason": "NATURAL_STATIONARY_DEEP_DOZE_GAP_GT_2H",
+        "recommendation": "MASK_TRANSITION_STEP_IN_RECURRENCE_ANALYSIS"
+      },
+      {
+        "interval_id": "gap-2026-09-06-10249.01s",
+        "start_utc": "2026-09-06T03:14:59.900498Z",
+        "end_utc": "2026-09-06T06:05:48.914402Z",
+        "duration_seconds": 10249.01,
+        "duration_hours": 2.85,
+        "reason": "NATURAL_STATIONARY_DEEP_DOZE_GAP_GT_2H",
+        "recommendation": "MASK_TRANSITION_STEP_IN_RECURRENCE_ANALYSIS"
+      },
+      {
+        "interval_id": "gap-2026-09-06-9154.0s",
+        "start_utc": "2026-09-06T08:15:00.052609Z",
+        "end_utc": "2026-09-06T10:47:34.052474Z",
+        "duration_seconds": 9154.0,
+        "duration_hours": 2.54,
+        "reason": "NATURAL_STATIONARY_DEEP_DOZE_GAP_GT_2H",
+        "recommendation": "MASK_TRANSITION_STEP_IN_RECURRENCE_ANALYSIS"
+      }
+    ]
+  },
+  "temporal_coverage": {
+    "window_duration_seconds": 1209600.0,
+    "earliest_observation_utc": "2026-09-02T22:48:20.177163Z",
+    "latest_observation_utc": "2026-09-16T22:47:49.763445Z",
+    "daily_coverage_rolling": [
+      {
+        "day_number": 1,
+        "window_start_utc": "2026-09-02T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-03T22:48:12.694637+00:00",
+        "observation_count": 422,
+        "mean_interval_seconds": 205.09,
+        "median_interval_seconds": 111.06,
+        "max_interval_seconds": 1583.21,
+        "max_interval_minutes": 26.39,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 70.23
+      },
+      {
+        "day_number": 2,
+        "window_start_utc": "2026-09-03T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-04T22:48:12.694637+00:00",
+        "observation_count": 409,
+        "mean_interval_seconds": 206.71,
+        "median_interval_seconds": 100.3,
+        "max_interval_seconds": 2978.14,
+        "max_interval_minutes": 49.64,
+        "gaps_gt_30m_count": 4,
+        "effective_coverage_percentage": 64.0
+      },
+      {
+        "day_number": 3,
+        "window_start_utc": "2026-09-04T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-05T22:48:12.694637+00:00",
+        "observation_count": 37,
+        "mean_interval_seconds": 2320.49,
+        "median_interval_seconds": 1576.96,
+        "max_interval_seconds": 9604.09,
+        "max_interval_minutes": 160.07,
+        "gaps_gt_30m_count": 17,
+        "effective_coverage_percentage": 11.66
+      },
+      {
+        "day_number": 4,
+        "window_start_utc": "2026-09-05T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-06T22:48:12.694637+00:00",
+        "observation_count": 781,
+        "mean_interval_seconds": 108.44,
+        "median_interval_seconds": 30.35,
+        "max_interval_seconds": 10249.01,
+        "max_interval_minutes": 170.82,
+        "gaps_gt_30m_count": 8,
+        "effective_coverage_percentage": 44.16
+      },
+      {
+        "day_number": 5,
+        "window_start_utc": "2026-09-06T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-07T22:48:12.694637+00:00",
+        "observation_count": 397,
+        "mean_interval_seconds": 216.68,
+        "median_interval_seconds": 153.61,
+        "max_interval_seconds": 1263.4,
+        "max_interval_minutes": 21.06,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 74.12
+      },
+      {
+        "day_number": 6,
+        "window_start_utc": "2026-09-07T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-08T22:48:12.694637+00:00",
+        "observation_count": 418,
+        "mean_interval_seconds": 205.69,
+        "median_interval_seconds": 140.15,
+        "max_interval_seconds": 1877.7,
+        "max_interval_minutes": 31.3,
+        "gaps_gt_30m_count": 1,
+        "effective_coverage_percentage": 79.23
+      },
+      {
+        "day_number": 7,
+        "window_start_utc": "2026-09-08T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-09T22:48:12.694637+00:00",
+        "observation_count": 683,
+        "mean_interval_seconds": 126.39,
+        "median_interval_seconds": 48.14,
+        "max_interval_seconds": 1057.8,
+        "max_interval_minutes": 17.63,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 85.28
+      },
+      {
+        "day_number": 8,
+        "window_start_utc": "2026-09-09T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-10T22:48:12.694637+00:00",
+        "observation_count": 444,
+        "mean_interval_seconds": 192.76,
+        "median_interval_seconds": 128.64,
+        "max_interval_seconds": 2998.74,
+        "max_interval_minutes": 49.98,
+        "gaps_gt_30m_count": 2,
+        "effective_coverage_percentage": 74.99
+      },
+      {
+        "day_number": 9,
+        "window_start_utc": "2026-09-10T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-11T22:48:12.694637+00:00",
+        "observation_count": 419,
+        "mean_interval_seconds": 206.48,
+        "median_interval_seconds": 160.59,
+        "max_interval_seconds": 1638.68,
+        "max_interval_minutes": 27.31,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 78.53
+      },
+      {
+        "day_number": 10,
+        "window_start_utc": "2026-09-11T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-12T22:48:12.694637+00:00",
+        "observation_count": 427,
+        "mean_interval_seconds": 202.63,
+        "median_interval_seconds": 152.71,
+        "max_interval_seconds": 1361.43,
+        "max_interval_minutes": 22.69,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 80.06
+      },
+      {
+        "day_number": 11,
+        "window_start_utc": "2026-09-12T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-13T22:48:12.694637+00:00",
+        "observation_count": 382,
+        "mean_interval_seconds": 226.22,
+        "median_interval_seconds": 175.81,
+        "max_interval_seconds": 1270.34,
+        "max_interval_minutes": 21.17,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 76.48
+      },
+      {
+        "day_number": 12,
+        "window_start_utc": "2026-09-13T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-14T22:48:12.694637+00:00",
+        "observation_count": 384,
+        "mean_interval_seconds": 224.4,
+        "median_interval_seconds": 150.09,
+        "max_interval_seconds": 3512.46,
+        "max_interval_minutes": 58.54,
+        "gaps_gt_30m_count": 2,
+        "effective_coverage_percentage": 68.38
+      },
+      {
+        "day_number": 13,
+        "window_start_utc": "2026-09-14T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-15T22:48:12.694637+00:00",
+        "observation_count": 316,
+        "mean_interval_seconds": 273.52,
+        "median_interval_seconds": 205.34,
+        "max_interval_seconds": 1683.57,
+        "max_interval_minutes": 28.06,
+        "gaps_gt_30m_count": 0,
+        "effective_coverage_percentage": 72.11
+      },
+      {
+        "day_number": 14,
+        "window_start_utc": "2026-09-15T22:48:12.694637+00:00",
+        "window_end_utc": "2026-09-16T22:48:12.694637+00:00",
+        "observation_count": 442,
+        "mean_interval_seconds": 193.81,
+        "median_interval_seconds": 136.42,
+        "max_interval_seconds": 2156.02,
+        "max_interval_minutes": 35.93,
+        "gaps_gt_30m_count": 2,
+        "effective_coverage_percentage": 74.09
+      }
+    ],
+    "calendar_day_coverage": [
+      {
+        "date": "2026-09-02",
+        "observation_count": 32,
+        "first_utc": "22:48:20",
+        "last_utc": "23:54:38",
+        "mean_interval_seconds": 128.32,
+        "max_interval_minutes": 10.51
+      },
+      {
+        "date": "2026-09-03",
+        "observation_count": 411,
+        "first_utc": "00:02:46",
+        "last_utc": "23:57:28",
+        "mean_interval_seconds": 209.96,
+        "max_interval_minutes": 26.39
+      },
+      {
+        "date": "2026-09-04",
+        "observation_count": 393,
+        "first_utc": "00:07:37",
+        "last_utc": "23:47:44",
+        "mean_interval_seconds": 217.37,
+        "max_interval_minutes": 49.64
+      },
+      {
+        "date": "2026-09-05",
+        "observation_count": 33,
+        "first_utc": "00:09:09",
+        "last_utc": "23:15:00",
+        "mean_interval_seconds": 2598.49,
+        "max_interval_minutes": 160.07
+      },
+      {
+        "date": "2026-09-06",
+        "observation_count": 793,
+        "first_utc": "00:53:40",
+        "last_utc": "23:51:49",
+        "mean_interval_seconds": 104.41,
+        "max_interval_minutes": 170.82
+      },
+      {
+        "date": "2026-09-07",
+        "observation_count": 401,
+        "first_utc": "00:03:27",
+        "last_utc": "23:58:38",
+        "mean_interval_seconds": 215.28,
+        "max_interval_minutes": 21.06
+      },
+      {
+        "date": "2026-09-08",
+        "observation_count": 423,
+        "first_utc": "00:05:44",
+        "last_utc": "23:57:45",
+        "mean_interval_seconds": 203.61,
+        "max_interval_minutes": 31.3
+      },
+      {
+        "date": "2026-09-09",
+        "observation_count": 683,
+        "first_utc": "00:03:28",
+        "last_utc": "23:59:48",
+        "mean_interval_seconds": 126.36,
+        "max_interval_minutes": 17.63
+      },
+      {
+        "date": "2026-09-10",
+        "observation_count": 441,
+        "first_utc": "00:01:37",
+        "last_utc": "23:58:34",
+        "mean_interval_seconds": 195.95,
+        "max_interval_minutes": 49.98
+      },
+      {
+        "date": "2026-09-11",
+        "observation_count": 426,
+        "first_utc": "00:02:07",
+        "last_utc": "23:58:44",
+        "mean_interval_seconds": 202.82,
+        "max_interval_minutes": 27.31
+      },
+      {
+        "date": "2026-09-12",
+        "observation_count": 422,
+        "first_utc": "00:02:54",
+        "last_utc": "23:53:55",
+        "mean_interval_seconds": 203.94,
+        "max_interval_minutes": 22.69
+      },
+      {
+        "date": "2026-09-13",
+        "observation_count": 377,
+        "first_utc": "00:03:40",
+        "last_utc": "23:58:43",
+        "mean_interval_seconds": 229.0,
+        "max_interval_minutes": 21.17
+      },
+      {
+        "date": "2026-09-14",
+        "observation_count": 386,
+        "first_utc": "00:00:18",
+        "last_utc": "23:58:30",
+        "mean_interval_seconds": 224.14,
+        "max_interval_minutes": 58.54
+      },
+      {
+        "date": "2026-09-15",
+        "observation_count": 319,
+        "first_utc": "00:00:58",
+        "last_utc": "23:59:51",
+        "mean_interval_seconds": 271.49,
+        "max_interval_minutes": 28.06
+      },
+      {
+        "date": "2026-09-16",
+        "observation_count": 421,
+        "first_utc": "00:03:59",
+        "last_utc": "22:47:49",
+        "mean_interval_seconds": 194.83,
+        "max_interval_minutes": 35.93
+      }
+    ]
+  },
+  "observation_density": {
+    "total_observations": 5961,
+    "mean_observations_per_day": 425.79,
+    "mean_observations_per_hour": 17.74,
+    "interval_statistics_seconds": {
+      "mean": 202.95,
+      "median": 109.83,
+      "std": 396.84,
+      "min": 9.34,
+      "max": 10249.01,
+      "p25": 30.42,
+      "p75": 247.67,
+      "p95": 635.1,
+      "p99": 1259.99
+    }
+  },
+  "gap_distribution": {
+    "gaps_gt_1m_count": 3613,
+    "gaps_gt_5m_count": 1127,
+    "gaps_gt_30m_count": 38,
+    "gaps_gt_2h_count": 4,
+    "maximum_gap": {
+      "duration_seconds": 10249.01,
+      "duration_minutes": 170.82,
+      "duration_hours": 2.85,
+      "start_utc": "2026-09-06T03:14:59.900498Z",
+      "end_utc": "2026-09-06T06:05:48.914402Z"
+    },
+    "top_10_largest_gaps": [
+      {
+        "gap_index": 872,
+        "prior_observation_id": "obs-1788674748909-c6cc115bfee0",
+        "subsequent_observation_id": "obs-1788677650751-a4039aae246e",
+        "start_utc": "2026-09-06T03:14:59.900498Z",
+        "end_utc": "2026-09-06T06:05:48.914402Z",
+        "duration_seconds": 10249.01,
+        "duration_minutes": 170.82,
+        "duration_hours": 2.85
+      },
+      {
+        "gap_index": 865,
+        "prior_observation_id": "obs-1788633795018-7713cdc08f83",
+        "subsequent_observation_id": "obs-1788639299859-420bcd819f84",
+        "start_utc": "2026-09-05T16:03:10.953152Z",
+        "end_utc": "2026-09-05T18:43:15.043946Z",
+        "duration_seconds": 9604.09,
+        "duration_minutes": 160.07,
+        "duration_hours": 2.67
+      },
+      {
+        "gap_index": 875,
+        "prior_observation_id": "obs-1788691654048-51fc24fabeb1",
+        "subsequent_observation_id": "obs-1788695355071-8c51ced54b71",
+        "start_utc": "2026-09-06T08:15:00.052609Z",
+        "end_utc": "2026-09-06T10:47:34.052474Z",
+        "duration_seconds": 9154.0,
+        "duration_minutes": 152.57,
+        "duration_hours": 2.54
+      },
+      {
+        "gap_index": 853,
+        "prior_observation_id": "obs-1788593864795-4ba2c9d9f044",
+        "subsequent_observation_id": "obs-1788596100804-53b47e64e33b",
+        "start_utc": "2026-09-05T05:29:08.495223Z",
+        "end_utc": "2026-09-05T07:37:44.804763Z",
+        "duration_seconds": 7716.31,
+        "duration_minutes": 128.61,
+        "duration_hours": 2.14
+      },
+      {
+        "gap_index": 867,
+        "prior_observation_id": "obs-1788645688038-e254bf741abe",
+        "subsequent_observation_id": "obs-1788650100672-68799a039352",
+        "start_utc": "2026-09-05T20:14:59.864468Z",
+        "end_utc": "2026-09-05T22:01:28.042970Z",
+        "duration_seconds": 6388.18,
+        "duration_minutes": 106.47,
+        "duration_hours": 1.77
+      },
+      {
+        "gap_index": 869,
+        "prior_observation_id": "obs-1788656020696-d7165ecff4ef",
+        "subsequent_observation_id": "obs-1788660900997-f679009cb0d0",
+        "start_utc": "2026-09-05T23:15:00.700968Z",
+        "end_utc": "2026-09-06T00:53:40.738045Z",
+        "duration_seconds": 5920.04,
+        "duration_minutes": 98.67,
+        "duration_hours": 1.64
+      },
+      {
+        "gap_index": 866,
+        "prior_observation_id": "obs-1788639299859-420bcd819f84",
+        "subsequent_observation_id": "obs-1788645688038-e254bf741abe",
+        "start_utc": "2026-09-05T18:43:15.043946Z",
+        "end_utc": "2026-09-05T20:14:59.864468Z",
+        "duration_seconds": 5504.82,
+        "duration_minutes": 91.75,
+        "duration_hours": 1.53
+      },
+      {
+        "gap_index": 862,
+        "prior_observation_id": "obs-1788617641419-b77dc20590e5",
+        "subsequent_observation_id": "obs-1788619959960-71be9e857d8e",
+        "start_utc": "2026-09-05T12:52:14.615184Z",
+        "end_utc": "2026-09-05T14:14:01.426238Z",
+        "duration_seconds": 4906.81,
+        "duration_minutes": 81.78,
+        "duration_hours": 1.36
+      },
+      {
+        "gap_index": 870,
+        "prior_observation_id": "obs-1788660900997-f679009cb0d0",
+        "subsequent_observation_id": "obs-1788664499894-c0a7eba8b72d",
+        "start_utc": "2026-09-06T00:53:40.738045Z",
+        "end_utc": "2026-09-06T02:15:01.028883Z",
+        "duration_seconds": 4880.29,
+        "duration_minutes": 81.34,
+        "duration_hours": 1.36
+      },
+      {
+        "gap_index": 874,
+        "prior_observation_id": "obs-1788682500007-f9e36037a7e5",
+        "subsequent_observation_id": "obs-1788691654048-51fc24fabeb1",
+        "start_utc": "2026-09-06T06:54:10.799127Z",
+        "end_utc": "2026-09-06T08:15:00.052609Z",
+        "duration_seconds": 4849.25,
+        "duration_minutes": 80.82,
+        "duration_hours": 1.35
+      }
+    ]
+  },
+  "runner_and_supervision_stability": {
+    "supervision_ticks_in_window": 464,
+    "healthy_ticks_count": 464,
+    "healthy_ticks_ratio": 1.0,
+    "runner_restarts_in_window": 0,
+    "recovery_actuations_in_window": 0,
+    "boot_epoch_changes_in_window": 0,
+    "recovery_induced_anomalous_transitions": 0
+  },
+  "data_integrity_audit": {
+    "duplicate_timestamps_count": 0,
+    "non_monotonic_utc_timestamps_count": 0,
+    "non_monotonic_monotonic_ns_count": 0,
+    "invalid_sensor_values_count": 0,
+    "broken_transition_prior_references": 0,
+    "broken_transition_subsequent_references": 0,
+    "zero_length_episodes_count": 0
+  },
+  "episodes_and_gaps": {
+    "total_episodes": 1433,
+    "boundary_reasons_breakdown": {
+      "MOTION_REGIME_CHANGE": 47,
+      "CONNECTIVITY_CONTEXT_CHANGE": 474,
+      "STABILITY_TIMEOUT": 743,
+      "PLACE_TRANSITION": 163,
+      "MULTIMODAL_CHANGE": 6
+    },
+    "gaps_gt_30m_spanning_different_episodes": 11,
+    "gaps_gt_30m_inside_same_episode": 27,
+    "recommendation": "Enforce explicit episode boundary splitting across gaps > 30 minutes in the analysis layer."
+  },
+  "temporal_split_for_stability_testing": {
+    "day1_to_7_discovery_count": 3147,
+    "day8_to_14_validation_count": 2814,
+    "discovery_ratio": 0.528,
+    "validation_ratio": 0.472,
+    "balance_status": "EXCELLENT_EQUILIBRIUM"
+  }
+}
