@@ -211,6 +211,11 @@ class SandboxSimulator:
             return self
 
         self.vocab_set = set(r["state_token"] for r in records if "state_token" in r)
+        if not self.vocab_set:
+            raise ValueError(
+                f"fit_from_records: none of the {len(records)} records contain "
+                f"a 'state_token' field; cannot build transition model."
+            )
         self.vocab = sorted(list(self.vocab_set))
 
         # 1. Count transitions globally and per diurnal phase
@@ -324,6 +329,7 @@ class SandboxSimulator:
         branch_id: str = "status_quo",
         intervention: Optional[ScenarioIntervention] = None,
         seed: Optional[int] = 42,
+        max_sample_paths: int = 10,
     ) -> SimulationBranch:
         """
         Executes parallel stochastic forward rollouts starting from initial_state.
@@ -351,6 +357,7 @@ class SandboxSimulator:
 
             first_hit_in_run: Set[str] = {curr_s}
             hitting_records[curr_s].append(0)
+            total_energy_accum += self.energy_map.get(curr_s, 1.0)
 
             for step in range(1, horizon_steps):
                 curr_t = curr_t + datetime.timedelta(seconds=self.step_seconds)
@@ -372,13 +379,24 @@ class SandboxSimulator:
                         and intervention.max_dwell_steps
                         and curr_dwell >= intervention.max_dwell_steps
                     ):
-                        # Force out to a non-dwell state
-                        next_cand = self._sample_next_state(curr_s, curr_t, rng)
-                        attempts = 0
-                        while next_cand == curr_s and attempts < 5:
-                            next_cand = self._sample_next_state(curr_s, curr_t, rng)
-                            attempts += 1
-                        overridden_state = next_cand
+                        # Force out: sample from non-self sub-distribution
+                        row = self.global_trans.get(curr_s, {})
+                        non_self = {v: p for v, p in row.items() if v != curr_s and p > 0}
+                        if non_self:
+                            tot = sum(non_self.values())
+                            r_val = rng.random() * tot
+                            running_sum = 0.0
+                            chosen = list(non_self.keys())[0]
+                            for v, p in non_self.items():
+                                running_sum += p
+                                if r_val <= running_sum:
+                                    chosen = v
+                                    break
+                            overridden_state = chosen
+                        else:
+                            # No non-self transitions — pick random vocab state
+                            others = [v for v in self.vocab if v != curr_s]
+                            overridden_state = rng.choice(others) if others else curr_s
 
                     # 3. Custom programmatic intervention hook
                     elif intervention.custom_hook:
@@ -423,7 +441,8 @@ class SandboxSimulator:
                 # Energy accumulation
                 total_energy_accum += self.energy_map.get(curr_s, 1.0)
 
-            paths.append(path)
+            if len(paths) < max_sample_paths:
+                paths.append(path)
 
         # Aggregate occupancy probability distributions
         occupancy_by_step: List[Dict[str, float]] = []
@@ -526,18 +545,20 @@ class SandboxSimulator:
         # Compute stabilization step (step where entropy delta stabilizes within epsilon)
         stab_a = horizon_steps
         stab_b = horizon_steps
-        for s in range(5, horizon_steps):
+        stab_min = max(2, min(5, horizon_steps // 2))  # Adapt to short horizons
+        for s in range(stab_min, horizon_steps):
             if abs(branch_a.entropy_by_step[s] - branch_a.entropy_by_step[s - 1]) < 0.01:
                 stab_a = s
                 break
-        for s in range(5, horizon_steps):
+        for s in range(stab_min, horizon_steps):
             if abs(branch_b.entropy_by_step[s] - branch_b.entropy_by_step[s - 1]) < 0.01:
                 stab_b = s
                 break
 
         # Generate recommendation
+        risk_scope = high_risk_states or self.vocab_set
         total_risk_reduced = sum(
-            delta for s, delta in risk_delta_map.items() if s in (high_risk_states or set()) and delta < 0
+            delta for s, delta in risk_delta_map.items() if s in risk_scope and delta < 0
         )
         if total_risk_reduced < -0.05:
             rec = "RECOMMEND_INTERVENTION"

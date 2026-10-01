@@ -8,6 +8,8 @@ from current real-time or historical physical trajectory states.
 
 from __future__ import annotations
 
+from typing import Optional
+
 import argparse
 import datetime
 import json

@@ -158,7 +158,37 @@ class TestSandboxSimulator(unittest.TestCase):
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
         # Total steps sampled = 500 * 120 = 60,000 steps; must be < 250ms on mobile ARM CPU
         self.assertLess(elapsed_ms, 250.0, f"Simulation too slow: {elapsed_ms:.2f} ms")
-        self.assertEqual(len(branch.sample_paths), 500)
+        self.assertEqual(len(branch.sample_paths), 10)
+
+    def test_short_horizon_counterfactual(self):
+        """Verifies counterfactual works with very short horizons (BUG-S5 regression)."""
+        intervention = ScenarioIntervention(
+            action_type="FORCE_STATE",
+            target_state="M01",
+            at_step=2,
+        )
+        comp = self.simulator.simulate_counterfactual(
+            initial_state="M04",
+            intervention=intervention,
+            horizon_steps=4,
+            num_rollouts=50,
+            seed=77,
+        )
+        self.assertIsInstance(comp, CounterfactualComparison)
+        self.assertEqual(comp.horizon_steps, 4)
+        # Stabilization step should be <= horizon_steps (not crash or return nonsensical value)
+        self.assertLessEqual(comp.stabilization_step_baseline, 4)
+        self.assertLessEqual(comp.stabilization_step_scenario, 4)
+
+    def test_records_without_state_token_raises(self):
+        """Verifies that fit_from_records raises ValueError when no state_token found (BUG-S6)."""
+        bad_records = [
+            {"timestamp_utc": "2026-10-01T00:00:00Z", "value": 42},
+            {"timestamp_utc": "2026-10-01T00:01:00Z", "value": 43},
+        ]
+        sim = SandboxSimulator()
+        with self.assertRaises(ValueError):
+            sim.fit_from_records(bad_records)
 
 
 if __name__ == "__main__":
