@@ -7,9 +7,19 @@ from .predictor import (
     HittingTimeEstimator,
     ForecastingEvaluationMetrics,
 )
+from .sandbox_simulator import (
+    SandboxSimulator,
+    SimulationBranch,
+    ScenarioIntervention,
+    CounterfactualComparison,
+)
 
 __all__ = [
     "VariableOrderPredictor",
     "HittingTimeEstimator",
     "ForecastingEvaluationMetrics",
+    "SandboxSimulator",
+    "SimulationBranch",
+    "ScenarioIntervention",
+    "CounterfactualComparison",
 ]

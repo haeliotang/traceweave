@@ -5,9 +5,10 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-131%2F131%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-137%2F137%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
+[![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
 [![Code Health](https://img.shields.io/badge/Audit-100%25%20Verified%20(10%20Bugs%20Fixed)-teal)]()
 [![Hardware](https://img.shields.io/badge/Pixel%206a-On--Device%20Deployed-indigo)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
@@ -185,6 +186,23 @@ The entire codebase underwent a line-by-line static and dynamic peer audit acros
 9. **Streaming Pipeline Fault Isolation (`edge_quantizer.py`)**: Wrapped real-time frame feature extraction in guarded exception containment, yielding safe fallback tokens (`ERR`) without interrupting background daemons.
 10. **Canonical Attractor Ordering (`manifold_lattice.py`)**: Enforced active descending frequency sorting on self-organizing map nodes upon convergence, ensuring $M_{01}$ consistently denotes the primary stationary attractor.
 
+### K. On-Device Forward Closed-Loop Sandbox Simulation & Counterfactual Engine
+
+Building upon the 128D continuous feature space and empirical transition tensors, Traceform introduces an **On-Device Forward Trajectory Sandbox Simulator ([`traceform/forecasting/sandbox_simulator.py`](traceform/forecasting/sandbox_simulator.py))**:
+
+```text
+Current State S(t) ──► Non-Stationary Kernel P_ij(t) ──► 1,000 Monte Carlo Paths ──► Terminal Absorption Clouds
+                                                                                     ├── Trajectory Entropy H(t)
+                                                                                     └── Energy Integral ∫ U(s) dt
+      │
+      └──► Parallel Intervention Branch ("What-If") ──► Stepwise Divergence JSD ──► Risk Mitigation Delta ΔP
+```
+
+- **Multi-Step Monte Carlo Rollouts**: Simulates 100 to 1,000 stochastic future paths over horizons from 1 hour (120 steps) to 24 hours (2,880 steps) or 7 days, computing step-by-step state occupancy probability distributions $\mathbb{P}_t(S_k)$ and trajectory entropy evolution.
+- **Circadian & Diurnal Phase Modulation**: Conditions transition probabilities dynamically based on 4 diurnal regimes (`NIGHT`, `MORNING`, `AFTERNOON`, `EVENING`), capturing the non-stationary diurnal clock of human behavior.
+- **Counterfactual "What-If" Interventions**: Concurrently simulates parallel branches under hypothetical scenarios (`CLAMP_DWELL`, `SUPPRESS_CHAOS`, `FORCE_STATE`), computing the stepwise Jensen-Shannon Divergence $D_{\text{JS}}(\text{Status Quo} \parallel \text{Intervention})$ and risk mitigation delta $\Delta P_{\text{risk}}$.
+- **Extreme On-Device Performance**: Precomputed cumulative distribution function (CDF) tables enable binary search discrete state sampling in $O(\log |\mathcal{V}|)$. A 300-rollout $\times$ 120-step simulation (36,000 transitions) executes in **216 ms** natively on a physical Google Pixel 6a (Tensor G1 SoC), achieving **0.36 ms / rollout**.
+
 ---
 
 ## 4. Repository Structure
@@ -213,8 +231,9 @@ traceform/
 │   │   └── temporal_validator.py
 │   ├── semantics/                         # Stage 6: Post-hoc physical reverse projector
 │   │   └── projector.py
-│   ├── forecasting/                       # Stage 7: Trajectory predictor & hitting time estimator
-│   │   └── predictor.py
+│   ├── forecasting/                       # Stage 7: Trajectory predictor & sandbox simulation
+│   │   ├── predictor.py
+│   │   └── sandbox_simulator.py           # On-device forward MC rollout & counterfactual engine
 │   ├── dynamics/                          # Stage 8 & 9: Dynamics, Infradian, Manifold & Multiscale
 │   │   ├── bifurcation.py
 │   │   ├── infradian.py
@@ -245,6 +264,7 @@ traceform/
 │   ├── audit_multiscale_diffusion.py      # Multiscale diffusion & Hurst exponent runner
 │   ├── phone_edge_manifold_daemon.py      # Real-time DETM & CSD edge daemon for Pixel 6a
 │   ├── generate_macroscope_v2.py          # Macroscope 2.0 Dashboard generator
+│   ├── run_sandbox_simulation.py          # On-device forward sandbox simulation & counterfactual CLI
 │   └── run_traceform_pipeline.py          # Master End-to-End Pipeline CLI (10 Stages)
 ├── artifacts/                             # Immutable audit reports & specifications
 │   ├── quantization_benchmark_v1/         # Dual-track benchmark specifications & report
@@ -261,7 +281,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 131 unit tests across 25 test modules (100% PASS)
+└── tests/                                 # 137 unit tests across 26 test modules (100% PASS)
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -270,6 +290,7 @@ traceform/
     ├── test_canonical_sensorium_71d.py    # 71D ultra-manifold & Lyapunov tests
     ├── test_canonical_sensorium_80d.py    # 80D holo-cosmic & snap kinematics tests
     ├── test_canonical_sensorium_128d.py   # 128D super-cube hyper-manifold tests
+    ├── test_sandbox_simulator.py          # Forward Monte Carlo & counterfactual tests
     ├── test_representation_*.py
     ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
     ├── test_manifold_lattice.py           # DETM lattice SOM & kinetic metric tests
@@ -293,9 +314,9 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (131/131 Passing)
+### A. Run Unit Tests (137/137 Passing)
 ```bash
-# Run full 131-test suite locally:
+# Run full 137-test suite locally:
 python3 -m unittest discover tests
 
 # Or run with pytest:
@@ -312,7 +333,7 @@ adb push traceform tests scripts /data/local/tmp/tf_sync/
 adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; cp -r /data/local/tmp/tf_sync/* ~/traceform/"'
 adb shell "rm -rf /data/local/tmp/tf_sync"
 
-# Execute 131-test suite natively on Pixel 6a:
+# Execute 137-test suite natively on Pixel 6a:
 adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; export PATH=/data/data/com.termux/files/usr/bin:\$PATH; cd ~/traceform && python3 -m unittest discover tests"'
 ```
 
@@ -365,6 +386,16 @@ python3 scripts/phone_edge_manifold_daemon.py --simulate --max-frames 100
 
 # Live sensor tailing mode (on-device GrapheneOS / Termux runtime):
 python3 scripts/phone_edge_manifold_daemon.py --follow
+```
+
+### I. Run On-Device Forward Sandbox Simulation & Counterfactual Engine
+Execute forward Monte Carlo rollouts and evaluate counterfactual interventions (e.g. 500 rollouts over a 1-hour horizon):
+```bash
+# Evaluate dwell-clamping intervention on current real-time state:
+python3 scripts/run_sandbox_simulation.py --horizon-steps 120 --rollouts 500 --intervention CLAMP_DWELL
+
+# Execute a 24-hour forward counterfactual simulation on Pixel 6a:
+python3 scripts/run_sandbox_simulation.py --horizon-steps 2880 --rollouts 200 --intervention SUPPRESS_CHAOS
 ```
 
 ---

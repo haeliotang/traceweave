@@ -1,0 +1,20 @@
+{
+  "baseline_branch_id": "status_quo",
+  "scenario_branch_id": "intervention",
+  "horizon_steps": 2880,
+  "mean_divergence_jsd": 0.0059,
+  "peak_divergence_jsd": 0.0425,
+  "peak_divergence_step": 2283,
+  "risk_delta_map": {
+    "M12": 0.02,
+    "M05": 0.0,
+    "M08": -0.02,
+    "M16": 0.0
+  },
+  "stabilization_step_baseline": 15,
+  "stabilization_step_scenario": 12,
+  "recommended_path": "NEUTRAL",
+  "summary_insight": "Intervention induces minimal trajectory divergence; status-quo is naturally resilient.",
+  "simulation_time_ms": 1080.66,
+  "start_state": "M08"
+}
