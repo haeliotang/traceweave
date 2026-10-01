@@ -3,7 +3,10 @@ Tests for Temporal Stability Validation Engine.
 """
 
 import unittest
-from traceform.stability.temporal_validator import TemporalStabilityValidator, StabilityMetrics
+from traceform.stability.temporal_validator import (
+    TemporalStabilityValidator,
+    StabilityMetrics,
+)
 
 
 class TestTemporalStability(unittest.TestCase):

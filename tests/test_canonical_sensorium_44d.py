@@ -18,8 +18,10 @@ from __future__ import annotations
 import math
 import unittest
 
-from traceform.probes.digital_sensorium import DigitalSensoriumProbe
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -146,15 +148,21 @@ class TestCanonicalSensorium44D(unittest.TestCase):
 
         # Frame 1: V=4120 mV, I=-200,000 uA (-200 mA)
         obs1 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:00Z")
-        obs1["device_relation"] = dict(self.sample_obs["device_relation"], voltage_mv=4120, current_ua=-200000)
+        obs1["device_relation"] = dict(
+            self.sample_obs["device_relation"], voltage_mv=4120, current_ua=-200000
+        )
         norm.extract_raw_features(obs1)
 
         # Frame 2: Load transient! Screen/radio spike: V=4090 mV (drop of 30 mV), I=-400,000 uA (drop of 200 mA)
         # R_int = (30 mV / 200 mA) = 0.15 Ohm = 150 mOhm
         obs2 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:10Z")
-        obs2["device_relation"] = dict(self.sample_obs["device_relation"], voltage_mv=4090, current_ua=-400000)
+        obs2["device_relation"] = dict(
+            self.sample_obs["device_relation"], voltage_mv=4090, current_ua=-400000
+        )
         c2, _ = norm.extract_raw_features(obs2)
-        self.assertAlmostEqual(c2["battery_internal_impedance_miliohm"], 150.0, delta=1.0)
+        self.assertAlmostEqual(
+            c2["battery_internal_impedance_miliohm"], 150.0, delta=1.0
+        )
 
     def test_state_residence_persistence_hours(self):
         norm = MultimodalNormalizer()
@@ -178,7 +186,9 @@ class TestCanonicalSensorium44D(unittest.TestCase):
 
         # Transition to dynamic: should reset persistence to 0.0
         obs_dyn = dict(self.sample_obs, timestamp_utc="2026-10-01T02:30:30Z")
-        obs_dyn["motion"] = dict(self.sample_obs["motion"], stationary_likelihood=0.1, motion_energy=0.8)
+        obs_dyn["motion"] = dict(
+            self.sample_obs["motion"], stationary_likelihood=0.1, motion_energy=0.8
+        )
         c_dyn, _ = norm.extract_raw_features(obs_dyn)
         self.assertEqual(c_dyn["state_residence_persistence_hours"], 0.0)
 
@@ -186,7 +196,9 @@ class TestCanonicalSensorium44D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-44d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -201,12 +213,15 @@ class TestCanonicalSensorium44D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 44)
 
         # Fit DETM with 44D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 
         # Quantize single frame (< 2.0 ms execution)
         import time
+
         t0 = time.perf_counter()
         token, coord, dist = manifold.quantize(self.sample_obs, self.normalizer)
         lat_ms = (time.perf_counter() - t0) * 1000.0

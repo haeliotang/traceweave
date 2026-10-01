@@ -13,7 +13,7 @@ Processes continuous physical sensor observations in real-time on-device (Pixel 
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import datetime
 import json
 import math
@@ -84,7 +84,9 @@ class EdgeManifoldDaemon:
         self.max_gap_seconds = max_inter_frame_gap_seconds
 
         # Ring buffer storing recent (u, v, proj_dist)
-        self.coord_buffer: Deque[Tuple[float, float, float]] = deque(maxlen=ring_buffer_size)
+        self.coord_buffer: Deque[Tuple[float, float, float]] = deque(
+            maxlen=ring_buffer_size
+        )
         self.timestamps: Deque[str] = deque(maxlen=ring_buffer_size)
 
         # Baseline running statistics for z-score standardization
@@ -116,14 +118,21 @@ class EdgeManifoldDaemon:
 
         try:
             self.boot_epoch_file.parent.mkdir(parents=True, exist_ok=True)
-            self.boot_epoch_file.write_text(
-                json.dumps({
-                    "boot_id": self.current_boot_id,
-                    "updated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                    "reboot_detected": reboot_detected,
-                }, indent=2),
-                encoding="utf-8"
+            tmp_path = self.boot_epoch_file.with_suffix(".tmp")
+            tmp_path.write_text(
+                json.dumps(
+                    {
+                        "boot_id": self.current_boot_id,
+                        "updated_at_utc": datetime.datetime.now(
+                            datetime.timezone.utc
+                        ).isoformat(),
+                        "reboot_detected": reboot_detected,
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
             )
+            tmp_path.rename(self.boot_epoch_file)
         except Exception:
             pass
 
@@ -156,7 +165,9 @@ class EdgeManifoldDaemon:
             events: List of any triggered EdgeDaemonEvents.
         """
         t0 = time.perf_counter()
-        ts = obs.get("timestamp_utc", datetime.datetime.now(datetime.timezone.utc).isoformat())
+        ts = obs.get(
+            "timestamp_utc", datetime.datetime.now(datetime.timezone.utc).isoformat()
+        )
 
         # Check time gap across outages or power cycles
         obs_time = None
@@ -245,17 +256,29 @@ class EdgeManifoldDaemon:
             # Compute standardization
             if len(self.var_history) >= 10:
                 mean_var = statistics.mean(self.var_history)
-                std_var = statistics.stdev(self.var_history) if len(self.var_history) > 1 else 1e-4
+                std_var = (
+                    statistics.stdev(self.var_history)
+                    if len(self.var_history) > 1
+                    else 1e-4
+                )
 
                 mean_ar1 = statistics.mean(self.ar1_history)
-                std_ar1 = statistics.stdev(self.ar1_history) if len(self.ar1_history) > 1 else 1e-4
+                std_ar1 = (
+                    statistics.stdev(self.ar1_history)
+                    if len(self.ar1_history) > 1
+                    else 1e-4
+                )
 
                 z_var = (tot_var - mean_var) / max(1e-4, std_var)
                 z_ar1 = (ar1 - mean_ar1) / max(1e-4, std_ar1)
                 composite = z_var + z_ar1
 
                 if composite >= self.csd_threshold_sigma:
-                    level = "CRITICAL" if composite >= (self.csd_threshold_sigma + 1.5) else "ELEVATED"
+                    level = (
+                        "CRITICAL"
+                        if composite >= (self.csd_threshold_sigma + 1.5)
+                        else "ELEVATED"
+                    )
                     events.append(
                         EdgeDaemonEvent(
                             event_type="CSD_TIPPING",

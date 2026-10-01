@@ -25,11 +25,15 @@ def compute_empirical_transition_matrix(
     """
     vocab = sorted(list(set(state_tokens) if vocabulary is None else set(vocabulary)))
     if not state_tokens:
-        empty_trans: Dict[str, Dict[str, float]] = {s: {s2: 0.0 for s2 in vocab} for s in vocab}
+        empty_trans: Dict[str, Dict[str, float]] = {
+            s: {s2: 0.0 for s2 in vocab} for s in vocab
+        }
         empty_stat: Dict[str, float] = {s: 1.0 / max(1, len(vocab)) for s in vocab}
         return vocab, empty_trans, empty_stat
 
-    counts: Dict[str, Dict[str, int]] = {s: {s_next: 0 for s_next in vocab} for s in vocab}
+    counts: Dict[str, Dict[str, int]] = {
+        s: {s_next: 0 for s_next in vocab} for s in vocab
+    }
     total_out: Dict[str, int] = {s: 0 for s in vocab}
     state_freq: Dict[str, int] = {s: 0 for s in vocab}
 
@@ -213,7 +217,6 @@ def generate_second_order_markov_surrogate(
         return list(state_tokens)
 
     rng = random.Random(seed)
-    vocab = sorted(list(set(state_tokens) if vocabulary is None else set(vocabulary)))
 
     # Build bigram-conditioned counts
     trigram_counts: Dict[Tuple[str, str], Dict[str, int]] = {}
@@ -250,4 +253,3 @@ def generate_second_order_markov_surrogate(
         surrogate.append(next_state)
 
     return surrogate
-

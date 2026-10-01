@@ -15,7 +15,7 @@ from traceform.null_models.surrogates import (
     compute_empirical_transition_matrix,
     generate_permutation_surrogate,
 )
-from traceform.discovery.motifs import extract_trajectory_motifs, TrajectoryMotif
+from traceform.discovery.motifs import extract_trajectory_motifs
 
 
 @dataclass
@@ -45,9 +45,15 @@ class TemporalStabilityValidator:
         self.max_gap_seconds = max_gap_seconds
 
     @staticmethod
-    def _spearman_rank_correlation(p: Dict[str, float], q: Dict[str, float], keys: Optional[List[str]] = None) -> float:
+    def _spearman_rank_correlation(
+        p: Dict[str, float], q: Dict[str, float], keys: Optional[List[str]] = None
+    ) -> float:
         """Computes Spearman rank correlation between two probability profiles over specified keys."""
-        eval_keys = keys if keys is not None else sorted(list(set(p.keys()).union(set(q.keys()))))
+        eval_keys = (
+            keys
+            if keys is not None
+            else sorted(list(set(p.keys()).union(set(q.keys()))))
+        )
         if len(eval_keys) <= 1:
             return 1.0
 
@@ -69,7 +75,9 @@ class TemporalStabilityValidator:
         return round(float(rho), 4)
 
     @staticmethod
-    def _cosine_similarity(p: Dict[str, float], q: Dict[str, float], keys: List[str]) -> float:
+    def _cosine_similarity(
+        p: Dict[str, float], q: Dict[str, float], keys: List[str]
+    ) -> float:
         """Computes cosine similarity between two probability vectors."""
         dot = sum(p.get(k, 0.0) * q.get(k, 0.0) for k in keys)
         norm_p = math.sqrt(sum(p.get(k, 0.0) ** 2 for k in keys))
@@ -79,7 +87,9 @@ class TemporalStabilityValidator:
         return round(dot / (norm_p * norm_q), 4)
 
     @staticmethod
-    def _pearson_correlation(p: Dict[str, float], q: Dict[str, float], keys: List[str]) -> float:
+    def _pearson_correlation(
+        p: Dict[str, float], q: Dict[str, float], keys: List[str]
+    ) -> float:
         """Computes Pearson correlation coefficient between two probability profiles."""
         n = len(keys)
         if n <= 1:
@@ -117,8 +127,7 @@ class TemporalStabilityValidator:
             row2 = m2.get(s_i, {})
 
             m_row = {
-                s_j: 0.5 * (row1.get(s_j, 0.0) + row2.get(s_j, 0.0))
-                for s_j in vocab
+                s_j: 0.5 * (row1.get(s_j, 0.0) + row2.get(s_j, 0.0)) for s_j in vocab
             }
 
             kl1 = sum(
@@ -146,7 +155,9 @@ class TemporalStabilityValidator:
         Executes out-of-sample temporal stability validation.
         """
         if not w1_records or not w2_records:
-            raise ValueError("Both w1_records and w2_records must be non-empty for stability validation.")
+            raise ValueError(
+                "Both w1_records and w2_records must be non-empty for stability validation."
+            )
 
         w1_tokens = [r["state_token"] for r in w1_records]
         w2_tokens = [r["state_token"] for r in w2_records]
@@ -165,11 +176,17 @@ class TemporalStabilityValidator:
         # Transition matrices
         full_vocab = sorted(list(union_vocab))
         shared_vocab_list = sorted(list(shared_vocab))
-        _, trans_w1, stat_w1 = compute_empirical_transition_matrix(w1_tokens, full_vocab)
-        _, trans_w2, stat_w2 = compute_empirical_transition_matrix(w2_tokens, full_vocab)
+        _, trans_w1, stat_w1 = compute_empirical_transition_matrix(
+            w1_tokens, full_vocab
+        )
+        _, trans_w2, stat_w2 = compute_empirical_transition_matrix(
+            w2_tokens, full_vocab
+        )
 
         # Distribution correlations
-        shared_rank_corr = self._spearman_rank_correlation(stat_w1, stat_w2, keys=shared_vocab_list)
+        shared_rank_corr = self._spearman_rank_correlation(
+            stat_w1, stat_w2, keys=shared_vocab_list
+        )
         cosine_sim = self._cosine_similarity(stat_w1, stat_w2, keys=full_vocab)
         pearson_corr = self._pearson_correlation(stat_w1, stat_w2, keys=full_vocab)
 
@@ -178,13 +195,17 @@ class TemporalStabilityValidator:
 
         # Transition matrix JSD W1 vs Permutation Null
         null_w2_tokens = generate_permutation_surrogate(w2_tokens, seed=42)
-        _, trans_null, _ = compute_empirical_transition_matrix(null_w2_tokens, full_vocab)
+        _, trans_null, _ = compute_empirical_transition_matrix(
+            null_w2_tokens, full_vocab
+        )
         jsd_w1_null = self._matrix_jsd(full_vocab, trans_w1, trans_null, stat_w1)
 
         jsd_ratio = round(jsd_w1_w2 / (jsd_w1_null if jsd_w1_null > 0 else 1.0), 4)
 
         # Motif recurrence: extract motifs on W1 and test frequency in W2
-        w1_motifs = extract_trajectory_motifs(w1_records, min_length=3, max_length=5, min_support=4)
+        w1_motifs = extract_trajectory_motifs(
+            w1_records, min_length=3, max_length=5, min_support=4
+        )
 
         motif_recurrence_details: List[Dict[str, Any]] = []
         recurring_motifs_in_w2 = 0
@@ -202,15 +223,19 @@ class TemporalStabilityValidator:
             w2_count = w2_ngram_counts.get(pat_tuple, 0)
             if w2_count >= 1:
                 recurring_motifs_in_w2 += 1
-            motif_recurrence_details.append({
-                "motif_token": m.motif_token,
-                "pattern": m.pattern_string,
-                "w1_support": m.support,
-                "w2_support": w2_count,
-                "recurrent": w2_count >= 1,
-            })
+            motif_recurrence_details.append(
+                {
+                    "motif_token": m.motif_token,
+                    "pattern": m.pattern_string,
+                    "w1_support": m.support,
+                    "w2_support": w2_count,
+                    "recurrent": w2_count >= 1,
+                }
+            )
 
-        motif_recurrence_ratio = round(recurring_motifs_in_w2 / max(1, len(w1_motifs)), 4)
+        motif_recurrence_ratio = round(
+            recurring_motifs_in_w2 / max(1, len(w1_motifs)), 4
+        )
 
         # Scientific decision criteria:
         # 1. W2 frames covered by W1 vocabulary >= 85%

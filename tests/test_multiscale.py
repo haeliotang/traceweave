@@ -7,8 +7,6 @@ import random
 
 from traceform.dynamics.multiscale import (
     MultiscaleDiffusionAuditor,
-    DiffusionRegime,
-    CoarseGrainedScale,
 )
 
 
@@ -49,7 +47,9 @@ class TestMultiscaleDiffusion(unittest.TestCase):
         # Strongly periodic deterministic sequence A -> B -> A -> B
         tokens = ["M01", "M02"] * 50
         coords = [(1.0, 1.0), (2.0, 2.0)] * 50
-        scales = self.auditor.compute_coarse_grained_determinism(tokens, coords, scales=[1, 2])
+        scales = self.auditor.compute_coarse_grained_determinism(
+            tokens, coords, scales=[1, 2]
+        )
         self.assertEqual(len(scales), 2)
         # Scale 1 has high determinism
         self.assertGreater(scales[0].transition_determinism, 0.9)
@@ -64,10 +64,12 @@ class TestMultiscaleDiffusion(unittest.TestCase):
             # Confined random steps around (1, 1)
             u += rng.uniform(-0.1, 0.1)
             v += rng.uniform(-0.1, 0.1)
-            records.append({
-                "grid_coord": (u, v),
-                "state_token": f"M{i%4+1:02d}",
-            })
+            records.append(
+                {
+                    "grid_coord": (u, v),
+                    "state_token": f"M{i%4+1:02d}",
+                }
+            )
 
         res = self.auditor.audit_multiscale_dynamics(records, lags=[1, 2, 4, 8])
         self.assertEqual(res["record_count"], 120)

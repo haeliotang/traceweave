@@ -83,7 +83,7 @@ class AttractorLandscapeAuditor:
             row = []
             for v in range(self.width):
                 prob = (counts[u][v] + alpha_smooth) / max(1.0, denom)
-                u_val = -math.log(prob)
+                u_val = -math.log(max(1e-15, prob))
                 row.append(round(u_val, 4))
             potentials.append(row)
 
@@ -119,10 +119,14 @@ class AttractorLandscapeAuditor:
 
                 # Must be strictly lower than neighbors or plateau-escaping
                 if neighbors:
-                    is_local_min = all(n >= val for n in neighbors) and any(n > val for n in neighbors)
+                    is_local_min = all(n >= val for n in neighbors) and any(
+                        n > val for n in neighbors
+                    )
                     if is_local_min:
                         higher_neighbors = [n for n in neighbors if n > val]
-                        barrier = (min(higher_neighbors) - val) if higher_neighbors else 0.0
+                        barrier = (
+                            (min(higher_neighbors) - val) if higher_neighbors else 0.0
+                        )
                         if barrier > 1e-4:
                             prob = math.exp(-val)
                             token = (
@@ -144,7 +148,11 @@ class AttractorLandscapeAuditor:
         # Fallback: if no strict local minimum found, designate the global minimum
         if not basins:
             u_g, v_g = min_global_coord
-            token = token_map.get((u_g, v_g), f"M({u_g},{v_g})") if token_map else f"M({u_g},{v_g})"
+            token = (
+                token_map.get((u_g, v_g), f"M({u_g},{v_g})")
+                if token_map
+                else f"M({u_g},{v_g})"
+            )
             basins.append(
                 AttractorBasin(
                     basin_id="B01",
@@ -204,15 +212,15 @@ class AttractorLandscapeAuditor:
                 }
             )
 
-        mean_drift = (
-            total_drift_dist / len(basins_w1) if basins_w1 else 0.0
-        )
+        mean_drift = total_drift_dist / len(basins_w1) if basins_w1 else 0.0
 
         primary_drift = 0.0
         if basins_w1 and basins_w2:
             p1 = basins_w1[0].grid_coord
             p2 = basins_w2[0].grid_coord
-            primary_drift = round(math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2), 3)
+            primary_drift = round(
+                math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2), 3
+            )
 
         return {
             "w1_basin_count": len(basins_w1),
@@ -264,7 +272,10 @@ class AttractorLandscapeAuditor:
             p_mean = statistics.mean(proj)
             cov_0 = sum((x - p_mean) ** 2 for x in proj) / len(proj)
             cov_1 = (
-                sum((proj[i] - p_mean) * (proj[i + 1] - p_mean) for i in range(len(proj) - 1))
+                sum(
+                    (proj[i] - p_mean) * (proj[i + 1] - p_mean)
+                    for i in range(len(proj) - 1)
+                )
                 / (len(proj) - 1)
                 if len(proj) > 1
                 else 0.0
@@ -285,10 +296,18 @@ class AttractorLandscapeAuditor:
             return []
 
         mean_var = statistics.mean(m["var"] for m in window_metrics)
-        std_var = statistics.stdev(m["var"] for m in window_metrics) if len(window_metrics) > 1 else 1e-4
+        std_var = (
+            statistics.stdev(m["var"] for m in window_metrics)
+            if len(window_metrics) > 1
+            else 1e-4
+        )
 
         mean_ar1 = statistics.mean(m["ar1"] for m in window_metrics)
-        std_ar1 = statistics.stdev(m["ar1"] for m in window_metrics) if len(window_metrics) > 1 else 1e-4
+        std_ar1 = (
+            statistics.stdev(m["ar1"] for m in window_metrics)
+            if len(window_metrics) > 1
+            else 1e-4
+        )
 
         alerts: List[CSDAlert] = []
         for i, m in enumerate(window_metrics):
@@ -296,7 +315,11 @@ class AttractorLandscapeAuditor:
             z_ar1 = (m["ar1"] - mean_ar1) / max(1e-4, std_ar1)
             composite = z_var + z_ar1
 
-            ts = timestamps[int(m["mid_ts_idx"])] if int(m["mid_ts_idx"]) < len(timestamps) else ""
+            ts = (
+                timestamps[int(m["mid_ts_idx"])]
+                if int(m["mid_ts_idx"]) < len(timestamps)
+                else ""
+            )
 
             if composite >= 2.5:
                 level = "CRITICAL" if composite >= 4.0 else "ELEVATED"

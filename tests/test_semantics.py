@@ -61,16 +61,34 @@ class TestCandidateSemanticProjector(unittest.TestCase):
     def test_compute_state_physical_profile(self):
         raw_map = {
             "obs-1": {
-                "motion": {"stationary_likelihood": 0.95, "motion_energy": 0.01, "accel_rms": 0.05},
+                "motion": {
+                    "stationary_likelihood": 0.95,
+                    "motion_energy": 0.01,
+                    "accel_rms": 0.05,
+                },
                 "environment": {"ambient_light_lux": 0.5, "pressure_hpa": 1012.0},
-                "device_relation": {"plugged": "AC", "status": "CHARGING", "battery_percentage": 90, "battery_temp_c": 28.0},
+                "device_relation": {
+                    "plugged": "AC",
+                    "status": "CHARGING",
+                    "battery_percentage": 90,
+                    "battery_temp_c": 28.0,
+                },
                 "connectivity": {"wifi_fingerprint": "ap_alpha_123"},
                 "timestamp_utc": "2026-09-03T02:00:00Z",
             },
             "obs-2": {
-                "motion": {"stationary_likelihood": 0.98, "motion_energy": 0.02, "accel_rms": 0.06},
+                "motion": {
+                    "stationary_likelihood": 0.98,
+                    "motion_energy": 0.02,
+                    "accel_rms": 0.06,
+                },
                 "environment": {"ambient_light_lux": 0.2, "pressure_hpa": 1012.2},
-                "device_relation": {"plugged": "AC", "status": "CHARGING", "battery_percentage": 95, "battery_temp_c": 28.5},
+                "device_relation": {
+                    "plugged": "AC",
+                    "status": "CHARGING",
+                    "battery_percentage": 95,
+                    "battery_temp_c": 28.5,
+                },
                 "connectivity": {"wifi_fingerprint": "ap_alpha_123"},
                 "timestamp_utc": "2026-09-03T03:00:00Z",
             },
@@ -134,7 +152,10 @@ class TestCandidateSemanticProjector(unittest.TestCase):
         ]
         proj_regimes = self.projector.project_macro_regimes(regimes, state_profiles)
         self.assertEqual(len(proj_regimes), 1)
-        self.assertIn("Sustained Prolonged Nocturnal Rest", proj_regimes[0]["candidate_regime_interpretation"])
+        self.assertIn(
+            "Sustained Prolonged Nocturnal Rest",
+            proj_regimes[0]["candidate_regime_interpretation"],
+        )
 
         proj_motifs = self.projector.project_motifs(motifs, state_profiles)
         self.assertEqual(len(proj_motifs), 1)

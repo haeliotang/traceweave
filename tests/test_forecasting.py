@@ -49,7 +49,9 @@ class TestForecasting(unittest.TestCase):
         target_states = {"C"}
 
         estimator = HittingTimeEstimator(step_nominal_seconds=30.0)
-        ht_res = estimator.compute_expected_hitting_time(trans_matrix, target_states, vocab)
+        ht_res = estimator.compute_expected_hitting_time(
+            trans_matrix, target_states, vocab
+        )
 
         self.assertEqual(ht_res["C"]["expected_steps"], 0.0)
         self.assertAlmostEqual(ht_res["B"]["expected_steps"], 1.0, places=1)

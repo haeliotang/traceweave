@@ -25,11 +25,28 @@ class TestManifoldLattice(unittest.TestCase):
                 {
                     "timestamp_utc": f"2026-09-02T22:{i//2:02d}:{(i%2)*30:02d}Z",
                     "observation_id": f"obs-{i:03d}",
-                    "motion": {"stationary_likelihood": 0.9 if zone < 20 else 0.2, "motion_energy": 0.05 if zone < 20 else 0.6},
-                    "environment": {"ambient_light_lux": lux, "barometric_pressure_hpa": 1013.2, "device_temp_c": 30.0},
-                    "device_relation": {"battery_percentage": 90.0 - i * 0.05, "plugged": "UNPLUGGED"},
-                    "audio_context": {"silence_likelihood": 0.9, "rms_loudness": 0.01, "spectral_entropy": 0.2},
-                    "connectivity": {"wifi_connected": True, "wifi_fingerprint": "wf_1"},
+                    "motion": {
+                        "stationary_likelihood": 0.9 if zone < 20 else 0.2,
+                        "motion_energy": 0.05 if zone < 20 else 0.6,
+                    },
+                    "environment": {
+                        "ambient_light_lux": lux,
+                        "barometric_pressure_hpa": 1013.2,
+                        "device_temp_c": 30.0,
+                    },
+                    "device_relation": {
+                        "battery_percentage": 90.0 - i * 0.05,
+                        "plugged": "UNPLUGGED",
+                    },
+                    "audio_context": {
+                        "silence_likelihood": 0.9,
+                        "rms_loudness": 0.01,
+                        "spectral_entropy": 0.2,
+                    },
+                    "connectivity": {
+                        "wifi_connected": True,
+                        "wifi_fingerprint": "wf_1",
+                    },
                     "place": {"spatial_cell": "tv58xy"},
                 }
             )
@@ -37,7 +54,9 @@ class TestManifoldLattice(unittest.TestCase):
 
     def test_manifold_fit_and_tokens(self):
         manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3)
-        tokens = manifold.fit_discovery_window(self.obs_seq, self.normalizer, epochs=4, seed=42)
+        tokens = manifold.fit_discovery_window(
+            self.obs_seq, self.normalizer, epochs=4, seed=42
+        )
 
         self.assertEqual(len(tokens), 9)
         self.assertEqual(len(manifold.nodes), 9)
@@ -115,8 +134,12 @@ class TestManifoldLattice(unittest.TestCase):
         # Quantizing with normalizer expecting 26D should not raise IndexError
         tok, coord, dist = manifold.quantize(self.obs_seq[0], self.normalizer)
         self.assertTrue(tok.startswith("M"))
-        self.assertEqual(len(manifold.last_obs_vector), len(self.normalizer.params.feature_names))
-        self.assertEqual(len(manifold.last_velocity), len(self.normalizer.params.feature_names))
+        self.assertEqual(
+            len(manifold.last_obs_vector), len(self.normalizer.params.feature_names)
+        )
+        self.assertEqual(
+            len(manifold.last_velocity), len(self.normalizer.params.feature_names)
+        )
 
 
 if __name__ == "__main__":

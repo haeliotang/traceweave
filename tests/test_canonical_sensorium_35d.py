@@ -18,8 +18,10 @@ from __future__ import annotations
 import math
 import unittest
 
-from traceform.probes.digital_sensorium import DigitalSensoriumProbe
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -119,22 +121,34 @@ class TestCanonicalSensorium35D(unittest.TestCase):
         norm = MultimodalNormalizer()
 
         # 1. Flat on table (screen up): az = 9.8 -> tilt = 0 deg
-        obs_flat = dict(self.sample_obs, motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, 9.8]))
+        obs_flat = dict(
+            self.sample_obs,
+            motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, 9.8]),
+        )
         c_flat, _ = norm.extract_raw_features(obs_flat)
         self.assertAlmostEqual(c_flat["device_zenith_tilt_angle"], 0.0, delta=1.0)
 
         # 2. In-hand reading posture (screen tilted ~60 deg): ax=0, ay=8.48, az=4.9
-        obs_hand = dict(self.sample_obs, motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 8.48, 4.9]))
+        obs_hand = dict(
+            self.sample_obs,
+            motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 8.48, 4.9]),
+        )
         c_hand, _ = norm.extract_raw_features(obs_hand)
         self.assertAlmostEqual(c_hand["device_zenith_tilt_angle"], 60.0, delta=2.0)
 
         # 3. Vertical in pocket: ax=0, ay=9.8, az=0.0 -> tilt = 90 deg
-        obs_pocket = dict(self.sample_obs, motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 9.8, 0.0]))
+        obs_pocket = dict(
+            self.sample_obs,
+            motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 9.8, 0.0]),
+        )
         c_pocket, _ = norm.extract_raw_features(obs_pocket)
         self.assertAlmostEqual(c_pocket["device_zenith_tilt_angle"], 90.0, delta=1.0)
 
         # 4. Face down on table: az = -9.8 -> tilt = 180 deg
-        obs_facedown = dict(self.sample_obs, motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, -9.8]))
+        obs_facedown = dict(
+            self.sample_obs,
+            motion=dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, -9.8]),
+        )
         c_facedown, _ = norm.extract_raw_features(obs_facedown)
         self.assertAlmostEqual(c_facedown["device_zenith_tilt_angle"], 180.0, delta=1.0)
 
@@ -162,15 +176,23 @@ class TestCanonicalSensorium35D(unittest.TestCase):
         # Frame 1: T=00:00:00, Temp=28.0 C (unplugged, screen off)
         obs1 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:00Z")
         obs1["environment"] = dict(self.sample_obs["environment"], device_temp_c=28.0)
-        obs1["device_relation"] = dict(self.sample_obs["device_relation"], status="DISCHARGING", screen_state="OFF")
-        obs1["digital_context"] = dict(self.sample_obs["digital_context"], screen_on_ratio=0.0)
+        obs1["device_relation"] = dict(
+            self.sample_obs["device_relation"], status="DISCHARGING", screen_state="OFF"
+        )
+        obs1["digital_context"] = dict(
+            self.sample_obs["digital_context"], screen_on_ratio=0.0
+        )
         norm.extract_raw_features(obs1)
 
         # Frame 2: T=00:01:00 (60s later), Temp=28.05 C (+0.05 C in 60s = +3.0 C / hr warming from body heat)
         obs2 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:01:00Z")
         obs2["environment"] = dict(self.sample_obs["environment"], device_temp_c=28.05)
-        obs2["device_relation"] = dict(self.sample_obs["device_relation"], status="DISCHARGING", screen_state="OFF")
-        obs2["digital_context"] = dict(self.sample_obs["digital_context"], screen_on_ratio=0.0)
+        obs2["device_relation"] = dict(
+            self.sample_obs["device_relation"], status="DISCHARGING", screen_state="OFF"
+        )
+        obs2["digital_context"] = dict(
+            self.sample_obs["digital_context"], screen_on_ratio=0.0
+        )
         c2, _ = norm.extract_raw_features(obs2)
 
         # Rate should be ~3.0 C/hr (within [-10, 10])
@@ -183,7 +205,10 @@ class TestCanonicalSensorium35D(unittest.TestCase):
         # Simulate 4 base station handovers across 10 minutes (rapid travel on train / highway)
         for i in range(5):
             obs = dict(self.sample_obs, timestamp_utc=f"2026-10-01T06:0{i*2}:00Z")
-            obs["connectivity"] = dict(self.sample_obs["connectivity"], cellular_cell_fingerprint=f"cell_sector_{i:03d}")
+            obs["connectivity"] = dict(
+                self.sample_obs["connectivity"],
+                cellular_cell_fingerprint=f"cell_sector_{i:03d}",
+            )
             c, _ = norm.extract_raw_features(obs)
 
         # High handover churn rate
@@ -194,8 +219,12 @@ class TestCanonicalSensorium35D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-35d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
-            obs_i["motion"] = dict(self.sample_obs["motion"], accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7])
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
+            obs_i["motion"] = dict(
+                self.sample_obs["motion"], accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7]
+            )
             dataset.append(obs_i)
 
         self.normalizer.fit_discovery_window(dataset)
@@ -205,12 +234,15 @@ class TestCanonicalSensorium35D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 35)
 
         # Fit DETM with 35D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 
         # Quantize single frame (< 2.0 ms execution)
         import time
+
         t0 = time.perf_counter()
         token, coord, dist = manifold.quantize(self.sample_obs, self.normalizer)
         lat_ms = (time.perf_counter() - t0) * 1000.0

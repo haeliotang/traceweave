@@ -10,7 +10,7 @@ Quantifies trajectory diffusion regimes:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -138,7 +138,7 @@ class MultiscaleDiffusionAuditor:
             r_sq = 0.0
         else:
             slope = ss_xy / ss_xx
-            r_sq = (ss_xy ** 2) / (ss_xx * ss_yy) if ss_yy > 1e-9 else 0.0
+            r_sq = (ss_xy**2) / (ss_xx * ss_yy) if ss_yy > 1e-9 else 0.0
 
         # Hurst exponent H = slope / 2
         h = max(0.0, slope / 2.0)
@@ -198,10 +198,17 @@ class MultiscaleDiffusionAuditor:
                 if block_coords:
                     mean_u = sum(c[0] for c in block_coords) / len(block_coords)
                     mean_v = sum(c[1] for c in block_coords) / len(block_coords)
-                    max_sq_dist = max((c[0] - mean_u)**2 + (c[1] - mean_v)**2 for c in block_coords)
+                    max_sq_dist = max(
+                        (c[0] - mean_u) ** 2 + (c[1] - mean_v) ** 2
+                        for c in block_coords
+                    )
                     block_volatilities.append(math.sqrt(max_sq_dist))
 
-            mean_vol = sum(block_volatilities) / len(block_volatilities) if block_volatilities else 0.0
+            mean_vol = (
+                sum(block_volatilities) / len(block_volatilities)
+                if block_volatilities
+                else 0.0
+            )
 
             # Build transition matrix
             trans_counts: Dict[str, Dict[str, int]] = {}
@@ -272,7 +279,11 @@ class MultiscaleDiffusionAuditor:
         cg_scales = self.compute_coarse_grained_determinism(tokens, coords, scales)
 
         # Find optimal scale maximizing determinism / vocab retention
-        optimal_scale = max(cg_scales, key=lambda s: s.transition_determinism) if cg_scales else None
+        optimal_scale = (
+            max(cg_scales, key=lambda s: s.transition_determinism)
+            if cg_scales
+            else None
+        )
 
         return {
             "record_count": len(records),

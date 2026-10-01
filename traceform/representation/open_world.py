@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Set, Tuple
 
 from traceform.representation.lattice import TopologicalKineticLattice, MicroState
 
@@ -36,7 +36,9 @@ class OpenWorldLatticeManager:
         max_vocab_size: int = 80,
     ):
         self.lattice = base_lattice
-        self.tier1_core_states = set(tier1_core_states)  # Signatures of locked core states
+        self.tier1_core_states = set(
+            tier1_core_states
+        )  # Signatures of locked core states
         self.promotion_threshold = promotion_threshold
         self.max_vocab_size = max_vocab_size
 
@@ -96,16 +98,33 @@ class OpenWorldLatticeManager:
         if not self.tier2_states:
             return
         # Find least frequent tier-2 signature
-        least_sig = min(self.tier2_states.keys(), key=lambda s: self.candidate_counts.get(s, 0))
+        least_sig = min(
+            self.tier2_states.keys(), key=lambda s: self.candidate_counts.get(s, 0)
+        )
         del self.tier2_states[least_sig]
         if least_sig in self.lattice.vocabulary:
             del self.lattice.vocabulary[least_sig]
+        # Prevent re-promotion thrashing: remove from candidate counts
+        self.candidate_counts.pop(least_sig, None)
+
+        # Periodically cap candidate_counts to prevent unbounded memory growth
+        max_candidates = self.max_vocab_size * 20
+        if len(self.candidate_counts) > max_candidates:
+            # Keep only the top candidates by count
+            most_common = self.candidate_counts.most_common(max_candidates // 2)
+            self.candidate_counts = Counter(dict(most_common))
 
     def get_stats(self) -> OpenWorldStats:
         return OpenWorldStats(
             tier1_locked_count=len(self.tier1_core_states),
             tier2_adaptive_count=len(self.tier2_states),
-            pending_candidates_count=len([s for s, c in self.candidate_counts.items() if s not in self.lattice.vocabulary]),
+            pending_candidates_count=len(
+                [
+                    s
+                    for s, c in self.candidate_counts.items()
+                    if s not in self.lattice.vocabulary
+                ]
+            ),
             total_active_vocabulary=len(self.lattice.vocabulary),
             max_capacity_limit=self.max_vocab_size,
         )

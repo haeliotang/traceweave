@@ -11,14 +11,11 @@ Extracts non-invasive, unsemantic digital interaction metrics from Android OS:
 
 from __future__ import annotations
 
-import datetime
 import math
-from pathlib import Path
 import re
 import shutil
 import subprocess
-import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Dict
 
 
 class DigitalSensoriumProbe:
@@ -121,12 +118,18 @@ class DigitalSensoriumProbe:
         else:
             metrics["screen_on_ratio"] = 0.0
 
-        metrics["ambient_social_ble_density"] = self.sample_social_ble_density(fallback_wifi_ap_count)
+        metrics["ambient_social_ble_density"] = self.sample_social_ble_density(
+            fallback_wifi_ap_count
+        )
         if metrics["ambient_social_ble_density"] > 1.0:
-            metrics["ble_rssi_spatial_variance"] = round(min(25.0, metrics["ambient_social_ble_density"] * 1.6), 2)
+            metrics["ble_rssi_spatial_variance"] = round(
+                min(25.0, metrics["ambient_social_ble_density"] * 1.6), 2
+            )
 
         if fallback_wifi_ap_count > 0:
-            metrics["ambient_rf_shannon_entropy"] = round(min(5.0, math.log2(float(fallback_wifi_ap_count) + 1.0) * 0.85), 3)
+            metrics["ambient_rf_shannon_entropy"] = round(
+                min(5.0, math.log2(float(fallback_wifi_ap_count) + 1.0) * 0.85), 3
+            )
 
         if not self.has_dumpsys:
             return metrics
@@ -149,7 +152,9 @@ class DigitalSensoriumProbe:
                         break
                     if "time=" in line and "type=" in line:
                         event_lines.append(line)
-                recent_lines = event_lines[-120:] if len(event_lines) > 120 else event_lines
+                recent_lines = (
+                    event_lines[-120:] if len(event_lines) > 120 else event_lines
+                )
 
                 app_switches = 0
                 unlock_events = 0
@@ -162,7 +167,10 @@ class DigitalSensoriumProbe:
                         if m:
                             pkg = m.group(1)
                             package_counts[pkg] = package_counts.get(pkg, 0) + 1
-                    elif "type=SCREEN_INTERACTIVE" in line or "type=KEYGUARD_HIDDEN" in line:
+                    elif (
+                        "type=SCREEN_INTERACTIVE" in line
+                        or "type=KEYGUARD_HIDDEN" in line
+                    ):
                         unlock_events += 1
 
                 # Normalize metrics
@@ -171,8 +179,12 @@ class DigitalSensoriumProbe:
 
                 # Touch velocity cadence & motor jitter estimation
                 if screen_state == "ON":
-                    metrics["touch_interaction_velocity"] = round(min(10.0, 1.0 + app_switches * 0.4 + unlock_events * 0.3), 3)
-                    jitter_val = (app_switches * 0.25 + unlock_events * 0.2) / (1.0 + metrics["touch_interaction_velocity"] * 0.2)
+                    metrics["touch_interaction_velocity"] = round(
+                        min(10.0, 1.0 + app_switches * 0.4 + unlock_events * 0.3), 3
+                    )
+                    jitter_val = (app_switches * 0.25 + unlock_events * 0.2) / (
+                        1.0 + metrics["touch_interaction_velocity"] * 0.2
+                    )
                     metrics["touch_interval_jitter"] = round(min(2.0, jitter_val), 3)
                 else:
                     metrics["touch_interaction_velocity"] = 0.0

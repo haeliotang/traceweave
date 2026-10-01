@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 import math
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 
 @dataclass
@@ -76,7 +76,10 @@ class VariableOrderPredictor:
         # Try 2nd-order (trigram)
         if len(history) >= 2:
             ctx = (history[-2], history[-1])
-            if ctx in self.trigram_counts and sum(self.trigram_counts[ctx].values()) >= 2:
+            if (
+                ctx in self.trigram_counts
+                and sum(self.trigram_counts[ctx].values()) >= 2
+            ):
                 counts = self.trigram_counts[ctx]
                 total = sum(counts.values()) + self.smoothing * K
                 return {s: (counts[s] + self.smoothing) / total for s in self.vocab}
@@ -84,14 +87,19 @@ class VariableOrderPredictor:
         # Fallback to 1st-order (bigram)
         if len(history) >= 1:
             prev = history[-1]
-            if prev in self.bigram_counts and sum(self.bigram_counts[prev].values()) >= 1:
+            if (
+                prev in self.bigram_counts
+                and sum(self.bigram_counts[prev].values()) >= 1
+            ):
                 counts = self.bigram_counts[prev]
                 total = sum(counts.values()) + self.smoothing * K
                 return {s: (counts[s] + self.smoothing) / total for s in self.vocab}
 
         # Fallback to unigram
         total = self.total_tokens + self.smoothing * K
-        return {s: (self.unigram_counts[s] + self.smoothing) / total for s in self.vocab}
+        return {
+            s: (self.unigram_counts[s] + self.smoothing) / total for s in self.vocab
+        }
 
     def evaluate(self, test_tokens: List[str]) -> ForecastingEvaluationMetrics:
         """
@@ -100,7 +108,9 @@ class VariableOrderPredictor:
         if len(test_tokens) < 2:
             raise ValueError("Test tokens sequence too short.")
         if not self.unigram_counts:
-            raise RuntimeError("Predictor has not been fitted: unigram_counts is empty.")
+            raise RuntimeError(
+                "Predictor has not been fitted: unigram_counts is empty."
+            )
 
         top1_hits = 0
         top3_hits = 0
@@ -118,7 +128,9 @@ class VariableOrderPredictor:
             actual = test_tokens[i]
 
             prob_dist = self.predict_proba(history)
-            sorted_candidates = sorted(prob_dist.items(), key=lambda x: x[1], reverse=True)
+            sorted_candidates = sorted(
+                prob_dist.items(), key=lambda x: x[1], reverse=True
+            )
             candidate_tokens = [tok for tok, _ in sorted_candidates]
 
             if candidate_tokens and candidate_tokens[0] == actual:
@@ -140,7 +152,11 @@ class VariableOrderPredictor:
         lift = round(top1_acc / max(1e-4, baseline_acc), 2)
 
         # Persist baseline: predict next = current (strongest trivial baseline for self-correlated sequences)
-        persist_hits = sum(1 for i in range(1, len(test_tokens)) if test_tokens[i] == test_tokens[i - 1])
+        persist_hits = sum(
+            1
+            for i in range(1, len(test_tokens))
+            if test_tokens[i] == test_tokens[i - 1]
+        )
         persist_acc = round(persist_hits / eval_steps, 4)
         lift_over_persist = round(top1_acc / max(1e-4, persist_acc), 4)
 

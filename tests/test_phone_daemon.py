@@ -3,7 +3,6 @@ Unit and integration tests for Phone Edge Stream Daemon.
 """
 
 from collections import deque
-import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -17,9 +16,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 class TestPhoneDaemon(unittest.TestCase):
     def setUp(self):
-        self.spec_file = REPO_ROOT / "artifacts" / "representation_v1" / "representation_spec.json"
+        self.spec_file = (
+            REPO_ROOT / "artifacts" / "representation_v1" / "representation_spec.json"
+        )
         self.quantizer = EdgeStreamQuantizer.from_spec_file(self.spec_file)
-        self.resonance_engine = AmbientResonanceEngine(max_regime_dwell_steps=5, entropy_spike_threshold=1.5)
+        self.resonance_engine = AmbientResonanceEngine(
+            max_regime_dwell_steps=5, entropy_spike_threshold=1.5
+        )
 
     def test_sliding_entropy_computation(self):
         # All identical: entropy = 0.0
@@ -47,10 +50,26 @@ class TestPhoneDaemon(unittest.TestCase):
                 "timestamp_utc": "2026-09-02T22:48:12Z",
                 "observation_id": "test-obs-01",
                 "motion": {"stationary_likelihood": 0.9, "motion_energy": 0.05},
-                "environment": {"ambient_light_lux": 1.0, "barometric_pressure_hpa": 1013.25, "device_temp_c": 28.0},
-                "device_relation": {"battery_percentage": 85.0, "plugged": "UNPLUGGED", "status": "DISCHARGING"},
-                "audio_context": {"silence_likelihood": 0.95, "rms_loudness": 0.01, "spectral_entropy": 0.1},
-                "connectivity": {"wifi_fingerprint": "wifi_home_1", "wifi_connected": True, "wifi_rssi": -55.0},
+                "environment": {
+                    "ambient_light_lux": 1.0,
+                    "barometric_pressure_hpa": 1013.25,
+                    "device_temp_c": 28.0,
+                },
+                "device_relation": {
+                    "battery_percentage": 85.0,
+                    "plugged": "UNPLUGGED",
+                    "status": "DISCHARGING",
+                },
+                "audio_context": {
+                    "silence_likelihood": 0.95,
+                    "rms_loudness": 0.01,
+                    "spectral_entropy": 0.1,
+                },
+                "connectivity": {
+                    "wifi_fingerprint": "wifi_home_1",
+                    "wifi_connected": True,
+                    "wifi_rssi": -55.0,
+                },
                 "place": {"spatial_cell": "tv58qxy"},
             }
 

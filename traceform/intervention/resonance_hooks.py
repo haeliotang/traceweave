@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 
 class ResonanceTriggerType(str, enum.Enum):

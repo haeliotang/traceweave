@@ -12,7 +12,6 @@ from __future__ import annotations
 from collections import deque
 import datetime
 import json
-import math
 from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -49,12 +48,18 @@ class AutonomousLearner:
         High strain implies the user's living patterns have fundamentally drifted
         away from the current attractor lattice.
         """
-        if not self.raw_ledger_path.is_file() or not self.normalizer_path.is_file() or not self.current_model_path.is_file():
+        if (
+            not self.raw_ledger_path.is_file()
+            or not self.normalizer_path.is_file()
+            or not self.current_model_path.is_file()
+        ):
             return 0.0, []
 
         with self.normalizer_path.open("r", encoding="utf-8") as f:
             d = json.load(f)
-            normalizer = MultimodalNormalizer.from_dict(d.get("normalization_parameters", d))
+            normalizer = MultimodalNormalizer.from_dict(
+                d.get("normalization_parameters", d)
+            )
 
         with self.current_model_path.open("r", encoding="utf-8") as f:
             manifold = DynamicalEnergyManifold.from_dict(json.load(f))
@@ -68,9 +73,9 @@ class AutonomousLearner:
                     recent_lines.append(s)
 
         observations = []
-        for l in recent_lines:
+        for line_str in recent_lines:
             try:
-                observations.append(json.loads(l))
+                observations.append(json.loads(line_str))
             except Exception:
                 continue
 
@@ -113,9 +118,9 @@ class AutonomousLearner:
                     fit_lines.append(s)
 
         observations = []
-        for l in fit_lines:
+        for line_str in fit_lines:
             try:
-                observations.append(json.loads(l))
+                observations.append(json.loads(line_str))
             except Exception:
                 continue
 
@@ -128,10 +133,14 @@ class AutonomousLearner:
 
         # 1. Fit Normalizer
         normalizer = MultimodalNormalizer()
-        normalizer.fit_discovery_window(observations, description="On-Device Autonomous Window")
+        normalizer.fit_discovery_window(
+            observations, description="On-Device Autonomous Window"
+        )
 
         # 2. Fit DETM Manifold
-        manifold = DynamicalEnergyManifold(grid_height=4, grid_width=4, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=4, grid_width=4, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(observations, normalizer, epochs=6)
 
         # 3. Export calibrated models atomically
@@ -150,6 +159,8 @@ class AutonomousLearner:
             "training_ms": round(train_ms, 2),
             "node_count": len(manifold.nodes),
             "state_tokens": tokens[:6],
-            "calibrated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "calibrated_at_utc": datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat(),
             "output_model": str(self.output_model_path),
         }

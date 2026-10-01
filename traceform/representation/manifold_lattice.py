@@ -8,7 +8,7 @@ Discovers discrete latent states as coordinate patches on a continuous non-linea
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 import random
 from typing import Any, Dict, List, Optional, Tuple
@@ -167,6 +167,7 @@ class DynamicalEnergyManifold:
             try:
                 # Basic second conversion
                 import datetime
+
                 dt = datetime.datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
                 timestamps.append(dt.timestamp())
             except Exception:
@@ -223,7 +224,9 @@ class DynamicalEnergyManifold:
 
                 # Adapt BMU and its topological neighbors on the 2D grid
                 for nd in self.nodes:
-                    influence = self.compute_neighborhood_weight(nd.grid_coord, (bu, bv), sigma)
+                    influence = self.compute_neighborhood_weight(
+                        nd.grid_coord, (bu, bv), sigma
+                    )
                     weight = lr * influence
 
                     if weight > 1e-4:
@@ -243,6 +246,16 @@ class DynamicalEnergyManifold:
                 ),
             )
             node_counts[bmu.node_id] += 1
+
+        # Sort nodes descending by visit frequency, re-assign canonical tokens
+        ranked = sorted(
+            enumerate(self.nodes), key=lambda pair: node_counts[pair[0]], reverse=True
+        )
+        for rank, (_, nd) in enumerate(ranked):
+            nd.state_token = f"M{rank + 1:02d}"
+        self.nodes = [nd for _, nd in ranked]
+        for new_id, nd in enumerate(self.nodes):
+            nd.node_id = new_id
 
         return [nd.state_token for nd in self.nodes]
 
@@ -270,7 +283,8 @@ class DynamicalEnergyManifold:
             ]
             if self.last_velocity is not None and len(self.last_velocity) == dim:
                 velocity = [
-                    self.ema_alpha * raw_v[d] + (1.0 - self.ema_alpha) * self.last_velocity[d]
+                    self.ema_alpha * raw_v[d]
+                    + (1.0 - self.ema_alpha) * self.last_velocity[d]
                     for d in range(dim)
                 ]
             else:

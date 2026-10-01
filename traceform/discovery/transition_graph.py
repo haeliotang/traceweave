@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import datetime
-import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 @dataclass
@@ -44,8 +43,12 @@ def build_transition_graph(
 
     valid_step_count = 0
     for i in range(len(records) - 1):
-        t1 = datetime.datetime.fromisoformat(records[i]["timestamp_utc"].replace("Z", "+00:00"))
-        t2 = datetime.datetime.fromisoformat(records[i + 1]["timestamp_utc"].replace("Z", "+00:00"))
+        t1 = datetime.datetime.fromisoformat(
+            records[i]["timestamp_utc"].replace("Z", "+00:00")
+        )
+        t2 = datetime.datetime.fromisoformat(
+            records[i + 1]["timestamp_utc"].replace("Z", "+00:00")
+        )
         dt_s = (t2 - t1).total_seconds()
 
         # Respect audit discipline: do not bridge gaps > 30 minutes
@@ -72,17 +75,31 @@ def build_transition_graph(
                 if cnt > 0:
                     prob = round(cnt / denom, 5)
                     trans_matrix[u][v] = prob
-                    active_edges.append({
-                        "source": u,
-                        "target": v,
-                        "count": cnt,
-                        "probability": prob,
-                    })
+                    active_edges.append(
+                        {
+                            "source": u,
+                            "target": v,
+                            "count": cnt,
+                            "probability": prob,
+                        }
+                    )
         else:
             trans_matrix[u][u] = 1.0
 
     # Stationary distribution estimation via power iteration
     n_nodes = len(nodes)
+    if n_nodes == 0:
+        return {}, TransitionGraphMetrics(
+            node_count=0,
+            edge_count=0,
+            self_loop_fraction=0.0,
+            mean_out_degree=0.0,
+            graph_entropy=0.0,
+            reciprocity_ratio=0.0,
+            stationary_distribution={},
+            top_transition_edges=[],
+            strongly_connected_components_count=0,
+        )
     pi = {u: 1.0 / n_nodes for u in nodes}
     for _ in range(100):
         next_pi = {u: 0.0 for u in nodes}
@@ -96,7 +113,9 @@ def build_transition_graph(
         if tot > 0:
             pi = {u: next_pi[u] / tot for u in nodes}
 
-    pi_rounded = {u: round(pi[u], 5) for u in sorted(nodes, key=lambda x: pi[x], reverse=True)}
+    pi_rounded = {
+        u: round(pi[u], 5) for u in sorted(nodes, key=lambda x: pi[x], reverse=True)
+    }
 
     # Graph Density and Reciprocity (excluding self-loops)
     non_self_edges = [e for e in active_edges if e["source"] != e["target"]]
@@ -109,7 +128,11 @@ def build_transition_graph(
         u, v = e["source"], e["target"]
         if u != v and edge_counts[v][u] > 0:
             reciprocal_count += 1
-    reciprocity = round(reciprocal_count / max(1, len([e for e in active_edges if e["source"] != e["target"]])), 4)
+    reciprocity = round(
+        reciprocal_count
+        / max(1, len([e for e in active_edges if e["source"] != e["target"]])),
+        4,
+    )
 
     # Top transition edges (excluding self-transitions)
     inter_state_edges = [e for e in active_edges if e["source"] != e["target"]]

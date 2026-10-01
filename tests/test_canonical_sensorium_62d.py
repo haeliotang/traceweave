@@ -22,7 +22,10 @@ import math
 import time
 import unittest
 
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -154,7 +157,9 @@ class TestCanonicalSensorium62D(unittest.TestCase):
         # Current = 500,000 uA = 0.5 A, R_int = 160 mOhm = 0.16 Ohm
         # P = I^2 * R = 0.25 * 0.16 = 0.04 Watts
         c_map, _ = norm.extract_raw_features(self.sample_obs)
-        self.assertAlmostEqual(c_map["thermodynamic_joule_heat_loss_watts"], 0.04, places=4)
+        self.assertAlmostEqual(
+            c_map["thermodynamic_joule_heat_loss_watts"], 0.04, places=4
+        )
 
     def test_barometric_and_photometric_dynamics(self):
         norm = MultimodalNormalizer()
@@ -162,14 +167,18 @@ class TestCanonicalSensorium62D(unittest.TestCase):
 
         # Frame 1: P=1013.0, Lux=100.0
         obs1 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:00Z")
-        obs1["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0, ambient_light_lux=100.0)
+        obs1["environment"] = dict(
+            self.sample_obs["environment"], pressure_hpa=1013.0, ambient_light_lux=100.0
+        )
         c1, _ = norm.extract_raw_features(obs1)
         self.assertEqual(c1["barometric_turbulence_variance"], 0.0)
         self.assertEqual(c1["photometric_contrast_ratio"], 0.0)
 
         # Frame 2: P=1015.0, Lux=200.0 (turbulence & sudden light flash!)
         obs2 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:10Z")
-        obs2["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1015.0, ambient_light_lux=200.0)
+        obs2["environment"] = dict(
+            self.sample_obs["environment"], pressure_hpa=1015.0, ambient_light_lux=200.0
+        )
         c2, _ = norm.extract_raw_features(obs2)
         # Var of [1013, 1015] is 1.0 hPa^2
         self.assertAlmostEqual(c2["barometric_turbulence_variance"], 1.0, places=2)
@@ -193,8 +202,12 @@ class TestCanonicalSensorium62D(unittest.TestCase):
 
         # Frame 2: T=00:00:10 (10s later, tap impact delta on az!)
         obs2 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:10Z")
-        obs2["motion"] = dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, 12.81])  # +3 m/s^2 recoil!
-        obs2["environment"] = dict(self.sample_obs["environment"], device_temp_c=32.5)  # +4 deg shift
+        obs2["motion"] = dict(
+            self.sample_obs["motion"], accel_raw=[0.0, 0.0, 12.81]
+        )  # +3 m/s^2 recoil!
+        obs2["environment"] = dict(
+            self.sample_obs["environment"], device_temp_c=32.5
+        )  # +4 deg shift
         c2, _ = norm.extract_raw_features(obs2)
         self.assertGreater(c2["phase_space_kinetic_velocity"], 0.1)
         # Recoil: 3.0 / (1.0 + 4.5 * 0.5) = 3.0 / 3.25 ~ 0.923
@@ -204,7 +217,9 @@ class TestCanonicalSensorium62D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-62d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -220,7 +235,9 @@ class TestCanonicalSensorium62D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 62)
 
         # Fit DETM with 62D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

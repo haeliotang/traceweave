@@ -9,7 +9,6 @@ into a self-contained, publication-grade interactive HTML dashboard.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any, Dict
 
 
@@ -36,7 +35,9 @@ class MacroscopeDashboardGenerator:
         profiles = semantic_spec.get("micro_state_profiles", {})
 
         # Prepare top 10 states for table
-        sorted_profiles = sorted(profiles.values(), key=lambda p: p.get("observation_count", 0), reverse=True)[:12]
+        sorted_profiles = sorted(
+            profiles.values(), key=lambda p: p.get("observation_count", 0), reverse=True
+        )[:12]
 
         # Top regimes
         top_regimes = regimes[:15]
@@ -238,7 +239,7 @@ class MacroscopeDashboardGenerator:
 """
         for r in top_regimes:
             dur = r.get("duration_frames", 0) * 30.0 / 3600.0
-            dom_states = r.get('dominant_states', [])
+            dom_states = r.get("dominant_states", [])
             dom_label = dom_states[0][0] if dom_states else "?"
             html += f"""      <div class="ribbon-segment">
         <div class="r-token">{r['regime_token']}</div>

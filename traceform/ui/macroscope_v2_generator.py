@@ -12,8 +12,7 @@ Generates a self-contained, interactive HTML5 / Canvas visualization suite:
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 
 class MacroscopeV2Generator:
@@ -28,10 +27,12 @@ class MacroscopeV2Generator:
         self.multiscale_spec = multiscale_spec or {}
 
     def generate_html(self) -> str:
-        data_json = json.dumps({
-            "dynamics": self.dynamics_spec,
-            "multiscale": self.multiscale_spec,
-        })
+        data_json = json.dumps(
+            {
+                "dynamics": self.dynamics_spec,
+                "multiscale": self.multiscale_spec,
+            }
+        )
 
         html = f"""<!DOCTYPE html>
 <html lang="en">

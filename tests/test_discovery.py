@@ -3,8 +3,7 @@ Unit tests for Trajectory Structure Discovery components.
 """
 
 import unittest
-from traceform.discovery.recurrence import compute_recurrence_matrix, compute_rqa_metrics
-from traceform.discovery.regimes import detect_dynamic_regimes
+from traceform.discovery.recurrence import compute_rqa_metrics
 from traceform.discovery.motifs import extract_trajectory_motifs
 from traceform.discovery.transition_graph import build_transition_graph
 
@@ -26,13 +25,18 @@ class TestDiscovery(unittest.TestCase):
     def test_rqa_extraction(self):
         # Synthetic recurrence matrix
         n = 50
-        r_mat = [[1 if i == j or abs(i - j) % 4 == 0 else 0 for j in range(n)] for i in range(n)]
+        r_mat = [
+            [1 if i == j or abs(i - j) % 4 == 0 else 0 for j in range(n)]
+            for i in range(n)
+        ]
         rqa = compute_rqa_metrics(r_mat, epsilon=0.25)
         self.assertGreater(rqa.recurrence_rate, 0.0)
         self.assertGreater(rqa.determinism, 0.0)
 
     def test_motif_extraction(self):
-        motifs = extract_trajectory_motifs(self.mock_records, min_length=3, min_support=3)
+        motifs = extract_trajectory_motifs(
+            self.mock_records, min_length=3, min_support=3
+        )
         self.assertTrue(len(motifs) > 0)
         # Verify first motif is structured
         self.assertIn("S01", motifs[0].pattern)

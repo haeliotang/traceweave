@@ -4,7 +4,10 @@ Tests for Phase Transition and Infradian Dynamics Engines.
 
 import unittest
 from traceform.dynamics.bifurcation import PhaseTransitionDetector, SlidingWindowPoint
-from traceform.dynamics.infradian import InfradianDynamicsAuditor, InfradianComparisonMetrics
+from traceform.dynamics.infradian import (
+    InfradianDynamicsAuditor,
+    InfradianComparisonMetrics,
+)
 
 
 class TestDynamics(unittest.TestCase):
@@ -15,7 +18,10 @@ class TestDynamics(unittest.TestCase):
             for i in range(100)
         ]
         records += [
-            {"state_token": f"S{10 + (i % 10):02d}", "timestamp_utc": f"2026-09-07T{i%24:02d}:00:00Z"}
+            {
+                "state_token": f"S{10 + (i % 10):02d}",
+                "timestamp_utc": f"2026-09-07T{i%24:02d}:00:00Z",
+            }
             for i in range(100)
         ]
 

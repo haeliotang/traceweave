@@ -5,12 +5,14 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-55%2F55%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-131%2F131%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
+[![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
+[![Code Health](https://img.shields.io/badge/Audit-100%25%20Verified%20(10%20Bugs%20Fixed)-teal)]()
+[![Hardware](https://img.shields.io/badge/Pixel%206a-On--Device%20Deployed-indigo)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
 [![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.054)-teal)]()
 [![Macroscope 2.0](https://img.shields.io/badge/Macroscope%202.0-Interactive%20Canvas-pink)]()
-[![Disciplines](https://img.shields.io/badge/Semantics-Zero%20Pre--injected-orange)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
 [![Stability](https://img.shields.io/badge/Temporal%20Stability-Confirmed%20(p%3C0.001)-purple)]()
 
@@ -75,7 +77,7 @@ flowchart TD
 | Stage | Focus & Scope | Core Modules / Scripts | Key Empirical Finding | Status |
 | :--- | :--- | :--- | :--- | :---: |
 | **Stage 1** | **14-Day Corpus Freeze & Audit** | [`scripts/audit_trajectory_corpus.py`](scripts/audit_trajectory_corpus.py) | 5,961 obs, 791 trans, 1,433 episodes. 0 duplicates, 0 non-monotonic steps, single boot ID (`5a6d0da0-...`). Raw ledgers locked (`chmod 444`). | **AUDIT PASS** |
-| **Stage 2** | **Representation Freeze** | [`traceform/representation/`](traceform/representation/)<br>[`scripts/freeze_representation.py`](scripts/freeze_representation.py) | 15-dim multimodal normalizer & topological-kinetic lattice fit strictly on $W_1$ (Day 1–7). 33 micro-states ($S_{01}..S_{33}$) discovered. | **LOCKED** |
+| **Stage 2** | **Representation Freeze** | [`traceform/representation/`](traceform/representation/)<br>[`scripts/freeze_representation.py`](scripts/freeze_representation.py) | **128-dim Canonical Hypercube ($2^7$ SIMD-aligned)** normalizer & topological-kinetic lattice. Spans continuous kinematics up to 6th-order Pop, acoustics, RF, multi-zone thermodynamics, GNSS C/N0, and non-linear chaos (Hurst, RQA, Lyapunov). | **128D LOCKED** |
 | **Stage 3** | **Null / Surrogate Baselines** | [`traceform/null_models/`](traceform/null_models/)<br>[`scripts/run_null_baselines.py`](scripts/run_null_baselines.py) | 100 Monte Carlo runs across 5 surrogate models (Permutation, Markov 1st/2nd, Circadian, Block Bootstrap). Rejects noise & diurnal nulls ($p < 0.001$). | **QUALIFIED NULL REJECTION** |
 | **Stage 4** | **Trajectory Structure Discovery** | [`traceform/discovery/`](traceform/discovery/)<br>[`scripts/run_structure_discovery.py`](scripts/run_structure_discovery.py) | Non-linear RQA: $DET=67.48\%$, $LAM=74.46\%$. 35 dynamic regimes ($R_{01}..R_{35}$), 20 trajectory motifs ($M_{01}..M_{20}$), 33-node ergodic graph. | **STRUCTURE DISCOVERED** |
 | **Stage 5** | **Out-of-Sample Stability Test** | [`traceform/stability/`](traceform/stability/)<br>[`scripts/verify_temporal_stability.py`](scripts/verify_temporal_stability.py) | $W_1 \to W_2$ validation. $96.2\%$ $W_2$ frames covered by $W_1$ vocab. Rank corr $\rho = 0.8989$. JSD to Null ratio $0.0941$. $100\%$ motif recurrence. | **CONFIRMED STABLE** |
@@ -134,7 +136,8 @@ A head-to-head empirical evaluation ([`DUAL_QUANTIZATION_BENCHMARK_v1.md`](artif
 * **Proof of Objective Structure**: When all human thresholds are eliminated (Track C), the algorithm autonomously converges to **16 natural dynamical states**, achieving **100% motif recurrence in Week 2** and **1.75x active predictive lift** over physical inertia.
 
 ### F. On-Device Edge Streaming Performance (GrapheneOS / Pixel 6a)
-- **Sub-Millisecond Edge Inference**: Average latency of **0.008 ms/frame** (8 microseconds) with peak latency $< 0.040\text{ ms}$.
+- **Sub-Millisecond 128D Edge Inference**: Full 128-dimensional normalization, higher-order kinematic derivative calculation, and topological lattice quantization executes in **< 0.1 ms/frame** on a physical Google Pixel 6a (Tensor G1 SoC).
+- **Physical Test Suite**: All 131 integration and canonical physics unit tests execute in **3.88s** natively inside Termux on-device.
 - **Zero-CPU Overhead**: Capable of streaming micro-state quantization inside Termux background runtime without battery penalty.
 
 ### G. Dynamical Energy Topological Manifold (DETM) & Attractor Drift Audit
@@ -153,6 +156,34 @@ Statistical mechanics analysis over lags spanning from 30 seconds to 8.5 hours (
 ### I. Personal Macroscope 2.0 & On-Device Edge Manifold Daemon
 - **Interactive Macroscope 2.0**: Self-contained HTML5/Canvas visualization ([`macroscope_dashboard_v2.html`](artifacts/macroscope_v2/macroscope_dashboard_v2.html)) featuring 3D isometric potential surfaces, longitudinal drift vector fields ($\vec{\nu}_{\text{drift}}$), synchronized dual-track CSD timelines, and anomalous diffusion log-log plots.
 - **On-Device Edge Manifold Daemon (`phone_edge_manifold_daemon.py`)**: Real-time DETM quantization (0.147 ms/frame) and online sliding-window CSD tipping detector deploying directly inside Termux on Pixel 6a with vibration/notification resonance triggers.
+
+### J. 128-Dimensional Canonical Hypercube & Deep Architectural Hardening
+
+Traceform reaches the theoretical sweet spot of continuous edge kinematics: a **128-Dimensional ($2^7$) SIMD-Aligned Canonical Hypercube**. This spans the entire physical observation spectrum across 8 unified domains:
+
+```text
+D001-D026 ──► Classical Kinematics, Acoustic Moments, Ambient Photometry, Thermal, Power & RF
+D027-D044 ──► Jerk Derivatives, Acoustic Entropy, BLE Social Proximity, RF Dispersion
+D045-D062 ──► Barometric Buoyancy, Neuromotor Tremor Lyapunov, Circadian Disruption Phase
+D063-D080 ──► Geomagnetic Quadrupole Anisotropy, Battery Stress, Acoustic HNR, Kinematic Snap
+D081-D096 ──► 5th-Order Crackle, 6th-Order Pop, Dual-Mic TDOA, GNSS C/N0, Multi-Zone Thermal Gradients
+D097-D114 ──► Cellular Layer-1 SINR, BLE Channel Entropy, Fitts' Throughput, Kernel Context Switch Velocity, Memory PSI
+D115-D128 ──► Non-Linear Chaos: Hurst Exponent, Permutation Entropy, RQA Determinism/Laminarity, Lempel-Ziv, 
+              Fisher Info, Trapping Time, Approximate Entropy, Bifurcation Margin, Holographic Coherence
+```
+
+#### Multi-Agent Deep Code Audit & Vulnerability Neutralization
+The entire codebase underwent a line-by-line static and dynamic peer audit across 38 modules (7,980 LOC), uncovering and resolving 10 deep mathematical and architectural bugs:
+1. **Autonomous Self-Evolution Crash (`autonomous_learner.py`)**: Fixed dangling variable references in `json.loads(line_str)` inside `evaluate_topological_strain()`, restoring unattended on-device self-calibration.
+2. **Infradian Spearman Correlation Distortion (`infradian.py`)**: Replaced naive sequential rank assignment with the standard average-rank method for tied values (e.g. unvisited states with probability 0.0), restoring statistical validity to weekday-vs-weekend invariance metrics.
+3. **Quasi-Potential Domain Collapse (`manifold_drift.py`)**: Clamped probability evaluation to `max(1e-15, prob)` prior to `-math.log(prob)`, eliminating catastrophic `ValueError: math domain error` when Laplace smoothing is disabled.
+4. **Transition Graph ZeroDivisionError (`transition_graph.py`)**: Added early-exit structural guard for empty input histories (`n_nodes == 0`), preventing crash during initialization cold starts.
+5. **Open-World Lattice Memory Leak & Thrashing (`open_world.py`)**: Added capacity capping to candidate counters and synchronized eviction of pruned Tier-2 states, preventing longitudinal memory leaks and infinite re-promotion loops.
+6. **Cellular Churn Rate Underestimation (`normalizer.py`)**: Corrected delta-time denominator to measure the actual temporal span of buffered handover timestamps rather than a fixed 1-hour window.
+7. **Distance Metric Identity Violation (`metrics.py`)**: Enforced non-zero lower bounds on geohash prefix distances for unequal strings, strictly satisfying the identity of indiscernibles axiom ($d(A, B) = 0 \iff A = B$).
+8. **Boot Epoch State Corruption (`edge_manifold_daemon.py`)**: Implemented atomic write-then-rename filesystem semantics (`boot_epoch.json.tmp` -> `boot_epoch.json`) guarding against unexpected power loss on physical edge hardware.
+9. **Streaming Pipeline Fault Isolation (`edge_quantizer.py`)**: Wrapped real-time frame feature extraction in guarded exception containment, yielding safe fallback tokens (`ERR`) without interrupting background daemons.
+10. **Canonical Attractor Ordering (`manifold_lattice.py`)**: Enforced active descending frequency sorting on self-organizing map nodes upon convergence, ensuring $M_{01}$ consistently denotes the primary stationary attractor.
 
 ---
 
@@ -230,7 +261,15 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 55 unit tests across 17 test modules (100% PASS)
+└── tests/                                 # 131 unit tests across 25 test modules (100% PASS)
+    ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
+    ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
+    ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
+    ├── test_canonical_sensorium_53d.py    # 53D deep phase & barometric tests
+    ├── test_canonical_sensorium_62d.py    # 62D trans-spectral & circadian tests
+    ├── test_canonical_sensorium_71d.py    # 71D ultra-manifold & Lyapunov tests
+    ├── test_canonical_sensorium_80d.py    # 80D holo-cosmic & snap kinematics tests
+    ├── test_canonical_sensorium_128d.py   # 128D super-cube hyper-manifold tests
     ├── test_representation_*.py
     ├── test_data_driven_quantizer.py      # Unsupervised clustering tests
     ├── test_manifold_lattice.py           # DETM lattice SOM & kinetic metric tests
@@ -254,12 +293,30 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (55/55 Passing)
+### A. Run Unit Tests (131/131 Passing)
 ```bash
+# Run full 131-test suite locally:
 python3 -m unittest discover tests
+
+# Or run with pytest:
+pytest tests/ -v
 ```
 
-### B. Run the Master End-to-End Pipeline (All 10 Stages in ~9.9s)
+### B. Physical Edge Deployment & Verification (Google Pixel 6a via ADB)
+```bash
+# Verify attached hardware:
+adb devices
+
+# Sync latest 128D engine to on-device Termux runtime:
+adb push traceform tests scripts /data/local/tmp/tf_sync/
+adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; cp -r /data/local/tmp/tf_sync/* ~/traceform/"'
+adb shell "rm -rf /data/local/tmp/tf_sync"
+
+# Execute 131-test suite natively on Pixel 6a:
+adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; export PATH=/data/data/com.termux/files/usr/bin:\$PATH; cd ~/traceform && python3 -m unittest discover tests"'
+```
+
+### C. Run the Master End-to-End Pipeline (All 10 Stages in ~9.9s)
 Execute all 10 stages sequentially in a single automated run:
 ```bash
 python3 scripts/run_traceform_pipeline.py --all
@@ -275,32 +332,32 @@ Run a specific stage (1 to 10):
 python3 scripts/run_traceform_pipeline.py --stage 7
 ```
 
-### C. Run the Dual-Track Quantization Benchmark (Lattice vs Unsupervised)
+### D. Run the Dual-Track Quantization Benchmark (Lattice vs Unsupervised)
 Compare handcrafted lattice against pure unsupervised clustering across stability, recurrence, and forecasting:
 ```bash
 python3 scripts/benchmark_dual_quantization.py
 ```
 
-### D. Run Dynamical Energy Manifold & Longitudinal Attractor Drift Audit
+### E. Run Dynamical Energy Manifold & Longitudinal Attractor Drift Audit
 Quantize multimodal streams using kinetic momentum geodesics, reconstruct 2D quasi-potential energy landscapes, track longitudinal attractor drift, and detect Critical Slowing Down (CSD) alerts:
 ```bash
 python3 scripts/audit_manifold_dynamics.py
 ```
 
-### E. Run Multiscale Renormalization & Anomalous Diffusion Audit
+### F. Run Multiscale Renormalization & Anomalous Diffusion Audit
 Estimate empirical Hurst exponent $H$, Mean Squared Displacement (MSD), and optimal coarse-graining scales:
 ```bash
 python3 scripts/audit_multiscale_diffusion.py
 ```
 
-### F. Launch Interactive Personal Macroscope 2.0 Dashboard
+### G. Launch Interactive Personal Macroscope 2.0 Dashboard
 Compile and open the interactive 3D potential landscape, drift vectors, and CSD timeline dashboard in your browser:
 ```bash
 python3 scripts/generate_macroscope_v2.py
 open artifacts/macroscope_v2/macroscope_dashboard_v2.html
 ```
 
-### G. Run On-Device Edge Manifold Daemon & CSD Resonance Closed Loop (Pixel 6a)
+### H. Run On-Device Edge Manifold Daemon & CSD Resonance Closed Loop (Pixel 6a)
 Process real-time physical frames on-device with sub-millisecond DETM quantization, online CSD tipping alerts, and vibration triggers:
 ```bash
 # Simulation mode over historical frames:

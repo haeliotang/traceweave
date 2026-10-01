@@ -23,7 +23,10 @@ import math
 import time
 import unittest
 
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -100,7 +103,9 @@ class TestCanonicalSensorium128D(unittest.TestCase):
 
     def test_128d_feature_names_cardinality(self):
         self.assertEqual(len(CONTINUOUS_FEATURE_NAMES), 128)
-        self.assertEqual(len(set(CONTINUOUS_FEATURE_NAMES)), 128, "Duplicate feature names detected!")
+        self.assertEqual(
+            len(set(CONTINUOUS_FEATURE_NAMES)), 128, "Duplicate feature names detected!"
+        )
 
     def test_higher_order_kinematics_crackle_pop_autocorr(self):
         norm = MultimodalNormalizer()
@@ -250,7 +255,9 @@ class TestCanonicalSensorium128D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-128d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -266,7 +273,9 @@ class TestCanonicalSensorium128D(unittest.TestCase):
         self.assertEqual(len(vec), 128)
 
         # Fit DETM with 128D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

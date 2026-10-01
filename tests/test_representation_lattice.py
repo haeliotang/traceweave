@@ -3,7 +3,7 @@ Unit tests for TopologicalKineticLattice.
 """
 
 import unittest
-from traceform.representation.lattice import TopologicalKineticLattice, MicroState
+from traceform.representation.lattice import TopologicalKineticLattice
 
 
 class TestTopologicalKineticLattice(unittest.TestCase):

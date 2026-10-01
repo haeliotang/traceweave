@@ -3,7 +3,7 @@ Unit tests for MultimodalNormalizer.
 """
 
 import unittest
-from traceform.representation.normalizer import MultimodalNormalizer, NormalizationParams
+from traceform.representation.normalizer import MultimodalNormalizer
 
 
 class TestMultimodalNormalizer(unittest.TestCase):

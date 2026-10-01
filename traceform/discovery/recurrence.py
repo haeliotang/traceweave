@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -98,17 +98,24 @@ def compute_rqa_metrics(
 
     # Determinism: fraction of diagonal recurrence points in lines >= min_line_len
     total_diag_pts = sum(diag_lengths)
-    det_pts = sum(l for l in diag_lengths if l >= min_line_len)
+    det_pts = sum(length for length in diag_lengths if length >= min_line_len)
     det = (det_pts / total_diag_pts) if total_diag_pts > 0 else 0.0
 
-    avg_diag = (sum(l for l in diag_lengths if l >= min_line_len) / len([l for l in diag_lengths if l >= min_line_len])) if any(l >= min_line_len for l in diag_lengths) else 0.0
+    avg_diag = (
+        (
+            sum(length for length in diag_lengths if length >= min_line_len)
+            / len([length for length in diag_lengths if length >= min_line_len])
+        )
+        if any(length >= min_line_len for length in diag_lengths)
+        else 0.0
+    )
     max_diag = max(diag_lengths) if diag_lengths else 0
 
     # Diagonal line length Shannon Entropy
     diag_counts: Dict[int, int] = {}
-    for l in diag_lengths:
-        if l >= min_line_len:
-            diag_counts[l] = diag_counts.get(l, 0) + 1
+    for length in diag_lengths:
+        if length >= min_line_len:
+            diag_counts[length] = diag_counts.get(length, 0) + 1
 
     total_valid_diags = sum(diag_counts.values())
     entropy = 0.0

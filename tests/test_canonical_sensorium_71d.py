@@ -22,7 +22,10 @@ import math
 import time
 import unittest
 
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -137,9 +140,11 @@ class TestCanonicalSensorium71D(unittest.TestCase):
         # Feed multiple frames to build sliding buffer
         for i in range(10):
             obs_i = dict(self.sample_obs, timestamp_utc=f"2026-10-01T06:00:{i*10:02d}Z")
-            obs_i["motion"] = dict(self.sample_obs["motion"], accel_magnitude=9.8 + (i % 2) * 0.1)
+            obs_i["motion"] = dict(
+                self.sample_obs["motion"], accel_magnitude=9.8 + (i % 2) * 0.1
+            )
             c, _ = norm.extract_raw_features(obs_i)
-        
+
         self.assertGreaterEqual(c["phase_space_correlation_dimension"], 0.0)
         self.assertLessEqual(c["phase_space_correlation_dimension"], 5.0)
 
@@ -148,13 +153,17 @@ class TestCanonicalSensorium71D(unittest.TestCase):
         # Feed steady light
         for i in range(5):
             obs_i = dict(self.sample_obs, timestamp_utc=f"2026-10-01T06:00:{i*5:02d}Z")
-            obs_i["environment"] = dict(self.sample_obs["environment"], ambient_light_lux=100.0)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], ambient_light_lux=100.0
+            )
             c_steady, _ = norm.extract_raw_features(obs_i)
         self.assertEqual(c_steady["photometric_flicker_kurtosis"], 0.0)
 
         # Feed impulsive light flicker
         obs_flicker = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:30Z")
-        obs_flicker["environment"] = dict(self.sample_obs["environment"], ambient_light_lux=1500.0)
+        obs_flicker["environment"] = dict(
+            self.sample_obs["environment"], ambient_light_lux=1500.0
+        )
         c_flicker, _ = norm.extract_raw_features(obs_flicker)
         self.assertGreaterEqual(c_flicker["photometric_flicker_kurtosis"], -2.0)
         self.assertLessEqual(c_flicker["photometric_flicker_kurtosis"], 10.0)
@@ -187,7 +196,9 @@ class TestCanonicalSensorium71D(unittest.TestCase):
 
         # Ferromagnetic anomaly
         obs_ferro = dict(self.sample_obs)
-        obs_ferro["motion"] = dict(self.sample_obs["motion"], mag_raw=[50.0, 50.0, 50.0]) # norm ~ 86.6 uT
+        obs_ferro["motion"] = dict(
+            self.sample_obs["motion"], mag_raw=[50.0, 50.0, 50.0]
+        )  # norm ~ 86.6 uT
         c_ferro, _ = self.normalizer.extract_raw_features(obs_ferro)
         self.assertAlmostEqual(c_ferro["geomagnetic_total_field_flux"], 36.6, delta=0.5)
 
@@ -211,7 +222,9 @@ class TestCanonicalSensorium71D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-71d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -227,7 +240,9 @@ class TestCanonicalSensorium71D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 71)
 
         # Fit DETM with 71D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

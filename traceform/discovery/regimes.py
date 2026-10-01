@@ -29,7 +29,9 @@ class Regime:
         return asdict(self)
 
 
-def _compute_empirical_dist(tokens: List[str], all_states: List[str]) -> Dict[str, float]:
+def _compute_empirical_dist(
+    tokens: List[str], all_states: List[str]
+) -> Dict[str, float]:
     counts = {s: 0 for s in all_states}
     for t in tokens:
         if t in counts:

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import math
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -53,7 +53,9 @@ class MultimodalDistanceMetric:
         euc = self._euclidean_dist(v1, v2)
         return math.tanh(0.5 * euc)
 
-    def topological_distance(self, topo1: Dict[str, str], topo2: Dict[str, str]) -> float:
+    def topological_distance(
+        self, topo1: Dict[str, str], topo2: Dict[str, str]
+    ) -> float:
         """
         Computes discrete topological distance in [0, 1] based on WiFi fingerprint,
         cellular cell fingerprint, and spatial geocell matching.
@@ -83,8 +85,8 @@ class MultimodalDistanceMetric:
                     common_prefix_len += 1
                 else:
                     break
-            # Typical geohash length is 7 chars
-            d_geo = max(0.0, 1.0 - (common_prefix_len / 7.0))
+            # Typical geohash length is 7 chars; floor at 0.05 for unequal strings
+            d_geo = max(0.05, 1.0 - (common_prefix_len / 7.0))
 
         # 3. Cellular Cell ID (0.20 weight in topo)
         c1 = topo1.get("cellular_fingerprint", "NO_CELL")

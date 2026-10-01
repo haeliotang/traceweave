@@ -21,7 +21,10 @@ import math
 import time
 import unittest
 
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -119,9 +122,13 @@ class TestCanonicalSensorium53D(unittest.TestCase):
 
         # Case 2: Lying face-down on bed/table (az = -9.81) -> cos ~ -1.0
         obs_down = dict(self.sample_obs)
-        obs_down["motion"] = dict(self.sample_obs["motion"], accel_raw=[0.0, 0.0, -9.81])
+        obs_down["motion"] = dict(
+            self.sample_obs["motion"], accel_raw=[0.0, 0.0, -9.81]
+        )
         c_down, _ = norm.extract_raw_features(obs_down)
-        self.assertAlmostEqual(c_down["device_screen_gravity_alignment"], -1.0, places=2)
+        self.assertAlmostEqual(
+            c_down["device_screen_gravity_alignment"], -1.0, places=2
+        )
 
         # Case 3: Held vertical in portrait mode (ay = 9.81, az = 0.0) -> cos ~ 0.0
         obs_vert = dict(self.sample_obs)
@@ -174,7 +181,9 @@ class TestCanonicalSensorium53D(unittest.TestCase):
 
         # Frame 1: T=00:00:00 with active touch -> decay factor = 1.0
         obs1 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:00Z")
-        obs1["digital_context"] = dict(self.sample_obs["digital_context"], touch_interaction_velocity=3.0)
+        obs1["digital_context"] = dict(
+            self.sample_obs["digital_context"], touch_interaction_velocity=3.0
+        )
         c1, _ = norm.extract_raw_features(obs1)
         self.assertEqual(c1["touch_engagement_decay_factor"], 1.0)
 
@@ -200,7 +209,9 @@ class TestCanonicalSensorium53D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-53d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -215,7 +226,9 @@ class TestCanonicalSensorium53D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 53)
 
         # Fit DETM with 53D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

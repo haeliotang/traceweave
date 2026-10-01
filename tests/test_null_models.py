@@ -39,19 +39,25 @@ class TestNullModels(unittest.TestCase):
 
     def test_block_bootstrap_surrogate(self):
         from traceform.null_models.surrogates import generate_block_bootstrap_surrogate
+
         surr = generate_block_bootstrap_surrogate(self.seq, block_size=10, seed=42)
         self.assertEqual(len(surr), len(self.seq))
         self.assertEqual(surr.count("S01"), self.seq.count("S01"))
         self.assertEqual(surr.count("S02"), self.seq.count("S02"))
 
     def test_second_order_markov_surrogate(self):
-        from traceform.null_models.surrogates import generate_second_order_markov_surrogate
+        from traceform.null_models.surrogates import (
+            generate_second_order_markov_surrogate,
+        )
+
         # S01 -> S02 -> S03 sequence
         seq3 = ["S01", "S02", "S03"] * 30
         surr = generate_second_order_markov_surrogate(seq3, seed=42)
         self.assertEqual(len(surr), len(seq3))
         # 2nd-order should follow the periodic pattern
-        self.assertEqual(surr[:9], ["S01", "S02", "S03", "S01", "S02", "S03", "S01", "S02", "S03"])
+        self.assertEqual(
+            surr[:9], ["S01", "S02", "S03", "S01", "S02", "S03", "S01", "S02", "S03"]
+        )
 
 
 if __name__ == "__main__":

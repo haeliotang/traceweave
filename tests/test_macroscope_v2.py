@@ -16,10 +16,22 @@ class TestMacroscopeV2(unittest.TestCase):
                 "w2_potential_matrix": [[3.2, 1.9], [2.8, 2.2]],
             },
             "w1_attractor_basins": [
-                {"basin_id": "B01", "grid_coord": [1, 1], "state_token": "M04", "potential_depth": 1.2, "stationary_probability": 0.25}
+                {
+                    "basin_id": "B01",
+                    "grid_coord": [1, 1],
+                    "state_token": "M04",
+                    "potential_depth": 1.2,
+                    "stationary_probability": 0.25,
+                }
             ],
             "w2_attractor_basins": [
-                {"basin_id": "B01", "grid_coord": [0, 1], "state_token": "M02", "potential_depth": 1.4, "stationary_probability": 0.30}
+                {
+                    "basin_id": "B01",
+                    "grid_coord": [0, 1],
+                    "state_token": "M02",
+                    "potential_depth": 1.4,
+                    "stationary_probability": 0.30,
+                }
             ],
             "attractor_drift": {
                 "primary_attractor_drift_distance": 1.0,
@@ -59,14 +71,16 @@ class TestMacroscopeV2(unittest.TestCase):
         }
 
     def test_html_generation(self):
-        generator = MacroscopeV2Generator(self.mock_dynamics_spec, self.mock_multiscale_spec)
+        generator = MacroscopeV2Generator(
+            self.mock_dynamics_spec, self.mock_multiscale_spec
+        )
         html = generator.generate_html()
 
         self.assertIsInstance(html, str)
         self.assertIn("Traceform Personal Macroscope 2.0", html)
-        self.assertIn("id=\"potCanvas\"", html)
-        self.assertIn("id=\"msdCanvas\"", html)
-        self.assertIn("id=\"csdCanvas\"", html)
+        self.assertIn('id="potCanvas"', html)
+        self.assertIn('id="msdCanvas"', html)
+        self.assertIn('id="csdCanvas"', html)
         self.assertIn("Sub-Diffusive Trapping", html)
         self.assertIn("w1_potential_matrix", html)
 

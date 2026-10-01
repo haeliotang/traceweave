@@ -8,7 +8,6 @@ micro-states (S1, S2, ..., SK) via orthogonal topological and kinetic binning.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import json
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -19,8 +18,8 @@ class MicroState:
     state_token: str
     topological_anchor: str
     kinetic_mode: str  # K0 (Stationary), K1 (Moderate), K2 (Dynamic)
-    power_mode: str    # P0 (Unplugged), P1 (Charging)
-    light_mode: str    # L0 (Dark), L1 (Ambient), L2 (Bright)
+    power_mode: str  # P0 (Unplugged), P1 (Charging)
+    light_mode: str  # L0 (Dark), L1 (Ambient), L2 (Bright)
     signature: str
 
     def to_dict(self) -> Dict[str, Any]:
@@ -111,7 +110,9 @@ class TopologicalKineticLattice:
         signature = f"{topo_anchor}|{kin_mode}|{power_mode}|{light_mode}"
         return signature, topo_anchor, kin_mode, power_mode, light_mode
 
-    def fit_discovery_window(self, observations: List[Dict[str, Any]]) -> Dict[str, MicroState]:
+    def fit_discovery_window(
+        self, observations: List[Dict[str, Any]]
+    ) -> Dict[str, MicroState]:
         """
         Builds the canonical micro-state vocabulary from the Day 1–7 discovery window.
         States are indexed canonically by frequency of occurrence (S1 is the most frequent).
@@ -126,7 +127,9 @@ class TopologicalKineticLattice:
                 signature_anchors[sig] = (topo, kin, pow_m, lit)
 
         # Sort signatures by frequency descending
-        sorted_sigs = sorted(signature_counts.keys(), key=lambda s: signature_counts[s], reverse=True)
+        sorted_sigs = sorted(
+            signature_counts.keys(), key=lambda s: signature_counts[s], reverse=True
+        )
 
         self.vocabulary.clear()
         for idx, sig in enumerate(sorted_sigs, 1):
@@ -145,7 +148,9 @@ class TopologicalKineticLattice:
         self._next_id = len(self.vocabulary) + 1
         return self.vocabulary
 
-    def quantize(self, obs: Dict[str, Any], allow_new_states: bool = True) -> MicroState:
+    def quantize(
+        self, obs: Dict[str, Any], allow_new_states: bool = True
+    ) -> MicroState:
         """
         Quantizes an observation into a MicroState token.
         If allow_new_states is True and a previously unseen signature occurs (e.g. in validation),

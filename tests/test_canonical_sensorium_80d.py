@@ -22,7 +22,10 @@ import math
 import time
 import unittest
 
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -156,7 +159,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
 
         # Explicit warm candlelight (2700K)
         obs_warm = dict(self.sample_obs)
-        obs_warm["environment"] = dict(self.sample_obs["environment"], color_temperature=2700.0)
+        obs_warm["environment"] = dict(
+            self.sample_obs["environment"], color_temperature=2700.0
+        )
         c_warm, _ = self.normalizer.extract_raw_features(obs_warm)
         self.assertGreater(c_warm["photometric_spectral_warmth_index"], 2.0)
 
@@ -168,7 +173,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
     def test_geomagnetic_quadrupole_anisotropy_ratio(self):
         # Sample mag_raw = [0, 30, 40] -> Bh = 30, Bz = 40 -> 30/40 = 0.75
         c_map, _ = self.normalizer.extract_raw_features(self.sample_obs)
-        self.assertAlmostEqual(c_map["geomagnetic_quadrupole_anisotropy_ratio"], 0.75, delta=0.05)
+        self.assertAlmostEqual(
+            c_map["geomagnetic_quadrupole_anisotropy_ratio"], 0.75, delta=0.05
+        )
 
     def test_wifi_channel_dispersion_entropy(self):
         c_map, _ = self.normalizer.extract_raw_features(self.sample_obs)
@@ -177,7 +184,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
 
         # No wifi
         obs_nowifi = dict(self.sample_obs)
-        obs_nowifi["connectivity"] = dict(self.sample_obs["connectivity"], wifi_connected=False)
+        obs_nowifi["connectivity"] = dict(
+            self.sample_obs["connectivity"], wifi_connected=False
+        )
         c_nowifi, _ = self.normalizer.extract_raw_features(obs_nowifi)
         self.assertEqual(c_nowifi["wifi_channel_dispersion_entropy"], 0.0)
 
@@ -193,7 +202,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
         c1, _ = norm.extract_raw_features(obs1)
 
         obs2 = dict(self.sample_obs, timestamp_utc="2026-10-01T06:00:10Z")
-        obs2["digital_context"] = dict(self.sample_obs["digital_context"], app_switch_rate=4.0)
+        obs2["digital_context"] = dict(
+            self.sample_obs["digital_context"], app_switch_rate=4.0
+        )
         c2, _ = norm.extract_raw_features(obs2)
 
         self.assertGreaterEqual(c2["neuromotor_tremor_lyapunov_exponent"], -2.0)
@@ -207,7 +218,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
         dataset = []
         for i in range(30):
             obs_i = dict(self.sample_obs, observation_id=f"obs-80d-{i:03d}")
-            obs_i["environment"] = dict(self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2)
+            obs_i["environment"] = dict(
+                self.sample_obs["environment"], pressure_hpa=1013.0 - (i % 5) * 0.2
+            )
             obs_i["motion"] = dict(
                 self.sample_obs["motion"],
                 accel_raw=[0.1 * (i % 3), 0.1 * (i % 4), 9.7],
@@ -223,7 +236,9 @@ class TestCanonicalSensorium80D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 80)
 
         # Fit DETM with 80D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

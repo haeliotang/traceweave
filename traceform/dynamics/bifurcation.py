@@ -11,7 +11,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 import math
 import statistics
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -48,7 +48,9 @@ class PhaseTransitionDetector:
                 h -= p * math.log2(p)
         return round(h, 4)
 
-    def compute_sliding_spectrum(self, records: List[Dict[str, Any]]) -> List[SlidingWindowPoint]:
+    def compute_sliding_spectrum(
+        self, records: List[Dict[str, Any]]
+    ) -> List[SlidingWindowPoint]:
         """
         Computes sliding window dynamic metrics across the trajectory.
         """
@@ -66,7 +68,9 @@ class PhaseTransitionDetector:
         for start_idx in range(0, N - self.window_size + 1, self.step_size):
             end_idx = start_idx + self.window_size
             window_tokens = tokens[start_idx:end_idx]
-            mid_ts = records[min(N - 1, start_idx + self.window_size // 2)].get("timestamp_utc", "")
+            mid_ts = records[min(N - 1, start_idx + self.window_size // 2)].get(
+                "timestamp_utc", ""
+            )
 
             # State entropy
             counts = Counter(window_tokens)
@@ -83,16 +87,18 @@ class PhaseTransitionDetector:
             det = round(self_trans / max(1, len(trans_pairs)), 4)
             lam = round(max(counts.values()) / len(window_tokens), 4)
 
-            temp_data.append({
-                "step_start": start_idx,
-                "step_end": end_idx,
-                "timestamp_utc": mid_ts,
-                "determinism": det,
-                "laminarity": lam,
-                "transition_entropy": h_trans,
-                "state_entropy": h_state,
-                "unique_states_count": len(counts),
-            })
+            temp_data.append(
+                {
+                    "step_start": start_idx,
+                    "step_end": end_idx,
+                    "timestamp_utc": mid_ts,
+                    "determinism": det,
+                    "laminarity": lam,
+                    "transition_entropy": h_trans,
+                    "state_entropy": h_state,
+                    "unique_states_count": len(counts),
+                }
+            )
 
         if not temp_data:
             return []
@@ -106,17 +112,19 @@ class PhaseTransitionDetector:
         for item in temp_data:
             z = (item["state_entropy"] - mean_ent) / std_ent
             is_alert = (z >= 2.0) or (item["determinism"] < 0.35)
-            points.append(SlidingWindowPoint(
-                step_start=item["step_start"],
-                step_end=item["step_end"],
-                timestamp_utc=item["timestamp_utc"],
-                determinism=item["determinism"],
-                laminarity=item["laminarity"],
-                transition_entropy=item["transition_entropy"],
-                state_entropy=item["state_entropy"],
-                unique_states_count=item["unique_states_count"],
-                is_bifurcation_alert=is_alert,
-                bifurcation_z_score=round(z, 2),
-            ))
+            points.append(
+                SlidingWindowPoint(
+                    step_start=item["step_start"],
+                    step_end=item["step_end"],
+                    timestamp_utc=item["timestamp_utc"],
+                    determinism=item["determinism"],
+                    laminarity=item["laminarity"],
+                    transition_entropy=item["transition_entropy"],
+                    state_entropy=item["state_entropy"],
+                    unique_states_count=item["unique_states_count"],
+                    is_bifurcation_alert=is_alert,
+                    bifurcation_z_score=round(z, 2),
+                )
+            )
 
         return points

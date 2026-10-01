@@ -11,10 +11,8 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import asdict, dataclass
 import datetime
-import math
-from pathlib import Path
 import statistics
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 @dataclass
@@ -42,7 +40,9 @@ class PhysicalObservableProfile:
     physical_signature: str
     candidate_semantic_hypothesis: str
     hypothesis_confidence: float
-    epistemic_quarantine: str = "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."
+    epistemic_quarantine: str = (
+        "HYPOTHESIS_ONLY: Inferred post-hoc from objective observables; never used in structure discovery."
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -136,7 +136,11 @@ class CandidateSemanticProjector:
 
             # Connectivity
             conn = raw.get("connectivity", {})
-            wf = conn.get("wifi_fingerprint") or conn.get("wifi_environment_fingerprint") or "NO_WIFI"
+            wf = (
+                conn.get("wifi_fingerprint")
+                or conn.get("wifi_environment_fingerprint")
+                or "NO_WIFI"
+            )
             wifi_aps.append(str(wf)[:10])
 
             # Diurnal Timing
@@ -146,7 +150,9 @@ class CandidateSemanticProjector:
 
         # Statistical summaries
         stat_ratio = round(stationary_count / obs_count, 4)
-        mean_energy = round(statistics.mean(motion_energies) if motion_energies else 0.0, 4)
+        mean_energy = round(
+            statistics.mean(motion_energies) if motion_energies else 0.0, 4
+        )
         mean_accel = round(statistics.mean(accel_rmss) if accel_rmss else 0.0, 4)
         med_lux = round(statistics.median(lux_values) if lux_values else 0.0, 2)
         dark_ratio = round(dark_count / obs_count, 4)
@@ -160,7 +166,9 @@ class CandidateSemanticProjector:
 
         # WiFi concentration
         wifi_counts = Counter(wifi_aps)
-        top_wifi, top_wifi_freq = wifi_counts.most_common(1)[0] if wifi_counts else ("UNKNOWN", 0)
+        top_wifi, top_wifi_freq = (
+            wifi_counts.most_common(1)[0] if wifi_counts else ("UNKNOWN", 0)
+        )
         wifi_conc = round(top_wifi_freq / obs_count, 4)
 
         # Diurnal distribution
@@ -174,10 +182,24 @@ class CandidateSemanticProjector:
         peak_hours = [h for h, _ in hour_counts.most_common(3)]
 
         # Physical Signature construction
-        kinematic_tag = "STATIONARY" if stat_ratio >= 0.80 else ("LOW_MOTION" if stat_ratio >= 0.50 else "MOBILE")
-        power_tag = "AC_PLUGGED" if ac_ratio >= 0.50 else ("USB_PLUGGED" if usb_ratio >= 0.50 else "UNPLUGGED")
-        light_tag = "DARK" if dark_ratio >= 0.60 else ("DIM" if med_lux < 25.0 else "BRIGHT")
-        diurnal_tag = "NOCTURNAL" if night_ratio >= 0.60 else ("DIURNAL" if day_ratio >= 0.60 else "BIMODAL")
+        kinematic_tag = (
+            "STATIONARY"
+            if stat_ratio >= 0.80
+            else ("LOW_MOTION" if stat_ratio >= 0.50 else "MOBILE")
+        )
+        power_tag = (
+            "AC_PLUGGED"
+            if ac_ratio >= 0.50
+            else ("USB_PLUGGED" if usb_ratio >= 0.50 else "UNPLUGGED")
+        )
+        light_tag = (
+            "DARK" if dark_ratio >= 0.60 else ("DIM" if med_lux < 25.0 else "BRIGHT")
+        )
+        diurnal_tag = (
+            "NOCTURNAL"
+            if night_ratio >= 0.60
+            else ("DIURNAL" if day_ratio >= 0.60 else "BIMODAL")
+        )
         rf_tag = f"RF_{top_wifi}"
 
         phys_sig = f"{diurnal_tag}_{kinematic_tag}_{power_tag}_{light_tag}_{rf_tag}"
@@ -240,24 +262,61 @@ class CandidateSemanticProjector:
         Synthesizes objective behavioral hypothesis with explicit confidence score.
         """
         # Nocturnal sleep / rest anchor
-        if stat_ratio >= 0.85 and (ac_ratio >= 0.50 or dark_ratio >= 0.70) and night_ratio >= 0.55:
-            conf = min(0.95, round(stat_ratio * 0.4 + dark_ratio * 0.3 + night_ratio * 0.3, 2))
-            return "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)", conf
+        if (
+            stat_ratio >= 0.85
+            and (ac_ratio >= 0.50 or dark_ratio >= 0.70)
+            and night_ratio >= 0.55
+        ):
+            conf = min(
+                0.95, round(stat_ratio * 0.4 + dark_ratio * 0.3 + night_ratio * 0.3, 2)
+            )
+            return (
+                "Prolonged Nocturnal Rest / In-bed Charging (Sleep Anchor Candidate)",
+                conf,
+            )
 
         # Diurnal stationary work / desk session
-        if stat_ratio >= 0.80 and unplug_ratio >= 0.60 and day_ratio >= 0.60 and wifi_conc >= 0.70:
-            conf = min(0.90, round(stat_ratio * 0.4 + day_ratio * 0.3 + wifi_conc * 0.3, 2))
-            return "Diurnal Stationary Indoor Activity / Desk Work (Unplugged Office/Home)", conf
+        if (
+            stat_ratio >= 0.80
+            and unplug_ratio >= 0.60
+            and day_ratio >= 0.60
+            and wifi_conc >= 0.70
+        ):
+            conf = min(
+                0.90, round(stat_ratio * 0.4 + day_ratio * 0.3 + wifi_conc * 0.3, 2)
+            )
+            return (
+                "Diurnal Stationary Indoor Activity / Desk Work (Unplugged Office/Home)",
+                conf,
+            )
 
         # Diurnal powered desk / charging workstation
-        if stat_ratio >= 0.80 and (ac_ratio >= 0.50 or usb_ratio >= 0.50) and day_ratio >= 0.60:
-            conf = min(0.90, round(stat_ratio * 0.4 + day_ratio * 0.3 + (ac_ratio + usb_ratio) * 0.3, 2))
-            return "Diurnal Stationary Powered Operation (Workstation / Charging Desk)", conf
+        if (
+            stat_ratio >= 0.80
+            and (ac_ratio >= 0.50 or usb_ratio >= 0.50)
+            and day_ratio >= 0.60
+        ):
+            conf = min(
+                0.90,
+                round(
+                    stat_ratio * 0.4 + day_ratio * 0.3 + (ac_ratio + usb_ratio) * 0.3, 2
+                ),
+            )
+            return (
+                "Diurnal Stationary Powered Operation (Workstation / Charging Desk)",
+                conf,
+            )
 
         # Active physical locomotion / commute
         if stat_ratio < 0.65 or mean_energy > 0.15:
-            conf = min(0.85, round((1.0 - stat_ratio) * 0.5 + min(1.0, mean_energy * 3.0) * 0.5, 2))
-            return "Active Physical Locomotion / Kinematic Transit (Walking or Commute Candidate)", conf
+            conf = min(
+                0.85,
+                round((1.0 - stat_ratio) * 0.5 + min(1.0, mean_energy * 3.0) * 0.5, 2),
+            )
+            return (
+                "Active Physical Locomotion / Kinematic Transit (Walking or Commute Candidate)",
+                conf,
+            )
 
         # Stationary transient / pause
         if stat_ratio >= 0.75:
@@ -291,16 +350,18 @@ class CandidateSemanticProjector:
                 regime_hypothesis = f"Composite Regime dominated by {top_state}"
                 regime_physical_type = "UNKNOWN"
 
-            projected.append({
-                "regime_token": r_token,
-                "start_utc": reg.get("start_utc"),
-                "end_utc": reg.get("end_utc"),
-                "duration_hours": dur_hours,
-                "dominant_state": top_state,
-                "dominant_share": top_state_share,
-                "physical_signature": regime_physical_type,
-                "candidate_regime_interpretation": regime_hypothesis,
-            })
+            projected.append(
+                {
+                    "regime_token": r_token,
+                    "start_utc": reg.get("start_utc"),
+                    "end_utc": reg.get("end_utc"),
+                    "duration_hours": dur_hours,
+                    "dominant_state": top_state,
+                    "dominant_share": top_state_share,
+                    "physical_signature": regime_physical_type,
+                    "candidate_regime_interpretation": regime_hypothesis,
+                }
+            )
         return projected
 
     def project_motifs(
@@ -320,17 +381,22 @@ class CandidateSemanticProjector:
             # Summarize transition dynamics in pattern
             unique_states = list(dict.fromkeys(pattern))
             state_descs = [
-                f"{st} ({state_profiles[st].candidate_semantic_hypothesis.split('(')[0].strip()})"
-                if st in state_profiles else st
+                (
+                    f"{st} ({state_profiles[st].candidate_semantic_hypothesis.split('(')[0].strip()})"
+                    if st in state_profiles
+                    else st
+                )
                 for st in unique_states
             ]
             seq_meaning = " \u2192 ".join(state_descs)
 
-            projected.append({
-                "motif_token": m_token,
-                "pattern": " -> ".join(pattern),
-                "support": support,
-                "unique_state_count": len(unique_states),
-                "candidate_sequence_interpretation": seq_meaning,
-            })
+            projected.append(
+                {
+                    "motif_token": m_token,
+                    "pattern": " -> ".join(pattern),
+                    "support": support,
+                    "unique_state_count": len(unique_states),
+                    "candidate_sequence_interpretation": seq_meaning,
+                }
+            )
         return projected

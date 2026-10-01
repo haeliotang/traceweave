@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
-from traceform.representation.normalizer import MultimodalNormalizer, NormalizationParams
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    NormalizationParams,
+)
 from traceform.representation.lattice import TopologicalKineticLattice, MicroState
 
 
@@ -32,7 +35,9 @@ class EdgeStreamQuantizer:
             medians=norm_dict["medians"],
             iqrs=norm_dict["iqrs"],
             fitted_observation_count=norm_dict.get("fitted_observation_count", 3147),
-            fit_window_description=norm_dict.get("fit_window_description", "Loaded from frozen spec"),
+            fit_window_description=norm_dict.get(
+                "fit_window_description", "Loaded from frozen spec"
+            ),
         )
         self.normalizer = MultimodalNormalizer(params=norm_params)
 
@@ -43,8 +48,12 @@ class EdgeStreamQuantizer:
             ms = MicroState.from_dict(item)
             self.lattice.vocabulary[ms.signature] = ms
 
-        self.lattice._next_id = max([s["state_id"] for s in state_dict.values()], default=0) + 1
-        self.w1_vocab_size = spec.get("micro_state_lattice", {}).get("total_vocabulary_size_w1", 33)
+        self.lattice._next_id = (
+            max([s["state_id"] for s in state_dict.values()], default=0) + 1
+        )
+        self.w1_vocab_size = spec.get("micro_state_lattice", {}).get(
+            "total_vocabulary_size_w1", 33
+        )
 
     @classmethod
     def from_spec_file(cls, spec_file_path: Path) -> EdgeStreamQuantizer:
@@ -64,6 +73,11 @@ class EdgeStreamQuantizer:
             (state_token, signature, topological_descriptors)
             e.g. ("S01", "WIFI_d6c2cf9dba|K0_STATIONARY|P1_AC|L0_DARK", {...})
         """
-        norm_vec, topo_desc = self.normalizer.transform(raw_obs)
-        micro_state = self.lattice.quantize(raw_obs, allow_new_states=allow_new_states)
-        return micro_state.state_token, micro_state.signature, topo_desc
+        try:
+            norm_vec, topo_desc = self.normalizer.transform(raw_obs)
+            micro_state = self.lattice.quantize(
+                raw_obs, allow_new_states=allow_new_states
+            )
+            return micro_state.state_token, micro_state.signature, topo_desc
+        except Exception:
+            return "ERR", "ERROR_FRAME", {"error": True}

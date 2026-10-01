@@ -15,8 +15,10 @@ from __future__ import annotations
 import math
 import unittest
 
-from traceform.probes.digital_sensorium import DigitalSensoriumProbe
-from traceform.representation.normalizer import MultimodalNormalizer, CONTINUOUS_FEATURE_NAMES
+from traceform.representation.normalizer import (
+    MultimodalNormalizer,
+    CONTINUOUS_FEATURE_NAMES,
+)
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 
 
@@ -104,7 +106,9 @@ class TestCanonicalSensorium26D(unittest.TestCase):
         # sin(pi/2) = 1.0, cos(pi/2) = 0.0
         self.assertAlmostEqual(c_map["circadian_sin_phase"], 1.0, places=4)
         self.assertAlmostEqual(c_map["circadian_cos_phase"], 0.0, places=4)
-        unit_circle_sq = c_map["circadian_sin_phase"]**2 + c_map["circadian_cos_phase"]**2
+        unit_circle_sq = (
+            c_map["circadian_sin_phase"] ** 2 + c_map["circadian_cos_phase"] ** 2
+        )
         self.assertAlmostEqual(unit_circle_sq, 1.0, places=4)
 
     def test_circadian_and_infradian_phase_continuity(self):
@@ -135,7 +139,9 @@ class TestCanonicalSensorium26D(unittest.TestCase):
         norm.reset_geo_window()
 
         # Step 1: Single coordinate or indoor missing GPS -> returns nominal fallback 0.05 km
-        indoor_obs = dict(self.sample_obs, place={"spatial_cell": "tv58qxy"})  # No lat/lon
+        indoor_obs = dict(
+            self.sample_obs, place={"spatial_cell": "tv58qxy"}
+        )  # No lat/lon
         c_indoor, _ = norm.extract_raw_features(indoor_obs)
         self.assertEqual(c_indoor["spatial_radius_of_gyration"], 0.05)
         self.assertFalse(math.isnan(c_indoor["spatial_radius_of_gyration"]))
@@ -149,7 +155,10 @@ class TestCanonicalSensorium26D(unittest.TestCase):
         ]
         rg_val = 0.0
         for lat, lon in coords:
-            obs = dict(self.sample_obs, place={"latitude": lat, "longitude": lon, "spatial_cell": "tv58qxy"})
+            obs = dict(
+                self.sample_obs,
+                place={"latitude": lat, "longitude": lon, "spatial_cell": "tv58qxy"},
+            )
             c_m, _ = norm.extract_raw_features(obs)
             rg_val = c_m["spatial_radius_of_gyration"]
 
@@ -172,12 +181,18 @@ class TestCanonicalSensorium26D(unittest.TestCase):
 
     def test_battery_current_signed_polarities(self):
         # Discharging frame (-350 mA)
-        obs_disch = dict(self.sample_obs, device_relation={"current_ua": -350000, "status": "DISCHARGING"})
+        obs_disch = dict(
+            self.sample_obs,
+            device_relation={"current_ua": -350000, "status": "DISCHARGING"},
+        )
         c_disch, _ = self.normalizer.extract_raw_features(obs_disch)
         self.assertEqual(c_disch["battery_current_ua"], -350000.0)
 
         # Fast charging frame (+2000 mA)
-        obs_chg = dict(self.sample_obs, device_relation={"current_ua": 2000000, "status": "CHARGING"})
+        obs_chg = dict(
+            self.sample_obs,
+            device_relation={"current_ua": 2000000, "status": "CHARGING"},
+        )
         c_chg, _ = self.normalizer.extract_raw_features(obs_chg)
         self.assertEqual(c_chg["battery_current_ua"], 2000000.0)
 
@@ -205,7 +220,9 @@ class TestCanonicalSensorium26D(unittest.TestCase):
         self.assertGreaterEqual(len(vec), 26)
 
         # Fit DETM with 26D vectors
-        manifold = DynamicalEnergyManifold(grid_height=3, grid_width=3, kinetic_weight=0.25)
+        manifold = DynamicalEnergyManifold(
+            grid_height=3, grid_width=3, kinetic_weight=0.25
+        )
         tokens = manifold.fit_discovery_window(dataset, self.normalizer, epochs=2)
         self.assertEqual(len(tokens), 9)
 

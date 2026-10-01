@@ -1,7 +1,7 @@
 """
 Traceform Intervention Layer: Haptic Feedback Engine.
 
-Interfaces with Android/Termux hardware APIs to deliver unsemantic 
+Interfaces with Android/Termux hardware APIs to deliver unsemantic
 structural feedback (vibrations, notifications) triggered by topological events.
 Uses asynchronous background queues and debouncing to guarantee sub-millisecond
 main-thread throughput.
@@ -17,8 +17,6 @@ import subprocess
 import threading
 import time
 from typing import Any, Dict, List, Optional
-
-from traceform.intervention.resonance_hooks import ResonanceTriggerType
 
 
 class HapticEngine:
@@ -36,21 +34,25 @@ class HapticEngine:
         termux_bin = "/data/data/com.termux/files/usr/bin"
         if os.path.isdir(termux_bin) and termux_bin not in os.environ.get("PATH", ""):
             os.environ["PATH"] = f"{termux_bin}:{os.environ.get('PATH', '')}"
-        
+
         # Check Termux API availability
         self.has_vibrate = shutil.which("termux-vibrate") is not None
         self.has_notification = shutil.which("termux-notification") is not None
-        
+
         # Action queue and worker thread
         self._queue: queue.Queue[Dict[str, Any]] = queue.Queue(maxsize=50)
         self._last_triggered: Dict[str, float] = {}
-        
+
         self._running = True
-        self._worker = threading.Thread(target=self._worker_loop, daemon=True, name="HapticWorker")
+        self._worker = threading.Thread(
+            target=self._worker_loop, daemon=True, name="HapticWorker"
+        )
         self._worker.start()
-        
+
         if not self.has_vibrate:
-            print("[HapticEngine] 'termux-vibrate' not found. Operating in simulation mode.")
+            print(
+                "[HapticEngine] 'termux-vibrate' not found. Operating in simulation mode."
+            )
 
     def shutdown(self) -> None:
         self._running = False
@@ -63,23 +65,29 @@ class HapticEngine:
         """
         if not self.enabled:
             return
-        if os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in ("1", "true", "yes"):
+        if os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        ):
             return
         if self.silent_flag_file and os.path.exists(str(self.silent_flag_file)):
             return
 
         now = time.time()
         last_t = self._last_triggered.get(event_type, 0.0)
-        
+
         if (now - last_t) < self.debounce_seconds:
             return  # Debounced
 
         self._last_triggered[event_type] = now
-        
+
         try:
-            self._queue.put_nowait({"type": event_type, "level": level, "message": message})
+            self._queue.put_nowait(
+                {"type": event_type, "level": level, "message": message}
+            )
         except queue.Full:
-            pass # Drop event if queue is completely overwhelmed
+            pass  # Drop event if queue is completely overwhelmed
 
     def _worker_loop(self) -> None:
         while self._running:
@@ -87,7 +95,7 @@ class HapticEngine:
                 task = self._queue.get(timeout=1.0)
                 if task["type"] == "SHUTDOWN":
                     break
-                    
+
                 self._execute_haptic(task)
                 self._queue.task_done()
             except queue.Empty:
@@ -98,11 +106,11 @@ class HapticEngine:
     def _execute_haptic(self, task: Dict[str, Any]) -> None:
         etype = task.get("type", "")
         level = task.get("level", "INFO")
-        
+
         # Define patterns: [(duration_ms, sleep_ms), ...]
         pattern: List[tuple[int, int]] = []
         notify = False
-        
+
         if etype == "PROLONGED_DWELL":
             pattern = [(100, 100), (100, 0)]  # Double tap
         elif etype == "HIGH_ENTROPY_FLUX":
@@ -113,7 +121,7 @@ class HapticEngine:
                 notify = True
         else:
             pattern = [(150, 0)]
-            
+
         # Execute pattern
         for duration, pause in pattern:
             if self.has_vibrate:
@@ -138,9 +146,12 @@ class HapticEngine:
                 subprocess.run(
                     [
                         "termux-notification",
-                        "-t", "Traceform Intervention",
-                        "-c", task.get("message", "Critical dynamic threshold crossed."),
-                        "--priority", "high",
+                        "-t",
+                        "Traceform Intervention",
+                        "-c",
+                        task.get("message", "Critical dynamic threshold crossed."),
+                        "--priority",
+                        "high",
                     ],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,

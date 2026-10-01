@@ -6,7 +6,6 @@ import unittest
 
 from traceform.dynamics.manifold_drift import (
     AttractorLandscapeAuditor,
-    AttractorBasin,
     CSDAlert,
 )
 
@@ -53,17 +52,24 @@ class TestManifoldDrift(unittest.TestCase):
 
     def test_critical_slowing_down_alert(self):
         # Baseline quiet records at (1, 1)
-        quiet = [{"grid_coord": (1, 1), "timestamp_utc": f"2026-09-01T{i:02d}:00:00Z"} for i in range(100)]
+        quiet = [
+            {"grid_coord": (1, 1), "timestamp_utc": f"2026-09-01T{i:02d}:00:00Z"}
+            for i in range(100)
+        ]
 
         # High-fluctuation surge (CSD tipping zone: bouncing wildly across corners)
         surge = []
         for i in range(100):
             c = (0, 0) if i % 2 == 0 else (2, 2)
-            surge.append({"grid_coord": c, "timestamp_utc": f"2026-09-05T{i:02d}:00:00Z"})
+            surge.append(
+                {"grid_coord": c, "timestamp_utc": f"2026-09-05T{i:02d}:00:00Z"}
+            )
 
         full_stream = quiet + surge + quiet
 
-        alerts = self.auditor.compute_critical_slowing_down(full_stream, window_size=50, step_size=10)
+        alerts = self.auditor.compute_critical_slowing_down(
+            full_stream, window_size=50, step_size=10
+        )
         # Should catch at least one elevated/critical CSD alert during the transition phase
         self.assertIsInstance(alerts, list)
         if alerts:
