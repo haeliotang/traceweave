@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from pixel_physical import ledger as frozen_ledger
-from pixel_physical.observation import PhysicalObservation
+from traceform.streaming.physical_observation_v2 import PhysicalObservation
 from traceform.streaming.rolling_ledger import RollingLedger
 
 

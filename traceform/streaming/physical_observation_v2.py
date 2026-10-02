@@ -4,6 +4,7 @@ Forked from frozen v1 to preserve its source and sensing schema.
 """
 
 import hashlib
+from dataclasses import dataclass, field
 import json
 import time
 from typing import Any, Dict, Optional, Tuple
@@ -12,7 +13,17 @@ from pixel_physical import audio_features, config, connectivity, device_state, s
 from traceform.streaming import physical_location_v2 as location
 
 
-from pixel_physical.observation import PhysicalObservation
+from pixel_physical.observation import PhysicalObservation as FrozenPhysicalObservation
+
+
+@dataclass
+class PhysicalObservation(FrozenPhysicalObservation):
+    feature_provenance: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, value):
+        base = FrozenPhysicalObservation.from_dict(value)
+        return cls(**base.to_dict(), feature_provenance=value.get('feature_provenance', {}))
 
 
 def build_observation_id(timestamp_utc: str, monotonic_ns: int, raw_payload: str) -> str:
@@ -94,4 +105,23 @@ def acquire_observation_frame(
         device_relation=dev_dict,
         audio_context=audio_dict,
         sample_latencies_ms=latencies,
+        feature_provenance={name: {
+            'adapter': adapter,
+            'status': availability[name],
+            'measurement_scope': 'adapter_return_not_per_field_direct_measurement',
+            'limitations': limitations,
+        } for name, adapter, limitations in (
+            ('motion', 'pixel_physical.sensors.sample_hardware_sensors',
+             ['derived_motion_summaries', 'missing_gyroscope_may_be_zero_filled']),
+            ('environment', 'pixel_physical.sensors.sample_hardware_sensors',
+             ['group_availability_does_not_establish_each_sensor']),
+            ('place', 'traceform.streaming.physical_location_v2.sample_location',
+             ['location_request_and_age_are_recorded_in_place_when_available']),
+            ('connectivity', 'pixel_physical.connectivity.sample_connectivity',
+             ['group_availability_does_not_establish_each_field']),
+            ('device_relation', 'pixel_physical.device_state.sample_device_state',
+             ['audio_route_defaults_may_be_present', 'group_availability_does_not_establish_each_field']),
+            ('audio_context', 'pixel_physical.audio_features.sample_audio_context',
+             ['derived_audio_summaries']),
+        )},
     )
