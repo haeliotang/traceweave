@@ -9,6 +9,15 @@ use ark_r1cs_std::uint8::UInt8;
 
 pub const SCALE: u64 = 1_000_000;
 
+/// Reject an unsatisfied centralized synthetic witness before generating a proof.
+/// This is not an MPC check: the caller already holds the entire witness.
+pub fn check_witness<C: ConstraintSynthesizer<Fr>>(circuit: C) -> Result<(), SynthesisError> {
+    let constraints = ark_relations::r1cs::ConstraintSystem::new_ref();
+    circuit.generate_constraints(constraints.clone())?;
+    if !constraints.is_satisfied()? { return Err(SynthesisError::Unsatisfiable); }
+    Ok(())
+}
+
 /// Separate proof relation for packed-v2 uniform permutation couplings.
 /// The prover still knows both models; this is not distributed proof generation.
 #[derive(Clone)]
@@ -222,6 +231,32 @@ mod tests {
     use ark_serialize::CanonicalSerialize;
     use ark_std::rand::rngs::OsRng;
     use ark_relations::r1cs::{ConstraintSynthesizer, ConstraintSystem};
+
+    #[test]
+    fn witness_preflight_rejects_before_proof_generation() {
+        let first = vec![vec![0, super::SCALE], vec![super::SCALE, 0]];
+        let second = vec![vec![0, super::SCALE / 2], vec![super::SCALE / 2, 0]];
+        let session = [7u8; 32];
+        let nonces = [[11u8; 32], [13u8; 32]];
+        let commitments = [super::packed_uniform_model_commitment(0, &first, &session, &nonces[0]).unwrap(),
+                           super::packed_uniform_model_commitment(1, &second, &session, &nonces[1]).unwrap()];
+        let circuit = super::AlignmentCircuit {
+            first, second, transport: vec![vec![500000, 0], vec![0, 500000]],
+            first_mass: vec![500000; 2], second_mass: vec![500000; 2],
+            objective: Fr::from(super::SCALE).pow([4]) / Fr::from(8u64),
+            bindings: Some(super::AlignmentBindings { session, nonces, commitments }),
+        };
+        super::check_witness(super::PackedUniformAlignmentCircuit(circuit.clone())).unwrap();
+        for case in 0..4 {
+            let mut invalid = circuit.clone();
+            if case == 0 { invalid.objective += Fr::from(1u64); }
+            if case == 1 { invalid.bindings.as_mut().unwrap().nonces[1][0] ^= 1; }
+            if case == 2 { invalid.transport = vec![vec![250000; 2]; 2]; }
+            if case == 3 { invalid.first[0][0] = 1; }
+            assert!(matches!(super::check_witness(super::PackedUniformAlignmentCircuit(invalid)),
+                             Err(ark_relations::r1cs::SynthesisError::Unsatisfiable)));
+        }
+    }
 
     #[test]
     fn packed_uniform_bytes_match_independent_twenty_bit_vectors() {

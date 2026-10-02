@@ -5,7 +5,7 @@ use ark_groth16::Groth16;
 use ark_serialize::CanonicalSerialize;
 use rand::{rngs::OsRng, RngCore};
 use std::{error::Error, fs, path::PathBuf};
-use traceform_zk_alignment::{model_commitment, packed_uniform_model_commitment, AlignmentBindings, AlignmentCircuit, PackedUniformAlignmentCircuit, SCALE};
+use traceform_zk_alignment::{check_witness, model_commitment, packed_uniform_model_commitment, AlignmentBindings, AlignmentCircuit, PackedUniformAlignmentCircuit, SCALE};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut arguments = std::env::args().skip(1);
@@ -47,6 +47,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         bindings: Some(AlignmentBindings { session, nonces, commitments }),
     };
     let inputs = circuit.public_inputs();
+    // Abort before setup/proving; rejecting a published invalid proof is too late.
+    if packed { check_witness(PackedUniformAlignmentCircuit(circuit.clone()))?; }
+    else { check_witness(circuit.clone())?; }
     let key = if packed {
         Groth16::<Bls12_381>::generate_random_parameters_with_reduction(PackedUniformAlignmentCircuit(circuit.clone()), &mut rng)?
     } else { Groth16::<Bls12_381>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)? };

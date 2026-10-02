@@ -48,6 +48,13 @@ trust-model change. Until resolved, retain the two-owner computation architectur
 6. Pin and review protocol dependencies and setup provenance. Validate private
    witness generation, adversarial aborts, malformed shares, independent verifier
    acceptance, owner approvals, restart replay and device resource behavior.
+7. Check the complete extended witness before proving and bind the accepted
+   shares to the proof-generation stage. A guarded GW result checks its own
+   Boolean relation; it does not check every wire of a separate R1CS witness.
+   [Malicious Security in Collaborative zk-SNARKs](https://eprint.iacr.org/2025/1026.pdf)
+   demonstrates privacy attacks involving invalid witnesses and changed shares.
+   Its honest-majority results do not establish security for two owners with one
+   dishonest participant. This remains a protocol acceptance requirement.
 
 The next implementation depends on a compatible protocol and witness-generation
 path, not just a new verifier adapter. Current synthetic tests and builds remain
@@ -62,3 +69,8 @@ request approves only circuit/session/model bindings. Encoding does not generate
 a proof, establish an authenticated computation or replace
 `ProofVerifier.verifyPrivateAlignment`, which checks the approved proof package
 against every byte of the actual MPC output before invoking the native verifier.
+
+The centralized synthetic `fixture` generator checks satisfaction of its exact
+R1CS before setup/proving. Invalid objectives, commitments, metrics and couplings
+are rejected before proof generation. This local check holds the complete
+witness and supplies no evidence of private distributed witness validation.
