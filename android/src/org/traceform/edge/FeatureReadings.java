@@ -21,7 +21,8 @@ final class FeatureReadings {
     private double accelMagnitude = Double.NaN, gyroMagnitude = Double.NaN;
     private long accelNanos, gyroNanos;
     private double referencePressure = Double.NaN;
-    private long pressureNanos;
+    private long pressureNanos, previousPressureNanos, lastPressureNanos;
+    private double previousPressure = Double.NaN;
     private double referenceVoltage = Double.NaN, referenceCurrent = Double.NaN;
     private long electricalNanos;
     private static final class Derivative {
@@ -37,6 +38,7 @@ final class FeatureReadings {
     private final ArrayDeque<Double> lightWindow = new ArrayDeque<>(), pressureWindow = new ArrayDeque<>();
     void reset() {
         values.clear();
+        previousPressure = Double.NaN; previousPressureNanos = lastPressureNanos = 0;
         accelMagnitude = gyroMagnitude = referencePressure = referenceVoltage = referenceCurrent = Double.NaN;
         accelNanos = gyroNanos = pressureNanos = electricalNanos = windowNanos = historyAccelNanos = 0;
         accelDerivative.reference = gyroDerivative.reference = null;
@@ -239,20 +241,32 @@ final class FeatureReadings {
     }
     void pressure(double hpa, long timestampNanos) {
         if (!Double.isFinite(hpa) || hpa <= 0) {
-            referencePressure = Double.NaN;
+            referencePressure = previousPressure = Double.NaN;
+            pressureNanos = previousPressureNanos = lastPressureNanos = 0;
             put("env_pressure_hpa", Double.NaN, "observed", "pressure_sensor", timestampNanos, 300000000000L);
             put("barometric_vertical_velocity", Double.NaN, "derived", "pressure_derivative", timestampNanos, 5000000000L);
             return;
         }
         put("env_pressure_hpa", hpa, "observed", "pressure_sensor", timestampNanos, 300000000000L);
-        double dt = (timestampNanos - pressureNanos) / 1e9;
-        if (Double.isFinite(referencePressure) && dt >= 5 && dt <= 600) {
-            double velocity = Math.rint(Math.max(-5, Math.min(5, -8.43 * (hpa - referencePressure) / dt)) * 1000) / 1000;
-            put("barometric_vertical_velocity", velocity, "derived", "pressure_5s_or_longer_derivative", timestampNanos, 5000000000L);
-        }
-        if (!Double.isFinite(referencePressure) || dt >= 5 || dt <= 0) {
+        if (!Double.isFinite(referencePressure) || timestampNanos <= lastPressureNanos
+                || timestampNanos - lastPressureNanos > 600000000000L) {
             referencePressure = hpa; pressureNanos = timestampNanos;
+            previousPressure = Double.NaN; previousPressureNanos = 0;
+            put("barometric_vertical_velocity", Double.NaN, "derived", "pressure_derivative", timestampNanos, 5000000000L);
+        } else {
+            double anchorDt = (timestampNanos - pressureNanos) / 1e9;
+            double baseline = anchorDt >= 5 ? referencePressure : previousPressure;
+            double dt = anchorDt >= 5 ? anchorDt : (timestampNanos - previousPressureNanos) / 1e9;
+            if (Double.isFinite(baseline) && dt >= 5 && dt <= 600) {
+                double velocity = Math.rint(Math.max(-5, Math.min(5, -8.43 * (hpa - baseline) / dt)) * 1000) / 1000;
+                put("barometric_vertical_velocity", velocity, "derived", "pressure_5s_or_longer_derivative", timestampNanos, 5000000000L);
+            }
+            if (anchorDt >= 5) {
+                previousPressure = referencePressure; previousPressureNanos = pressureNanos;
+                referencePressure = hpa; pressureNanos = timestampNanos;
+            }
         }
+        lastPressureNanos = timestampNanos;
     }
     void electrical(double voltageMv, double currentUa, long nanos) {
         double impedance = Double.NaN, heat = Double.NaN;

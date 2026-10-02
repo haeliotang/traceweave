@@ -1458,3 +1458,13 @@ prove a full uninterrupted 300-frame window. Post-stop JSON scanning may take
 longer than the short callback grace period; a missing receipt at an observation
 deadline is not proof that collection or receipt generation failed. Check the
 same stopped service and receipt before considering another run.
+
+Pressure-derived vertical velocity refreshes on each fresh callback once a
+five-second history exists. Two bounded reference anchors let a callback use
+an endpoint at least five seconds old even between anchor rotations; the
+actual interval remains in the derivative denominator. The derivative retains
+its five-second freshness limit and original clipping/units. Invalid pressure,
+non-increasing callback time, a gap over 600 seconds or collection reset clears
+both anchors. This avoids expiring an otherwise fresh derivative solely because
+the anchor rotation and freshness limits coincide. Flat accelerometer windows
+still leave autocorrelation decay undefined; coverage gates are unchanged.

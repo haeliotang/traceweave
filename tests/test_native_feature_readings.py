@@ -283,3 +283,39 @@ public final class ResetReadingsTest {
             subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.ResetReadingsTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+    def test_pressure_derivative_refreshes_from_new_samples_between_anchor_rotations(self):
+        if not shutil.which("javac") or not shutil.which("java"):
+            self.skipTest("Java compiler/runtime unavailable")
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            harness = Path(directory) / "PressureRefreshTest.java"
+            harness.write_text('''package org.traceform.edge;
+public final class PressureRefreshTest {
+    public static void main(String[] args) {
+        FeatureReadings r = new FeatureReadings();
+        r.pressure(1000,1000000000L);
+        r.pressure(1001,6000000000L);
+        r.pressure(1002,10900000000L);
+        FeatureReadings.Reading fresh = r.get("barometric_vertical_velocity",11050000000L);
+        if(fresh==null) throw new AssertionError("fresh pressure must refresh derivative despite anchor cadence");
+        if(fresh.timestampNanos!=10900000000L || fresh.value!=-1.703 || fresh.maxAgeNanos!=5000000000L)
+            throw new AssertionError("new endpoint, actual interval and unchanged freshness required");
+        if(r.get("barometric_vertical_velocity",15900000001L)!=null) throw new AssertionError("no expiry extension");
+        r.pressure(Double.NaN,16000000000L);
+        r.pressure(1010,17000000000L);
+        r.pressure(1011,18000000000L);
+        if(r.get("barometric_vertical_velocity",18000000000L)!=null) throw new AssertionError("invalid source resets both anchors");
+        r.pressure(1012,22000000000L);
+        if(r.get("barometric_vertical_velocity",22000000000L)==null) throw new AssertionError("fresh five-second history recovers");
+        r.pressure(1013,21000000000L);
+        if(r.get("barometric_vertical_velocity",21000000000L)!=null) throw new AssertionError("clock rollback clears derivative");
+        r.pressure(1014,700000000000L);
+        if(r.get("barometric_vertical_velocity",700000000000L)!=null) throw new AssertionError("long gap resets derivative");
+        r.reset(); r.pressure(1020,701000000000L);
+        if(r.get("barometric_vertical_velocity",701000000000L)!=null) throw new AssertionError("collection reset clears anchors");
+    }
+}''')
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.PressureRefreshTest"], capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
