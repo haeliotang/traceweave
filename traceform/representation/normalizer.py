@@ -1587,7 +1587,9 @@ class MultimodalNormalizer:
             )
 
         # 71. GNSS Visible Satellite Density (89)
-        gnss_sat_direct = plc.get("visible_satellites") or plc.get("gnss_sat_count")
+        gnss_sat_direct = plc.get("visible_satellites")
+        if gnss_sat_direct is None:
+            gnss_sat_direct = plc.get("gnss_sat_count")
         if gnss_sat_direct is not None:
             visible_sats = round(
                 max(0.0, min(40.0, safe_float(gnss_sat_direct, 12.0))), 1
@@ -1596,23 +1598,27 @@ class MultimodalNormalizer:
             visible_sats = 16.0 if plc.get("latitude") is not None else 0.0
 
         # 72. GNSS Mean Carrier-to-Noise Ratio (C/N0) in dB-Hz (90)
-        cn0_direct = plc.get("mean_carrier_to_noise_ratio") or plc.get("gnss_cn0_dbhz")
+        cn0_direct = plc.get("mean_carrier_to_noise_ratio")
+        if cn0_direct is None:
+            cn0_direct = plc.get("gnss_cn0_dbhz")
         if cn0_direct is not None:
             mean_cn0 = round(max(0.0, min(50.0, safe_float(cn0_direct, 32.0))), 1)
         else:
             mean_cn0 = 34.0 if plc.get("latitude") is not None else 0.0
 
         # 73. Position Dilution of Precision (PDOP) (91)
-        pdop_direct = plc.get("position_dilution_of_precision") or plc.get("pdop")
+        pdop_direct = plc.get("position_dilution_of_precision")
+        if pdop_direct is None:
+            pdop_direct = plc.get("pdop")
         if pdop_direct is not None:
             pdop_val = round(max(0.5, min(20.0, safe_float(pdop_direct, 1.8))), 2)
         else:
             pdop_val = 1.6 if plc.get("latitude") is not None else 12.0
 
         # 74. GNSS Doppler Carrier Drift Velocity in m/s (92)
-        doppler_drift_direct = plc.get("doppler_velocity_drift") or plc.get(
-            "gnss_speed_mps"
-        )
+        doppler_drift_direct = plc.get("doppler_velocity_drift")
+        if doppler_drift_direct is None:
+            doppler_drift_direct = plc.get("gnss_speed_mps")
         if doppler_drift_direct is not None:
             doppler_speed = round(
                 max(0.0, min(30.0, safe_float(doppler_drift_direct, 0.0))), 2

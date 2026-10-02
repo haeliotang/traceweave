@@ -28,3 +28,10 @@ proxy limitations, and validating the corresponding acquisition capability.
 Existing trajectories must retain their original evidence rather than receive
 retrospectively invented source labels. The current-source candidate and final
 deployment must also bind this behavior explicitly.
+
+The four GNSS alias lookups now fall back only when the primary value is `None`.
+Reported zero values retain priority; PDOP still uses its existing lower bound.
+This corrects an `or` lookup that could replace an explicit zero with an alias
+or proxy. The source inventory binds the corrected implementation. This is a
+normalization semantic change for affected inputs: prior empirical reports and
+installed models are not automatically revalidated by the code correction.

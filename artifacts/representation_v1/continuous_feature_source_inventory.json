@@ -1,14 +1,14 @@
 {
   "scope": "static_output_binding_locations_not_complete_dataflow_or_runtime_provenance",
   "source_path": "traceform/representation/normalizer.py",
-  "source_sha256": "b996e10b7ddc8980073b8409666c038ebc0b054efd392da656590ce3e9ad4501",
+  "source_sha256": "1455e01f5c65b7144fb9caf1bca1de0296c97e2847230e7084ef866814e31529",
   "feature_count": 128,
   "features": [
     {
       "index": 0,
       "feature": "motion_accel_magnitude",
       "output_expression": "accel_mag",
-      "mapping_line": 2048,
+      "mapping_line": 2054,
       "producer_assignment_lines": [
         350
       ],
@@ -18,7 +18,7 @@
       "index": 1,
       "feature": "motion_accel_rms",
       "output_expression": "accel_rms",
-      "mapping_line": 2049,
+      "mapping_line": 2055,
       "producer_assignment_lines": [
         351
       ],
@@ -28,7 +28,7 @@
       "index": 2,
       "feature": "motion_energy",
       "output_expression": "mot_energy",
-      "mapping_line": 2050,
+      "mapping_line": 2056,
       "producer_assignment_lines": [
         352
       ],
@@ -38,7 +38,7 @@
       "index": 3,
       "feature": "motion_stationary_likelihood",
       "output_expression": "stat_like",
-      "mapping_line": 2051,
+      "mapping_line": 2057,
       "producer_assignment_lines": [
         353
       ],
@@ -48,7 +48,7 @@
       "index": 4,
       "feature": "env_log_lux",
       "output_expression": "log_lux",
-      "mapping_line": 2052,
+      "mapping_line": 2058,
       "producer_assignment_lines": [
         358
       ],
@@ -58,7 +58,7 @@
       "index": 5,
       "feature": "env_pressure_hpa",
       "output_expression": "pressure",
-      "mapping_line": 2053,
+      "mapping_line": 2059,
       "producer_assignment_lines": [
         359
       ],
@@ -68,7 +68,7 @@
       "index": 6,
       "feature": "env_device_temp_c",
       "output_expression": "dev_temp",
-      "mapping_line": 2054,
+      "mapping_line": 2060,
       "producer_assignment_lines": [
         360
       ],
@@ -78,7 +78,7 @@
       "index": 7,
       "feature": "device_battery_fraction",
       "output_expression": "battery_frac",
-      "mapping_line": 2055,
+      "mapping_line": 2061,
       "producer_assignment_lines": [
         365
       ],
@@ -88,7 +88,7 @@
       "index": 8,
       "feature": "device_is_plugged",
       "output_expression": "is_plugged",
-      "mapping_line": 2056,
+      "mapping_line": 2062,
       "producer_assignment_lines": [
         369
       ],
@@ -98,7 +98,7 @@
       "index": 9,
       "feature": "device_is_charging",
       "output_expression": "is_charging",
-      "mapping_line": 2057,
+      "mapping_line": 2063,
       "producer_assignment_lines": [
         371
       ],
@@ -108,7 +108,7 @@
       "index": 10,
       "feature": "audio_silence_likelihood",
       "output_expression": "silence_like",
-      "mapping_line": 2058,
+      "mapping_line": 2064,
       "producer_assignment_lines": [
         379,
         383
@@ -119,7 +119,7 @@
       "index": 11,
       "feature": "audio_rms_loudness",
       "output_expression": "rms_loudness",
-      "mapping_line": 2059,
+      "mapping_line": 2065,
       "producer_assignment_lines": [
         380,
         384
@@ -130,7 +130,7 @@
       "index": 12,
       "feature": "audio_spectral_entropy",
       "output_expression": "spectral_entropy",
-      "mapping_line": 2060,
+      "mapping_line": 2066,
       "producer_assignment_lines": [
         381,
         385
@@ -141,7 +141,7 @@
       "index": 13,
       "feature": "conn_wifi_connected",
       "output_expression": "wifi_conn",
-      "mapping_line": 2061,
+      "mapping_line": 2067,
       "producer_assignment_lines": [
         389
       ],
@@ -151,7 +151,7 @@
       "index": 14,
       "feature": "conn_wifi_rssi_norm",
       "output_expression": "wifi_rssi_norm",
-      "mapping_line": 2062,
+      "mapping_line": 2068,
       "producer_assignment_lines": [
         394,
         396
@@ -162,7 +162,7 @@
       "index": 15,
       "feature": "screen_on_ratio",
       "output_expression": "screen_ratio",
-      "mapping_line": 2063,
+      "mapping_line": 2069,
       "producer_assignment_lines": [
         400,
         405,
@@ -175,7 +175,7 @@
       "index": 16,
       "feature": "app_switch_rate",
       "output_expression": "app_switch_rate",
-      "mapping_line": 2064,
+      "mapping_line": 2070,
       "producer_assignment_lines": [
         410
       ],
@@ -185,7 +185,7 @@
       "index": 17,
       "feature": "unlock_burst_count",
       "output_expression": "unlock_burst_count",
-      "mapping_line": 2065,
+      "mapping_line": 2071,
       "producer_assignment_lines": [
         411
       ],
@@ -195,7 +195,7 @@
       "index": 18,
       "feature": "audio_immersion_state",
       "output_expression": "is_immersed",
-      "mapping_line": 2066,
+      "mapping_line": 2072,
       "producer_assignment_lines": [
         434
       ],
@@ -205,7 +205,7 @@
       "index": 19,
       "feature": "circadian_sin_phase",
       "output_expression": "sin_phase",
-      "mapping_line": 2067,
+      "mapping_line": 2073,
       "producer_assignment_lines": [
         441,
         454
@@ -216,7 +216,7 @@
       "index": 20,
       "feature": "circadian_cos_phase",
       "output_expression": "cos_phase",
-      "mapping_line": 2068,
+      "mapping_line": 2074,
       "producer_assignment_lines": [
         442,
         455
@@ -227,7 +227,7 @@
       "index": 21,
       "feature": "infradian_weekly_phase",
       "output_expression": "weekly_phase",
-      "mapping_line": 2069,
+      "mapping_line": 2075,
       "producer_assignment_lines": [
         443,
         457
@@ -238,7 +238,7 @@
       "index": 22,
       "feature": "battery_current_ua",
       "output_expression": "battery_current_ua",
-      "mapping_line": 2070,
+      "mapping_line": 2076,
       "producer_assignment_lines": [
         374
       ],
@@ -248,7 +248,7 @@
       "index": 23,
       "feature": "spatial_radius_of_gyration",
       "output_expression": "radius_of_gyration",
-      "mapping_line": 2071,
+      "mapping_line": 2077,
       "producer_assignment_lines": [
         466,
         486,
@@ -260,7 +260,7 @@
       "index": 24,
       "feature": "touch_interaction_velocity",
       "output_expression": "touch_velocity",
-      "mapping_line": 2072,
+      "mapping_line": 2078,
       "producer_assignment_lines": [
         414,
         417,
@@ -272,7 +272,7 @@
       "index": 25,
       "feature": "ambient_social_ble_density",
       "output_expression": "ambient_ble",
-      "mapping_line": 2073,
+      "mapping_line": 2079,
       "producer_assignment_lines": [
         424,
         428,
@@ -284,7 +284,7 @@
       "index": 26,
       "feature": "physio_ballisto_tremor_energy",
       "output_expression": "physio_tremor",
-      "mapping_line": 2074,
+      "mapping_line": 2080,
       "producer_assignment_lines": [
         494,
         498,
@@ -296,7 +296,7 @@
       "index": 27,
       "feature": "thermal_conduction_rate_dt",
       "output_expression": "conduction_rate",
-      "mapping_line": 2075,
+      "mapping_line": 2081,
       "producer_assignment_lines": [
         508,
         520
@@ -307,7 +307,7 @@
       "index": 28,
       "feature": "device_zenith_tilt_angle",
       "output_expression": "tilt_angle",
-      "mapping_line": 2076,
+      "mapping_line": 2082,
       "producer_assignment_lines": [
         533,
         535,
@@ -319,7 +319,7 @@
       "index": 29,
       "feature": "geomagnetic_flux_divergence",
       "output_expression": "mag_divergence",
-      "mapping_line": 2077,
+      "mapping_line": 2083,
       "producer_assignment_lines": [
         547,
         549,
@@ -331,7 +331,7 @@
       "index": 30,
       "feature": "barometric_vertical_velocity",
       "output_expression": "vertical_velocity",
-      "mapping_line": 2078,
+      "mapping_line": 2084,
       "producer_assignment_lines": [
         555,
         565
@@ -342,7 +342,7 @@
       "index": 31,
       "feature": "ambient_rf_shannon_entropy",
       "output_expression": "ambient_rf_entropy",
-      "mapping_line": 2079,
+      "mapping_line": 2085,
       "producer_assignment_lines": [
         570,
         573
@@ -353,7 +353,7 @@
       "index": 32,
       "feature": "cellular_tower_churn_rate",
       "output_expression": "cellular_churn",
-      "mapping_line": 2080,
+      "mapping_line": 2086,
       "producer_assignment_lines": [
         601,
         603,
@@ -365,7 +365,7 @@
       "index": 33,
       "feature": "touch_interval_jitter",
       "output_expression": "touch_interval_jitter",
-      "mapping_line": 2081,
+      "mapping_line": 2087,
       "producer_assignment_lines": [
         610,
         613,
@@ -377,7 +377,7 @@
       "index": 34,
       "feature": "attention_fragmentation_entropy",
       "output_expression": "attention_frag_entropy",
-      "mapping_line": 2082,
+      "mapping_line": 2088,
       "producer_assignment_lines": [
         627,
         630,
@@ -389,7 +389,7 @@
       "index": 35,
       "feature": "compute_power_dissipation_watts",
       "output_expression": "compute_power_w",
-      "mapping_line": 2083,
+      "mapping_line": 2089,
       "producer_assignment_lines": [
         639,
         645
@@ -400,7 +400,7 @@
       "index": 36,
       "feature": "battery_internal_impedance_miliohm",
       "output_expression": "battery_impedance",
-      "mapping_line": 2084,
+      "mapping_line": 2090,
       "producer_assignment_lines": [
         653,
         655,
@@ -414,7 +414,7 @@
       "index": 37,
       "feature": "rotational_kinetic_energy",
       "output_expression": "rot_energy",
-      "mapping_line": 2085,
+      "mapping_line": 2091,
       "producer_assignment_lines": [
         677,
         680
@@ -425,7 +425,7 @@
       "index": 38,
       "feature": "kinematic_jerk_metric",
       "output_expression": "jerk_metric",
-      "mapping_line": 2086,
+      "mapping_line": 2092,
       "producer_assignment_lines": [
         683,
         704
@@ -436,7 +436,7 @@
       "index": 39,
       "feature": "rf_spectral_penetration_ratio",
       "output_expression": "rf_penetration",
-      "mapping_line": 2087,
+      "mapping_line": 2093,
       "producer_assignment_lines": [
         710,
         714,
@@ -448,7 +448,7 @@
       "index": 40,
       "feature": "ble_rssi_spatial_variance",
       "output_expression": "ble_variance",
-      "mapping_line": 2088,
+      "mapping_line": 2094,
       "producer_assignment_lines": [
         723,
         726,
@@ -460,7 +460,7 @@
       "index": 41,
       "feature": "acoustic_spectral_centroid_khz",
       "output_expression": "acoustic_centroid_khz",
-      "mapping_line": 2089,
+      "mapping_line": 2095,
       "producer_assignment_lines": [
         733,
         737
@@ -471,7 +471,7 @@
       "index": 42,
       "feature": "acoustic_crest_factor",
       "output_expression": "acoustic_crest",
-      "mapping_line": 2090,
+      "mapping_line": 2096,
       "producer_assignment_lines": [
         742,
         745
@@ -482,7 +482,7 @@
       "index": 43,
       "feature": "state_residence_persistence_hours",
       "output_expression": "residence_persistence_hours",
-      "mapping_line": 2091,
+      "mapping_line": 2097,
       "producer_assignment_lines": [
         755,
         763,
@@ -494,7 +494,7 @@
       "index": 44,
       "feature": "neuromotor_tremor_spectral_ratio",
       "output_expression": "neuromotor_ratio",
-      "mapping_line": 2092,
+      "mapping_line": 2098,
       "producer_assignment_lines": [
         772,
         774
@@ -505,7 +505,7 @@
       "index": 45,
       "feature": "device_screen_gravity_alignment",
       "output_expression": "screen_alignment",
-      "mapping_line": 2093,
+      "mapping_line": 2099,
       "producer_assignment_lines": [
         785,
         787,
@@ -517,7 +517,7 @@
       "index": 46,
       "feature": "rotational_angular_jerk",
       "output_expression": "rot_jerk",
-      "mapping_line": 2094,
+      "mapping_line": 2100,
       "producer_assignment_lines": [
         792,
         812
@@ -528,7 +528,7 @@
       "index": 47,
       "feature": "acoustic_spectral_rolloff_khz",
       "output_expression": "rolloff_khz",
-      "mapping_line": 2095,
+      "mapping_line": 2101,
       "producer_assignment_lines": [
         829,
         839
@@ -539,7 +539,7 @@
       "index": 48,
       "feature": "acoustic_zero_crossing_rate",
       "output_expression": "acoustic_zcr",
-      "mapping_line": 2096,
+      "mapping_line": 2102,
       "producer_assignment_lines": [
         850,
         855,
@@ -551,7 +551,7 @@
       "index": 49,
       "feature": "thermal_flux_acceleration_dt2",
       "output_expression": "thermal_accel_dt2",
-      "mapping_line": 2097,
+      "mapping_line": 2103,
       "producer_assignment_lines": [
         865,
         874
@@ -562,7 +562,7 @@
       "index": 50,
       "feature": "wifi_spatial_shannon_entropy",
       "output_expression": "wifi_shannon_entropy",
-      "mapping_line": 2098,
+      "mapping_line": 2104,
       "producer_assignment_lines": [
         886,
         897,
@@ -574,7 +574,7 @@
       "index": 51,
       "feature": "touch_engagement_decay_factor",
       "output_expression": "touch_engagement",
-      "mapping_line": 2099,
+      "mapping_line": 2105,
       "producer_assignment_lines": [
         911,
         919,
@@ -586,7 +586,7 @@
       "index": 52,
       "feature": "phase_space_recurrence_density",
       "output_expression": "recurrence_density",
-      "mapping_line": 2100,
+      "mapping_line": 2106,
       "producer_assignment_lines": [
         942
       ],
@@ -596,7 +596,7 @@
       "index": 53,
       "feature": "geomagnetic_field_dip_angle_deg",
       "output_expression": "geomag_dip_angle",
-      "mapping_line": 2101,
+      "mapping_line": 2107,
       "producer_assignment_lines": [
         951,
         961,
@@ -609,7 +609,7 @@
       "index": 54,
       "feature": "kinematic_trajectory_curvature",
       "output_expression": "trajectory_curvature",
-      "mapping_line": 2102,
+      "mapping_line": 2108,
       "producer_assignment_lines": [
         968,
         1022
@@ -620,7 +620,7 @@
       "index": 55,
       "feature": "barometric_turbulence_variance",
       "output_expression": "baro_turbulence",
-      "mapping_line": 2103,
+      "mapping_line": 2109,
       "producer_assignment_lines": [
         1087,
         1089,
@@ -632,7 +632,7 @@
       "index": 56,
       "feature": "photometric_contrast_ratio",
       "output_expression": "photo_contrast",
-      "mapping_line": 2104,
+      "mapping_line": 2110,
       "producer_assignment_lines": [
         1099,
         1101
@@ -643,7 +643,7 @@
       "index": 57,
       "feature": "acoustic_spectral_bandwidth_khz",
       "output_expression": "spectral_bandwidth_khz",
-      "mapping_line": 2105,
+      "mapping_line": 2111,
       "producer_assignment_lines": [
         1107,
         1111
@@ -654,7 +654,7 @@
       "index": 58,
       "feature": "wifi_rssi_distribution_skewness",
       "output_expression": "wifi_skewness",
-      "mapping_line": 2106,
+      "mapping_line": 2112,
       "producer_assignment_lines": [
         1123,
         1128,
@@ -666,7 +666,7 @@
       "index": 59,
       "feature": "thermodynamic_joule_heat_loss_watts",
       "output_expression": "joule_heat_w",
-      "mapping_line": 2107,
+      "mapping_line": 2113,
       "producer_assignment_lines": [
         1137
       ],
@@ -676,7 +676,7 @@
       "index": 60,
       "feature": "phase_space_kinetic_velocity",
       "output_expression": "phase_velocity",
-      "mapping_line": 2108,
+      "mapping_line": 2114,
       "producer_assignment_lines": [
         1140,
         1155
@@ -687,7 +687,7 @@
       "index": 61,
       "feature": "neuromotor_tap_recoil_intensity",
       "output_expression": "tap_recoil",
-      "mapping_line": 2109,
+      "mapping_line": 2115,
       "producer_assignment_lines": [
         1161,
         1166
@@ -698,7 +698,7 @@
       "index": 62,
       "feature": "kinematic_trajectory_torsion",
       "output_expression": "trajectory_torsion",
-      "mapping_line": 2110,
+      "mapping_line": 2116,
       "producer_assignment_lines": [
         969,
         981,
@@ -710,7 +710,7 @@
       "index": 63,
       "feature": "phase_space_correlation_dimension",
       "output_expression": "corr_dimension",
-      "mapping_line": 2111,
+      "mapping_line": 2117,
       "producer_assignment_lines": [
         1182,
         1197,
@@ -723,7 +723,7 @@
       "index": 64,
       "feature": "photometric_flicker_kurtosis",
       "output_expression": "flicker_kurtosis",
-      "mapping_line": 2112,
+      "mapping_line": 2118,
       "producer_assignment_lines": [
         1216,
         1227,
@@ -736,7 +736,7 @@
       "index": 65,
       "feature": "acoustic_spectral_flatness",
       "output_expression": "spectral_flatness",
-      "mapping_line": 2113,
+      "mapping_line": 2119,
       "producer_assignment_lines": [
         1236,
         1241,
@@ -748,7 +748,7 @@
       "index": 66,
       "feature": "wifi_rssi_distribution_kurtosis",
       "output_expression": "wifi_kurtosis",
-      "mapping_line": 2114,
+      "mapping_line": 2120,
       "producer_assignment_lines": [
         1255,
         1261,
@@ -760,7 +760,7 @@
       "index": 67,
       "feature": "geomagnetic_total_field_flux",
       "output_expression": "mag_total_flux",
-      "mapping_line": 2115,
+      "mapping_line": 2121,
       "producer_assignment_lines": [
         1270,
         1279,
@@ -772,7 +772,7 @@
       "index": 68,
       "feature": "thermodynamic_dissipation_ratio",
       "output_expression": "thermo_dissipation_ratio",
-      "mapping_line": 2116,
+      "mapping_line": 2122,
       "producer_assignment_lines": [
         1288,
         1295
@@ -783,7 +783,7 @@
       "index": 69,
       "feature": "neuromotor_microslip_angular_velocity",
       "output_expression": "microslip_vel",
-      "mapping_line": 2117,
+      "mapping_line": 2123,
       "producer_assignment_lines": [
         1302,
         1313,
@@ -795,7 +795,7 @@
       "index": 70,
       "feature": "circadian_phase_disruption_index",
       "output_expression": "circadian_disruption",
-      "mapping_line": 2118,
+      "mapping_line": 2124,
       "producer_assignment_lines": [
         1322,
         1344
@@ -806,7 +806,7 @@
       "index": 71,
       "feature": "kinematic_snap_metric",
       "output_expression": "snap_metric",
-      "mapping_line": 2119,
+      "mapping_line": 2125,
       "producer_assignment_lines": [
         970,
         986,
@@ -818,7 +818,7 @@
       "index": 72,
       "feature": "acoustic_harmonic_to_noise_ratio",
       "output_expression": "hnr_db",
-      "mapping_line": 2120,
+      "mapping_line": 2126,
       "producer_assignment_lines": [
         1349,
         1352,
@@ -830,7 +830,7 @@
       "index": 73,
       "feature": "photometric_spectral_warmth_index",
       "output_expression": "warmth_index",
-      "mapping_line": 2121,
+      "mapping_line": 2127,
       "producer_assignment_lines": [
         1366,
         1371,
@@ -842,7 +842,7 @@
       "index": 74,
       "feature": "barometric_buoyancy_energy_flux",
       "output_expression": "buoyancy_flux",
-      "mapping_line": 2122,
+      "mapping_line": 2128,
       "producer_assignment_lines": [
         1386,
         1396
@@ -853,7 +853,7 @@
       "index": 75,
       "feature": "geomagnetic_quadrupole_anisotropy_ratio",
       "output_expression": "quadrupole_aniso",
-      "mapping_line": 2123,
+      "mapping_line": 2129,
       "producer_assignment_lines": [
         1403,
         1412,
@@ -865,7 +865,7 @@
       "index": 76,
       "feature": "wifi_channel_dispersion_entropy",
       "output_expression": "channel_entropy",
-      "mapping_line": 2124,
+      "mapping_line": 2130,
       "producer_assignment_lines": [
         1423,
         1432,
@@ -877,7 +877,7 @@
       "index": 77,
       "feature": "thermodynamic_battery_stress_index",
       "output_expression": "battery_stress",
-      "mapping_line": 2125,
+      "mapping_line": 2131,
       "producer_assignment_lines": [
         1441,
         1450
@@ -888,7 +888,7 @@
       "index": 78,
       "feature": "neuromotor_tremor_lyapunov_exponent",
       "output_expression": "tremor_lyapunov",
-      "mapping_line": 2126,
+      "mapping_line": 2132,
       "producer_assignment_lines": [
         1457,
         1461,
@@ -901,7 +901,7 @@
       "index": 79,
       "feature": "phase_space_information_flow_rate",
       "output_expression": "information_flow",
-      "mapping_line": 2127,
+      "mapping_line": 2133,
       "producer_assignment_lines": [
         1487,
         1496
@@ -912,7 +912,7 @@
       "index": 80,
       "feature": "kinematic_crackle_metric",
       "output_expression": "crackle_metric",
-      "mapping_line": 2128,
+      "mapping_line": 2134,
       "producer_assignment_lines": [
         971,
         991,
@@ -924,7 +924,7 @@
       "index": 81,
       "feature": "kinematic_pop_metric",
       "output_expression": "pop_metric",
-      "mapping_line": 2129,
+      "mapping_line": 2135,
       "producer_assignment_lines": [
         972,
         996,
@@ -936,7 +936,7 @@
       "index": 82,
       "feature": "imu_temporal_autocorrelation_decay",
       "output_expression": "autocorr_decay",
-      "mapping_line": 2130,
+      "mapping_line": 2136,
       "producer_assignment_lines": [
         1511,
         1513,
@@ -948,7 +948,7 @@
       "index": 83,
       "feature": "device_structural_resonance_energy",
       "output_expression": "resonance_energy",
-      "mapping_line": 2131,
+      "mapping_line": 2137,
       "producer_assignment_lines": [
         1520,
         1522
@@ -959,7 +959,7 @@
       "index": 84,
       "feature": "acoustic_dual_mic_cross_correlation",
       "output_expression": "mic_cross_corr",
-      "mapping_line": 2132,
+      "mapping_line": 2138,
       "producer_assignment_lines": [
         1531,
         1535
@@ -970,7 +970,7 @@
       "index": 85,
       "feature": "acoustic_spatial_coherence_phase",
       "output_expression": "spatial_coherence",
-      "mapping_line": 2133,
+      "mapping_line": 2139,
       "producer_assignment_lines": [
         1544,
         1548
@@ -981,7 +981,7 @@
       "index": 86,
       "feature": "acoustic_spectral_flux",
       "output_expression": "spectral_flux",
-      "mapping_line": 2134,
+      "mapping_line": 2140,
       "producer_assignment_lines": [
         1561,
         1563
@@ -992,7 +992,7 @@
       "index": 87,
       "feature": "ultrasonic_proximity_micro_doppler",
       "output_expression": "micro_doppler",
-      "mapping_line": 2135,
+      "mapping_line": 2141,
       "producer_assignment_lines": [
         1581,
         1585
@@ -1003,10 +1003,10 @@
       "index": 88,
       "feature": "gnss_visible_satellite_density",
       "output_expression": "visible_sats",
-      "mapping_line": 2136,
+      "mapping_line": 2142,
       "producer_assignment_lines": [
-        1592,
-        1596
+        1594,
+        1598
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1014,10 +1014,10 @@
       "index": 89,
       "feature": "gnss_mean_carrier_to_noise_ratio",
       "output_expression": "mean_cn0",
-      "mapping_line": 2137,
+      "mapping_line": 2143,
       "producer_assignment_lines": [
-        1601,
-        1603
+        1605,
+        1607
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1025,10 +1025,10 @@
       "index": 90,
       "feature": "gnss_position_dilution_of_precision",
       "output_expression": "pdop_val",
-      "mapping_line": 2138,
+      "mapping_line": 2144,
       "producer_assignment_lines": [
-        1608,
-        1610
+        1614,
+        1616
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1036,10 +1036,10 @@
       "index": 91,
       "feature": "gnss_doppler_velocity_drift",
       "output_expression": "doppler_speed",
-      "mapping_line": 2139,
+      "mapping_line": 2145,
       "producer_assignment_lines": [
-        1617,
-        1621
+        1623,
+        1627
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1047,10 +1047,10 @@
       "index": 92,
       "feature": "thermal_soc_to_skin_gradient",
       "output_expression": "soc_skin_grad",
-      "mapping_line": 2140,
+      "mapping_line": 2146,
       "producer_assignment_lines": [
-        1630,
-        1634
+        1636,
+        1640
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1058,10 +1058,10 @@
       "index": 93,
       "feature": "thermal_modem_to_battery_gradient",
       "output_expression": "modem_bat_grad",
-      "mapping_line": 2141,
+      "mapping_line": 2147,
       "producer_assignment_lines": [
-        1645,
-        1649
+        1651,
+        1655
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1069,10 +1069,10 @@
       "index": 94,
       "feature": "thermal_relaxation_time_constant",
       "output_expression": "thermal_relax_time",
-      "mapping_line": 2142,
+      "mapping_line": 2148,
       "producer_assignment_lines": [
-        1660,
-        1664
+        1666,
+        1670
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1080,10 +1080,10 @@
       "index": 95,
       "feature": "thermal_entropy_production_rate",
       "output_expression": "entropy_prod_rate",
-      "mapping_line": 2143,
+      "mapping_line": 2149,
       "producer_assignment_lines": [
-        1669,
-        1673
+        1675,
+        1679
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1091,10 +1091,10 @@
       "index": 96,
       "feature": "cellular_reference_signal_quality",
       "output_expression": "cellular_rsrq",
-      "mapping_line": 2144,
+      "mapping_line": 2150,
       "producer_assignment_lines": [
-        1684,
-        1688
+        1690,
+        1694
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1102,10 +1102,10 @@
       "index": 97,
       "feature": "cellular_signal_to_interference_noise",
       "output_expression": "cellular_sinr",
-      "mapping_line": 2145,
+      "mapping_line": 2151,
       "producer_assignment_lines": [
-        1693,
-        1697
+        1699,
+        1703
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1113,10 +1113,10 @@
       "index": 98,
       "feature": "ble_advertising_channel_entropy",
       "output_expression": "ble_adv_entropy",
-      "mapping_line": 2146,
+      "mapping_line": 2152,
       "producer_assignment_lines": [
-        1702,
-        1706
+        1708,
+        1712
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1124,10 +1124,10 @@
       "index": 99,
       "feature": "wifi_link_speed_variation_ratio",
       "output_expression": "wifi_speed_jitter",
-      "mapping_line": 2147,
+      "mapping_line": 2153,
       "producer_assignment_lines": [
-        1713,
-        1717
+        1719,
+        1723
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1135,10 +1135,10 @@
       "index": 100,
       "feature": "rf_ambient_backscatter_intensity",
       "output_expression": "rf_backscatter",
-      "mapping_line": 2148,
+      "mapping_line": 2154,
       "producer_assignment_lines": [
-        1722,
-        1726
+        1728,
+        1732
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1146,10 +1146,10 @@
       "index": 101,
       "feature": "cellular_timing_advance_distance",
       "output_expression": "ta_dist_km",
-      "mapping_line": 2149,
+      "mapping_line": 2155,
       "producer_assignment_lines": [
-        1735,
-        1737
+        1741,
+        1743
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1157,10 +1157,10 @@
       "index": 102,
       "feature": "touch_contact_ellipse_eccentricity",
       "output_expression": "touch_eccentricity",
-      "mapping_line": 2150,
+      "mapping_line": 2156,
       "producer_assignment_lines": [
-        1744,
-        1748
+        1750,
+        1754
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1168,10 +1168,10 @@
       "index": 103,
       "feature": "touch_downforce_pressure_derivative",
       "output_expression": "touch_downforce_deriv",
-      "mapping_line": 2151,
+      "mapping_line": 2157,
       "producer_assignment_lines": [
-        1755,
-        1759
+        1761,
+        1765
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1179,10 +1179,10 @@
       "index": 104,
       "feature": "neuromotor_fitts_law_throughput",
       "output_expression": "fitts_throughput",
-      "mapping_line": 2152,
+      "mapping_line": 2158,
       "producer_assignment_lines": [
-        1766,
-        1770
+        1772,
+        1776
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1190,10 +1190,10 @@
       "index": 105,
       "feature": "touch_biomotor_cadence_decay_slope",
       "output_expression": "cadence_decay_slope",
-      "mapping_line": 2153,
+      "mapping_line": 2159,
       "producer_assignment_lines": [
-        1781,
-        1785
+        1787,
+        1791
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1201,10 +1201,10 @@
       "index": 106,
       "feature": "touch_contact_area_normalized",
       "output_expression": "touch_contact_area",
-      "mapping_line": 2154,
+      "mapping_line": 2160,
       "producer_assignment_lines": [
-        1790,
-        1794
+        1796,
+        1800
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1212,10 +1212,10 @@
       "index": 107,
       "feature": "touch_path_tortuosity_ratio",
       "output_expression": "touch_tortuosity",
-      "mapping_line": 2155,
+      "mapping_line": 2161,
       "producer_assignment_lines": [
-        1799,
-        1803
+        1805,
+        1809
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1223,10 +1223,10 @@
       "index": 108,
       "feature": "cpu_frequency_scaling_entropy",
       "output_expression": "cpu_freq_entropy",
-      "mapping_line": 2156,
+      "mapping_line": 2162,
       "producer_assignment_lines": [
-        1808,
-        1812
+        1814,
+        1818
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1234,10 +1234,10 @@
       "index": 109,
       "feature": "kernel_context_switch_velocity",
       "output_expression": "context_switch_vel",
-      "mapping_line": 2157,
+      "mapping_line": 2163,
       "producer_assignment_lines": [
-        1822,
-        1826
+        1828,
+        1832
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1245,10 +1245,10 @@
       "index": 110,
       "feature": "memory_pressure_stall_ratio",
       "output_expression": "memory_psi",
-      "mapping_line": 2158,
+      "mapping_line": 2164,
       "producer_assignment_lines": [
-        1836,
-        1838
+        1842,
+        1844
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1256,10 +1256,10 @@
       "index": 111,
       "feature": "display_frame_pacing_jank_variance",
       "output_expression": "jank_variance",
-      "mapping_line": 2159,
+      "mapping_line": 2165,
       "producer_assignment_lines": [
-        1847,
-        1849
+        1853,
+        1855
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1267,10 +1267,10 @@
       "index": 112,
       "feature": "io_wait_latency_proxy",
       "output_expression": "iowait_pressure",
-      "mapping_line": 2160,
+      "mapping_line": 2166,
       "producer_assignment_lines": [
-        1854,
-        1858
+        1860,
+        1864
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1278,10 +1278,10 @@
       "index": 113,
       "feature": "cpu_user_system_mode_ratio",
       "output_expression": "cpu_usr_sys_ratio",
-      "mapping_line": 2161,
+      "mapping_line": 2167,
       "producer_assignment_lines": [
-        1865,
-        1869
+        1871,
+        1875
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1289,10 +1289,10 @@
       "index": 114,
       "feature": "fractal_hurst_exponent",
       "output_expression": "hurst_exp",
-      "mapping_line": 2162,
+      "mapping_line": 2168,
       "producer_assignment_lines": [
-        1874,
-        1876
+        1880,
+        1882
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1300,10 +1300,10 @@
       "index": 115,
       "feature": "permutation_entropy_complexity",
       "output_expression": "permutation_entropy",
-      "mapping_line": 2163,
+      "mapping_line": 2169,
       "producer_assignment_lines": [
-        1885,
-        1889
+        1891,
+        1895
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1311,10 +1311,10 @@
       "index": 116,
       "feature": "rqa_recurrence_determinism_det",
       "output_expression": "rqa_determinism",
-      "mapping_line": 2164,
+      "mapping_line": 2170,
       "producer_assignment_lines": [
-        1898,
-        1900
+        1904,
+        1906
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1322,10 +1322,10 @@
       "index": 117,
       "feature": "rqa_laminarity_vertical_trapping",
       "output_expression": "rqa_laminarity",
-      "mapping_line": 2165,
+      "mapping_line": 2171,
       "producer_assignment_lines": [
-        1907,
-        1909
+        1913,
+        1915
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1333,10 +1333,10 @@
       "index": 118,
       "feature": "lempel_ziv_algorithmic_complexity",
       "output_expression": "lz_complexity",
-      "mapping_line": 2166,
+      "mapping_line": 2172,
       "producer_assignment_lines": [
-        1916,
-        1918
+        1922,
+        1924
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1344,10 +1344,10 @@
       "index": 119,
       "feature": "fisher_information_measure",
       "output_expression": "fisher_info",
-      "mapping_line": 2167,
+      "mapping_line": 2173,
       "producer_assignment_lines": [
-        1925,
-        1927
+        1931,
+        1933
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1355,10 +1355,10 @@
       "index": 120,
       "feature": "phase_space_trapping_time_seconds",
       "output_expression": "trapping_time_s",
-      "mapping_line": 2168,
+      "mapping_line": 2174,
       "producer_assignment_lines": [
-        1934,
-        1938
+        1940,
+        1944
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1366,10 +1366,10 @@
       "index": 121,
       "feature": "multiscale_approximate_entropy",
       "output_expression": "approximate_entropy",
-      "mapping_line": 2169,
+      "mapping_line": 2175,
       "producer_assignment_lines": [
-        1949,
-        1953
+        1955,
+        1959
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1377,10 +1377,10 @@
       "index": 122,
       "feature": "bifurcation_stability_margin",
       "output_expression": "bifurcation_margin",
-      "mapping_line": 2170,
+      "mapping_line": 2176,
       "producer_assignment_lines": [
-        1960,
-        1964
+        1966,
+        1970
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1388,10 +1388,10 @@
       "index": 123,
       "feature": "non_linear_energy_operator_teager",
       "output_expression": "teager_energy",
-      "mapping_line": 2171,
+      "mapping_line": 2177,
       "producer_assignment_lines": [
-        1971,
-        1975
+        1977,
+        1981
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1399,10 +1399,10 @@
       "index": 124,
       "feature": "phase_space_angular_momentum",
       "output_expression": "orbital_angular_momentum",
-      "mapping_line": 2172,
+      "mapping_line": 2178,
       "producer_assignment_lines": [
-        1982,
-        1986
+        1988,
+        1992
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1410,10 +1410,10 @@
       "index": 125,
       "feature": "topological_betti_number_proxy",
       "output_expression": "betti_proxy",
-      "mapping_line": 2173,
+      "mapping_line": 2179,
       "producer_assignment_lines": [
-        1993,
-        1995
+        1999,
+        2001
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1421,10 +1421,10 @@
       "index": 126,
       "feature": "dissipative_lyapunov_dimension_ky",
       "output_expression": "kaplan_yorke_dim",
-      "mapping_line": 2174,
+      "mapping_line": 2180,
       "producer_assignment_lines": [
-        2000,
-        2002
+        2006,
+        2008
       ],
       "runtime_measurement_status": "not_assessed"
     },
@@ -1432,10 +1432,10 @@
       "index": 127,
       "feature": "holo_cosmic_coherence_index",
       "output_expression": "holo_coherence",
-      "mapping_line": 2175,
+      "mapping_line": 2181,
       "producer_assignment_lines": [
-        2009,
-        2019
+        2015,
+        2025
       ],
       "runtime_measurement_status": "not_assessed"
     }
