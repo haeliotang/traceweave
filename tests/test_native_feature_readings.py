@@ -16,6 +16,14 @@ class TestNativeFeatureReadings(unittest.TestCase):
 public final class ReadingsTest {
     public static void main(String[] args) {
         FeatureReadings readings = new FeatureReadings();
+        if(!FeatureReadings.isDeviceTemperature("LSM6DSR Temperature","com.google.sensor.gyro_temperature"))throw new AssertionError("IMU temperature source");
+        for(String name:new String[]{null,"battery","ICP10101 Temperature"})
+            if(FeatureReadings.isDeviceTemperature(name,"com.google.sensor.gyro_temperature"))throw new AssertionError("wrong temperature source");
+        if(FeatureReadings.isDeviceTemperature("LSM6DSR Temperature","android.sensor.ambient_temperature"))throw new AssertionError("ambient substitution");
+        readings.deviceTemperature(32.5,100);
+        if(readings.get("env_device_temp_c",100).value!=32.5 || !readings.get("env_device_temp_c",100).kind.equals("observed"))throw new AssertionError("temperature units and kind");
+        readings.deviceTemperature(Double.NaN,101);
+        if(readings.get("env_device_temp_c",101)!=null)throw new AssertionError("invalid temperature replacement");
         readings.put("motion", 2, "derived", "linear_acceleration", 100, 50);
         if (readings.get("motion", 150) == null) throw new AssertionError("cutoff equality");
         if (readings.get("motion", 151) != null) throw new AssertionError("stale reading");

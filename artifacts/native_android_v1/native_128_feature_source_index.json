@@ -3,8 +3,8 @@
   "normalizer_file": "artifacts/representation_v1/normalizer_v1.json",
   "normalizer_file_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
   "source_sha256": {
-    "android/src/org/traceform/edge/FeatureReadings.java": "6452f6566fbb29fdbc17ca959931ae86efab93ad5a2a00ac7f09da7a9415ddb6",
-    "android/src/org/traceform/edge/EdgeService.java": "a2bebba14e4017f6074a0de5a59ed49d5f38c8b0034c37405d1fbb54355843e9",
+    "android/src/org/traceform/edge/FeatureReadings.java": "50cd98354ed76f18cfaf89dce6193dd1f5217e535b4fa19c8dc19789e6063eac",
+    "android/src/org/traceform/edge/EdgeService.java": "5a117b112b96438d2c6fd474638590ab85d600c8abeddad1ca77bd745bdf54f6",
     "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b",
     "android/src/org/traceform/edge/NativeMemoryPressure.java": "818f2fefadb182ef1ae8369d6dc8f6a8dcdbff895d51b7d38205c33acaf2ba42",
     "android/src/org/traceform/edge/NativeUsageSource.java": "cc04f41c9a5f1055a0eaccba3b46a5655e14e2af4b6cd103bdf1d522992ea308"
@@ -15,8 +15,8 @@
     "No physical device observations were read."
   ],
   "status_counts": {
-    "literal_assignment_found": 37,
-    "unresolved_in_indexed_sources": 86,
+    "literal_assignment_found": 38,
+    "unresolved_in_indexed_sources": 85,
     "name_reference_only": 5
   },
   "features": [
@@ -27,13 +27,13 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 94,
+          "line": 101,
           "expression": "Reading acceleration = get(\"motion_accel_magnitude\", nanos);",
           "literal_put_assignment": false
         },
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 195,
+          "line": 202,
           "expression": "put(\"motion_accel_magnitude\", Math.rint(accelMagnitude * 10000) / 10000, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -46,7 +46,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 196,
+          "line": 203,
           "expression": "put(\"motion_accel_rms\", Math.rint(accelMagnitude / Math.sqrt(3) * 10000) / 10000, \"derived\", \"accelerometer_spatial_rms_not_temporal_window\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -59,7 +59,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 207,
+          "line": 214,
           "expression": "put(\"motion_energy\", energy, \"derived\", \"accelerometer_and_gyroscope_snapshot\", oldest, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -72,7 +72,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 208,
+          "line": 215,
           "expression": "put(\"motion_stationary_likelihood\", stationary, \"proxy\", \"heuristic_stationarity_score\", oldest, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -98,19 +98,19 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 88,
+          "line": 95,
           "expression": "Reading pressure = get(\"env_pressure_hpa\", nanos);",
           "literal_put_assignment": false
         },
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 236,
+          "line": 243,
           "expression": "put(\"env_pressure_hpa\", Double.NaN, \"observed\", \"pressure_sensor\", timestampNanos, 300000000000L);",
           "literal_put_assignment": true
         },
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 240,
+          "line": 247,
           "expression": "put(\"env_pressure_hpa\", hpa, \"observed\", \"pressure_sensor\", timestampNanos, 300000000000L);",
           "literal_put_assignment": true
         }
@@ -119,8 +119,15 @@
     {
       "index": 6,
       "feature": "env_device_temp_c",
-      "static_status": "unresolved_in_indexed_sources",
-      "source_points": []
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 56,
+          "expression": "put(\"env_device_temp_c\", celsius, \"observed\",",
+          "literal_put_assignment": true
+        }
+      ]
     },
     {
       "index": 7,
@@ -129,7 +136,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 248,
+          "line": 255,
           "expression": "observed.put(\"device_battery_fraction\", level >= 0 && scale > 0 ? level / (double) scale : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -142,7 +149,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 249,
+          "line": 256,
           "expression": "observed.put(\"device_is_plugged\", battery.hasExtra(BatteryManager.EXTRA_PLUGGED) ? (battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0 ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -155,7 +162,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 250,
+          "line": 257,
           "expression": "observed.put(\"device_is_charging\", battery.hasExtra(BatteryManager.EXTRA_STATUS) ? (battery.getIntExtra(BatteryManager.EXTRA_STATUS, 0) == BatteryManager.BATTERY_STATUS_CHARGING ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -186,7 +193,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 243,
+          "line": 250,
           "expression": "observed.put(\"conn_wifi_connected\", wifi.transportPresent ? 1 : 0, \"observed\",",
           "literal_put_assignment": true
         }
@@ -199,7 +206,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 55,
+          "line": 62,
           "expression": "put(\"conn_wifi_rssi_norm\", normalized, \"derived\", \"strongest_available_wifi_transport_rssi_dbm_clipped_minus100_to_minus30\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -212,7 +219,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 229,
+          "line": 236,
           "expression": "observed.put(\"screen_on_ratio\", power.isInteractive() ? 1 : 0,",
           "literal_put_assignment": true
         }
@@ -225,7 +232,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 218,
+          "line": 225,
           "expression": "observed.put(\"app_switch_rate\", usage.resumes, \"derived\",",
           "literal_put_assignment": true
         }
@@ -238,7 +245,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 220,
+          "line": 227,
           "expression": "observed.put(\"unlock_burst_count\", usage.interactiveChecks, \"proxy\",",
           "literal_put_assignment": true
         }
@@ -251,7 +258,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 238,
+          "line": 245,
           "expression": "observed.put(\"audio_immersion_state\", headset ? 1 : 0, \"proxy\",",
           "literal_put_assignment": true
         }
@@ -264,7 +271,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 214,
+          "line": 221,
           "expression": "put(\"circadian_sin_phase\", Math.sin(2 * Math.PI * fraction), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -277,7 +284,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 215,
+          "line": 222,
           "expression": "put(\"circadian_cos_phase\", Math.cos(2 * Math.PI * fraction), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -290,7 +297,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 216,
+          "line": 223,
           "expression": "put(\"infradian_weekly_phase\", Math.sin(2 * Math.PI * weekly), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -303,7 +310,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 226,
+          "line": 233,
           "expression": "observed.put(\"battery_current_ua\", batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,",
           "literal_put_assignment": true
         }
@@ -346,7 +353,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 193,
+          "line": 200,
           "expression": "put(\"device_zenith_tilt_angle\", tilt, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -359,7 +366,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 229,
+          "line": 236,
           "expression": "put(\"geomagnetic_flux_divergence\", anomaly, \"proxy\", \"magnetic_norm_minus_45uT_not_spatial_divergence\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -372,19 +379,19 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 151,
+          "line": 158,
           "expression": "Reading velocity = get(\"barometric_vertical_velocity\", nanos);",
           "literal_put_assignment": false
         },
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 237,
+          "line": 244,
           "expression": "put(\"barometric_vertical_velocity\", Double.NaN, \"derived\", \"pressure_derivative\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         },
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 244,
+          "line": 251,
           "expression": "put(\"barometric_vertical_velocity\", velocity, \"derived\", \"pressure_5s_or_longer_derivative\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -427,7 +434,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 266,
+          "line": 273,
           "expression": "put(\"battery_internal_impedance_miliohm\", impedance, \"proxy\", \"absolute_voltage_over_current_change_not_identified_internal_resistance\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -440,7 +447,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 177,
+          "line": 184,
           "expression": "put(\"rotational_kinetic_energy\", energy, \"derived\", \"gyroscope\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -453,7 +460,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 180,
+          "line": 187,
           "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);",
           "literal_put_assignment": false
         }
@@ -529,7 +536,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 194,
+          "line": 201,
           "expression": "put(\"device_screen_gravity_alignment\", alignment, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -542,7 +549,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 169,
+          "line": 176,
           "expression": "derivative(gyroDerivative, \"rotational_angular_jerk\", values, timestampNanos, 25);",
           "literal_put_assignment": false
         }
@@ -618,7 +625,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 231,
+          "line": 238,
           "expression": "put(\"geomagnetic_field_dip_angle_deg\", dip, \"derived\", \"magnetic_vector_device_coordinate_inclination\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -637,7 +644,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 150,
+          "line": 157,
           "expression": "put(\"barometric_turbulence_variance\", turbulence, \"derived\", \"latest_6_sample_frames_pressure_population_variance_not_fluid_turbulence\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -650,7 +657,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 148,
+          "line": 155,
           "expression": "put(\"photometric_contrast_ratio\", contrast, \"derived\", \"latest_10_sample_frames_light_contrast_not_optical_flicker\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -675,7 +682,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 267,
+          "line": 274,
           "expression": "put(\"thermodynamic_joule_heat_loss_watts\", heat, \"proxy\", \"current_squared_times_delta_estimated_resistance_not_measured_heat\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -712,7 +719,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 149,
+          "line": 156,
           "expression": "put(\"photometric_flicker_kurtosis\", kurtosis, \"derived\", \"latest_10_sample_frames_lux_excess_kurtosis_not_frequency_resolved_flicker\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -737,7 +744,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 230,
+          "line": 237,
           "expression": "put(\"geomagnetic_total_field_flux\", totalFlux, \"proxy\", \"magnetic_norm_minus_50uT_reference_anomaly\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -820,7 +827,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 154,
+          "line": 161,
           "expression": "put(\"barometric_buoyancy_energy_flux\", buoyancy, \"proxy\", \"pressure_velocity_times_window_deviation_not_measured_buoyancy_energy\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -833,7 +840,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 228,
+          "line": 235,
           "expression": "put(\"geomagnetic_quadrupole_anisotropy_ratio\", anisotropy, \"derived\", \"device_coordinate_horizontal_over_vertical_field_with_0.5uT_floor\", timestampNanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -950,7 +957,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 147,
+          "line": 154,
           "expression": "put(\"imu_temporal_autocorrelation_decay\", decay, \"derived\", \"latest_25_fresh_accelerometer_sample_frames_abs_lag1_acf_decay_not_seconds_or_physiological_memory\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -1125,7 +1132,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 222,
+          "line": 229,
           "expression": "observed.put(\"memory_pressure_stall_ratio\", NativeMemoryPressure.read(), \"derived\",",
           "literal_put_assignment": true
         }
@@ -1162,7 +1169,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 146,
+          "line": 153,
           "expression": "put(\"permutation_entropy_complexity\", permutationEntropy, \"derived\", \"latest_25_fresh_accelerometer_frames_order3_delay1_normalized_ordinal_entropy_ties_excluded_min8_patterns\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -1217,7 +1224,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/FeatureReadings.java",
-          "line": 125,
+          "line": 132,
           "expression": "put(\"non_linear_energy_operator_teager\", teager, \"derived\", \"last3_fresh_accelerometer_magnitudes_middle_frame_discrete_teager_positive_clipped_0_10_includes_gravity_not_joules\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }

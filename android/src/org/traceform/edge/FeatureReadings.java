@@ -49,6 +49,13 @@ final class FeatureReadings {
         rawLight = Double.isFinite(lux) && lux >= 0 ? new Reading(lux, "observed", "light_sensor", nanos, 300000000000L) : null;
         put("env_log_lux", rawLight == null ? Double.NaN : Math.log1p(lux), "derived", "light_sensor", nanos, 300000000000L);
     }
+    static boolean isDeviceTemperature(String name, String type) {
+        return "LSM6DSR Temperature".equals(name) && "com.google.sensor.gyro_temperature".equals(type);
+    }
+    void deviceTemperature(double celsius, long nanos) {
+        put("env_device_temp_c", celsius, "observed",
+            "LSM6DSR_imu_chip_temperature_not_battery_ambient_or_whole_device", nanos, 300000000000L);
+    }
     void wifiRssi(double dbm, long nanos) {
         double normalized = Double.isFinite(dbm) && dbm >= -126 && dbm <= 0
             ? Math.max(0, Math.min(1, (dbm + 100) / 70)) : Double.NaN;

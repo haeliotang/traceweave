@@ -174,6 +174,13 @@ public final class EdgeService extends Service implements SensorEventListener {
                 Sensor sensor = sensors.getDefaultSensor(type);
                 if (sensor != null) sensors.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler);
             }
+            for (Sensor sensor : sensors.getSensorList(Sensor.TYPE_ALL)) {
+                if (FeatureReadings.isDeviceTemperature(sensor.getName(), sensor.getStringType())) {
+                    try { sensors.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler); }
+                    catch (SecurityException denied) { android.util.Log.w("Traceform", "IMU temperature access denied"); }
+                    break;
+                }
+            }
             sampleClock = new SampleClock(SystemClock.elapsedRealtime());
             handler.post(sample);
         } catch (Exception error) {
@@ -424,6 +431,8 @@ public final class EdgeService extends Service implements SensorEventListener {
         else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) observed.magnetic(event.values, event.timestamp);
         else if (event.sensor.getType() == Sensor.TYPE_LIGHT) observed.light(event.values[0], event.timestamp);
         else if (event.sensor.getType() == Sensor.TYPE_PRESSURE) observed.pressure(event.values[0], event.timestamp);
+        else if (FeatureReadings.isDeviceTemperature(event.sensor.getName(), event.sensor.getStringType()))
+            observed.deviceTemperature(event.values.length > 0 ? event.values[0] : Double.NaN, event.timestamp);
     }
     @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {}
     @Override public int onStartCommand(Intent intent, int flags, int id) {

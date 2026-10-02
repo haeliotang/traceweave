@@ -14,13 +14,13 @@ the normalizer's feature ordering and use its canonical raw-feature units.
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
 128 asset feature names against `EdgeService.java`, `FeatureReadings.java`,
 `NativeWifiSource.java`, `NativeMemoryPressure.java` and `NativeUsageSource.java`,
-with source hashes and exact line expressions. It locates 37 literal `put`
-assignments and five other name references; 86 names remain unresolved by this
+with source hashes and exact line expressions. It locates 38 literal `put`
+assignments and five other name references; 85 names remain unresolved by this
 literal index. The five referenced features now have manually traced production
 paths: accelerometer/gyroscope vector jerk and the three higher accelerometer
 derivatives. Sensor callbacks pass through `derivative` to `put(name, ...)` or
 the `HIGHER_ACCEL_NAMES` loop. Invalid vectors, inadequate history and time gaps
-can still leave these coordinates missing. Together, 42 names have located
+can still leave these coordinates missing. Together, 43 names have located
 literal or reviewed variable-dispatch paths; this is source coverage only.
 The memory-pressure path reads kernel-wide PSI `some avg10` as a fraction;
 procfs access denial or malformed input remains missing. This does not infer
@@ -1432,3 +1432,10 @@ counts rather than per-second rates, and do not establish exact historical
 Python dumpsys-window parity. The query scan is bounded to 50,000 events; denial,
 null services, invalid order or overflow remains missing. No package names or
 individual usage events are retained.
+
+The `env_device_temp_c` native path matches both `LSM6DSR Temperature` and
+`com.google.sensor.gyro_temperature`, following the existing physical adapter
+source. Provenance labels it as IMU chip temperature, rather than battery,
+ambient or whole-device temperature. Other sensor identities and invalid values
+remain missing. Foreground-service callback delivery and fresh readings are
+required; a sensor list entry alone does not establish production availability.
