@@ -13,14 +13,14 @@ the normalizer's feature ordering and use its canonical raw-feature units.
 
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
 128 asset feature names against `EdgeService.java`, `FeatureReadings.java`,
-`NativeWifiSource.java` and `NativeMemoryPressure.java`,
-with source hashes and exact line expressions. It locates 35 literal `put`
-assignments and five other name references; 88 names remain unresolved by this
+`NativeWifiSource.java`, `NativeMemoryPressure.java` and `NativeUsageSource.java`,
+with source hashes and exact line expressions. It locates 37 literal `put`
+assignments and five other name references; 86 names remain unresolved by this
 literal index. The five referenced features now have manually traced production
 paths: accelerometer/gyroscope vector jerk and the three higher accelerometer
 derivatives. Sensor callbacks pass through `derivative` to `put(name, ...)` or
 the `HIGHER_ACCEL_NAMES` loop. Invalid vectors, inadequate history and time gaps
-can still leave these coordinates missing. Together, 40 names have located
+can still leave these coordinates missing. Together, 42 names have located
 literal or reviewed variable-dispatch paths; this is source coverage only.
 The memory-pressure path reads kernel-wide PSI `some avg10` as a fraction;
 procfs access denial or malformed input remains missing. This does not infer
@@ -1422,3 +1422,13 @@ stop/start therefore requires fresh readings and normal history warm-up; it
 cannot derive features across the stopped interval. The controlled Java
 regression covers removed readings and motion, pressure, electrical, optical
 and ordinal-history warm-up. It does not replace device lifecycle validation.
+
+Native usage counts require explicit usage-access permission. The source retains
+only counts from the last 120 events within a 24-hour query, caches for at most
+60 seconds with the original query timestamp, and clears on collection reset,
+permission withdrawal or clock discontinuity. Activity resumes are capped at 50;
+interactive/keyguard-hidden checks at 20 are a proxy for unlocks. These are event
+counts rather than per-second rates, and do not establish exact historical
+Python dumpsys-window parity. The query scan is bounded to 50,000 events; denial,
+null services, invalid order or overflow remains missing. No package names or
+individual usage events are retained.

@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
-[![Tests](https://img.shields.io/badge/Tests-395%2F395%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-397%2F397%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,7 +26,7 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最新完整 Python 测试为 **395 项通过**，耗时 55.587s；
+最新完整 Python 测试为 **397 项通过**，耗时 57.497s；
 最新完整 Rust 证明后端测试为 **17 项通过**。测试覆盖主机实现和受控夹具，
 不能替代科学验收、完整隐私协议或最终主应用部署。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
@@ -50,9 +50,11 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 修复 60 帧网格窗口与 60 步同 Token 滞留无法同时预警的问题；
 受控测试证明触发可达，真实效果仍待验证。原生 Wi-Fi 来源已接入，
 生产服务与隔离能力检查共用读取路径；128 个原生特征名称的源码索引已建立，
-其中 40 项定位到直接赋值或已审查的变量分发路径，88 项仍未解析。
+其中 42 项定位到直接赋值或已审查的变量分发路径，86 项仍未解析。
 内存压力字段已接入系统 PSI 来源；访问受限或格式无效时保持缺失，
 源码覆盖增加不等于真机可观测性增加。
+使用事件入口仅保留聚合计数，权限撤回会立即清空缓存；
+事件计数不等于切换频率或确切解锁次数。
 这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
 [最新候选包记录](artifacts/alignment_v1/continuous_csd_native_candidate_build.json)，
 该候选包已包含共享 Wi-Fi 来源和原生连续 CSD 诊断，
@@ -60,7 +62,7 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 尚未安装到主应用，不能作为最终部署验收依据。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **395 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **397 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -429,7 +431,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 395 host tests; device receipts have separate scope
+└── tests/                                 # 397 host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -462,9 +464,9 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (395/395 Host Tests Passing)
+### A. Run Unit Tests (397/397 Host Tests Passing)
 
-The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The latest [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) remains uninstalled in the primary app. The host suite passes all 395 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
+The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The latest [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) remains uninstalled in the primary app. The host suite passes all 397 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
 
 ```bash
 # Run the full host suite locally:

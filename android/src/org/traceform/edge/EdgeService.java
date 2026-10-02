@@ -39,6 +39,7 @@ public final class EdgeService extends Service implements SensorEventListener {
     private final SpectrumForecastCache forecastCache = new SpectrumForecastCache();
     private SQLiteDatabase database;
     private final FeatureReadings observed = new FeatureReadings();
+    private final NativeUsageSource usageSource = new NativeUsageSource();
     private int observedFeatureCount, derivedFeatureCount, proxyFeatureCount, missingFeatureCount;
     private final KinematicState kinematics = new KinematicState();
     private final CriticalSlowingDetector slowing = new CriticalSlowingDetector();
@@ -137,6 +138,7 @@ public final class EdgeService extends Service implements SensorEventListener {
         if (destroyed || engine == null) return;
         if (thread != null) { if (stopped) restartAfterStop = true; return; }
         observed.reset();
+        usageSource.reset();
         stopped = false;
         NotificationManager notifications = getSystemService(NotificationManager.class);
         notifications.createNotificationChannel(new NotificationChannel("trajectory", "本机轨迹采集", NotificationManager.IMPORTANCE_LOW));
@@ -212,6 +214,11 @@ public final class EdgeService extends Service implements SensorEventListener {
                 observed.clock(now, nanos);
                 observed.motion(nanos);
                 observed.windows(nanos);
+                NativeUsageSource.Counts usage = usageSource.sample(EdgeService.this, now, nanos);
+                observed.put("app_switch_rate", usage.resumes, "derived",
+                    "latest120_usage_events_within24h_activity_resumed_count_capped50_not_frequency", usage.timestampNanos, 65000000000L);
+                observed.put("unlock_burst_count", usage.interactiveChecks, "proxy",
+                    "latest120_usage_events_within24h_screen_interactive_or_keyguard_hidden_capped20_not_unique_unlocks", usage.timestampNanos, 65000000000L);
                 observed.put("memory_pressure_stall_ratio", NativeMemoryPressure.read(), "derived",
                     "kernel_memory_psi_some_avg10_percent_divided_by_100_not_process_specific", nanos, 5000000000L);
                 BatteryManager batteryManager = getSystemService(BatteryManager.class);
