@@ -1,0 +1,71 @@
+{
+  "adopted": false,
+  "compiler_flags": "-std=c++17 -O3 -ffp-contract=off -static-libstdc++",
+  "measurements": [
+    {
+      "implementation": "traceform-exp-baseline-benchmark",
+      "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 4190208,
+      "launcher_peak_rss_bytes": 12312576,
+      "elapsed_ms": 83.812947,
+      "periodic_cdf_ms": 82.860067,
+      "rollout_ms": 0.92037,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    },
+    {
+      "implementation": "traceform-exp-table-benchmark",
+      "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 4182016,
+      "launcher_peak_rss_bytes": 12328960,
+      "elapsed_ms": 107.705892,
+      "periodic_cdf_ms": 106.738281,
+      "rollout_ms": 0.924112,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    },
+    {
+      "implementation": "traceform-exp-baseline-benchmark",
+      "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 4259840,
+      "launcher_peak_rss_bytes": 12341248,
+      "elapsed_ms": 83.643474,
+      "periodic_cdf_ms": 82.68693,
+      "rollout_ms": 0.919393,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    },
+    {
+      "implementation": "traceform-exp-table-benchmark",
+      "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 4214784,
+      "launcher_peak_rss_bytes": 12353536,
+      "elapsed_ms": 107.14034,
+      "periodic_cdf_ms": 106.186809,
+      "rollout_ms": 0.920004,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    }
+  ],
+  "scope": "alternating_synthetic_monthly_native_benchmarks_not_app_or_real_history"
+}

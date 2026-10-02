@@ -1,0 +1,63 @@
+{
+  "scope": "continuous_time_validation_source_deployment_and_synthetic_tests",
+  "deployment": {
+    "sources": [
+      {
+        "path": "traceform/dynamics/continuous.py",
+        "sha256": "2192f1a0d71b1cc854082c1ce7556a17c01cc920fc1b9bd760b31ebaf2f92174",
+        "previous_sha256": "96ec41d1e96fa8f800f72217d15aa49b7da78e2aed635775f12a824e29d567b5"
+      },
+      {
+        "path": "tests/test_continuous_dynamics.py",
+        "sha256": "e9b091cc15b2be07277f72f444f42fdee1ecdcc1daa986a6b2c22360cfbd6111",
+        "previous_sha256": "98ed616ec15dec3aef15cf586d7644f816dafb7375ea388cb6168530fd99f1bf"
+      }
+    ],
+    "runtime_restarted": false,
+    "scope": "source_only_atomic_install_no_acquisition_or_actuation"
+  },
+  "frozen_checks": {
+    "pre_exit_code": 0,
+    "post_exit_code": 0,
+    "pre_pass": [
+      "FROZEN_AUTHORITY=PASS",
+      "PRODUCTION_INTEGRATION_IMPLEMENTATION_V1_FROZEN=PASS",
+      "PRODUCTION_ORCHESTRATOR_IMPLEMENTATION_V1_FROZEN=PASS",
+      "PRODUCTION_RUNTIME_IMPLEMENTATION_V1_FROZEN=PASS",
+      "DEPLOYMENT_CONTROL_ADAPTER_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DEPLOYMENT_CLIENT_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V2_FROZEN=PASS",
+      "DEPLOYMENT_SUPERVISION_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V3_FROZEN=PASS",
+      "PHYSICAL_OBSERVATION_STACK_V1_FROZEN=PASS",
+      "PHYSICAL_RUNNER_SUPERVISION_V1_FROZEN=PASS"
+    ],
+    "post_pass": [
+      "FROZEN_AUTHORITY=PASS",
+      "PRODUCTION_INTEGRATION_IMPLEMENTATION_V1_FROZEN=PASS",
+      "PRODUCTION_ORCHESTRATOR_IMPLEMENTATION_V1_FROZEN=PASS",
+      "PRODUCTION_RUNTIME_IMPLEMENTATION_V1_FROZEN=PASS",
+      "DEPLOYMENT_CONTROL_ADAPTER_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DEPLOYMENT_CLIENT_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V2_FROZEN=PASS",
+      "DEPLOYMENT_SUPERVISION_IMPLEMENTATION_V1_FROZEN=PASS",
+      "ANDROID_DESKTOP_INTEGRATION_V3_FROZEN=PASS",
+      "PHYSICAL_OBSERVATION_STACK_V1_FROZEN=PASS",
+      "PHYSICAL_RUNNER_SUPERVISION_V1_FROZEN=PASS"
+    ]
+  },
+  "device_test": {
+    "exit_code": 0,
+    "count": 22,
+    "seconds": 25.971,
+    "output": "......................\n----------------------------------------------------------------------\nRan 22 tests in 25.971s\n\nOK\n"
+  },
+  "limits": [
+    "Existing long-running interpreter was not restarted and may hold an earlier module",
+    "No physical acquisition, intervention or raw trajectory export in this validation",
+    "Synthetic zero-diffusion convergence does not prove stochastic convergence or empirical predictive validity"
+  ],
+  "environment": "Termux native Python; frozen hash scripts under existing Debian containers/debian/rootfs"
+}

@@ -1,0 +1,25 @@
+{
+  "protocol": "traceform.native-warm-sql-types-validation.v1",
+  "apk_sha256": "41daf15e55121dcc83d1aea00938cb964abc290839181e5992e2e4562bcb7eb8",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeWarmAudit.java": "b0e67322da4fcb3a189bcb412e4dc6066841330736b08ccd00ba8abaafda2070",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "8f3675525c76eb846a671983e2862aac7577f118b9cfc84eebe0cb15ebe68297",
+    "android/src/org/traceform/edge/WeeklySnapshot.java": "5ec4fd3e71475767ff89d3640bc1b72d0b2802ab510cf49c9fddfa79654eab0f"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "host_failed_before_fix": "fractional SQL column accepted via getLong",
+  "affected_host_tests": {
+    "passed": 2,
+    "seconds": 0.95,
+    "scope": "production WarmAudit SQL type and typed digest control flow with narrow cursor/JSON/platform stand-ins; not actual Android cursor validation"
+  },
+  "android_fractional_fixture_executed": false,
+  "source_digest_protocol": "traceform.native-warm-source.v2",
+  "scope": "require integer SQL clocks/counts and text payload in snapshot and audit; digest original SQL type and exact integer/double/string/blob bytes",
+  "open": [
+    "actual Android fractional audit and snapshot copy",
+    "Cold graph audit",
+    "long-term model migration and original full goal gates"
+  ]
+}

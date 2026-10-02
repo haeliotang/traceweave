@@ -1,0 +1,10 @@
+{
+  "scope": "synthetic_public_only_cli_verification_on_host_not_android",
+  "valid_package_verified": true,
+  "modified_objective_rejected": true,
+  "package_sha256": {
+    "public_inputs.bin": "351e125bc876e695878e4789e84ad9695958e8d560dd8653bdfa4f906f598378",
+    "verifying_key.bin": "13f6a292d3f819c9a07f4b0d7cfb384d9ad5c4ab690e5a2121ac2b5e6b7c48ba",
+    "proof.bin": "16dda8a5975b688346f7d3c3c3456a5635329a8f3f11ce3d1e9ff37da1bc1964"
+  }
+}

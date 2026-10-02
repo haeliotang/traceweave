@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scope": "android_service_oncreate_with_capture_resource_access_forbidden",
+  "completed_epoch_ms": 1790860809881,
+  "before_fix": {
+    "passed": false,
+    "error": "java.lang.IllegalStateException: bound_service_requested_capture_resource:notification",
+    "completed_epoch_ms": 1790860603050
+  }
+}

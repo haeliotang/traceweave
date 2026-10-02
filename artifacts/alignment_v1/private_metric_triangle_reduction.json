@@ -1,0 +1,916 @@
+{
+  "passed": true,
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "08eb253a7b9a0917bab29afe818ab030f24397c2887bddcbef592fd2248dbd0a",
+    "native/private_alignment_probe/commitment.h": "a6d40005a0f95d946431b67feb5034a185ecfeb2b38c4c3b8989196066f02ac7",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "f772d2461d1d21092d11cd88d8ff90fef44d3bfbfc9c985c9b4245b68b022715",
+    "native/private_alignment_probe/run_uniform_permutation.py": "94965fc4b37989a7b56154ebafb484f3819d456930c8988805b979c1451c3fe1",
+    "traceform/dynamics/integer_transport.py": "16306253760bb4f2e6188f774aeb1af41f4314635a193d5629f11df0fc1d18bd",
+    "/private/tmp/traceform-triangle-gw-generator": "387787bb98eef067f3b354d42a61e7881386e2c32241b95aa644db2a12c8c080",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2"
+  },
+  "general_2x3": {
+    "passed": true,
+    "gates": 1626039,
+    "cases": [
+      {
+        "case": "feasible_rectangular",
+        "valid": true,
+        "expected_numerator": "179999839999680000000000",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "odd_distance",
+        "valid": true,
+        "expected_numerator": "196393534941780000000000",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "triangle_violation",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "asymmetric",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "diagonal_nonzero",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "mass_out_of_range",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "changed_session",
+        "valid": true,
+        "expected_numerator": "179999839999680000000000",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "changed_nonce",
+        "valid": true,
+        "expected_numerator": "179999839999680000000000",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "session_mismatch",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "wrong_mass_total",
+        "valid": false,
+        "expected_numerator": "0",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "case": "zero_mass_row",
+        "valid": true,
+        "expected_numerator": "213333439999680000000000",
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ]
+      }
+    ],
+    "circuit_sha256": "1df5c4b1866f5152d636add89c0a1ce7b6950c6655b7d90d10626fb810f4632e",
+    "binary_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+    "first_nodes": 2,
+    "second_nodes": 3,
+    "optimized_transport": true,
+    "scope": "synthetic_private_single_sweep_transport_descent_not_global_optimum_or_security_audit"
+  },
+  "uniform_exact_4": {
+    "passed": true,
+    "nodes": 4,
+    "gates": 906633,
+    "wires": 908497,
+    "cases": [
+      {
+        "case": "identical",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6625252919911873,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonzero_diagonal",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.688847415993223,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "transposition",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6765441670140717,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "reversal",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6739215830166359,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "asymmetric",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.726224291982362,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonuniform_same_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6757526250148658,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "negative_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6864233750093263,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "out_of_range_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.7074714580085129,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "triangle_violation",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6650142500002403,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "different_scale",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "98000000000000000000",
+        "elapsed_seconds": 0.6765846250054892,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "large_80bit_objective",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "750000000000000000000000",
+        "elapsed_seconds": 0.6864733749825973,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "wrong_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.5914533330069389,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "session_mismatch",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6692747500201222,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "changed_nonce",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6261114999942947,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      }
+    ],
+    "search": "exact_uniform_permutation",
+    "circuit_sha256": "eb5570deda01b72aa191b4e945fed9da2cdf8fd7695ae96ecc4d3471ae22afaa",
+    "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+    "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit"
+  },
+  "quantized_search_4": {
+    "passed": true,
+    "nodes": 4,
+    "gates": 856347,
+    "wires": 858211,
+    "cases": [
+      {
+        "case": "identical",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.649165750015527,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonzero_diagonal",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6565990000090096,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "transposition",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6413560830114875,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "reversal",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6553533340047579,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "asymmetric",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.5974620829802006,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonuniform_same_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6523222920077387,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "negative_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6540567079791799,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "out_of_range_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6762555419991259,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "triangle_violation",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6498811249912251,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "different_scale",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "98000000000000000000",
+        "elapsed_seconds": 0.6571360829984769,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "large_80bit_objective",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "750000000000000000000000",
+        "elapsed_seconds": 0.6549612499948125,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "wrong_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6758608339878265,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "session_mismatch",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6438057909836061,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "changed_nonce",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6783140409970656,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "full_precision_rejection",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "5984454500000000000",
+        "elapsed_seconds": 0.6380793749995064,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      }
+    ],
+    "search": "eight_bit_quantized_with_exact_final_loss_gate",
+    "circuit_sha256": "333d9250441a7a24fdec1462f55cfeb497687d815685afdc7b683d8be74358b8",
+    "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+    "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit"
+  },
+  "quantized_search_16_plain": {
+    "passed": true,
+    "nodes": 16,
+    "gates": 8701369,
+    "inputs_per_owner": 6224,
+    "search": "eight_bit_quantized_with_exact_final_loss_gate",
+    "circuit_sha256": "79239d2a45d0ee2738c68022166c0155db339a9d11b3a48308bd56881ba0d535",
+    "cases": [
+      {
+        "case": "identical",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonzero_diagonal",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "transposition",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "reversal",
+        "valid": true,
+        "objective_numerator": "45696000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "asymmetric",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonuniform_same_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "negative_distance",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "out_of_range_distance",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "triangle_violation",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "different_scale",
+        "valid": true,
+        "objective_numerator": "41106000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "large_80bit_objective",
+        "valid": true,
+        "objective_numerator": "937500000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "wrong_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "session_mismatch",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "changed_nonce",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      }
+    ],
+    "scope": "plaintext_synthetic_recorded_gate_validation_not_private_execution_or_security_audit"
+  },
+  "triangle_equivalence": "For symmetric, nonnegative, zero-diagonal matrices, repeated-node triangles are tautologies and every distinct unordered triple has exactly three independent edge bounds. Valid sums fit signed 22 bits.",
+  "limits": [
+    "16-node result is recorded-gate validation, not private execution",
+    "One bounded permutation sweep, no unrestricted transport/global optimum",
+    "Synthetic identities, no real-owner enrollment/security audit"
+  ]
+}

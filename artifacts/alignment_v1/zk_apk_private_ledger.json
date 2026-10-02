@@ -1,0 +1,18 @@
+{
+  "device_serial": "[REDACTED_DEVICE_SERIAL]",
+  "passed": true,
+  "first_verified": true,
+  "repeated_verified": false,
+  "repeated_exit_code": 1,
+  "repeated_reason": "replayed session",
+  "completed_epoch_ms": 1790842356892,
+  "apk_sha256": "647cca6a1a1ffe2549f6ffbba6d8781584f079bc80ab87f6165c7aa132839753",
+  "proof_verifier_sha256": "77d3642ac6b62d0a92974b98614dc3d06d8ef63dd5d5ee5b81dddf539befa6c1",
+  "scope": "synthetic_public_proof_called_from_apk_with_private_persistent_session_ledger",
+  "limitations": [
+    "No owner authentication",
+    "Prover still knows both synthetic models",
+    "Not secure two-owner alignment",
+    "Temporary local setup not production ceremony"
+  ]
+}

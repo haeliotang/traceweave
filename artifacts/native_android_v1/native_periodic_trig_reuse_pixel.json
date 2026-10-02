@@ -1,0 +1,150 @@
+{
+  "device": "Pixel 6a",
+  "binary_sha256": "e941835f2658f28ec2b82d683b48411b1ebf8631befcc853329e3b7e19b321b4",
+  "scope": "isolated_child_synthetic_core_with_periodic_cdf_precomputed_phases_not_java_sqlite_or_android_service",
+  "limits": {
+    "elapsed_ms": 15,
+    "peak_rss_bytes": 5000000
+  },
+  "cases": {
+    "small_history": {
+      "runs": [
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 2670592,
+          "launcher_peak_rss_bytes": 12300288,
+          "elapsed_ms": 3.589111,
+          "periodic_cdf_ms": 0.479411,
+          "rollout_ms": 3.013387,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 2502656,
+          "launcher_peak_rss_bytes": 12308480,
+          "elapsed_ms": 5.034139,
+          "periodic_cdf_ms": 0.830485,
+          "rollout_ms": 4.037272,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 2600960,
+          "launcher_peak_rss_bytes": 12312576,
+          "elapsed_ms": 1.603231,
+          "periodic_cdf_ms": 0.272298,
+          "rollout_ms": 1.281819,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 2646016,
+          "launcher_peak_rss_bytes": 12316672,
+          "elapsed_ms": 2.48112,
+          "periodic_cdf_ms": 0.364909,
+          "rollout_ms": 2.049682,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 2617344,
+          "launcher_peak_rss_bytes": 12316672,
+          "elapsed_ms": 3.033325,
+          "periodic_cdf_ms": 0.502767,
+          "rollout_ms": 2.43038,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ],
+      "maximum_elapsed_ms": 5.034139,
+      "maximum_peak_rss_bytes": 2670592,
+      "performance_gate_passed": true
+    },
+    "monthly_warm_history": {
+      "runs": [
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 4186112,
+          "launcher_peak_rss_bytes": 12316672,
+          "elapsed_ms": 84.202393,
+          "periodic_cdf_ms": 83.189738,
+          "rollout_ms": 0.980265,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 4218880,
+          "launcher_peak_rss_bytes": 12320768,
+          "elapsed_ms": 83.834392,
+          "periodic_cdf_ms": 82.827149,
+          "rollout_ms": 0.97168,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 4210688,
+          "launcher_peak_rss_bytes": 12324864,
+          "elapsed_ms": 84.96228,
+          "periodic_cdf_ms": 83.966797,
+          "rollout_ms": 0.95699,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ],
+      "maximum_elapsed_ms": 84.96228,
+      "maximum_peak_rss_bytes": 4218880,
+      "performance_gate_passed": false
+    }
+  },
+  "full_python_suite": {
+    "tests": 284,
+    "passed": true,
+    "seconds": 20.562
+  }
+}

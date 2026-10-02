@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "tests": 303,
+  "elapsed_seconds": 23.261,
+  "apk_sha256": "bab059ce709c3da2587c35896171a0fe0d7a29001db581fd5a98a6c9a97356a2",
+  "source_sha256": {
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "22a09436d7837a0b3ada13a9d068b233e889ea1f345b5ae962b8619b7019fa2b",
+    "android/src/org/traceform/edge/NightDisplay.java": "ffbad96afd579ec19babad7f1ed591fbf693f7fa928c4aab8abc0894f3909c7c",
+    "android/src/org/traceform/edge/ColorTemperatureFixture.java": "c5cf92f1eadaf8dd808f570e681259e0e3240d732fa005199af6fd5cdb523317",
+    "tests/test_alignment_query_lease.py": "90b23213ae82b99d99ac1f3acc8d7bd82f02f8552274c45c7cc9865d1c30382a"
+  },
+  "scope": "host_cross_process_and_killed_holder_release_android_same_process_guard_not_android_cross_process_actuation"
+}

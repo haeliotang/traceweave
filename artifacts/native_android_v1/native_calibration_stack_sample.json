@@ -1,0 +1,29 @@
+{
+  "profiling_dispatch": {
+    "nonce": "3ea0cb6c-9a08-4ae4-a8fa-06c80ad70e99",
+    "job_id": 34715,
+    "scheduled_epoch_ms": 1790895145068
+  },
+  "process_id": 19289,
+  "worker_stack": [
+    "traceform-debug-weekly:",
+    "  [1] java.lang.String.length (String.java:1,218)",
+    "  [2] org.json.JSONTokener.nextCleanInternal (JSONTokener.java:121)",
+    "  [3] org.json.JSONTokener.readArray (JSONTokener.java:451)",
+    "  [4] org.json.JSONTokener.nextValue (JSONTokener.java:107)",
+    "  [5] org.json.JSONTokener.readObject (JSONTokener.java:403)",
+    "  [6] org.json.JSONTokener.nextValue (JSONTokener.java:104)",
+    "  [7] org.json.JSONObject.<init> (JSONObject.java:168)",
+    "  [8] org.json.JSONObject.<init> (JSONObject.java:185)",
+    "  [9] org.traceform.edge.NativeCandidateCalibration.frame (NativeCandidateCalibration.java:102)",
+    "  [10] org.traceform.edge.NativeCandidateCalibration.run (NativeCandidateCalibration.java:48)",
+    "  [11] org.traceform.edge.NativeWeeklyAuditFixture.verify (NativeWeeklyAuditFixture.java:127)",
+    "  [12] org.traceform.edge.NativeVerificationJob.lambda$onStartJob$1$org-traceform-edge-NativeVerificationJob (NativeVerificationJob.java:41)",
+    "  [13] org.traceform.edge.NativeVerificationJob$$ExternalSyntheticLambda0.run (D8$$SyntheticClass:0)",
+    "  [14] java.lang.Thread.run (Thread.java:1,572)"
+  ],
+  "threads_resumed": true,
+  "debugger_detached": true,
+  "usb_forward_removed": true,
+  "scope": "single_intrusive_debug_stack_sample_not_hotspot_percentage_or_pristine_timing"
+}

@@ -24,6 +24,7 @@ from traceform.forecasting.sandbox_simulator import (
     SandboxSimulator,
     ScenarioIntervention,
 )
+from traceform.streaming.tiered_storage import TieredStorage
 
 
 def load_transition_model_or_records(repo_root: Path):
@@ -102,7 +103,12 @@ def main():
         default=None,
         help="Optional path to save simulation JSON artifact",
     )
+    parser.add_argument("--records-file", type=Path, help="Timestamped JSONL trajectory for daily/weekly kernel fitting")
+    parser.add_argument("--storage-database", type=Path, help="Read retained hot trajectories from the tiered store")
+    parser.add_argument("--timezone", default="UTC", help="IANA timezone for daily/weekly phases")
     args = parser.parse_args()
+    if args.records_file and args.storage_database:
+        parser.error("select either records-file or storage-database")
 
     repo_root = Path(__file__).resolve().parent.parent
 
@@ -113,7 +119,24 @@ def main():
 
     # 1. Model Loading
     kind, data, nodes = load_transition_model_or_records(repo_root)
-    simulator = SandboxSimulator(step_nominal_seconds=30.0)
+    if args.records_file is not None:
+        with args.records_file.open(encoding="utf-8") as source:
+            data = [json.loads(line) for line in source if line.strip()]
+        if not data:
+            parser.error("records-file contains no observations")
+        kind, nodes = "records", None
+    if args.storage_database is not None:
+        if not args.storage_database.is_file():
+            parser.error("storage-database does not exist")
+        store = TieredStorage(args.storage_database)
+        try:
+            data = store.hot_records()
+        finally:
+            store.close()
+        if not data:
+            parser.error("storage-database has no retained hot observations")
+        kind, nodes = "records", None
+    simulator = SandboxSimulator(step_nominal_seconds=30.0, timezone_name=args.timezone)
 
     if kind == "matrix":
         print(f"[*] Loaded transition matrix with {len(nodes)} states from discovery spec.")
@@ -208,6 +231,10 @@ def main():
         print(f"    - Dominant Terminal State: {sorted(branch.absorption_probabilities.items(), key=lambda kv: kv[1], reverse=True)[0]}")
         out_data = branch.to_dict()
         out_data["simulation_time_ms"] = round(sim_ms, 2)
+
+    out_data["timezone"] = args.timezone
+    out_data["transition_kernel"] = "continuous_daily_weekly" if simulator.periodic_kernel is not None else "global_matrix"
+    out_data["evidence_scope"] = "model_scenario_only_not_measured_intervention_effect"
 
     # 4. Save Artifact
     out_file = args.output_file

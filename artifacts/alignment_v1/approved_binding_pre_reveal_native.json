@@ -1,0 +1,460 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 3794901,
+  "wires": 3808885,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8384055409987923,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonzero_diagonal",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8506459580094088,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.762919333006721,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "elapsed_seconds": 1.7688086670241319,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8645818749791943,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.7550397499871906,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "negative_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8465602500073146,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "out_of_range_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.860053540993249,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "triangle_violation",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8549250830255914,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "elapsed_seconds": 1.8510798750212416,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "elapsed_seconds": 1.841545374976704,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.825673832994653,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8064386249752715,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8574119590048213,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_valid_model",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8518536250048783,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_model_and_one_approval",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8481797919957899,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_0",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.7641377500258386,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_255",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8515006670204457,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_256",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.7642994580091909,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_511",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8550029590260237,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_512",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.771573416015599,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_approval_767",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8394142919860315,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "search": "six_bit_quantized_with_exact_final_loss_gate",
+  "search_distance_shift": 14,
+  "commitment": "uniform_packed_v2",
+  "circuit_sha256": "ba00463c74f7899a069305ab7edf8041234dea76ae6fb5a430182191c924dca2",
+  "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "approved_bindings": true,
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "source_sha256": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "9347c4c6ca546af917ac5bfdf06fbc60c32bb527efee4ebd0f962dd61aa9c54f",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "88e9a95e061030ed52254769381c71dcf4ce5dfdc8d5de265df03c7318dce425",
+    "native/private_alignment_probe/run_uniform_permutation.py": "717a43fa9e705648a9239262a522adc731cfc6691bc8de9f23cbaf51883997a1"
+  }
+}

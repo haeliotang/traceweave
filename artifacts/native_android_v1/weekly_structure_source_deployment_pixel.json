@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "path": "traceform/evolution/guarded_calibration.py",
+      "sha256": "c7bdccf4195f0bf67c132155e4e2723c1584bc87514836db4a17718676df63d4"
+    },
+    {
+      "path": "traceform/discovery/transition_graph.py",
+      "sha256": "2961358b1aebf3fb76bc3e35108fbc6f8b491c93a66c658575843785ea30d92c"
+    },
+    {
+      "path": "tests/test_guarded_calibration.py",
+      "sha256": "a1d783954e1a2e877846ce91cb39e9af8d868b2f309e624c9a62f68c869086f9"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

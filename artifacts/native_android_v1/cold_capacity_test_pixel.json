@@ -1,0 +1,10 @@
+{
+  "tests": 1,
+  "passed": true,
+  "elapsed_seconds": 0.2248203530034516,
+  "compressed_bytes": 246684,
+  "models": 4,
+  "states_per_model": 16,
+  "dimension": 128,
+  "scope": "isolated_synthetic_full_capacity_cold_export_no_live_history"
+}

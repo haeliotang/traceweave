@@ -1,0 +1,6 @@
+{
+  "tests": 293,
+  "passed": true,
+  "elapsed_seconds": 20.533,
+  "scope": "candidate_training_holdout_transition_structure_source_binding_and_segment_resets_not_structural_grid_adaptation"
+}

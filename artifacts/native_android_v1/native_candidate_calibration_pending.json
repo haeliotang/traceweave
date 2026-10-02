@@ -1,0 +1,15 @@
+{
+  "status": "historical_pending_checkpoint_resolved",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "72f93c81c8eb26813a56bd15ecf81e858e8cb3708fea397e0218e1beae2d78d5",
+    "android/src/org/traceform/edge/ModelEngine.java": "5ca6f585f76a8bd2163d05b23a95d2ac5cc2b2b9a1073fa735e42a536f0b555e",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "dee2cfe289692671eff8e38021134cb7b55dfce399b50dca89cc9433dd8878e0",
+    "android/build/traceform.apk": "44ab02ecf9851ce9834cac7c97d362370a42da2a830810c60a8da1ed2f0b7fa3"
+  },
+  "freeze_pre_post_passed": true,
+  "stale_receipt_not_accepted": 1790891164365,
+  "confirmed_activity_pid": 16328,
+  "activity_state": "STOPPED finishing=false; keyguard showing",
+  "scope": "candidate_chronological_fit_and_holdout_leakage_fixture_not_verified_yet",
+  "resolved_by": "native_candidate_calibration_first_pixel.json"
+}

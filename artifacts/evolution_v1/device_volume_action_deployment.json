@@ -1,0 +1,24 @@
+{
+  "device_tests": 11,
+  "host_tests": 239,
+  "host_subtests": 18,
+  "reader_identity": {
+    "pid": 25859,
+    "start_ticks": "4956384",
+    "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+  },
+  "latest_timestamp_utc": "2026-10-01T07:08:15.197800Z",
+  "disabled_haptics": true,
+  "shadow_mode": true,
+  "silent_flag_present": true,
+  "default_actions": [
+    "pulse",
+    "notification"
+  ],
+  "source_sha256": {
+    "traceform/intervention/closed_loop.py": "7129db3d2de352c0460735778194e47cbffb770f5e2b01145536741bfda19c3a",
+    "scripts/phone_edge_manifold_daemon.py": "9adc8e69152f8761c42a92010cb7dfd87e13005c9d305428fe4b7663fd680390",
+    "tests/test_closed_loop.py": "9b1b90b67a25158136b7801c8c129fad0605eeaed2d10e532a0602dcbb9d733a"
+  },
+  "scope": "deployed_configurable_actions_with_live_silent_reader_not_physical_volume_execution"
+}

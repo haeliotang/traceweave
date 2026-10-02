@@ -1,0 +1,31 @@
+{
+  "apk_sha256": "47ad1b1839f4b2f6614e0f96312cf2e8867e0b4e10a823e8c5340229e1e654fa",
+  "apk_bytes": 185067,
+  "library_bytes": 409304,
+  "abi": "arm64-v8a",
+  "signing": "local_development_only",
+  "source_sha256": {
+    "scripts/build_native_android.py": "2febf0ef1e0511d3ae0203d585ad8dbecf624971bb3b5be32d195ce71a40f788",
+    "android/AndroidManifest.xml": "f63b06a3c2b5f8df8ee135fe010ea72af3192b79791ac939a3459929ead706be",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_core.cpp": "53da121125d702664e7fcae1d0c43a03db052979feeb691a0b238d39c4248911",
+    "native/traceform_jni.cpp": "5419567c596cdf8a0b72796b567e4ff4cf484b908054f023c5ec110ad9bf2327",
+    "android/src/org/traceform/edge/CanonicalClient.java": "6beef639541702e0574c2aa8e40900a72efe73fd05595084c7ca009178b7ed9f",
+    "android/src/org/traceform/edge/ColdTrajectory.java": "dd0766c389971c7d8132d7465d8db36eb21c7334619a9d1cfa667aac3cab52e4",
+    "android/src/org/traceform/edge/EdgeService.java": "ce42b70cecf60844c949fd00dcbc4f1b2b2703d49790c8f5e7610194a609011c",
+    "android/src/org/traceform/edge/FeatureReadings.java": "e9b6bbf561876bff4ae94f71c9a19525807822bd3b8b182b899032c23c4a2b96",
+    "android/src/org/traceform/edge/KinematicState.java": "aaed663818804cc8b1b06c62b587cc00611c9acbcffccbd35744068e81c890a7",
+    "android/src/org/traceform/edge/MainActivity.java": "2f38cbae59503921829d01c9492b186110c361f7c67055a8f3885a78fc52a693",
+    "android/src/org/traceform/edge/ModelEngine.java": "30943ba4cc66d17d5e3d97e7c95058bd84608952de5d9e2e70dce13f7fe1d807",
+    "android/src/org/traceform/edge/NativeCore.java": "baf5b2f146af83390dcee21d224e410f8876af93f134955cb43d8153012338b9",
+    "android/src/org/traceform/edge/SampleClock.java": "dcab8077619901f79dde2346f143ff55a3094fb15ec8fc0c7a5012bd934eb5f8",
+    "android/src/org/traceform/edge/WarmBucket.java": "d1058d120491b10114d34b949442e8cad1ccd9bc7bb94afc3b285d2f15c19aa5",
+    "android/src/org/traceform/edge/WarmTrajectory.java": "5d88f12ad1b6641417188e74884c74f8ac0b40b540b63781848dbf0725819e89"
+  },
+  "model_binding": {
+    "model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+    "normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+    "model_version": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3"
+  },
+  "scope": "native_canonical_vector_sdk_and_partial_sensor_adapter_not_full_python_sensorium_parity"
+}

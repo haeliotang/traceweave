@@ -1,0 +1,43 @@
+--- native/traceform_core.cpp
++++ traceform-core-phase-group-probe.cpp
+@@ -46,22 +46,35 @@
+         double* matrix = output + step * states * states;
+         for (std::size_t index = 0; index < states * states; ++index) matrix[index] = 5 * prior[index];
+     }
+-    for (std::size_t pair = 0; pair < pairs; ++pair) {
+-        double observed_day = observed_phases[pair * 2], observed_week = observed_phases[pair * 2 + 1];
++    std::vector<unsigned int> order(pairs);
++    for (std::size_t pair = 0; pair < pairs; ++pair) order[pair] = pair;
++    std::sort(order.begin(), order.end(), [&](unsigned int a, unsigned int b) {
++        double ad = observed_phases[a * 2], bd = observed_phases[b * 2];
++        if (ad != bd) return ad < bd;
++        double aw = observed_phases[a * 2 + 1], bw = observed_phases[b * 2 + 1];
++        return aw != bw ? aw < bw : a < b;
++    });
++    for (std::size_t start = 0; start < pairs;) {
++        std::size_t first = order[start], end = start + 1;
++        double observed_day = observed_phases[first * 2], observed_week = observed_phases[first * 2 + 1];
++        while (end < pairs && observed_phases[order[end] * 2] == observed_day && observed_phases[order[end] * 2 + 1] == observed_week) ++end;
+         double day_cos = std::cos(observed_day), day_sin = std::sin(observed_day);
+         double week_cos = std::cos(observed_week), week_sin = std::sin(observed_week);
+         for (std::size_t step = 0; step < horizon; ++step) {
+             double day = query_phases[step * 2], week = query_phases[step * 2 + 1];
+             double day_delta = day - observed_day, week_delta = week - observed_week;
+             if (!std::isfinite(day_delta) || !std::isfinite(week_delta)) return -1;
+-            // Preserve subtraction-based argument reduction for unusually large phases.
+             double day_similarity = std::abs(day) > 32 || std::abs(observed_day) > 32
+                 ? std::cos(day_delta) : query_trig[step * 4] * day_cos + query_trig[step * 4 + 1] * day_sin;
+             double week_similarity = std::abs(week) > 32 || std::abs(observed_week) > 32
+                 ? std::cos(week_delta) : query_trig[step * 4 + 2] * week_cos + query_trig[step * 4 + 3] * week_sin;
+             double weight = std::exp(2 * (day_similarity - 1) + 2 * (week_similarity - 1));
+-            output[step * states * states + sources[pair] * states + targets[pair]] += weight;
+-        }
++            for (std::size_t index = start; index < end; ++index) {
++                std::size_t pair = order[index];
++                output[step * states * states + sources[pair] * states + targets[pair]] += weight;
++            }
++        }
++        start = end;
+     }
+     for (std::size_t step = 0; step < horizon; ++step) {
+         double* matrix = output + step * states * states;

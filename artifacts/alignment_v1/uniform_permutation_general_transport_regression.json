@@ -1,0 +1,209 @@
+{
+  "passed": true,
+  "gates": 1637823,
+  "cases": [
+    {
+      "case": "feasible_rectangular",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "odd_distance",
+      "valid": true,
+      "expected_numerator": "196393534941780000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "triangle_violation",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "asymmetric",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "diagonal_nonzero",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "mass_out_of_range",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_session",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_nonce",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "session_mismatch",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "wrong_mass_total",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "zero_mass_row",
+      "valid": true,
+      "expected_numerator": "213333439999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "circuit_sha256": "b8c5db553a1408b8cc377baf2a96c7ca2f9132f9736ff19cca09a46a617948d0",
+  "binary_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "first_nodes": 2,
+  "second_nodes": 3,
+  "optimized_transport": true,
+  "scope": "synthetic_private_single_sweep_transport_descent_not_global_optimum_or_security_audit",
+  "generator_mode": "--optimize",
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "2e7e74413cbfc0ba68b913b5a879514fb332ddd1a2d9be06c014c63a16c65ace",
+    "native/private_alignment_probe/run_uniform_permutation.py": "7b4230087469d5eea883091b9b40e89d93e68a786d2bfcc8fcfacf8f45461c9d",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "15099bae1755dd842bb9cff9104ae662c282a921959af4fb4d9a9fb2070835c0",
+    "traceform/dynamics/integer_transport.py": "23720f954222e96d30e05562cf76ac7e2a4e6112f5deb52e34ea82f7c869aded",
+    "native/private_alignment_probe/smoke.cpp": "6ad2d5a5774e5549b9d3c22ddefbf194e2b202fb92d521151da1696005716b58",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+    "/private/tmp/traceform-private-tls-bound-runner-v2": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd"
+  }
+}

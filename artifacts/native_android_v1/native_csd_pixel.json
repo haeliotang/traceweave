@@ -1,0 +1,72 @@
+{
+  "scope": "native_Android_topology_CSD_diagnostic_service_integration_not_complete_actuation_loop",
+  "hashes": {
+    "android/src/org/traceform/edge/CriticalSlowingDetector.java": "35e7a3dfbf868ab21c66afcc90cd9e32d1e8121495b29e6c6945c37d0939e0ce",
+    "android/src/org/traceform/edge/CriticalSlowingFixture.java": "a654c5115dcb3050984bd5e79323d9010caba61cd27d68dbd2125daaf4629df0",
+    "android/src/org/traceform/edge/ModelEngine.java": "b5839707764de9b9a1809bc9e9237fb2bcfa7fbafe6cb902790e73a2471b347c",
+    "android/src/org/traceform/edge/EdgeService.java": "4e5d2b994df967505f23d219b1ee2fe7a91c2645940cbc5a8ca119dd2d05fb5e",
+    "android/src/org/traceform/edge/MainActivity.java": "96e1faff581d690f7a8c1648b242c4cb9c9dba47a0c9e8486463769132d88045",
+    "tests/test_native_csd.py": "0c2bc16619152263387bccbef14296d0c0b2d315c4428c0aa28fed0a956f7809",
+    "scripts/build_native_android.py": "aa62184050113d7b923654d8ea5090dbde2980ce1de56b74d8ffab8af334c82a",
+    "android/build/traceform.apk": "a56ecb583bbf553ddfbce5acf55a8fc47cc4aaf77fe29c4d9dea9a9eaca4b05c"
+  },
+  "tests": {
+    "count": 314,
+    "seconds": 27.556,
+    "passed": true,
+    "python_reference_comparison_frames": 700,
+    "includes_window_wrap_gap_reset_positive_alerts_and_invalid_input": true
+  },
+  "device_synthetic": {
+    "passed": true,
+    "synthetic_frames": 801,
+    "warnings": 368,
+    "csd_and_dwell_gates": 368,
+    "gap_and_token_reset_verified": true,
+    "linear_detrending_verified": true,
+    "model_grid_parity": {
+      "passed": true,
+      "cases": 8,
+      "maximum_error": 1.8189894035458565e-12,
+      "scope": "canonical_vector_normalization_and_kinetic_quantization"
+    },
+    "collection_started": false,
+    "actuator_calls": 0,
+    "scope": "synthetic_Android_CSD_and_grid_mapping_not_live_collection_or_MC_actuation_policy",
+    "completed_epoch_ms": 1790884312480
+  },
+  "device_lifecycle": {
+    "passed": true,
+    "database_failure_injected": false,
+    "scope": "android_bound_stop_synthetic_worker_cancelled_history_sdk_available_no_capture_resources",
+    "completed_epoch_ms": 1790884351673
+  },
+  "device_initialization_failure": {
+    "passed": true,
+    "database_failure_injected": true,
+    "scope": "android_database_open_failure_releases_synthetic_worker_no_capture_resources",
+    "completed_epoch_ms": 1790884354435
+  },
+  "readonly_binder": {
+    "passed": true,
+    "service_pid": 10166,
+    "client_pid": 10036,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_backend_policy_verified": true,
+    "history_cache_hit_verified": false,
+    "history_repeat_compute_ms": 5.807332,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790884360276
+  },
+  "limits": [
+    "No live sensor collection started; device sampling integration not exercised with real sensors",
+    "Synthetic coordinate sequences are numerical detector fixtures, not model-consistent human trajectories or causal intervention evidence",
+    "CSD warning and dwell >30 expose only partial gate; MC comparison, bandit outcomes and native actuator policy remain incomplete",
+    "eligible_for_intervention remains false; no actual actuator calls",
+    "Full memory/performance and remaining Stage 11-14 scope unaccepted"
+  ]
+}

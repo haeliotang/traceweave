@@ -1,0 +1,433 @@
+{
+  "scope": "frequency_outer_local_coefficient_construction_with_fresh_and_warm_APK_validation",
+  "hashes": {
+    "native/periodic_spectrum.cpp": "55050e7521ceef68420d94f28dbae68c44b25b4c8f1ac0b06edf7fa50822a491",
+    "tests/test_native_periodic_spectrum.py": "da1f7da569fab1f68dc89bd24d290470e546cb898af921ddeda5933b5e7fc4cb",
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "348a13c176d306fcf4e7e55ac7b35731cdf33f5e6ba44c05d997a427efa01aa2",
+    "android/build/traceform.apk": "40f531063366e56cb9a6c3678cea96d71347dbcb36c770fd898899174f577c9e"
+  },
+  "tests": {
+    "count": 313,
+    "seconds": 27.309,
+    "passed": true
+  },
+  "isolated_runs": [
+    {
+      "path": "traceform-spectrum-horner-block",
+      "chunk_id": "e88644",
+      "wall_time_seconds": 1.278476416,
+      "exit_code": 0,
+      "original_token_count": 197,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1214.201743,\"remove_add_1000_pairs_ms\":25.209473,\"summary_payload_bytes\":635016,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2953216,\"launcher_peak_rss_bytes\":13864960,\"elapsed_ms\":4.002157,\"periodic_cdf_ms\":1.792724,\"rollout_ms\":1.960734,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n{\"untimed_warmup_pipeline_ms\":8.203532,\"first_query_coefficient_build_in_warmup\":true}\n"
+    },
+    {
+      "path": "traceform-spectrum-coefficient-order",
+      "chunk_id": "d3f5f1",
+      "wall_time_seconds": 1.230315875,
+      "exit_code": 0,
+      "original_token_count": 197,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1192.735596,\"remove_add_1000_pairs_ms\":25.189738,\"summary_payload_bytes\":635016,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2899968,\"launcher_peak_rss_bytes\":13869056,\"elapsed_ms\":3.940389,\"periodic_cdf_ms\":1.751343,\"rollout_ms\":1.958211,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n{\"untimed_warmup_pipeline_ms\":6.861247,\"first_query_coefficient_build_in_warmup\":true}\n"
+    },
+    {
+      "path": "traceform-spectrum-coefficient-order",
+      "chunk_id": "8a2dc9",
+      "wall_time_seconds": 1.18390025,
+      "exit_code": 0,
+      "original_token_count": 197,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1195.887981,\"remove_add_1000_pairs_ms\":25.090292,\"summary_payload_bytes\":635016,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2871296,\"launcher_peak_rss_bytes\":13869056,\"elapsed_ms\":3.878011,\"periodic_cdf_ms\":1.710694,\"rollout_ms\":1.990479,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n{\"untimed_warmup_pipeline_ms\":5.768026,\"first_query_coefficient_build_in_warmup\":true}\n"
+    },
+    {
+      "path": "traceform-spectrum-horner-block",
+      "chunk_id": "d16218",
+      "wall_time_seconds": 1.203142959,
+      "exit_code": 0,
+      "original_token_count": 197,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1194.903362,\"remove_add_1000_pairs_ms\":25.175293,\"summary_payload_bytes\":635016,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2928640,\"launcher_peak_rss_bytes\":13877248,\"elapsed_ms\":3.970907,\"periodic_cdf_ms\":1.746053,\"rollout_ms\":1.993489,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n{\"untimed_warmup_pipeline_ms\":8.217326,\"first_query_coefficient_build_in_warmup\":true}\n"
+    }
+  ],
+  "apk_runs": [
+    {
+      "passed": true,
+      "history_pairs": 86400,
+      "states": 16,
+      "horizon": 120,
+      "thread_environment_before": {
+        "thread_id": 26206,
+        "thread_priority": 0,
+        "cpus_allowed": "0-3"
+      },
+      "thread_environment_after": {
+        "thread_id": 26206,
+        "thread_priority": 0,
+        "cpus_allowed": "0-3"
+      },
+      "native_profiles": [
+        {
+          "lock_wait_ms": 0.009318,
+          "input_copy_allocation_ms": 1.071696,
+          "native_cdf_wall_ms": 7.854329,
+          "output_copy_ms": 0.592733,
+          "native_total_ms": 9.528076,
+          "native_cdf_thread_cpu_ms": 7.354045
+        },
+        {
+          "lock_wait_ms": 0.00061,
+          "input_copy_allocation_ms": 0.861735,
+          "native_cdf_wall_ms": 3.439291,
+          "output_copy_ms": 0.662516,
+          "native_total_ms": 4.964152,
+          "native_cdf_thread_cpu_ms": 3.372232
+        },
+        {
+          "lock_wait_ms": 0.000733,
+          "input_copy_allocation_ms": 0.982869,
+          "native_cdf_wall_ms": 4.436686,
+          "output_copy_ms": 0.86792,
+          "native_total_ms": 6.288208,
+          "native_cdf_thread_cpu_ms": 4.298462
+        },
+        {
+          "lock_wait_ms": 0.000813,
+          "input_copy_allocation_ms": 1.046835,
+          "native_cdf_wall_ms": 4.492309,
+          "output_copy_ms": 0.880819,
+          "native_total_ms": 6.420776,
+          "native_cdf_thread_cpu_ms": 4.325073
+        },
+        {
+          "lock_wait_ms": 0.004435,
+          "input_copy_allocation_ms": 0.844035,
+          "native_cdf_wall_ms": 3.768514,
+          "output_copy_ms": 0.903849,
+          "native_total_ms": 5.520833,
+          "native_cdf_thread_cpu_ms": 3.519614
+        }
+      ],
+      "fit_ms": 2372.514284,
+      "cdf_trials_ms": [
+        10.467611,
+        5.503215,
+        6.608602,
+        6.724487,
+        6.128865
+      ],
+      "maximum_cdf_error": 8.881784197001252e-16,
+      "pipeline_trials_ms": [
+        15.396362,
+        13.229533,
+        14.646403,
+        13.681193,
+        14.708415
+      ],
+      "pipeline_rollouts": 300,
+      "pipeline_profiles": [
+        {
+          "normalization_ms": 1.11975,
+          "quantization_ms": 0.583375,
+          "cdf_ms": 6.338826,
+          "rollouts_ms": 7.354411
+        },
+        {
+          "normalization_ms": 0.429362,
+          "quantization_ms": 0.228678,
+          "cdf_ms": 6.088298,
+          "rollouts_ms": 6.483195
+        },
+        {
+          "normalization_ms": 0.389201,
+          "quantization_ms": 0.172404,
+          "cdf_ms": 5.486084,
+          "rollouts_ms": 8.598714
+        },
+        {
+          "normalization_ms": 0.291586,
+          "quantization_ms": 0.31722,
+          "cdf_ms": 5.57963,
+          "rollouts_ms": 7.492757
+        },
+        {
+          "normalization_ms": 0.502482,
+          "quantization_ms": 0.192668,
+          "cdf_ms": 7.236287,
+          "rollouts_ms": 6.776978
+        }
+      ],
+      "fused_pipeline_trials_ms": [
+        10.757853,
+        10.998535,
+        10.586304,
+        11.815226,
+        10.542237
+      ],
+      "fused_occupancy_parity": true,
+      "fresh_snapshot_fit_ms": 2444.528281,
+      "fresh_fused_pipeline_ms": 14.820069,
+      "fused_draw_and_handle_guards": true,
+      "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+      "closed_wrapper_rejected": true,
+      "stale_handle_rejected": true,
+      "forged_handle_rejected": true,
+      "malformed_fit_rejected": true,
+      "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+      "completed_epoch_ms": 1790881545713
+    },
+    {
+      "passed": true,
+      "history_pairs": 86400,
+      "states": 16,
+      "horizon": 120,
+      "thread_environment_before": {
+        "thread_id": 26390,
+        "thread_priority": 0,
+        "cpus_allowed": "0-7"
+      },
+      "thread_environment_after": {
+        "thread_id": 26390,
+        "thread_priority": 0,
+        "cpus_allowed": "0-3"
+      },
+      "native_profiles": [
+        {
+          "lock_wait_ms": 0.006755,
+          "input_copy_allocation_ms": 0.83964,
+          "native_cdf_wall_ms": 7.813151,
+          "output_copy_ms": 0.593018,
+          "native_total_ms": 9.252564,
+          "native_cdf_thread_cpu_ms": 7.360474
+        },
+        {
+          "lock_wait_ms": 0.000976,
+          "input_copy_allocation_ms": 0.945353,
+          "native_cdf_wall_ms": 3.523804,
+          "output_copy_ms": 0.729574,
+          "native_total_ms": 5.199707,
+          "native_cdf_thread_cpu_ms": 3.436687
+        },
+        {
+          "lock_wait_ms": 0.004232,
+          "input_copy_allocation_ms": 1.5,
+          "native_cdf_wall_ms": 4.086914,
+          "output_copy_ms": 1.205281,
+          "native_total_ms": 6.796427,
+          "native_cdf_thread_cpu_ms": 3.828694
+        },
+        {
+          "lock_wait_ms": 0.001871,
+          "input_copy_allocation_ms": 1.12675,
+          "native_cdf_wall_ms": 3.704468,
+          "output_copy_ms": 1.019246,
+          "native_total_ms": 5.852335,
+          "native_cdf_thread_cpu_ms": 3.623331
+        },
+        {
+          "lock_wait_ms": 0.001668,
+          "input_copy_allocation_ms": 0.79358,
+          "native_cdf_wall_ms": 3.588053,
+          "output_copy_ms": 1.00118,
+          "native_total_ms": 5.384481,
+          "native_cdf_thread_cpu_ms": 3.516479
+        }
+      ],
+      "fit_ms": 2374.580486,
+      "cdf_trials_ms": [
+        10.019531,
+        5.475952,
+        7.300293,
+        6.185791,
+        5.763265
+      ],
+      "maximum_cdf_error": 8.881784197001252e-16,
+      "pipeline_trials_ms": [
+        15.804158,
+        14.409384,
+        12.066569,
+        12.062825,
+        11.361002
+      ],
+      "pipeline_rollouts": 300,
+      "pipeline_profiles": [
+        {
+          "normalization_ms": 1.071452,
+          "quantization_ms": 0.634236,
+          "cdf_ms": 6.546021,
+          "rollouts_ms": 7.552449
+        },
+        {
+          "normalization_ms": 0.420818,
+          "quantization_ms": 0.336751,
+          "cdf_ms": 6.826334,
+          "rollouts_ms": 6.825481
+        },
+        {
+          "normalization_ms": 0.836141,
+          "quantization_ms": 0.189006,
+          "cdf_ms": 4.920369,
+          "rollouts_ms": 6.121053
+        },
+        {
+          "normalization_ms": 0.290486,
+          "quantization_ms": 0.261597,
+          "cdf_ms": 4.878743,
+          "rollouts_ms": 6.631999
+        },
+        {
+          "normalization_ms": 0.32841,
+          "quantization_ms": 0.164591,
+          "cdf_ms": 4.863281,
+          "rollouts_ms": 6.00472
+        }
+      ],
+      "fused_pipeline_trials_ms": [
+        10.593181,
+        9.970744,
+        10.04541,
+        11.2889,
+        9.784505
+      ],
+      "fused_occupancy_parity": true,
+      "fresh_snapshot_fit_ms": 2514.112713,
+      "fresh_fused_pipeline_ms": 15.55896,
+      "fused_draw_and_handle_guards": true,
+      "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+      "closed_wrapper_rejected": true,
+      "stale_handle_rejected": true,
+      "forged_handle_rejected": true,
+      "malformed_fit_rejected": true,
+      "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+      "completed_epoch_ms": 1790881573256
+    },
+    {
+      "passed": true,
+      "history_pairs": 86400,
+      "states": 16,
+      "horizon": 120,
+      "thread_environment_before": {
+        "thread_id": 26574,
+        "thread_priority": 0,
+        "cpus_allowed": "0-7"
+      },
+      "thread_environment_after": {
+        "thread_id": 26574,
+        "thread_priority": 0,
+        "cpus_allowed": "0-3"
+      },
+      "native_profiles": [
+        {
+          "lock_wait_ms": 0.007772,
+          "input_copy_allocation_ms": 0.806722,
+          "native_cdf_wall_ms": 7.901367,
+          "output_copy_ms": 0.620728,
+          "native_total_ms": 9.336589,
+          "native_cdf_thread_cpu_ms": 7.288287
+        },
+        {
+          "lock_wait_ms": 0.003215,
+          "input_copy_allocation_ms": 1.374227,
+          "native_cdf_wall_ms": 4.466634,
+          "output_copy_ms": 1.063192,
+          "native_total_ms": 6.907268,
+          "native_cdf_thread_cpu_ms": 4.375854
+        },
+        {
+          "lock_wait_ms": 0.001872,
+          "input_copy_allocation_ms": 1.395793,
+          "native_cdf_wall_ms": 3.613932,
+          "output_copy_ms": 0.921671,
+          "native_total_ms": 5.933268,
+          "native_cdf_thread_cpu_ms": 3.514201
+        },
+        {
+          "lock_wait_ms": 0.001343,
+          "input_copy_allocation_ms": 0.793823,
+          "native_cdf_wall_ms": 3.493002,
+          "output_copy_ms": 0.981363,
+          "native_total_ms": 5.269531,
+          "native_cdf_thread_cpu_ms": 3.488444
+        },
+        {
+          "lock_wait_ms": 0.000854,
+          "input_copy_allocation_ms": 0.842733,
+          "native_cdf_wall_ms": 3.675659,
+          "output_copy_ms": 0.924317,
+          "native_total_ms": 5.443563,
+          "native_cdf_thread_cpu_ms": 3.445802
+        }
+      ],
+      "fit_ms": 2416.350343,
+      "cdf_trials_ms": [
+        10.1191,
+        7.291829,
+        6.202596,
+        5.525512,
+        5.709554
+      ],
+      "maximum_cdf_error": 8.881784197001252e-16,
+      "pipeline_trials_ms": [
+        15.580892,
+        11.824178,
+        13.050456,
+        12.725463,
+        11.397054
+      ],
+      "pipeline_rollouts": 300,
+      "pipeline_profiles": [
+        {
+          "normalization_ms": 1.200643,
+          "quantization_ms": 0.70756,
+          "cdf_ms": 6.706461,
+          "rollouts_ms": 6.966228
+        },
+        {
+          "normalization_ms": 0.370198,
+          "quantization_ms": 0.185832,
+          "cdf_ms": 5.069254,
+          "rollouts_ms": 6.198894
+        },
+        {
+          "normalization_ms": 0.420817,
+          "quantization_ms": 0.192546,
+          "cdf_ms": 5.940755,
+          "rollouts_ms": 6.496338
+        },
+        {
+          "normalization_ms": 0.295776,
+          "quantization_ms": 0.165283,
+          "cdf_ms": 4.902547,
+          "rollouts_ms": 7.361857
+        },
+        {
+          "normalization_ms": 0.39331,
+          "quantization_ms": 0.162435,
+          "cdf_ms": 4.948405,
+          "rollouts_ms": 5.892904
+        }
+      ],
+      "fused_pipeline_trials_ms": [
+        12.519612,
+        10.402669,
+        10.301311,
+        9.818278,
+        13.341838
+      ],
+      "fused_occupancy_parity": true,
+      "fresh_snapshot_fit_ms": 2493.278443,
+      "fresh_fused_pipeline_ms": 15.931885,
+      "fused_draw_and_handle_guards": true,
+      "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+      "closed_wrapper_rejected": true,
+      "stale_handle_rejected": true,
+      "forged_handle_rejected": true,
+      "malformed_fit_rejected": true,
+      "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+      "completed_epoch_ms": 1790881602389
+    }
+  ],
+  "limits": [
+    "First fused query 14.820069,15.558960,15.931885 ms; two failures of 15 ms threshold",
+    "Warm fused queries all below 15 ms; excludes fit, history scan, phase and draw preparation",
+    "Each trial separated pipeline precedes fused pipeline; not randomized",
+    "CPU frequency and temperature unobserved",
+    "Whole APK memory and complete Stage 11-14 acceptance remain unverified",
+    "History service fusion not yet adopted"
+  ]
+}

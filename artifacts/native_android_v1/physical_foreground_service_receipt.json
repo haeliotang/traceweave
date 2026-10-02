@@ -1,0 +1,24 @@
+{
+  "prior_sensor_access": "suspended_zero_active_time",
+  "other_sensors_permission": "granted",
+  "global_sensor_privacy": "disabled",
+  "api_prior_proc_state": 10,
+  "restoration": "normal_termux_session_foreground_service",
+  "notification_id": 1337,
+  "foreground_service_verified_after_home": true,
+  "hardware_reply_keys": [
+    "LSM6DSR Accelerometer",
+    "LSM6DSR Gyroscope",
+    "Orientation Sensor",
+    "Step Counter",
+    "TMD3719 Ambient Light",
+    "ICP10101 Pressure Sensor",
+    "TMD3719 Proximity (wake-up)",
+    "LSM6DSR Temperature"
+  ],
+  "post_sensor_battery_reply": true,
+  "settings_modified": [],
+  "host_tests": 213,
+  "native_preflight_tests": 4,
+  "scope": "short_background_hardware_reply_check_not_reboot_or_long_duration_acceptance"
+}

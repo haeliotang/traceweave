@@ -17,6 +17,9 @@ import math
 import random
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
+from traceform.forecasting.periodic_kernel import PeriodicTransitionKernel
+from traceform.forecasting.continuity import same_stream_segment
+
 
 @dataclass
 class SimulationBranch:
@@ -32,6 +35,7 @@ class SimulationBranch:
     mean_hitting_steps: Dict[str, float]
     expected_cumulative_energy: float
     sample_paths: List[List[str]]
+    dynamics_evidence: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -59,6 +63,7 @@ class SimulationBranch:
             if self.state_occupancy_by_step
             else {},
             "sample_paths": self.sample_paths[:5],
+            **({"dynamics_evidence": self.dynamics_evidence} if self.dynamics_evidence is not None else {}),
         }
 
 
@@ -148,9 +153,13 @@ class SandboxSimulator:
         self,
         step_nominal_seconds: float = 30.0,
         energy_map: Optional[Dict[str, float]] = None,
+        timezone_name: str = "UTC",
     ):
         self.step_seconds = step_nominal_seconds
         self.energy_map = energy_map or {}
+        self.timezone_name = timezone_name
+        self.periodic_kernel = None
+        self._time_cdf = {}
 
         self.vocab: List[str] = []
         self.vocab_set: Set[str] = set()
@@ -233,7 +242,12 @@ class SandboxSimulator:
                 t2_str = r2["timestamp_utc"].replace("Z", "+00:00")
                 t1 = datetime.datetime.fromisoformat(t1_str)
                 t2 = datetime.datetime.fromisoformat(t2_str)
-                if (t2 - t1).total_seconds() > max_gap_seconds:
+                gap_seconds = (t2 - t1).total_seconds()
+                if gap_seconds <= 0 or gap_seconds > max_gap_seconds:
+                    continue
+                if t1.tzinfo is None or t2.tzinfo is None:
+                    continue
+                if not same_stream_segment(r1, r2):
                     continue
             except Exception:
                 continue
@@ -275,6 +289,10 @@ class SandboxSimulator:
         self._phase_cdf = {
             ph: self._build_cdf_cache(self.phase_trans[ph]) for ph in self.phase_trans
         }
+        self.periodic_kernel = PeriodicTransitionKernel(self.timezone_name).fit(
+            records, self.global_trans, max_gap_seconds
+        )
+        self._time_cdf = {}
 
         return self
 
@@ -285,6 +303,9 @@ class SandboxSimulator:
     ) -> SandboxSimulator:
         """Initializes simulator from a precomputed empirical transition matrix."""
         self.global_trans = trans_matrix
+        self.periodic_kernel = None
+        self._phase_cdf = {}
+        self._time_cdf = {}
         if vocab:
             self.vocab = sorted(list(set(vocab)))
         else:
@@ -304,10 +325,16 @@ class SandboxSimulator:
     ) -> str:
         """Draws next state in O(log K) using binary search over the appropriate CDF table."""
         cdf_dict = self._global_cdf
-        if current_time is not None and self._phase_cdf:
-            ph = self._get_diurnal_phase(current_time)
-            if ph in self._phase_cdf and current_state in self._phase_cdf[ph]:
-                cdf_dict = self._phase_cdf[ph]
+        if current_time is not None and self.periodic_kernel is not None:
+            if current_time not in self._time_cdf:
+                # Bounded cache; each rollout reuses the same future instants.
+                if len(self._time_cdf) >= 4096:
+                    self._time_cdf.clear()
+                self._time_cdf[current_time] = self._build_cdf_cache({
+                    source: self.periodic_kernel.row(source, current_time)
+                    for source in self.vocab
+                })
+            cdf_dict = self._time_cdf[current_time]
 
         cdf_entry = cdf_dict.get(current_state)
         if not cdf_entry:
@@ -481,6 +508,96 @@ class SandboxSimulator:
             sample_paths=paths,
         )
 
+    def simulate_continuous_rollouts(
+        self, model, initial_record, quantize, horizon_steps=120,
+        num_rollouts=300, seed=42, hurst=None, branch_id="continuous_status_quo",
+        phase_quantize=None, velocity_ema_alpha=0.4,
+    ) -> SimulationBranch:
+        """Aggregate continuously evolved coordinates in the existing token vocabulary.
+
+        The supplied quantizer must use the fitted model's coordinate system.
+        No discrete transition or hypothetical actuator is applied to these paths.
+        """
+        if (not isinstance(horizon_steps, int) or horizon_steps < 1
+                or not isinstance(num_rollouts, int) or num_rollouts < 1
+                or not math.isfinite(self.step_seconds) or self.step_seconds <= 0):
+            raise ValueError("positive integer horizon/count and finite step required")
+        if model.model_version is None or initial_record.get("model_version") != model.model_version:
+            raise ValueError("continuous rollout requires matching representation provenance")
+        if any(initial_record.get(key) != model.coordinate_provenance.get(key)
+               for key in ("model_sha256", "normalizer_sha256")):
+            raise ValueError("continuous rollout requires matching coordinate provenance")
+        initial = initial_record["continuous_vector"]
+        if len(initial) != model.dimension or not all(math.isfinite(value) for value in initial):
+            raise ValueError("finite dimension-matched initial vector required")
+        initial_velocity = initial_record.get("continuous_velocity", [0.0] * model.dimension)
+        if phase_quantize is not None:
+            if (len(initial_velocity) != model.dimension
+                    or not all(math.isfinite(value) for value in initial_velocity)
+                    or not math.isfinite(velocity_ema_alpha) or not 0 <= velocity_ema_alpha <= 1):
+                raise ValueError("finite matching initial velocity and EMA alpha in [0, 1] required")
+        elif quantize is None:
+            raise ValueError("coordinate or phase quantizer required")
+        counts = [Counter() for _ in range(horizon_steps)]
+        hitting = {state: [] for state in self.vocab}
+        paths = []
+        seen = set()
+        energy = 0.0
+        previous = None
+        velocity = None
+        previous_time = 0.0
+
+        def observe(run, step, elapsed, vector):
+            nonlocal energy, previous, velocity, previous_time
+            if phase_quantize is not None:
+                if step == 0:
+                    velocity = list(initial_velocity)
+                else:
+                    interval = max(0.1, elapsed - previous_time)
+                    velocity = [velocity_ema_alpha * (current - old) / interval
+                                + (1 - velocity_ema_alpha) * value
+                                for current, old, value in zip(vector, previous, velocity)]
+                state = phase_quantize(vector, tuple(velocity))
+                previous, previous_time = tuple(vector), elapsed
+            else:
+                state = quantize(vector)
+            if state not in self.vocab_set:
+                raise ValueError("continuous quantizer returned a state outside the vocabulary")
+            if step == 0:
+                seen.clear()
+                if run < 5:
+                    paths.append([])
+            counts[step][state] += 1
+            energy += self.energy_map.get(state, 1.0)
+            if state not in seen:
+                seen.add(state)
+                hitting[state].append(step)
+            if run < 5:
+                paths[run].append(state)
+
+        if horizon_steps == 1:
+            for run in range(num_rollouts):
+                observe(run, 0, 0.0, tuple(initial))
+        else:
+            options = {} if hurst is None else {"hurst": hurst}
+            rollout = model.rollout if hurst is None else model.rollout_fractional
+            rollout(initial, (horizon_steps - 1) * self.step_seconds,
+                    self.step_seconds, num_rollouts, seed, observer=observe, **options)
+        occupancy = [{state: count / num_rollouts for state, count in row.items()} for row in counts]
+        entropy = [_compute_shannon_entropy(row) for row in occupancy]
+        return SimulationBranch(
+            branch_id, horizon_steps, self.step_seconds, num_rollouts, occupancy,
+            entropy, sum(entropy) / horizon_steps, occupancy[-1],
+            {state: sum(steps) / len(steps) if steps else float(horizon_steps)
+             for state, steps in hitting.items()},
+            energy / (num_rollouts * horizon_steps), paths,
+            {"driver": "white_noise_ito" if hurst is None else "additive_fractional_noise",
+             "hurst": hurst, "model_version": model.model_version,
+             "coordinate_provenance": dict(model.coordinate_provenance),
+             "quantization": "phase_energy" if phase_quantize is not None else "coordinates",
+             "scope": "continuous_forward_prediction_not_empirical_memory_or_actuator_effect"},
+        )
+
     def simulate_counterfactual(
         self,
         initial_state: str,
@@ -536,11 +653,14 @@ class SandboxSimulator:
 
         # Risk delta on high-risk states
         risk_delta_map: Dict[str, float] = {}
-        target_states = high_risk_states or self.vocab_set
+        total_risk_count_change = 0
+        target_states = self.vocab_set if high_risk_states is None else high_risk_states
         for s in target_states:
             p_a = branch_a.absorption_probabilities.get(s, 0.0)
             p_b = branch_b.absorption_probabilities.get(s, 0.0)
-            risk_delta_map[s] = p_b - p_a  # negative means risk reduced
+            count_change = round(p_b * num_rollouts) - round(p_a * num_rollouts)
+            total_risk_count_change += count_change
+            risk_delta_map[s] = count_change / num_rollouts  # negative means risk reduced
 
         # Compute stabilization step (step where entropy delta stabilizes within epsilon)
         stab_a = horizon_steps
@@ -556,22 +676,21 @@ class SandboxSimulator:
                 break
 
         # Generate recommendation
-        risk_scope = high_risk_states or self.vocab_set
-        total_risk_reduced = sum(
-            delta for s, delta in risk_delta_map.items() if s in risk_scope and delta < 0
-        )
-        if total_risk_reduced < -0.05:
+        total_risk_reduced = sum(risk_delta_map.values())
+        if 20 * total_risk_count_change < -num_rollouts:
             rec = "RECOMMEND_INTERVENTION"
             insight = (
-                f"Intervention achieves substantial risk reduction ({total_risk_reduced:.1%}) "
+                f"Scenario predicts net terminal risk change ({total_risk_reduced:.1%}) "
                 f"with peak trajectory divergence of {peak_jsd:.3f} bits at step {peak_step}."
             )
         elif mean_jsd < 0.02:
             rec = "NEUTRAL"
-            insight = "Intervention induces minimal trajectory divergence; status-quo is naturally resilient."
+            insight = "Scenario predicts minimal trajectory divergence."
         else:
             rec = "MAINTAIN_STATUS_QUO"
-            insight = f"Status quo exhibits lower dissipation energy ({branch_a.expected_cumulative_energy:.2f} vs {branch_b.expected_cumulative_energy:.2f})."
+            insight = (f"Scenario predicts no net terminal risk reduction beyond the 5% threshold "
+                       f"({total_risk_reduced:.1%}); mean state energy is "
+                       f"{branch_a.expected_cumulative_energy:.2f} vs {branch_b.expected_cumulative_energy:.2f}.")
 
         return CounterfactualComparison(
             baseline_branch_id="status_quo",

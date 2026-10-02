@@ -1,0 +1,196 @@
+{
+  "scope": "adaptive_history_backend_synthetic_cache_and_readonly_binder_validation",
+  "source_sha256": {
+    "android/build/traceform.apk": "fac0471fb8b2c3b9a1e90a1ed367afcdf3d1b1f39e26960e5bfd159a8aef8802",
+    "android/src/org/traceform/edge/HistoryForecast.java": "a1e0f95a0d735f0dfd7ed0dc5c741cc86320feaca097935e4344e80c95439ea1",
+    "android/src/org/traceform/edge/SpectrumForecastCache.java": "a2b85c2074d2742704ccbb67a33a135965beec220f368324ec657265d2218115",
+    "android/src/org/traceform/edge/HistoryForecastFixture.java": "d77ec2215f9c98c9e5bdec018ddeb60a15e7f91b1d6bbad617230f3ecb83817a",
+    "android/src/org/traceform/edge/MainActivity.java": "5995dcbce8976cc5b866ead0e1e6f18a0b736a2213318aa344808d79531ec1b8",
+    "android/src/org/traceform/edge/HexDigest.java": "5e41cb740debfaf8ca15c87462861618d54f62f6ba961a4ac8e800bb82c1620f",
+    "android/src/org/traceform/edge/SpectrumBackendFixture.java": "cbbc71560294b817c81345bc0d8c88ae28b3935b5c7305612ce7f7aeffb977d5"
+  },
+  "tests": {
+    "count": 310,
+    "seconds": 26.681,
+    "passed": true
+  },
+  "current_cache": {
+    "model_version": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3",
+    "model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+    "normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+    "timezone": "Asia/Kathmandu",
+    "as_of_epoch_ms": 1790000000000,
+    "history_records": 6,
+    "excluded_history_records": 1,
+    "source_sha256": "7132b31ef6312b2d4156d67bcb3e5bb601f850cd64b6b92fc9fb12ba0a44da4a",
+    "eligible_for_intervention": false,
+    "evidence_scope": "retained_native_warm_history_conditioned_rollouts_not_validated_prediction_or_causal_effect",
+    "eligible_pairs": 3,
+    "history_start_epoch_ms": 1789999700000,
+    "history_end_epoch_ms": 1789999880000,
+    "history_age_ms": 120000,
+    "cdf_backend": "cpp_exact_von_mises",
+    "spectrum_cache_hit": false,
+    "available": true,
+    "initial_state": "M07",
+    "step_ms": 30000,
+    "horizon_steps": 120,
+    "rollouts": 300,
+    "seed": 42,
+    "cdf_build_ms": 13.32841,
+    "native_rollout_ms": 8.868408,
+    "small_history_exact_backend_verified": true,
+    "spectrum_cache": {
+      "cache_hit_verified": true,
+      "excluded_payload_invalidation_verified": true,
+      "timezone_invalidation_verified": true,
+      "eligible_pairs": 2057,
+      "repeat_cdf_ms": 18.984456,
+      "repeat_key_ms": 6.152466,
+      "repeat_phase_ms": 1.835002,
+      "repeat_query_ms": 9.134359
+    },
+    "closed_cache_rejected": true,
+    "passed": true,
+    "scope": "synthetic_sqlite_history_binding_continuity_and_native_rollout_fixture",
+    "completed_epoch_ms": 1790878000318
+  },
+  "current_binder": {
+    "passed": true,
+    "service_pid": 6115,
+    "client_pid": 6085,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_backend_policy_verified": true,
+    "history_cache_hit_verified": false,
+    "history_repeat_cdf_ms": 3.867472,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790878049785
+  },
+  "prior_isolated_backend_comparison": {
+    "source_binding": "earlier installed hex/timing APK; not the adaptive APK",
+    "receipt": {
+      "passed": true,
+      "workloads": [
+        {
+          "pairs": 3,
+          "fit_ms": 1.140137,
+          "exact_ms": [
+            0.34786,
+            3.258911,
+            4.444336
+          ],
+          "fitted_query_ms": [
+            0.433227,
+            4.502482,
+            4.840861
+          ],
+          "maximum_cdf_error": 2.220446049250313e-16
+        },
+        {
+          "pairs": 78,
+          "fit_ms": 3.62915,
+          "exact_ms": [
+            6.266724,
+            6.163615,
+            6.190471
+          ],
+          "fitted_query_ms": [
+            20.359497,
+            17.653442,
+            17.263998
+          ],
+          "maximum_cdf_error": 8.881784197001252e-16
+        },
+        {
+          "pairs": 256,
+          "fit_ms": 8.974813,
+          "exact_ms": [
+            12.173096,
+            9.827514,
+            14.499634
+          ],
+          "fitted_query_ms": [
+            47.013753,
+            40.361491,
+            40.568034
+          ],
+          "maximum_cdf_error": 6.661338147750939e-16
+        },
+        {
+          "pairs": 512,
+          "fit_ms": 14.354085,
+          "exact_ms": [
+            20.181234,
+            15.823243,
+            15.014852
+          ],
+          "fitted_query_ms": [
+            43.141886,
+            40.607747,
+            40.344848
+          ],
+          "maximum_cdf_error": 6.661338147750939e-16
+        },
+        {
+          "pairs": 1024,
+          "fit_ms": 30.577677,
+          "exact_ms": [
+            26.207194,
+            26.721598,
+            32.061524
+          ],
+          "fitted_query_ms": [
+            43.867472,
+            39.602377,
+            41.784342
+          ],
+          "maximum_cdf_error": 8.881784197001252e-16
+        },
+        {
+          "pairs": 2048,
+          "fit_ms": 63.990479,
+          "exact_ms": [
+            51.916137,
+            62.477661,
+            48.581584
+          ],
+          "fitted_query_ms": [
+            49.908243,
+            39.570638,
+            40.059285
+          ],
+          "maximum_cdf_error": 6.661338147750939e-16
+        },
+        {
+          "pairs": 4096,
+          "fit_ms": 123.375204,
+          "exact_ms": [
+            93.614828,
+            110.412231,
+            94.983358
+          ],
+          "fitted_query_ms": [
+            44.052327,
+            40.754435,
+            41.285279
+          ],
+          "maximum_cdf_error": 7.771561172376096e-16
+        }
+      ],
+      "states": 16,
+      "horizon": 120,
+      "scope": "synthetic_APK_JNI_backend_comparison_precomputed_phases_not_history_scan_or_full_pipeline",
+      "completed_epoch_ms": 1790877395498
+    }
+  },
+  "limits": [
+    "2048 eligible transitions is an empirical selection threshold for tested workloads, not a universal optimum",
+    "Current repeat CDF 18.984456 ms exceeds 15 ms; excludes history scan and complete pipeline",
+    "Cache validates and scans the whole selected window; no incremental maintenance",
+    "Initial fitting and full application memory remain separate requirements"
+  ]
+}

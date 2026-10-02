@@ -1,0 +1,27 @@
+{
+  "scope": "synthetic_mac_pixel_tls_channel_binding_and_auxiliary_listener_readiness_not_production_owner_enrollment",
+  "passed": true,
+  "cases": 12,
+  "auxiliary_readiness": "server_notifies_authenticated_primary_channel_only_after_bind_and_listen",
+  "temporary_forward_removed": true,
+  "pixel_binary_sha256": "6bc3c9dec920e82d000a86e07b88759431bd77c6d46ea0384532b657283553b7",
+  "device_binary_sha256": "6bc3c9dec920e82d000a86e07b88759431bd77c6d46ea0384532b657283553b7",
+  "host_binary_sha256": "632dc045ed80159e141b178602c2c13f8d2ddf09735f827a3a77f435b4f537c3",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "9b97ed54ccb3ef02ddf059d7254168ecf52b8a159f17d22c932d526d097cefda",
+    "native/private_alignment_probe/tls_io.h": "a5372c3b5a4b43e3cc204fc78dca087295e13d4a66d00d0744fec5a879e7fbdd",
+    "native/private_alignment_probe/verify_tls_binding.py": "9ef5f494932ccf08cce28e7a35f824ca2b4336315169afc4e07fe088b0e8eb6d"
+  },
+  "reports": {
+    "private_tls_channel_binding_ready_arm_host.json": {
+      "passed": true,
+      "cases": 6,
+      "sha256": "73bf0c4f4cd16f078f5d37c84f5d5c9f712cd535c43db74d262ec991d652ef4b"
+    },
+    "private_tls_channel_ready_gw_2x2_crossdevice.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "fc6049c96275f3795ec3cd4b3dc7be3a7e08510e6f7c4111ad6d2d37fc8863f2"
+    }
+  }
+}

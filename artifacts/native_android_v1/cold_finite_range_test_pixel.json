@@ -1,0 +1,8 @@
+{
+  "tests": 34,
+  "passed": true,
+  "elapsed_seconds": 29.309337457001675,
+  "failures": 0,
+  "errors": 0,
+  "scope": "isolated_synthetic_continuous_and_cold_storage_tests_no_live_history"
+}

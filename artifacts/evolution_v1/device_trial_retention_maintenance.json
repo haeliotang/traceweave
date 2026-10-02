@@ -1,0 +1,17 @@
+{
+  "job_id": 11401,
+  "timestamp_utc": "2026-10-01T07:12:59.821059+00:00",
+  "device_tests": 12,
+  "intervention_compaction": {
+    "trials_deleted": 0,
+    "retention_days": 30,
+    "scope": "terminal_and_shadow_trial_retention_policy_aggregates_preserved"
+  },
+  "hot_records": 450,
+  "scope": "registered_scheduler_completion_with_shared_trial_compaction_not_whole_database_size_bound",
+  "source_sha256": {
+    "traceform/intervention/closed_loop.py": "ee65a681b726721ba72cb2a7c0db07927c98d034afdf00a436d3cdec943fa7a8",
+    "scripts/maintain_edge_runtime.py": "fd4c0537d3e1f8522186b1dc848ef457d605da10227161f5d0a838e8d2ed60f7",
+    "tests/test_closed_loop.py": "34b795b0a76520fe9d22cbbde11d7e4d7afd2a2ffde4c4153fbc2b7144bd6c0d"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "receipt": {
+    "passed": true,
+    "clean": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 0,
+      "continuous_pairs": 3,
+      "segment_boundaries": 1,
+      "source_sha256": "19214299afde819aa0f02931c93dd4f7ebd24c550ef29e7327036716224427df",
+      "candidate_input_available": true,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 4,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "changed_binding": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "27fda3e1cf1612a9a312fe87618679c658dfbd9cf9e0888af6ba2e559d6d1a8c",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "malformed": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "be69fd01a28ead907b58dccae5c04fee0eacb7e849dfcb8c53771364beef3fe9",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "invalid_coordinates_verified": true,
+    "cancellation_verified": true,
+    "incremental_fit": {
+      "six_epochs_completed": true,
+      "updates": 72,
+      "baseline_unchanged": true,
+      "invalid_input_rejected": true,
+      "candidate_activated": false
+    },
+    "scope": "synthetic_SQLite_full_audit_not_live_calibration",
+    "completed_epoch_ms": 1790891164365
+  },
+  "local_tests": {
+    "count": 324,
+    "passed": true,
+    "seconds": 29.029
+  },
+  "reference_scope": "six_epoch_1D_and_128D_Python_formula_parity_given_identical_sample_order_not_RNG_seed_parity",
+  "source_sha256": {
+    "android/src/org/traceform/edge/IncrementalManifoldFit.java": "f115e4f763f2ef1e8a9fb1e1708e90f66cd3d6c65caf99cfbcfe947449857ddf",
+    "android/src/org/traceform/edge/ModelEngine.java": "5dd23c94b051baeb7450ab8648fefb14e89c7523970597ef106fe7345617d7e6",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "5e495aa9a9efdd518edff98044c0bb37f8d30d8b07a3271883a5ab5aa58bcf73",
+    "tests/test_native_incremental_fit.py": "98e079b4f597eb26b224a51e62b611eb03e012ae22d733ab02ae6cc1c5183d65",
+    "android/build/traceform.apk": "021bc17f105a5b176e6a30d6b2bb6162fbf4c71ed6165804fc127bfe6197ba58"
+  },
+  "freeze_pre_post_passed": true
+}

@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-01",
+  "device": "Pixel 6a",
+  "rust_tests_passed": 12,
+  "verifier_sha256": "77d3642ac6b62d0a92974b98614dc3d06d8ef63dd5d5ee5b81dddf539befa6c1",
+  "trusted_key_sha256": "1b092989bd99bf63fbbb1f7462da6ab70452dea0c466e413d2a83fe51884bfc0",
+  "full_ledger": {
+    "entries": 4096,
+    "bytes": 131072,
+    "exit_code": 1,
+    "error": "session ledger capacity reached",
+    "unchanged_sha256": "1af6da656624174e4940374fc9779b5a551c25b813c94c7dea2a3d83fc8168a5"
+  },
+  "corrupt_ledger": {
+    "bytes": 1,
+    "exit_code": 1,
+    "error": "invalid session ledger",
+    "unchanged_sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+  },
+  "modified_statement": {
+    "exit_code": 1,
+    "error": "proof rejected",
+    "ledger_created": false
+  },
+  "apk_private_ledger_modified": false,
+  "scope": "public_synthetic_cli_boundaries_not_two_owner_privacy_or_enforceable_owner_query_policy"
+}

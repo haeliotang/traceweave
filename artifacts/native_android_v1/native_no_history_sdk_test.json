@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scope": "android_service_bound_no_history_path_and_capture_resource_access_forbidden",
+  "completed_epoch_ms": 1790861170474,
+  "before_fix": {
+    "passed": false,
+    "error": "SQLiteCantOpenDatabaseException for nonexistent isolated history path",
+    "completed_epoch_ms": 1790861044039
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "passed": false,
+  "nodes": 16,
+  "gates": 15807751,
+  "wires": 15820199,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": false,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 9.293372708023526,
+      "parties": [
+        {
+          "exit_code": 143,
+          "output_matches": false,
+          "stderr": "synthetic participant resource boundary: rss=808592 available=251292\nTerminated \n"
+        },
+        {
+          "exit_code": 1,
+          "output_matches": false,
+          "stderr": "TLS read rejected\n"
+        }
+      ],
+      "error": null
+    }
+  ],
+  "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+  "launcher_sha256": "04cb97ab08f1e2d8fc84db585da18fdd1c589f964fe2d610ebd5ff504e550599",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "host_passed_report": "uniform_permutation_16_private_host.json",
+  "device": {
+    "model": "Pixel 6a",
+    "sdk": 37,
+    "serial": "[REDACTED_DEVICE_SERIAL]"
+  },
+  "acceptance": "not_passed_resource_boundary_reached",
+  "observed_rss_kib": 808592,
+  "boundary": {
+    "rss_kib": 700000,
+    "minimum_available_kib": 196608,
+    "timeout_seconds": 100,
+    "bootstrap_seconds": 60
+  },
+  "test_scripts": {
+    "/private/tmp/traceform-uniform16-device-run.sh": {
+      "sha256": "3c87a7fc2048a2f9702b6072492138de7f5e6c1f32edf5ec23ce4973d7f21b71",
+      "content": "#!/system/bin/sh\nroot=/data/local/tmp/traceform-uniform-private-16-20261002\nexec 3<&0\n\"$@\" <&3 &\nparticipant=$!\nprintf '%s\\n' \"$participant\" > \"$root/participant.pid\"\ncleanup() {\n    kill \"$participant\" 2>/dev/null\n    [ -n \"$watcher\" ] && kill \"$watcher\" 2>/dev/null\n}\ntrap cleanup EXIT INT TERM\n(\n    peak=0\n    while [ -r \"/proc/$participant/status\" ]; do\n        rss=$(awk '/^VmRSS:/ {print $2}' \"/proc/$participant/status\")\n        available=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)\n        [ -n \"$rss\" ] && [ \"$rss\" -gt \"$peak\" ] && peak=$rss\n        printf '%s\\n' \"$peak\" > \"$root/rss-$participant.kib\"\n        if { [ -n \"$rss\" ] && [ \"$rss\" -gt 700000 ]; } || [ \"$available\" -lt 196608 ]; then\n            printf 'synthetic participant resource boundary: rss=%s available=%s\\n' \"$rss\" \"$available\" >&2\n            kill \"$participant\"\n            break\n        fi\n        sleep .2\n    done\n) &\nwatcher=$!\nwait \"$participant\"\nresult=$?\nkill \"$watcher\" 2>/dev/null\nwait \"$watcher\" 2>/dev/null\ntrap - EXIT INT TERM\nexit \"$result\"\n"
+    },
+    "/private/tmp/traceform-uniform16-crossdevice-runner": {
+      "sha256": "04cb97ab08f1e2d8fc84db585da18fdd1c589f964fe2d610ebd5ff504e550599",
+      "content": "#!/usr/bin/env python3\nimport hashlib,os,shlex,ssl,sys\nfrom pathlib import Path\nif sys.argv[1] == '1':\n    root=Path('/private/tmp/traceform-tls-identities-v1')\n    pin=hashlib.sha256(ssl.PEM_cert_to_DER_cert((root/'2.pem').read_text())).hexdigest()\n    remote='/data/local/tmp/traceform-private-alignment-v1/'\n    test='/data/local/tmp/traceform-uniform-private-16-20261002/'\n    args=['toybox','timeout','-k','5','100','sh',test+'run.sh',remote+'traceform-private-alignment-tls-bound-android-v4','1',sys.argv[2],test+'circuit.txt',remote+'traceform-tls-identities-v1/1.pem',remote+'traceform-tls-identities-v1/1.key',remote+'traceform-tls-identities-v1/2.pem',pin,os.environ['TRACEFORM_TEST_SESSION']]\n    os.execv('/opt/homebrew/bin/adb',['/opt/homebrew/bin/adb','-s','[REDACTED_DEVICE_SERIAL]','shell',shlex.join(args)])\nos.execv(sys.executable,[sys.executable,'/private/tmp/traceform-uniform16-usb-client','/private/tmp/traceform-private-tls-bound-runner-v2',*sys.argv[1:]])\n"
+    },
+    "/private/tmp/traceform-uniform16-usb-client": {
+      "sha256": "8b8a791c4a9567570ad41d41f6858fb0f1483d674839395eb6dc73d9f23c52dc",
+      "content": "#!/usr/bin/env python3\nimport sys\nsys.path.insert(0,'Documents/traceform')\nfrom native.private_alignment_probe.run_usb_client import main\nraise SystemExit(main(bootstrap_seconds=60))\n"
+    }
+  },
+  "prior_attempts": [
+    {
+      "passed": false,
+      "nodes": 16,
+      "gates": 15807751,
+      "wires": 15820199,
+      "cases": [
+        {
+          "case": "identical",
+          "passed": false,
+          "valid": true,
+          "objective_numerator": "0",
+          "elapsed_seconds": 4.4290751249936875,
+          "parties": [
+            {
+              "exit_code": 2,
+              "output_matches": false,
+              "stderr": ""
+            },
+            {
+              "exit_code": 1,
+              "output_matches": false,
+              "stderr": "TLS handshake rejected: error:0A000126:SSL routines::unexpected eof while reading\n"
+            }
+          ],
+          "error": null
+        }
+      ],
+      "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+      "launcher_sha256": "b6d4d15f427f5b7cf4bc30c9779e66dbb8dfc12eb84da126bb11a8670b301d42",
+      "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit"
+    },
+    {
+      "passed": false,
+      "nodes": 16,
+      "gates": 15807751,
+      "wires": 15820199,
+      "cases": [
+        {
+          "case": "identical",
+          "passed": false,
+          "valid": true,
+          "objective_numerator": "0",
+          "elapsed_seconds": 100.27675729198381,
+          "parties": [
+            {
+              "exit_code": 124,
+              "output_matches": false,
+              "stderr": ""
+            },
+            {
+              "exit_code": 1,
+              "output_matches": false,
+              "stderr": "TLS handshake rejected: error:0A000126:SSL routines::unexpected eof while reading\n"
+            }
+          ],
+          "error": null
+        }
+      ],
+      "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+      "launcher_sha256": "b6d4d15f427f5b7cf4bc30c9779e66dbb8dfc12eb84da126bb11a8670b301d42",
+      "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit"
+    }
+  ],
+  "corrections": [
+    "Background stdin loss reproduced with one synthetic text line and fixed by preserved fd 3",
+    "Large-circuit bootstrap retry remained strictly initial EOF only and bounded at 60 seconds; four unit tests passed"
+  ],
+  "runtime_sha256": "8407ab0c33150069e574caacf88c9d3dad5b1d1404056a8cb23b9cd77527b0a0"
+}

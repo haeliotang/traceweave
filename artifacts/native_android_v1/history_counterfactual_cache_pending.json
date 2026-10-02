@@ -1,0 +1,21 @@
+{
+  "status": "historical_pending_checkpoint_resolved",
+  "local_tests": {
+    "count": 322,
+    "passed": true,
+    "seconds": 28.455
+  },
+  "freeze_pre_post_passed": true,
+  "device": "Pixel 6a",
+  "scope": "shared_fitted_spectrum_CDF_for_large_history_counterfactual_not_exact_kernel_general_parity",
+  "source_sha256": {
+    "android/src/org/traceform/edge/HistoryForecast.java": "4480e54123541fe8558a43ab858d02282ec0cb7f79b69e1350c8a2663410751c",
+    "android/src/org/traceform/edge/HistoryForecastFixture.java": "e2cd589386081cab8ea8244b539655f25078ed3c5483367f3b9451a2a06523a9",
+    "android/src/org/traceform/edge/SpectrumForecastCache.java": "a9f968f8451756559ad50b7dfa8f3a3130300ac180c8a45730805216d3446476",
+    "android/build/traceform.apk": "2218c72d4c94a22d4b6329f3611191848ef04a56cbea4fa9d587fee023e70a74"
+  },
+  "device_receipt_accepted": false,
+  "reason": "activity_paused_by_keyguard_existing_receipt_is_stale",
+  "resolved_by": "history_counterfactual_cache_first_pixel.json",
+  "scope_note": "Original pending checkpoint retained; accepted fresh receipt is in resolved_by."
+}

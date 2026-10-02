@@ -1,0 +1,21 @@
+{
+  "scope": "synthetic_loopback_mutual_tls_and_auxiliary_authentication_not_production_remote_transport",
+  "binary_sha256": "a3f2ba28d11c058354ee3239839cb906ed3d5008f62a9af5e0a46046e51c81c1",
+  "sources": {
+    "native/private_alignment_probe/tls_io.h": "f1de3dfc5069f62d7497f983302385324778093275fc217ce93ee3759609774a",
+    "native/private_alignment_probe/smoke.cpp": "5062900c7259b6553555c568e7928b761ec5bb35a56950f87b9b33665e40fb11",
+    "native/private_alignment_probe/verify_tls_rejection.py": "d546c1bfdf7a17e44e54e3ccea9bf96c384fdab1ddf75d59663cf4037a3332f4"
+  },
+  "reports": {
+    "private_tls_identity_rejection_arm_host.json": {
+      "sha256": "bf16800cce814afd1ae42adb94864220fd5199b358f4cfff13b7e4962cb60a13",
+      "passed": true,
+      "cases": 3
+    },
+    "private_tls_gw_statement_match_2x2_arm_host_v2.json": {
+      "sha256": "b25f3f0347e22d6015df624c3e968e98af5a6aa6d8800ca7008a3e9f9f9a2b1f",
+      "passed": true,
+      "cases": 12
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "protocol": "traceform.native-model-registry-validation.v1",
+  "apk_sha256": "fa002897da0a27be709ed4f0a7059ca753d55098477f556c2674b48a1d875fc9",
+  "apk_bytes": 3900319,
+  "source_sha256": {
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "6bfe59d6b24ee3952b67773086b710bc7d85a2e64df27b8fd0f982de0ff14f67",
+    "android/src/org/traceform/edge/EdgeService.java": "ec77ae502fdcc75fed17f022e1464b9a09e65a354335842a00b8ecf38f1e251e",
+    "android/src/org/traceform/edge/ModelEngine.java": "8d7144c0c5abed1f8dea2fca7b95fd35c94aa490bb2c5ba5cb39413bb7730db1",
+    "android/src/org/traceform/edge/NativeModelRegistry.java": "ad56569a481b9fcd8098e460c1d4f1b69efc39595560ed1f01db6b0fe705ab06",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "bc6763a0c743456846e4f3468f1ea28879ec70d01ed84eeca3c2a55c043870b0"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "android_fixture_executed": false,
+  "host_related_tests": {
+    "passed": 5,
+    "seconds": 1.05,
+    "scope": "Python model registry and Java training spool, not Android native registry execution"
+  },
+  "service_integration": "load active snapshot at service creation; asset parity remains bound to asset model; no runtime hot switch",
+  "open": [
+    "Android fixture execution",
+    "weekly scheduler and activation policy",
+    "Cold/Warm lifecycle migration beyond four namespaces",
+    "full goal scientific/privacy/performance gates",
+    "final deployment and repository push"
+  ]
+}

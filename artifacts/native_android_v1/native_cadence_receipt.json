@@ -1,0 +1,38 @@
+{
+  "scope": "short_screen_on_background_cadence_not_long_term_1Hz_acceptance",
+  "first": {
+    "frames": 9,
+    "last_frame_epoch_ms": 1790833438135,
+    "session_id": "3dbb1e25-6265-4a93-bd9a-2da1fadbd059",
+    "last_timestamp_utc": "2026-10-01T05:43:58.135Z",
+    "elapsed_realtime_nanos": 44506869393801,
+    "dt_seconds": 1.000413575,
+    "continuous_from_previous": true,
+    "skipped_sample_ticks": 0,
+    "observed_feature_count": 2,
+    "derived_feature_count": 12,
+    "proxy_feature_count": 2,
+    "supplied_feature_count": 16,
+    "missing_feature_count": 112,
+    "running": true
+  },
+  "last": {
+    "frames": 51,
+    "last_frame_epoch_ms": 1790833480135,
+    "session_id": "3dbb1e25-6265-4a93-bd9a-2da1fadbd059",
+    "last_timestamp_utc": "2026-10-01T05:44:40.135Z",
+    "elapsed_realtime_nanos": 44548869172915,
+    "dt_seconds": 0.999283529,
+    "continuous_from_previous": true,
+    "skipped_sample_ticks": 0,
+    "observed_feature_count": 2,
+    "derived_feature_count": 12,
+    "proxy_feature_count": 2,
+    "supplied_feature_count": 16,
+    "missing_feature_count": 112,
+    "running": true
+  },
+  "additional_frames": 42,
+  "elapsed_seconds": 41.999779114,
+  "observed_hz": 1.0000052592181354
+}

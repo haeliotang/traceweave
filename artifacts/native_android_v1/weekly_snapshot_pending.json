@@ -1,0 +1,16 @@
+{
+  "status": "historical_checkpoint_resolved_device_fix_passed",
+  "source_sha256": {
+    "android/src/org/traceform/edge/WeeklySnapshot.java": "5da4600c7ac886743bc5674d78dc5412c803a1b3b5a345b118336a0013d7700b",
+    "android/src/org/traceform/edge/NativeWeeklyAudit.java": "6851582174e082d870ad6deb8d4bb49a6eda324e805f94715edd8ab87f70fbe3",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "171decc420121d9e59b26d888655ac64b3e43cdcf351b4a49abc11f125dac30c",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "aeabce7d28d5a8bad95377c8bde9bb728f91f416cc12eff779ec2e5329778570",
+    "android/build/traceform.apk": "0290fa4a7385cf2e067220a4d63618c4832c8a1f052d1310ced71777b0fa881f"
+  },
+  "host_sqlite_reproduction": "PRAGMA query_only=ON then BEGIN IMMEDIATE rejected: attempt to write a readonly database",
+  "android_35_readonly_transaction_API_confirmed_in_local_sdk": true,
+  "device_snapshot_fixture_accepted": true,
+  "latest_receipt_is_previous_gate_fixture": 1790891821245,
+  "freeze_checks_passed": true,
+  "resolved_by": "weekly_snapshot_fix_pixel.json"
+}

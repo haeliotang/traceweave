@@ -1,0 +1,18 @@
+{
+  "status": "local_and_device_passed",
+  "local_tests": {
+    "count": 325,
+    "passed": true,
+    "seconds": 30.344
+  },
+  "freeze_checks_passed": true,
+  "source_sha256": {
+    "android/src/org/traceform/edge/CalibrationGate.java": "8365068bab0c5010941c65ff608d9325a1a4071336eeeb3cb6f11c6bab88ff0b",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "514865b152ed33caedfd1fa8c9a73dfe48e524f2f9aebcfed3b087b3f9a6776e",
+    "tests/test_native_calibration_gate.py": "89fc4653e17e3705f80dc21cc729bd5e0d5dc28ccb33ffb16e0517c09a210742",
+    "android/build/traceform.apk": "aab56463e5c73df777474d9629edb44aaa2720a21483ec6b1cc9e28c8fd483f9"
+  },
+  "prior_deployed_database_fixture_completed_epoch_ms": 1790891599166,
+  "current_device_repeat_accepted": true,
+  "device_receipt": "native_calibration_gate_pixel.json"
+}

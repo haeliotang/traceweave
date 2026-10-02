@@ -1,0 +1,76 @@
+{
+  "scope": "isolated_synthetic_monthly_native_cache_traversal_probe_not_full_android_workflow",
+  "adopted": false,
+  "reason": "no_latency_gain_in_two_orderings; monthly_15ms_gate_failed",
+  "host": {
+    "cases": 14,
+    "bitwise_equal": true,
+    "pair_counts": [
+      0,
+      1,
+      63,
+      64,
+      65,
+      129,
+      1000
+    ],
+    "phase_scales": [
+      6.28,
+      100000.0
+    ],
+    "horizon": 120,
+    "states": 4
+  },
+  "pixel": {
+    "pairs": 86400,
+    "dimension": 128,
+    "states": 16,
+    "horizon": 120,
+    "rollouts": 300,
+    "sequence": [
+      "baseline",
+      "block",
+      "block",
+      "baseline"
+    ],
+    "baseline_elapsed_ms": [
+      127.910441,
+      128.214071
+    ],
+    "probe_elapsed_ms": [
+      130.292237,
+      137.150269
+    ],
+    "baseline_cdf_ms": [
+      126.446329,
+      126.746582
+    ],
+    "probe_cdf_ms": [
+      128.82666,
+      135.621542
+    ],
+    "baseline_rss_bytes": [
+      4161536,
+      4263936
+    ],
+    "probe_rss_bytes": [
+      4321280,
+      4169728
+    ],
+    "all_mass_conserved": true,
+    "phases_timed": false
+  },
+  "compiler_flags": [
+    "-std=c++17",
+    "-O3",
+    "-ffp-contract=off",
+    "-static-libstdc++"
+  ],
+  "sha256": {
+    "native/traceform_core.cpp": "7c6f55f16276570ee8a41e963d65fa2e8897c5be33451c33f6b605addb3fca04",
+    "/private/tmp/traceform-core-block-probe.cpp": "c814953123ec588e40953ede5e458f74712f6410f2983fc3fb3bed179f72f0e9",
+    "native/traceform_benchmark.cpp": "0f44c761985f1d48165e8298b9639cc00a9bc36c5599966cf2e822e7d29e0664",
+    "android/build/traceform-core-benchmark": "e941835f2658f28ec2b82d683b48411b1ebf8631befcc853329e3b7e19b321b4",
+    "/private/tmp/traceform-block-benchmark": "777e635f10a7db8d4013bab9a58d18dcb5e2a55dab3880327d6bef85d4461683"
+  }
+}

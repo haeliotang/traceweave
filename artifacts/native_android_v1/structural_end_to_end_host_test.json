@@ -1,0 +1,15 @@
+{
+  "tests": 297,
+  "passed": true,
+  "elapsed_seconds": 20.9,
+  "scope": "actual_synthetic_training_structure_adaptation_holdout_activation_and_rollback_no_mocked_fit_or_scores",
+  "synthetic_probe": {
+    "baseline_mean_distance": 3254.18921,
+    "candidate_mean_distance": 8.60535,
+    "baseline_topographic_error": 1.0,
+    "candidate_topographic_error": 0.0,
+    "training_nonadjacent_pairs_before": 70,
+    "training_nonadjacent_pairs_after": 0
+  },
+  "real_model_activated": false
+}

@@ -1,0 +1,154 @@
+{
+  "scope": "standalone_native_streamed_synthetic_monthly_spectrum_not_complete_Android_workflow",
+  "runs": [
+    {
+      "mode": "--canonical-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 220.146769,
+          "remove_add_1000_pairs_ms": 4.367431,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": true
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 4874240,
+          "launcher_peak_rss_bytes": 13385728,
+          "elapsed_ms": 4.502686,
+          "periodic_cdf_ms": 3.516602,
+          "rollout_ms": 0.95516,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "mode": "--streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 204.896932,
+          "remove_add_1000_pairs_ms": 4.209351,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2969600,
+          "launcher_peak_rss_bytes": 13385728,
+          "elapsed_ms": 4.356201,
+          "periodic_cdf_ms": 3.396118,
+          "rollout_ms": 0.926799,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "mode": "--streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 262.812093,
+          "remove_add_1000_pairs_ms": 4.199585,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3018752,
+          "launcher_peak_rss_bytes": 13389824,
+          "elapsed_ms": 4.327433,
+          "periodic_cdf_ms": 3.377035,
+          "rollout_ms": 0.919921,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "mode": "--streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 204.647583,
+          "remove_add_1000_pairs_ms": 4.190796,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3006464,
+          "launcher_peak_rss_bytes": 13393920,
+          "elapsed_ms": 4.340292,
+          "periodic_cdf_ms": 3.387532,
+          "rollout_ms": 0.920695,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    }
+  ],
+  "prediction_gate_passed": true,
+  "decimal_5MB_gate_passed": true,
+  "fit_cost_excluded_from_prediction": true,
+  "production_sdk_selected": false,
+  "fingerprint_is_diagnostic_not_security_digest": true,
+  "tests": {
+    "count": 309,
+    "passed": true,
+    "seconds": 26.028
+  },
+  "source_sha256": {
+    "native/periodic_spectrum.h": "65c08914b1ad69ba362a01dd57e59da8a126e248671e524565be28235afe6d3a",
+    "native/periodic_spectrum.cpp": "e292c831554046793c09ae60f3ac22f7f49028745a2f10c4d7603ac58c2aa9d7",
+    "native/periodic_spectrum_benchmark.cpp": "60d234294f5d0862374340d5d6037293a0406aa9d975b690b7c8e3f7a7d757e9",
+    "tests/test_native_periodic_spectrum.py": "3c61b94130f66594545530f6b1f2a83796f50b3e28eb8447aa028c548235f1af"
+  },
+  "binary_sha256": "d39f4787f6205c0813c064b09c73438080715ebbfb68cd19460c3925e8de5193"
+}

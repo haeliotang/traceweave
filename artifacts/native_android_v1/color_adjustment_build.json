@@ -1,0 +1,22 @@
+{
+  "apk_sha256": "4e358ff45ed0dd1e7f2a7cac2cc49135a4bccf1db2581da4d40be251266abfd5",
+  "apk_bytes": 3769247,
+  "source_sha256": {
+    "android/src/org/traceform/edge/ColorTemperatureAdjustment.java": "0130883b99de4e8868d0ece37004f97e036e025efa2701d6700187ae0678c0e4",
+    "android/src/org/traceform/edge/NightDisplay.java": "0aca6509441db03b9e2f3cb6e434438be4c6890f0439814d2fd0d5cdef03126a",
+    "android/src/org/traceform/edge/ColorTemperatureFixture.java": "874e50743f8a1691031d4df88c4ea98327e85cb51018d9180538e8808421f5a6",
+    "android/src/org/traceform/edge/MainActivity.java": "bb42c690e7e328f2325b6bc9ff1d8e9be09ba66a3c0ba538d984acc64860093a",
+    "tests/test_native_color_temperature.py": "1428d513a17290d9b0f693371971693c1db6c26695cf719f71b26cfc2dbb8c56"
+  },
+  "full_tests_before_receipt_field_rename": {
+    "passed": true,
+    "tests": 301,
+    "elapsed_seconds": 27.001
+  },
+  "final_controller_test": {
+    "passed": true,
+    "tests": 1,
+    "elapsed_seconds": 0.414
+  },
+  "scope": "simulated_controller_and_native_disabled_permission_guard_not_physical_display_actuation"
+}

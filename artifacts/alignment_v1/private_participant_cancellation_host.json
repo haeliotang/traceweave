@@ -1,0 +1,14 @@
+{
+  "scope": "host_participant_cancellation_cleanup_and_apk_deployment_not_app_private_mpc",
+  "regression_before_fix": "cancellation status lost",
+  "python_tests": 277,
+  "passed": true,
+  "host_child_reaped": true,
+  "host_worker_threads_stopped": true,
+  "apk_sha256": "25d9724ecbb6e0788f53178845fe9f82a9cbec076d751bce01f569c6eb10be04",
+  "installed": "Success",
+  "sources": {
+    "android/src/org/traceform/edge/PrivateParticipant.java": "a8cb28de07bf4938577a91a92479412614138b4d1eb935cc6a9898aeb348592d",
+    "tests/test_native_private_participant.py": "a80205b34fbf564b5fac4fc789f1de96733c0f6964d397767ab7d4d3de2bd97f"
+  }
+}

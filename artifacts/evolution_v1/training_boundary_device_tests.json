@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-01",
+  "device": "Pixel 6a",
+  "tests": ["tests.test_manifold_lattice", "tests.test_guarded_calibration", "tests.test_continuous_sandbox"],
+  "tests_passed": 17,
+  "elapsed_seconds": 4.133,
+  "exit_code": 0,
+  "host_full_suite_tests_passed": 263,
+  "device_source_sha256": {
+    "traceform/representation/manifold_lattice.py": "2089850644332f2dd482656432f6245480185348c5e5762ab24071119e8af5df",
+    "tests/test_manifold_lattice.py": "19153982c5b2b693f6a0b29f3317017e921c417f0cc7e077511432aad1538994"
+  },
+  "scope": "synthetic_training_boundary_regressions_not_real_candidate_acceptance",
+  "real_active_model_changed": false
+}

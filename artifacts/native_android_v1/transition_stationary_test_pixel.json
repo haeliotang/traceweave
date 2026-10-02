@@ -1,0 +1,8 @@
+{
+  "tests": 8,
+  "passed": true,
+  "elapsed_seconds": 0.06306477899488527,
+  "failures": 0,
+  "errors": 0,
+  "scope": "isolated_synthetic_transition_graph_and_discovery_tests_no_live_history"
+}

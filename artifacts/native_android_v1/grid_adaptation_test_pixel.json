@@ -1,0 +1,10 @@
+{
+  "tests": 20,
+  "executed_tests": 19,
+  "passed": true,
+  "elapsed_seconds": 6.199865401009447,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "scope": "isolated_synthetic_grid_adaptation_baseline_isolation_and_maintenance_no_live_history"
+}

@@ -1,0 +1,36 @@
+{
+  "protocol": "traceform.native-weekly-gap-audit.v1",
+  "scope": "current_source_architecture_not_device_scheduler_observation",
+  "sha256": {
+    "android/AndroidManifest.xml": "ca9601a036558fc20de36d41f663be2fd62da43996f011e5c35348d0b50c937b",
+    "android/src/org/traceform/edge/EdgeService.java": "35ba5e0bce9c17a55bb4cb23c6d23af8258a3b7adfd436b3b878a3046fecaaec",
+    "android/src/org/traceform/edge/ModelEngine.java": "b5839707764de9b9a1809bc9e9237fb2bcfa7fbafe6cb902790e73a2471b347c",
+    "android/src/org/traceform/edge/ColdTrajectory.java": "bdf3b9e5d3fd6c7dc9c7ba9f521e3550b56caa7d9e0a16df2b811a978499a190",
+    "traceform/evolution/guarded_calibration.py": "f1fa7b062ed8fb27c39e891053aa6f16b47c2da8a410421f9e4b78497af34c2d",
+    "traceform/evolution/potential_maintenance.py": "87a098ba3ff4fb03a3e4abfa5edf9dd96280208a50ecd3cffc35773c744ebc18"
+  },
+  "facts": {
+    "native_frames_include_model_sha256": true,
+    "native_frames_include_continuous_vector_and_velocity": true,
+    "native_cold_append_checks_model_content_digest": true,
+    "native_model_loads_assets_only": true,
+    "manifest_job_services": [
+      "ColorRecoveryJob",
+      "VolumeRecoveryJob"
+    ],
+    "native_weekly_job_service_present": false,
+    "native_candidate_calibration_present": false,
+    "native_model_activation_registry_present": false,
+    "python_guarded_calibration_and_potential_maintenance_present": true
+  },
+  "required_next_chain": [
+    "streaming full retained-frame audit bound to database/model/normalizer/source digest",
+    "topological strain and chronological train/holdout assessment",
+    "incremental candidate fit and grid adaptation with frozen normalizer",
+    "source-bound potential reordering",
+    "guarded atomic activation and token migration with rollback",
+    "persisted Sunday-local-time Android scheduling with idempotent week receipt"
+  ],
+  "completion": false,
+  "reason": "Python weekly maintenance does not establish standalone APK weekly evolution"
+}

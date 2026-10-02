@@ -1,0 +1,20 @@
+{
+  "scope": "synthetic_mac_pixel_mutual_tls_feasible_gw_over_usb_not_real_owner_enrollment_or_private_optimizer",
+  "passed": true,
+  "cases": 12,
+  "report_sha256": "2315e7b3e4e0c4d5c10d2e510838392ec56ed780d064ce32607657c098f2fe0b",
+  "temporary_forward_removed": true,
+  "startup_failure": "ADB forwarded TCP accepted before remote listener; TLS initial unexpected EOF",
+  "fix": "bounded_initial_handshake_only_EOF_retry_no_authentication_or_MPC_retry",
+  "mac_binary_sha256": "14461e041080b25be2eb3af688016362fb7b826467814cab64642876a7ecf186",
+  "pixel_binary_sha256": "94c3bf57d3ca2147b9d4f13b4224673544268055dd2a54137b4d9fdc330e3625",
+  "sources": {
+    "native/private_alignment_probe/tls_io.h": "67a648fc69b1c5fdf9b242f5ae44c807acb7f0a689fe68fa69a8b973e4b9f1ae",
+    "native/private_alignment_probe/run_usb_client.py": "8820bc507754dd27e956841c9c0f7fa44011429416de60902f37ba84ebb467b5",
+    "tests/test_private_usb_client.py": "8f684258cd83c3b8684139e9f4da8d60faf30253917144a0656e5cc3de910905"
+  },
+  "retry_boundary_tests": {
+    "tests": 3,
+    "passed": true
+  }
+}

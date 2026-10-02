@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "gates": 1200,
+  "cases": 812,
+  "circuit_sha256": "85b140382ea62e7c674ab20046661a925f1caea2c475e13443dd5152aeb8d6e1",
+  "scope": "plaintext_synthetic_square_primitive_not_private_protocol_or_security_audit",
+  "reference": {
+    "passed": true,
+    "gates": 2948,
+    "cases": 812,
+    "circuit_sha256": "2ebccd0666fc951d7232e89386a6ca7ad15bcf902644d851a21eaa5236013e57",
+    "scope": "plaintext_synthetic_square_primitive_not_private_protocol_or_security_audit"
+  },
+  "source_bindings": {
+    "native/private_alignment_probe/square20.h": "96f4b86cde359522e14bb9166c707f572106f7202324960fb8d041d382fe932c",
+    "native/private_alignment_probe/generate_square20.cpp": "b9f072fa69682bad7a11653afddf8b4495a83e61ba2150b62cc3145645603c35",
+    "native/private_alignment_probe/verify_square20.py": "d4bc93acf2c65b9a369ba1ce3c46003f8baad3f8272bccd5ec5cf3bcd696e267",
+    "/private/tmp/traceform-square20-generator": "09ff241cb273768d7c38be971418598c4ffad6914d799b4a5e5ea7993491688e"
+  },
+  "prior_export_failure": {
+    "failed_input": 1,
+    "error": "unsigned square mismatch: 1",
+    "cause": "public zero output bit lacked a real wire in pinned plaintext recorder",
+    "rejected_circuit_sha256": "ac05925052c26a48253bc80395e4b41c93f3a70bf2d4ecfc59fce5389e34c772",
+    "correction": "existing project pattern: materialize an identically-zero private wire before reveal"
+  },
+  "construction": "x^2 = sum_i b_i*2^(2i) + sum_i<j (b_i & b_j)*2^(i+j+1); each carry-save step preserves bit-column value; a final 40-bit addition is exact for all unsigned 20-bit inputs"
+}

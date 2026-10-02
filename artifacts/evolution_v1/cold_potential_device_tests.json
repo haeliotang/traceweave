@@ -1,0 +1,18 @@
+{
+  "device_serial": "[REDACTED_DEVICE_SERIAL]",
+  "runtime": "native Termux Python",
+  "test_modules": ["tests.test_continuous_dynamics", "tests.test_tiered_storage"],
+  "tests_run": 27,
+  "elapsed_seconds": 3.079,
+  "passed": true,
+  "sources": {
+    "traceform/dynamics/continuous.py": "68cd6447910c42c7dca1d0b84ed18cac6e178c727b9969547e525b77f8bbcceb",
+    "traceform/streaming/tiered_storage.py": "86136f4d89427a77c9b952a7ecd667aa6c95c6038fce8c8fe58c21f371978756",
+    "scripts/run_continuous_simulation.py": "8a79fd0e0b119d6568bf932966b9e349f3d933a0e28cf8dc998861fed9b721b6",
+    "tests/test_continuous_dynamics.py": "02903e1bbbaa203365fd2f8aea50d8b66ebf74bb29f947f81cfd32149fca2582",
+    "tests/test_tiered_storage.py": "752f4c4cdd5ce29594b640a0200884ab33ed5f3e1ab91818f7cb38034a8af6db"
+  },
+  "deployment": "atomic file replacements with rollback copies; existing reader not restarted",
+  "scope": "synthetic isolated database tests on physical device; no live potential persisted, no actuator invoked",
+  "limitations": ["Not automatic weekly potential fitting", "Not attractor or bifurcation validation", "Existing reader retains previously imported code until restart"]
+}

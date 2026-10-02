@@ -1,0 +1,12 @@
+{
+  "tests": 287,
+  "passed": true,
+  "elapsed_seconds": 20.254,
+  "affected_tests": 33,
+  "dimensions": [
+    1,
+    3,
+    128
+  ],
+  "scope": "archived_smoothed_potential_hessian_and_conservative_drift_jacobian_not_bifurcation_identification"
+}

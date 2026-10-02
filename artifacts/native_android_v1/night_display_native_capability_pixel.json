@@ -1,0 +1,24 @@
+{
+  "scope": "native_read_only_night_display_capability_not_actuation",
+  "settings_writes": 0,
+  "write_secure_settings_granted": false,
+  "control_display_color_transforms_granted": false,
+  "config_nightDisplayAvailable": true,
+  "config_nightDisplayColorTemperatureMin": 686,
+  "config_nightDisplayColorTemperatureMax": 4082,
+  "settings": {
+    "night_display_activated": {
+      "status": "read",
+      "value": "0"
+    },
+    "night_display_auto_mode": {
+      "status": "unset",
+      "value": null
+    },
+    "night_display_color_temperature": {
+      "status": "unset",
+      "value": null
+    }
+  },
+  "completed_epoch_ms": 1790869577704
+}

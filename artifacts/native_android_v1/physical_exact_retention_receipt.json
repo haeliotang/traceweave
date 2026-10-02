@@ -1,0 +1,48 @@
+{
+  "source_sha256": {
+    "traceform/streaming/rolling_ledger.py": "8e153d216cf66ffdc5a3df732dcd20084d24e12877e5f1ff7dc65a060c755eb5",
+    "traceform/streaming/physical_ledger_v2.py": "43ba3036dba6db3352f1e4bfddf523d7ca3f9e7e1a38473dab156f9ac73bf0e2",
+    "scripts/maintain_edge_runtime.py": "c722ad5bb50b78ec98e45fa3008c1e052cc56e78984bf8e22f1ab4c23aeadcac",
+    "scripts/edge_maintenance_job.sh": "39126fad3ed2a9a8202a0d6882ec3f1caee75320a4e2dda90f24409f909aae7f"
+  },
+  "maintenance": {
+    "compaction": {
+      "counts": {
+        "cold": 11,
+        "hot": 122,
+        "warm": 122
+      },
+      "hot_deleted": 0,
+      "warm_deleted": 0
+    },
+    "event_segments_deleted": 0,
+    "last_calibration_week": null,
+    "physical_segments_deleted": {
+      "episodes": 0,
+      "observations": 0,
+      "transitions": 0
+    },
+    "retained_versions": [
+      "2b95a904e6dfadc4caf783bcf4e1a58dd4c21aa54ee6b05f6b3482816230aebc",
+      "f3797745004c52c08bcbf1819a380ab9fd0a30aa66a8b4db149b3037539fc5c8"
+    ],
+    "timestamp_utc": "2026-10-01T04:17:10.295926+00:00"
+  },
+  "hot_latest_timestamp": "2026-10-01T04:17:16.348467Z",
+  "hot_latest_age_seconds": 39.255542,
+  "daemon_pid": "4153",
+  "silent_flag": true,
+  "intervention_mode": "shadow",
+  "native_rolling_tests": 11,
+  "native_idle_maintenance_tests": 1,
+  "host_tests": 219,
+  "synthetic_benchmark": {
+    "bytes": 29692800,
+    "device_compact_seconds": [
+      0.125511068,
+      0.000540894,
+      0.000417928
+    ]
+  },
+  "scope": "per_record_cutoff_at_append_and_maintenance_not_continuous_wall_clock_expiry"
+}

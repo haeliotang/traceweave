@@ -1,0 +1,13 @@
+{
+  "scope": "stale_prior_status_after_rejected_new_service_start_not_cold_runtime_evidence",
+  "prior_status": {
+    "running": false,
+    "frames": 52,
+    "last_frame_epoch_ms": 1790834607454,
+    "observed_feature_count": 3,
+    "derived_feature_count": 15,
+    "proxy_feature_count": 4,
+    "missing_feature_count": 106
+  },
+  "blocking_condition": "Android ForegroundServiceStartNotAllowedException while keyguard showing=true"
+}

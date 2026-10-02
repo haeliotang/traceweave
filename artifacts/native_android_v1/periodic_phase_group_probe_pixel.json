@@ -1,0 +1,57 @@
+{
+  "scope": "exact_phase_grouping_synthetic_native_probe_not_full_SDK_acceptance",
+  "adopted": false,
+  "reason": "15ms gate still fails and sorted index scratch increases RSS; requires fitted statistics design",
+  "host_parity": {
+    "cases": 16,
+    "max_cdf_absolute_difference": 2.831068712794149e-15,
+    "tolerance": 1e-12,
+    "repeated_phase_pool": 17,
+    "pairs": [
+      0,
+      1,
+      63,
+      64,
+      65,
+      129,
+      1000,
+      10000
+    ],
+    "phase_scales": [
+      6.28,
+      100000.0
+    ]
+  },
+  "phase_unique_counts": {
+    "legacy": 57086,
+    "sdk_construction": 20160
+  },
+  "pixel": {
+    "pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "runs": 300,
+    "sorting_timed": true,
+    "phase_preparation_timed": false,
+    "canonical": {
+      "baseline_ms": 134.161866,
+      "probe_ms": 62.296061,
+      "baseline_rss": 4194304,
+      "probe_rss": 5042176
+    },
+    "legacy": {
+      "baseline_ms": 133.976237,
+      "probe_ms": 120.810181,
+      "baseline_rss": 4210688,
+      "probe_rss": 5029888
+    },
+    "mass_conserved_all": true
+  },
+  "sha256": {
+    "native/traceform_core.cpp": "7c6f55f16276570ee8a41e963d65fa2e8897c5be33451c33f6b605addb3fca04",
+    "/private/tmp/traceform-core-phase-group-probe.cpp": "ec48699d6e7dfc2bfc1d1afe68cbcd494251897164ec090efa4a5401868bfbe2",
+    "native/traceform_benchmark.cpp": "51c63068ac70c12bd244b8fc0ec34965208f0adb2d9877e07a21cb2ad63ae551",
+    "/private/tmp/traceform-phase-group-baseline": "9811d6eedc345d480e2cbed1f36fffe692be1f84ff45f0d49372fc01e07be6ca",
+    "/private/tmp/traceform-phase-group-benchmark": "463c172c883124a52f88b1e8bdcd5d5c2e9c4c7b23e8dc8dee3bf5bcd8fa4acb"
+  }
+}

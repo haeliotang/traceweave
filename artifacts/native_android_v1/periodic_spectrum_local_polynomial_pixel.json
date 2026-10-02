@@ -1,0 +1,173 @@
+{
+  "scope": "local_order18_polynomial_frequency_evaluation_synthetic_validation",
+  "hashes": {
+    "native/periodic_spectrum.cpp": "5d8234fb50639f4c00617d09864eb006673d145a1de1cce7cecda9ca02a00784",
+    "tests/test_native_periodic_spectrum.py": "24e57f8674113ba9021ebe9c50b581bfd337d1a184a91b08409426bffe0c0795",
+    "android/build/traceform.apk": "e950fcdc4cd62d447c3df142df99678bdae11766e9d9702992ed4cd69280245e"
+  },
+  "tests": {
+    "count": 312,
+    "seconds": 27.225,
+    "passed": true
+  },
+  "degree32_probe": [
+    {
+      "path": "traceform-spectrum-block16",
+      "chunk_id": "397903",
+      "wall_time_seconds": 1.266955,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"3c1348b2f6600067\"}\n{\"spectrum_fit_ms\":1192.769003,\"remove_add_1000_pairs_ms\":25.076985,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2920448,\"launcher_peak_rss_bytes\":13410304,\"elapsed_ms\":16.974243,\"periodic_cdf_ms\":14.530762,\"rollout_ms\":2.236694,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-local-polynomial",
+      "chunk_id": "09aaf4",
+      "wall_time_seconds": 1.254626292,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"58db1a6fcd3a8d2d\"}\n{\"spectrum_fit_ms\":1190.616781,\"remove_add_1000_pairs_ms\":25.045695,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":3014656,\"launcher_peak_rss_bytes\":13410304,\"elapsed_ms\":15.321655,\"periodic_cdf_ms\":12.924397,\"rollout_ms\":2.205852,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-local-polynomial",
+      "chunk_id": "53d716",
+      "wall_time_seconds": 1.267527209,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"58db1a6fcd3a8d2d\"}\n{\"spectrum_fit_ms\":1216.919434,\"remove_add_1000_pairs_ms\":25.164795,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2920448,\"launcher_peak_rss_bytes\":13418496,\"elapsed_ms\":15.734945,\"periodic_cdf_ms\":13.257609,\"rollout_ms\":2.248901,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-block16",
+      "chunk_id": "5a3c58",
+      "wall_time_seconds": 1.259436333,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"3c1348b2f6600067\"}\n{\"spectrum_fit_ms\":1191.661296,\"remove_add_1000_pairs_ms\":25.075114,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2953216,\"launcher_peak_rss_bytes\":13422592,\"elapsed_ms\":17.280721,\"periodic_cdf_ms\":14.816691,\"rollout_ms\":2.205567,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    }
+  ],
+  "degree18_probe": [
+    {
+      "chunk_id": "247dd9",
+      "wall_time_seconds": 1.266163083,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"58db1a6fcd3a8d2d\"}\n{\"spectrum_fit_ms\":1210.884075,\"remove_add_1000_pairs_ms\":25.070597,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2965504,\"launcher_peak_rss_bytes\":13434880,\"elapsed_ms\":10.526367,\"periodic_cdf_ms\":8.044068,\"rollout_ms\":2.259155,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "chunk_id": "afcc16",
+      "wall_time_seconds": 1.248432916,
+      "exit_code": 0,
+      "original_token_count": 176,
+      "output": "{\"cdf_fixture_fingerprint\":\"58db1a6fcd3a8d2d\"}\n{\"spectrum_fit_ms\":1193.741985,\"remove_add_1000_pairs_ms\":25.182780,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2977792,\"launcher_peak_rss_bytes\":13443072,\"elapsed_ms\":10.400635,\"periodic_cdf_ms\":7.960856,\"rollout_ms\":2.209229,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    }
+  ],
+  "ARM_parity": {
+    "cases": 12,
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "shared_draw_occupancy_equal": true
+  },
+  "APK": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 15256,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "thread_environment_after": {
+      "thread_id": 15256,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.006674,
+        "input_copy_allocation_ms": 0.877278,
+        "native_cdf_wall_ms": 17.138021,
+        "output_copy_ms": 0.625366,
+        "native_total_ms": 18.647339,
+        "native_cdf_thread_cpu_ms": 16.168784
+      },
+      {
+        "lock_wait_ms": 0.00472,
+        "input_copy_allocation_ms": 1.373535,
+        "native_cdf_wall_ms": 14.368124,
+        "output_copy_ms": 1.003947,
+        "native_total_ms": 16.750326,
+        "native_cdf_thread_cpu_ms": 13.763104
+      },
+      {
+        "lock_wait_ms": 0.001302,
+        "input_copy_allocation_ms": 0.981364,
+        "native_cdf_wall_ms": 17.303833,
+        "output_copy_ms": 1.01298,
+        "native_total_ms": 19.299479,
+        "native_cdf_thread_cpu_ms": 16.556518
+      },
+      {
+        "lock_wait_ms": 0.000773,
+        "input_copy_allocation_ms": 0.971273,
+        "native_cdf_wall_ms": 17.221394,
+        "output_copy_ms": 0.652426,
+        "native_total_ms": 18.845866,
+        "native_cdf_thread_cpu_ms": 16.376749
+      },
+      {
+        "lock_wait_ms": 0.003337,
+        "input_copy_allocation_ms": 1.282878,
+        "native_cdf_wall_ms": 20.79366,
+        "output_copy_ms": 1.078207,
+        "native_total_ms": 23.158082,
+        "native_cdf_thread_cpu_ms": 19.807007
+      }
+    ],
+    "fit_ms": 2449.925335,
+    "cdf_trials_ms": [
+      19.744995,
+      17.21814,
+      19.638143,
+      19.121379,
+      23.611206
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790879411615
+  },
+  "Binder": {
+    "passed": true,
+    "service_pid": 15527,
+    "client_pid": 15489,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_backend_policy_verified": true,
+    "history_cache_hit_verified": false,
+    "history_repeat_cdf_ms": 4.232544,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790879447359
+  },
+  "numerical_notes": {
+    "degree": 18,
+    "phase_radius": 0.02,
+    "min_horizon": 64,
+    "retained_frequencies": 145,
+    "derived_per_pair_weight_remainder": 5.172387390251841e-21,
+    "conditional_row_L1_remainder_bound_at_1000000_pairs": 3.0384464938882537e-17,
+    "formula": "epsilon=4*sum_{f=1}^{144} a_f*(f*radius)^19/19!; row L1<=2*N*epsilon/(5+N*exp(-8))",
+    "limitations": "Conditional exact-arithmetic Taylor remainder calculation using modeled coefficients and ideal bounded moments; excludes spectrum truncation, floating coefficient/moment accumulation, trigonometry, recurrence, calendar phase and Horner rounding. Not a certified full machine-error bound.",
+    "reference": "https://dlmf.nist.gov/4.2#E19"
+  },
+  "limits": [
+    "APK queries exceed 15 ms; no full pipeline acceptance",
+    "Independent benchmark times exclude first fit, update and history scan",
+    "Only tested fixture shared-draw occupancy equality; no general bitwise claim",
+    "Complete APK memory and empirical prediction validity not proven"
+  ]
+}

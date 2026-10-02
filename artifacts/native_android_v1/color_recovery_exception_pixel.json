@@ -1,0 +1,42 @@
+{
+  "scope": "debug_injected_pre_settings_exception_forced_scheduler_not_real_recovery_or_disk_failure",
+  "before": {
+    "scheduled_nonce": "3f5e9208-3241-43d2-a210-176847843e0d",
+    "observed_stale_nonce": "931a3456-22f3-4da4-a315-6d65855bc579",
+    "observed_stale_reason": "no_pending_recovery"
+  },
+  "after": {
+    "schedule": {
+      "nonce": "af01b4a1-5d4c-46d8-bc6c-74a33f4c4460",
+      "job_id": 34713,
+      "persisted": true,
+      "failure_fixture": true,
+      "client_process_id": 11444,
+      "completed_epoch_ms": 1790872910876
+    },
+    "completion": {
+      "delivered": false,
+      "eligible_for_outcome": false,
+      "reason": "recovery_exception",
+      "error_type": "IOException",
+      "settings_write_attempts": null,
+      "nonce": "af01b4a1-5d4c-46d8-bc6c-74a33f4c4460",
+      "job_id": 34713,
+      "service_process_id": 11432,
+      "retry": true,
+      "failure_fixture": true,
+      "completed_epoch_ms": 1790872925549
+    }
+  },
+  "cleanup": "cancelled; get-job-state exit23 unknown(u0a196/jid34713)",
+  "tests": {
+    "passed": true,
+    "count": 303,
+    "seconds": 23.123
+  },
+  "sha256": {
+    "android/src/org/traceform/edge/ColorRecoveryJob.java": "8c637062d1aa21682c0c4b3f088f4bfea479d3fb14200c3541078fbe41eb121c",
+    "android/src/org/traceform/edge/MainActivity.java": "cc5131679e98d7b14fdffc89f5973bd9b3779fa106d20fef36e52569142341ba",
+    "android/build/traceform.apk": "d64c94ebdac0ff5399953fcd841e750ff110a67a889e60c4652196844aef0b81"
+  }
+}

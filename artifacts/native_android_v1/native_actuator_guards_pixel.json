@@ -1,0 +1,49 @@
+{
+  "scope": "native_actuator_entrypoints_and_volume_recovery_code_not_active_delivery_loop",
+  "tests": {
+    "count": 321,
+    "seconds": 28.596,
+    "passed": true
+  },
+  "device_guards": {
+    "passed": true,
+    "disabled_and_silent_guards": 9,
+    "haptics_default_disabled": true,
+    "volume_journal_reopen_corruption_and_overlap_verified": true,
+    "physical_api_calls": 0,
+    "scope": "synthetic_preferences_journal_and_native_actuator_guards_not_physical_execution",
+    "completed_epoch_ms": 1790887839718
+  },
+  "device_feedback_regression": {
+    "passed": true,
+    "delivery_and_binding_censor_verified": true,
+    "ten_minute_feedback_and_idempotence_verified": true,
+    "restart_censor_verified": true,
+    "shadow_not_rewarded": true,
+    "actuator_calls": 0,
+    "scope": "synthetic_delivered_trial_receipts_and_SQLite_feedback_not_actual_actuation_or_human_outcomes",
+    "completed_epoch_ms": 1790887839871
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "No actual actuator API call; positive Android delivery paths not executed",
+    "VolumeRecoveryJob code built and packaged; actual scheduler and reboot recovery not verified",
+    "Actuator entrypoints not connected to active trial authorization delivery worker",
+    "Volume restoration ownership uses current-value equality; cannot distinguish an external write to the identical target value",
+    "Full performance memory scientific and Stage11-14 acceptance remain incomplete"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/VolumeAdjustment.java": "9d59613f7c62b38c3c29d44c872bd3eb90422f6a2ab7c132e457ba22754c10fd",
+    "android/src/org/traceform/edge/VolumeJournal.java": "da4a54c2da80d9148962818d07eb130707cb71c9250aef48312a909fc79cd431",
+    "android/src/org/traceform/edge/VolumeRecoveryJob.java": "426440d07a58131939cc62d913de4891955894e7afc7020dfc935fd56301d445",
+    "android/src/org/traceform/edge/NativeMicroActuator.java": "43f2289a3beed4c55209bc14689b5e05d90a89ac9faca01deff45aadee02663e",
+    "android/src/org/traceform/edge/NativeActuatorFixture.java": "219ee6e4b385c6e5af1f64eccbeddfddcc12e6b8d085dbacc7075a2a176b9bb0",
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "60e087f62214e88af706e2f84cbee42e843a015ecf0d39872bccd56406b85c19",
+    "android/src/org/traceform/edge/MainActivity.java": "a1dd36b0c66e068cd4bc4ec811de1fb8079f80d0703e9b8ddcf68c2f5743c396",
+    "android/AndroidManifest.xml": "ca9601a036558fc20de36d41f663be2fd62da43996f011e5c35348d0b50c937b",
+    "tests/test_native_volume_adjustment.py": "3ef2264b899749d615e73488cda0845738522c663fb33b5a279c8b81d758fc27",
+    "android/build/traceform.apk": "70b0c6b104ffa2aaaf9a43e7ba7d60f360830ec9114623be1fb4cc2fe404119a"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "tests": 295,
+  "passed": true,
+  "elapsed_seconds": 20.691,
+  "scope": "training_only_grid_coordinate_adaptation_holdout_topology_rejection_and_candidate_baseline_coordinate_isolation",
+  "regression_before_copy_fix": {
+    "affected_tests": 7,
+    "failures": 2
+  },
+  "synthetic_layout_nonadjacent_pairs": {
+    "before": 3,
+    "after": 0
+  },
+  "real_model_activated": false
+}

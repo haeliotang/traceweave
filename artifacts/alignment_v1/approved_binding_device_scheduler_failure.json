@@ -1,0 +1,14 @@
+{
+  "exit_code": 1,
+  "stdout": "connected\n",
+  "stderr": "TLS handshake rejected: error:0A000126:SSL routines::unexpected eof while reading\n",
+  "elapsed_seconds": 60.49371633300325,
+  "passed": false,
+  "nonce": "8fb78e5b-48eb-4640-8b8c-07b323a164a9",
+  "device_receipt": null,
+  "job_state_before_stop": "waiting",
+  "terminal_after_stop": true,
+  "session_ledger_present": false,
+  "reason": "newly_installed_synthetic_app_standby_NEVER_WITHIN_QUOTA_unsatisfied",
+  "scope": "scheduler_and_TLS_wait_failure_not_computation_result"
+}

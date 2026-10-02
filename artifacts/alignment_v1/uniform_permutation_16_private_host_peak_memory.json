@@ -1,0 +1,32 @@
+{
+  "case": "identical",
+  "elapsed_seconds": 8.597931917000096,
+  "parties": [
+    {
+      "exit_code": 0,
+      "output_matches": true,
+      "measurement": "        8.58 real         5.96 user         1.92 sys\n          2707734528  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n              310509  page reclaims\n                  57  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n               68764  messages sent\n               98070  messages received\n                   0  signals received\n                7914  voluntary context switches\n               18926  involuntary context switches\n         92968533296  instructions retired\n         23787938012  cycles elapsed\n          3608579024  peak memory footprint\n"
+    },
+    {
+      "exit_code": 0,
+      "output_matches": true,
+      "measurement": "        8.47 real         6.68 user         2.10 sys\n          2854567936  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n              388923  page reclaims\n                  75  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n               49024  messages sent\n              138043  messages received\n                   0  signals received\n                5763  voluntary context switches\n               20056  involuntary context switches\n        104354026379  instructions retired\n         26623831161  cycles elapsed\n          4100656440  peak memory footprint\n"
+    }
+  ],
+  "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "2e7e74413cbfc0ba68b913b5a879514fb332ddd1a2d9be06c014c63a16c65ace",
+    "native/private_alignment_probe/run_uniform_permutation.py": "7b4230087469d5eea883091b9b40e89d93e68a786d2bfcc8fcfacf8f45461c9d",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "15099bae1755dd842bb9cff9104ae662c282a921959af4fb4d9a9fb2070835c0",
+    "traceform/dynamics/integer_transport.py": "23720f954222e96d30e05562cf76ac7e2a4e6112f5deb52e34ea82f7c869aded",
+    "native/private_alignment_probe/smoke.cpp": "6ad2d5a5774e5549b9d3c22ddefbf194e2b202fb92d521151da1696005716b58",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+    "/private/tmp/traceform-private-tls-bound-runner-v2": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd"
+  },
+  "units": "macOS time -l maximum resident set size and peak footprint are bytes",
+  "maximum_resident_bytes": [
+    2707734528,
+    2854567936
+  ],
+  "scope": "One synthetic accepted host protocol case, not Android peak measurement"
+}

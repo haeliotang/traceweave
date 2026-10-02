@@ -1,0 +1,91 @@
+{
+  "scope": "native_opt_in_asynchronous_trial_delivery_wiring_synthetic_not_live_acceptance",
+  "tests": {
+    "count": 322,
+    "seconds": 28.538,
+    "passed": true
+  },
+  "failing_stop_regression": {
+    "passed": false,
+    "error": "java.lang.IllegalStateException: stop flag delayed until publication barrier released",
+    "completed_epoch_ms": 1790888774279
+  },
+  "device_delivery": {
+    "passed": true,
+    "receipt_status_and_strict_boolean_verified": true,
+    "stop_publication_barrier_verified": true,
+    "randomized_control_observing_verified": true,
+    "stop_censor_and_late_receipt_rejection_verified": true,
+    "physical_api_calls": 0,
+    "scope": "synthetic_authorized_trial_receipts_not_actual_actuator_delivery",
+    "completed_epoch_ms": 1790888830868
+  },
+  "device_shadow": {
+    "passed": true,
+    "bound_trigger": {
+      "passed": true,
+      "gate_and_cooldown_verified": true,
+      "history_unchanged": true,
+      "collection_started": false,
+      "actuator_calls": 0,
+      "comparison": {
+        "action_type": "CLAMP_DWELL",
+        "max_dwell_steps": 10,
+        "selected_risk_states": [
+          "M01"
+        ],
+        "scenario_seed": 43,
+        "mean_jsd": 0.7867235023730049,
+        "peak_jsd": 0.9999999999999999,
+        "peak_step": 10,
+        "terminal_risk_change": -0.9633333333333334,
+        "recommendation": "RECOMMEND_INTERVENTION",
+        "evidence_scope": "modeled_forced_escape_not_physical_actuator_effect_or_execution_authority"
+      },
+      "scope": "synthetic_service_CSD_gate_to_history_MC_shadow_not_live_capture_or_actuation"
+    },
+    "replaced_trigger": {
+      "passed": true,
+      "trigger_mismatch_rejected": true,
+      "collection_started": false,
+      "actuator_calls": 0
+    },
+    "completed_epoch_ms": 1790888835496
+  },
+  "device_guards": {
+    "passed": true,
+    "disabled_and_silent_guards": 9,
+    "haptics_default_disabled": true,
+    "volume_journal_reopen_corruption_and_overlap_verified": true,
+    "physical_api_calls": 0,
+    "scope": "synthetic_preferences_journal_and_native_actuator_guards_not_physical_execution",
+    "completed_epoch_ms": 1790888829517
+  },
+  "actual_intervention_preferences": {
+    "file_absent_before_deployment": true,
+    "default_enabled": false,
+    "default_mode": "shadow",
+    "changed": false
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "Actual actuator execution remains untested and disabled on device",
+    "End-to-end active service actuation and human outcomes not exercised; fixture authorizations/receipts are synthetic",
+    "No UI opt-in control added; active mode requires explicit trusted preference configuration",
+    "Complete cold performance memory scientific and remaining Stage11-14 gates open"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/ShadowTrialLedger.java": "8fd56247ca3729ba79c286920e110ed0f7388be98100c3e9b32829173b74c3ca",
+    "android/src/org/traceform/edge/NativeTrialDelivery.java": "b250f1ac23c3c9a9a058ecbe7f219c4367a20fde52837ca4e678c1e6c55b63a8",
+    "android/src/org/traceform/edge/NativeDeliveryWorker.java": "92bf9aef4aef65afdf2280b9f0c8ac067190ecf36c65bc5353bc15d7adac8a47",
+    "android/src/org/traceform/edge/NativeDeliveryFixture.java": "a4c5805e77740988436fdd556798736a732044d0169904a58642947ec7c8607a",
+    "android/src/org/traceform/edge/EdgeService.java": "35ba5e0bce9c17a55bb4cb23c6d23af8258a3b7adfd436b3b878a3046fecaaec",
+    "android/src/org/traceform/edge/MainActivity.java": "0763b0e819cddeb9d24ea4e3eb6f3c091061961e343343ce02711fefbfbb990f",
+    "android/src/org/traceform/edge/NativeMicroActuator.java": "07a1083df68b0deaaa2c90fe648e341098a36c8998315a7d33de9cff892d4492",
+    "android/src/org/traceform/edge/NativeActuatorFixture.java": "714fb4c385043ace3b3d640e7b8121c9430d920415682a24e4f87738272ed365",
+    "tests/test_native_delivery_worker.py": "f86ca41143bc69a64069b624557d6ac6096acd29cb9334add724dcb0820a88c0",
+    "android/build/traceform.apk": "204c8057b31da4c6729a4568866f2bbc575da5568897edc064e1b8843710deb6"
+  }
+}

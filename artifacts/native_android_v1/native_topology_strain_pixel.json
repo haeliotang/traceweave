@@ -1,0 +1,70 @@
+{
+  "receipt": {
+    "passed": true,
+    "clean": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 0,
+      "continuous_pairs": 3,
+      "segment_boundaries": 1,
+      "source_sha256": "19214299afde819aa0f02931c93dd4f7ebd24c550ef29e7327036716224427df",
+      "candidate_input_available": true,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 4,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "changed_binding": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "27fda3e1cf1612a9a312fe87618679c658dfbd9cf9e0888af6ba2e559d6d1a8c",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "malformed": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "be69fd01a28ead907b58dccae5c04fee0eacb7e849dfcb8c53771364beef3fe9",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "invalid_coordinates_verified": true,
+    "cancellation_verified": true,
+    "scope": "synthetic_SQLite_full_audit_not_live_calibration",
+    "completed_epoch_ms": 1790890861737
+  },
+  "local_tests": {
+    "count": 323,
+    "passed": true,
+    "seconds": 29.591
+  },
+  "python_reference_cases": 36,
+  "scope": "synthetic_nearest_two_energy_and_active_model_audit_not_calibration_or_stability",
+  "source_sha256": {
+    "android/src/org/traceform/edge/TopologyStrain.java": "d97f880834519ef3c7b2ed48c1eb195254364b181ccfeb72b9f81995fc3e4fe1",
+    "android/src/org/traceform/edge/ModelEngine.java": "31c0f57d4519e37218ad0d325e1e072aa3a411636d2332b2c84de25b7d7b129b",
+    "android/src/org/traceform/edge/NativeWeeklyAudit.java": "9e33fd1071d64cada54ff8e7b5bbb936695360157d4bb0fae16e9894474c98e1",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "e20c338e1e98e3fa8526421ae72522ea10c08e92f725b66d971182ab87bdb4d2",
+    "tests/test_native_topology_strain.py": "b14861eac274d6680d2fe549d69ae8e559fa462b4bb06e690532cdf428074447",
+    "android/build/traceform.apk": "d0e629a7c77edd65106a1a53c00fdd4b6115df390d6e4774392bf021c0d15b2b"
+  },
+  "freeze_pre_post_passed": true
+}

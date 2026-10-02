@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-01",
+  "device": "Pixel 6a",
+  "tests": ["tests.test_manifold_lattice", "tests.test_guarded_calibration"],
+  "tests_passed": 12,
+  "elapsed_seconds": 2.893,
+  "exit_code": 0,
+  "host_full_suite_tests_passed": 261,
+  "calibration_mode": "incremental_existing_grid_frozen_normalizer",
+  "initial_learning_rate": 0.1,
+  "node_resampling": false,
+  "token_relabeling": false,
+  "activation_requires_original_chronological_holdout_gate": true,
+  "device_source_sha256": {
+    "traceform/representation/manifold_lattice.py": "64e8ff142445170977af4fcaccd20348940291e19bac7e48c27b601373319ec2",
+    "traceform/evolution/guarded_calibration.py": "125409b09a73b73e7bf46e1d876b36cf1db6fe9affcf6d4ec3d84f6393d33c41",
+    "tests/test_manifold_lattice.py": "55a3906a954731e6c596781e5158985f153abe5e0188200c38212a7363eb1df6",
+    "tests/test_guarded_calibration.py": "955bda4c8535d094e8ca011783c6c169ef12b4f93179ec8f2bf81201c8c63240"
+  },
+  "scope": "synthetic_device_regression_and_source_deployment_not_real_candidate_acceptance_or_natural_sunday_execution",
+  "real_active_model_changed": false
+}

@@ -1,0 +1,347 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 3790251,
+  "wires": 3802699,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.163367750006728,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonzero_diagonal",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 14.658523958991282,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 14.49594849999994,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "elapsed_seconds": 14.868983665975975,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 14.410638165980345,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.16922120799427,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "negative_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.389215833012713,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "out_of_range_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.127890834002756,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "triangle_violation",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 14.10658270897693,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "elapsed_seconds": 14.31796412501717,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "elapsed_seconds": 14.477205666014925,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.23104220899404,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.249335667002015,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 15.742989958002,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "search": "six_bit_quantized_with_exact_final_loss_gate",
+  "search_distance_shift": 14,
+  "commitment": "uniform_packed_v2",
+  "circuit_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03",
+  "launcher_sha256": "0276dad2a2feed6615212abb548c28c801648f862e6f5396ef64d234d4fed173",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "device": {
+    "serial": "[REDACTED_DEVICE_SERIAL]",
+    "model": "Pixel 6a",
+    "sdk": 37,
+    "participant_role": 1,
+    "runtime_sha256": "8407ab0c33150069e574caacf88c9d3dad5b1d1404056a8cb23b9cd77527b0a0"
+  },
+  "resources": {
+    "rss_samples_peak_per_case_kib": [
+      582044,
+      602156,
+      602232,
+      602100,
+      627192,
+      602944,
+      624476,
+      602176,
+      625100,
+      600332,
+      602176,
+      590828,
+      628152,
+      625272
+    ],
+    "max_sampled_rss_kib": 628152,
+    "sampling_interval_seconds": 0.2,
+    "rss_limit_kib": 790000,
+    "minimum_available_kib": 196608,
+    "device_timeout_seconds": 100,
+    "kill_after_seconds": 5,
+    "own_subprocess_oom_score_adj": 1000,
+    "sampled_not_exact_peak": true
+  },
+  "host_source_receipt": "lowmemory_packed_permutation_16_private_host.json",
+  "cleanup": {
+    "last_participant_exit_confirmed": true,
+    "dedicated_forward_removed": 24884,
+    "only_created_remote_directory_removed": "/data/local/tmp/traceform-lowmemory-private-16-20261002",
+    "frozen_verifiers_passed": 12,
+    "primary_application_unchanged": true
+  },
+  "limits": [
+    "synthetic input and test identities",
+    "bounded six-bit permutation search, exact original final score, no global optimum certificate",
+    "no real owner enrollment or security audit",
+    "standalone Android native execution; 64 MiB SDK snapshot bound remains",
+    "no approved packed-v2 proof integration"
+  ],
+  "scripts": {
+    "traceform-lowmemory16-device-run.sh": "#!/system/bin/sh\nroot=/data/local/tmp/traceform-lowmemory-private-16-20261002\nexec 3<&0\n(\n    printf 1000 > /proc/self/oom_score_adj || exit 2\n    exec \"$@\"\n) <&3 &\nparticipant=$!\nprintf '%s\\n' \"$participant\" > \"$root/participant.pid\"\ncleanup() {\n    kill \"$participant\" 2>/dev/null\n    [ -n \"$watcher\" ] && kill \"$watcher\" 2>/dev/null\n}\ntrap cleanup EXIT INT TERM\n(\n    peak=0\n    while [ -r \"/proc/$participant/status\" ]; do\n        rss=$(awk '/^VmRSS:/ {print $2}' \"/proc/$participant/status\")\n        available=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)\n        [ -n \"$rss\" ] && [ \"$rss\" -gt \"$peak\" ] && peak=$rss\n        printf '%s\\n' \"$peak\" > \"$root/rss-$participant.kib\"\n        if { [ -n \"$rss\" ] && [ \"$rss\" -gt 790000 ]; } || [ \"$available\" -lt 196608 ]; then\n            printf 'synthetic participant resource boundary: rss=%s available=%s\\n' \"$rss\" \"$available\" >&2\n            kill \"$participant\"\n            break\n        fi\n        sleep .2\n    done\n) &\nwatcher=$!\nwait \"$participant\"\nresult=$?\nkill \"$watcher\" 2>/dev/null\nwait \"$watcher\" 2>/dev/null\ntrap - EXIT INT TERM\nexit \"$result\"\n",
+    "traceform-lowmemory16-crossdevice-runner": "#!/usr/bin/env python3\nimport hashlib,os,shlex,ssl,sys\nfrom pathlib import Path\nif sys.argv[1] == '1':\n    root=Path('/private/tmp/traceform-tls-identities-v1')\n    pin=hashlib.sha256(ssl.PEM_cert_to_DER_cert((root/'2.pem').read_text())).hexdigest()\n    remote='/data/local/tmp/traceform-private-alignment-v1/'\n    test='/data/local/tmp/traceform-lowmemory-private-16-20261002/'\n    args=['toybox','timeout','-k','5','100','sh',test+'run.sh',remote+'traceform-private-alignment-tls-bound-android-v4','1',sys.argv[2],test+'circuit.txt',remote+'traceform-tls-identities-v1/1.pem',remote+'traceform-tls-identities-v1/1.key',remote+'traceform-tls-identities-v1/2.pem',pin,os.environ['TRACEFORM_TEST_SESSION']]\n    os.execv('/opt/homebrew/bin/adb',['/opt/homebrew/bin/adb','-s','[REDACTED_DEVICE_SERIAL]','shell',shlex.join(args)])\nos.execv(sys.executable,[sys.executable,'/private/tmp/traceform-uniform16-usb-client','/private/tmp/traceform-private-tls-bound-runner-v2',*sys.argv[1:]])\n",
+    "traceform-uniform16-usb-client": "#!/usr/bin/env python3\nimport sys\nsys.path.insert(0,'Documents/traceform')\nfrom native.private_alignment_probe.run_usb_client import main\nraise SystemExit(main(bootstrap_seconds=60))\n"
+  }
+}

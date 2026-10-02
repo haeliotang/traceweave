@@ -1,0 +1,50 @@
+{
+  "regression_before_fix": {
+    "passed": false,
+    "missing_classes": [
+      "CalibrationGate",
+      "IncrementalManifoldFit",
+      "NativePotentialCalibration",
+      "TopologyStrain",
+      "TopologyStrain$Result"
+    ]
+  },
+  "regression_after_fix": {
+    "passed": true
+  },
+  "full_suite": {
+    "count": 328,
+    "passed": true,
+    "seconds": 32.207
+  },
+  "sdk_class_count": 18,
+  "sdk_classes": [
+    "org.traceform.edge.AlignmentQueryLease",
+    "org.traceform.edge.ApprovedPrivateAlignment",
+    "org.traceform.edge.CalibrationGate",
+    "org.traceform.edge.CanonicalClient",
+    "org.traceform.edge.EmpiricalGraphPotential",
+    "org.traceform.edge.EmpiricalGraphPotential$Result",
+    "org.traceform.edge.FittedPeriodicSpectrum",
+    "org.traceform.edge.IncrementalManifoldFit",
+    "org.traceform.edge.ModelEngine",
+    "org.traceform.edge.NativeCore",
+    "org.traceform.edge.NativePotentialCalibration",
+    "org.traceform.edge.OwnerAuthentication",
+    "org.traceform.edge.PeriodicTransitionKernel",
+    "org.traceform.edge.PrivateAlignmentOutput",
+    "org.traceform.edge.PrivateParticipant",
+    "org.traceform.edge.ProofVerifier",
+    "org.traceform.edge.TopologyStrain",
+    "org.traceform.edge.TopologyStrain$Result"
+  ],
+  "sdk_sha256": "453972af6cda80076fb1bf3be011c58906b85e4595e75d33513a4b36072c1f2c",
+  "source_sha256": {
+    "scripts/build_native_android.py": "f541bb9be19233cc91bc47ea219852a077112ac3f8811f2009b74feaf5cc3f42",
+    "tests/test_native_sdk_dependencies.py": "9093a97ca0f3a68fdf2e95084dfbca4384101a63d05896dc906c1355d6e189f6"
+  },
+  "full_build_apk_sha256": "7fe6a8fbe80489e158faa727cb8751e923cf06db3a2256b12af2a2fba9445f49",
+  "full_build_output_directory": "/private/tmp/traceform-sdk-closure-build",
+  "scope": "host_SDK_internal_symbol_dependency_closure_not_complete_Android_consumer_validation",
+  "installed_during_active_profiling_job": false
+}

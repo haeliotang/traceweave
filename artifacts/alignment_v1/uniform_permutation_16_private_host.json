@@ -1,0 +1,237 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 15807751,
+  "wires": 15820199,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 9.789318499999354,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 8.170881541998824,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "elapsed_seconds": 7.796725874999538,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 7.872620207985165,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 8.058167875016807,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "elapsed_seconds": 8.098766124981921,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "elapsed_seconds": 8.191517458006274,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 8.951658124977257,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 8.738468790979823,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 8.083343167003477,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+  "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "2e7e74413cbfc0ba68b913b5a879514fb332ddd1a2d9be06c014c63a16c65ace",
+    "native/private_alignment_probe/run_uniform_permutation.py": "7b4230087469d5eea883091b9b40e89d93e68a786d2bfcc8fcfacf8f45461c9d",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "15099bae1755dd842bb9cff9104ae662c282a921959af4fb4d9a9fb2070835c0",
+    "traceform/dynamics/integer_transport.py": "23720f954222e96d30e05562cf76ac7e2a4e6112f5deb52e34ea82f7c869aded",
+    "native/private_alignment_probe/smoke.cpp": "6ad2d5a5774e5549b9d3c22ddefbf194e2b202fb92d521151da1696005716b58",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+    "/private/tmp/traceform-private-tls-bound-runner-v2": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd"
+  },
+  "limits": [
+    "One lexicographic strict-improvement permutation sweep with equal uniform masses",
+    "Not a general transport optimizer or global optimum certificate",
+    "Not real owner enrollment, production authorization, or cryptographic security audit"
+  ],
+  "transport": "Mutually authenticated TLS with synthetic test identities, dedicated loopback port 24868",
+  "memory_observation": {
+    "kind": "single_non_peak_process_RSS_sample",
+    "per_party_kib": 496336,
+    "scope": "Host sample, not Android peak or total app memory"
+  },
+  "host_tests": {
+    "command": "python3 -m unittest discover -s tests",
+    "passed": true,
+    "tests": 338,
+    "seconds": 39.1
+  }
+}

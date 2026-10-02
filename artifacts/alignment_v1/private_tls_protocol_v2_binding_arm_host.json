@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "matching",
+      "passed": true,
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "TLS protocol channel binding rejected\n"
+        },
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "TLS protocol channel binding rejected\n"
+        }
+      ]
+    },
+    {
+      "case": "circuit_mismatch",
+      "passed": true,
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "TLS protocol channel binding rejected\n"
+        },
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "TLS protocol channel binding rejected\n"
+        }
+      ]
+    },
+    {
+      "case": "wrong_role",
+      "passed": true,
+      "authenticated_peer_metadata_rejected": true
+    },
+    {
+      "case": "wrong_channel",
+      "passed": true,
+      "authenticated_peer_metadata_rejected": true
+    },
+    {
+      "case": "legacy_version",
+      "passed": true,
+      "authenticated_peer_metadata_rejected": true
+    },
+    {
+      "case": "unknown_version",
+      "passed": true,
+      "authenticated_peer_metadata_rejected": true
+    }
+  ],
+  "binary_sha256": "499aa0228af047eb8ca71e5c84b9b1ef40732cbc1be0aa1d0ea241e557a7ad3b",
+  "scope": "synthetic_loopback_tls_session_and_circuit_binding_not_replay_policy"
+}

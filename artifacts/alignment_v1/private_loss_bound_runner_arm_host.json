@@ -1,0 +1,137 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "valid": true,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "expected_numerator": "1000000000000000000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "expected_numerator": "1000000000000000000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "expected_numerator": "994393156000000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "expected_numerator": "1525225000000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "gates": 22384,
+  "circuit_sha256": "39b146290b57b94d070970138e91f84cef2f8ca3a13cf62b4b3fd3db7f44cfe1",
+  "binary_sha256": "4fb2c6a10f6f8b1ffce33d003d4ccf32a4185df6d79fb40a49d52e056c8971a2",
+  "scope": "bounded_single_loss_contribution_not_complete_gw_or_commitment_binding"
+}

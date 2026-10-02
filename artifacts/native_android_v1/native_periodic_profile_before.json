@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "eligible_pairs": 78,
+  "monday_target_1_probability": 0.8408205426928945,
+  "saturday_target_1_probability": 0.15792085527239086,
+  "cdf_build_ms": 446.489462,
+  "cdf_build_trials_ms": [
+    448.115031,
+    472.562093,
+    464.491333,
+    463.041016,
+    481.687215
+  ],
+  "phase_only_1920_calls_ms": 144.901896,
+  "phase_checksum": 3265.161964630995,
+  "states": 16,
+  "rollouts": 300,
+  "horizon": 120,
+  "scope": "synthetic_daily_weekly_kernel_to_native_rollouts_not_live_forecast_validation",
+  "completed_epoch_ms": 1790859513935
+}

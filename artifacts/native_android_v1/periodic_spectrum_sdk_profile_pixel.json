@@ -1,0 +1,79 @@
+{
+  "scope": "synthetic_JNI_wall_and_thread_CPU_cost_profile_not_complete_performance_acceptance",
+  "receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.002726,
+        "input_copy_allocation_ms": 0.481038,
+        "native_cdf_wall_ms": 40.901164,
+        "output_copy_ms": 0.445923,
+        "native_total_ms": 41.830851,
+        "native_cdf_thread_cpu_ms": 38.303181
+      },
+      {
+        "lock_wait_ms": 0.005289,
+        "input_copy_allocation_ms": 1.16565,
+        "native_cdf_wall_ms": 56.097493,
+        "output_copy_ms": 0.949463,
+        "native_total_ms": 58.217895,
+        "native_cdf_thread_cpu_ms": 53.869549
+      },
+      {
+        "lock_wait_ms": 0.007649,
+        "input_copy_allocation_ms": 1.758912,
+        "native_cdf_wall_ms": 69.768351,
+        "output_copy_ms": 1.101115,
+        "native_total_ms": 72.636027,
+        "native_cdf_thread_cpu_ms": 66.231567
+      },
+      {
+        "lock_wait_ms": 0.00468,
+        "input_copy_allocation_ms": 1.603271,
+        "native_cdf_wall_ms": 59.039632,
+        "output_copy_ms": 1.10612,
+        "native_total_ms": 61.753703,
+        "native_cdf_thread_cpu_ms": 56.577675
+      },
+      {
+        "lock_wait_ms": 0.001994,
+        "input_copy_allocation_ms": 1.21224,
+        "native_cdf_wall_ms": 64.227701,
+        "output_copy_ms": 0.668335,
+        "native_total_ms": 66.11027,
+        "native_cdf_thread_cpu_ms": 61.216474
+      }
+    ],
+    "fit_ms": 2447.213014,
+    "cdf_trials_ms": [
+      42.287394,
+      58.593995,
+      73.263265,
+      62.169637,
+      66.44572
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790874901831
+  },
+  "tests": {
+    "affected_native_tests": 18,
+    "seconds": 7.603,
+    "passed": true
+  },
+  "prediction_15ms_gate_passed": false,
+  "sha256": {
+    "native/periodic_spectrum_jni.cpp": "d1e303c6513add47e4a4ed80300889624b5208fdac80b24725e880c8b059a5b7",
+    "android/src/org/traceform/edge/FittedPeriodicSpectrum.java": "8b9397986382c08ea902df37063edc61da426627781d87e83b60edcaeba5a0df",
+    "android/src/org/traceform/edge/NativeCore.java": "895a78067872a4559564d4662cdab3a6b58a3750ed9b139e9fda6632e3febc67",
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "125d932879582f5eb8cf3da309fe8cb358d614d39e7dd9fe8474e325510b842e",
+    "android/build/traceform.apk": "f07f52825c1ebc0e6b1d1af0c0201eb145ecbe1a97d40308131bc74ca8eda879"
+  }
+}

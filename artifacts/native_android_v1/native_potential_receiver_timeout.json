@@ -1,0 +1,19 @@
+{
+  "verified_failure": "ActivityManager broadcast TIMEOUT and anrCount=1",
+  "action": "org.traceform.edge.VERIFY_WEEKLY",
+  "dispatch_device_local": "2026-10-02 04:17:58.002",
+  "terminal_device_local": "2026-10-02 04:18:58.010",
+  "duration_ms": 60008,
+  "last_receipt_completed_epoch_ms": 1790893552979,
+  "new_potential_receipt": false,
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeVerificationReceiver.java": "451071f12a4377d0ed28416ca1d5882eea7ca669ef35145c3c61680b9d7b7a8f",
+    "android/src/org/traceform/edge/EmpiricalGraphPotential.java": "d39dfb444d125cb5692eb85ad56b3eb9ae4544890e71a46c146f2f1978002871",
+    "android/src/org/traceform/edge/NativePotentialCalibration.java": "a6b666b8c42f8c35bc29003c39f6f61f013163cf6b0c48455159f68bbd8cf7d3",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "d23ea700c7d027e27bc44e4ed0288bcb251c4b801f52df87c9d28fb3ac1763c5",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "66cd3335520cae8e87b710ba085c2b1caa6b75debbd9752730573a24a2fcbbaf",
+    "android/src/org/traceform/edge/ModelEngine.java": "7b9da6e69aaba5182de1b210587cf8c031c356d8c064b2cb57667a7c681026a4",
+    "android/build/traceform.apk": "5048d1fc5f952e963340d60925af7ec0868e7b3fa7b97241e7dea5ddcddd38c7"
+  },
+  "scope": "debug_broadcast_execution_timeout_not_potential_numeric_failure"
+}

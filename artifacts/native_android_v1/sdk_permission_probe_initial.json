@@ -1,0 +1,9 @@
+{
+  "passed": false,
+  "binding_rejected": true,
+  "requested_signature_permission_denied": true,
+  "client_uid": 10211,
+  "completed_epoch_ms": 1790861476354,
+  "reason": "SecurityException: Not allowed to bind to service; initial receipt required literal permission name in exception",
+  "scope": "initial_probe_acceptance_condition_too_specific_not_sdk_permission_failure"
+}

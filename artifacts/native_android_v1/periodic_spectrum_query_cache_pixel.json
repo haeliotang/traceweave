@@ -1,0 +1,158 @@
+{
+  "scope": "model_owned_local_coefficient_reuse_with_phase_radius_and_delta_invalidation",
+  "hashes": {
+    "native/periodic_spectrum.h": "1be4b9ea5e7894cd8db50648ca1b6dc98ebd7ee6f0806abb085456a7c669dac7",
+    "native/periodic_spectrum.cpp": "53135ee0ce15d35b29586f697bdf7d30c36be462d2b54861d7eb6a39626e8b3d",
+    "native/periodic_spectrum_benchmark.cpp": "82cf595cf38fc5e18c1aba46b08e4f91eb530dc87bf911b14314b269c761943d",
+    "tests/test_native_periodic_spectrum.py": "efe93ff6e4786aa5dad2e77bd293dc44cb31b587c410a28d53f179a875c5ced3",
+    "android/build/traceform.apk": "a98b9240bbe9b6b18f00087103a5cf898a0b80bb5b48301a8fd295acf5b152a5"
+  },
+  "tests": {
+    "count": 313,
+    "seconds": 26.221,
+    "passed": true
+  },
+  "prototype_parity": {
+    "cases": 12,
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "shared_draw_occupancy_equal": true
+  },
+  "current_native_benchmark": {
+    "chunk_id": "7e33bb",
+    "wall_time_seconds": 1.228646833,
+    "exit_code": 0,
+    "original_token_count": 197,
+    "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1192.128174,\"remove_add_1000_pairs_ms\":25.099650,\"summary_payload_bytes\":635016,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2908160,\"launcher_peak_rss_bytes\":13705216,\"elapsed_ms\":5.916463,\"periodic_cdf_ms\":3.716594,\"rollout_ms\":1.959473,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n{\"untimed_warmup_pipeline_ms\":10.038575,\"first_query_coefficient_build_in_warmup\":true}\n"
+  },
+  "APK": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 22180,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "thread_environment_after": {
+      "thread_id": 22180,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.005575,
+        "input_copy_allocation_ms": 1.12736,
+        "native_cdf_wall_ms": 14.889567,
+        "output_copy_ms": 0.857544,
+        "native_total_ms": 16.880046,
+        "native_cdf_thread_cpu_ms": 13.979004
+      },
+      {
+        "lock_wait_ms": 0.002034,
+        "input_copy_allocation_ms": 1.181031,
+        "native_cdf_wall_ms": 7.458862,
+        "output_copy_ms": 0.929118,
+        "native_total_ms": 9.571045,
+        "native_cdf_thread_cpu_ms": 7.316731
+      },
+      {
+        "lock_wait_ms": 0.001302,
+        "input_copy_allocation_ms": 0.772949,
+        "native_cdf_wall_ms": 7.343913,
+        "output_copy_ms": 0.905396,
+        "native_total_ms": 9.02356,
+        "native_cdf_thread_cpu_ms": 7.219442
+      },
+      {
+        "lock_wait_ms": 0.00236,
+        "input_copy_allocation_ms": 0.820069,
+        "native_cdf_wall_ms": 8.476806,
+        "output_copy_ms": 0.655884,
+        "native_total_ms": 9.955119,
+        "native_cdf_thread_cpu_ms": 7.736083
+      },
+      {
+        "lock_wait_ms": 0.000814,
+        "input_copy_allocation_ms": 1.220459,
+        "native_cdf_wall_ms": 7.756144,
+        "output_copy_ms": 0.915284,
+        "native_total_ms": 9.892701,
+        "native_cdf_thread_cpu_ms": 7.245932000000039
+      }
+    ],
+    "fit_ms": 1744.105104,
+    "cdf_trials_ms": [
+      17.82308,
+      9.875529,
+      9.277792,
+      10.21346,
+      10.236613
+    ],
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "pipeline_trials_ms": [
+      19.765828,
+      16.901326,
+      16.137085,
+      16.114828,
+      16.352742
+    ],
+    "pipeline_rollouts": 300,
+    "pipeline_profiles": [
+      {
+        "normalization_ms": 1.122029,
+        "quantization_ms": 0.517009,
+        "cdf_ms": 11.033203,
+        "rollouts_ms": 7.093587
+      },
+      {
+        "normalization_ms": 0.33435,
+        "quantization_ms": 0.170288,
+        "cdf_ms": 9.283082,
+        "rollouts_ms": 7.113606
+      },
+      {
+        "normalization_ms": 0.392334,
+        "quantization_ms": 0.170207,
+        "cdf_ms": 8.851196,
+        "rollouts_ms": 6.723348
+      },
+      {
+        "normalization_ms": 0.285726,
+        "quantization_ms": 0.273804,
+        "cdf_ms": 8.981323,
+        "rollouts_ms": 6.573975
+      },
+      {
+        "normalization_ms": 0.319417,
+        "quantization_ms": 0.166911,
+        "cdf_ms": 8.925049,
+        "rollouts_ms": 6.941365
+      }
+    ],
+    "fused_pipeline_trials_ms": [
+      15.066854,
+      14.157104,
+      13.883301,
+      14.3809,
+      15.244833
+    ],
+    "fused_occupancy_parity": true,
+    "fused_draw_and_handle_guards": true,
+    "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790880726154
+  },
+  "limits": [
+    "Standalone benchmark reports 10.038575 ms first untimed pipeline, 5.916463 ms reused pipeline; first query is not hidden as free preparation",
+    "APK first CDF query 17.82308 ms; repeated 9.277792..10.236613 ms",
+    "Fused APK warm pipeline 13.883301..15.244833 ms; two trials exceed 15 ms",
+    "C++ cdf now mutates local coefficient cache and requires serialized callers; JNI already holds registry mutex",
+    "Cache does not include prior; fresh prior applied at each query",
+    "Whole APK memory, historical window maintenance and first-fit cost remain outside accepted gate"
+  ]
+}

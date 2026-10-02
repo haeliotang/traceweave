@@ -1,0 +1,19 @@
+{
+  "latest_timestamp": "2026-10-01T05:15:07.495038Z",
+  "hot_records": 231,
+  "segments": 12,
+  "longest_segment_records": 40,
+  "longest_first_timestamp": "2026-10-01T04:54:09.108853Z",
+  "longest_last_timestamp": "2026-10-01T05:15:07.495038Z",
+  "interval_min_seconds": 30.010967,
+  "interval_max_seconds": 40.65032,
+  "strict_regular_grid": false,
+  "memory_estimator_input_eligible": false,
+  "reader_identity": {
+    "pid": 15666,
+    "start_ticks": "4152500",
+    "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+  },
+  "source_sha256_at_audit": "497869984d466571ffb1a3f01945ac8ec5f3e39f790f209f61b6ec8477b59c39",
+  "scope": "input_eligibility_only_no_raw_vectors_or_empirical_memory_result"
+}

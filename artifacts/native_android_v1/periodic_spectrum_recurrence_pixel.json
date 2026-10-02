@@ -1,0 +1,294 @@
+{
+  "scope": "adopted_order18_frequency_phase_recurrence_reanchored_every16_synthetic_and_Binder_tests",
+  "adopted": true,
+  "runs": [
+    {
+      "cmd": "/data/local/tmp/traceform-spectrum-recurrence-parity --canonical-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "scope": "full_month_ARM_spectral_CDF_parity_with_reference_scratch",
+          "max_cdf_absolute_difference": 7.771561172376096e-16,
+          "tolerance": 1e-12,
+          "same_draw_occupancy_equal": true
+        },
+        {
+          "spectrum_fit_ms": 235.888753,
+          "remove_add_1000_pairs_ms": 4.207682,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 5681152,
+          "launcher_peak_rss_bytes": 13697024,
+          "elapsed_ms": 3.202678,
+          "periodic_cdf_ms": 2.251058,
+          "rollout_ms": 0.920695,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-step-block-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1195.520183,
+          "remove_add_1000_pairs_ms": 25.191772,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2953216,
+          "launcher_peak_rss_bytes": 13697024,
+          "elapsed_ms": 22.640463,
+          "periodic_cdf_ms": 20.208252,
+          "rollout_ms": 2.215861,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-recurrence-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1190.005941,
+          "remove_add_1000_pairs_ms": 25.105062,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2961408,
+          "launcher_peak_rss_bytes": 13705216,
+          "elapsed_ms": 21.239665,
+          "periodic_cdf_ms": 18.728963,
+          "rollout_ms": 2.319255,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-recurrence-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1192.976034,
+          "remove_add_1000_pairs_ms": 25.094889,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2957312,
+          "launcher_peak_rss_bytes": 13709312,
+          "elapsed_ms": 21.376587,
+          "periodic_cdf_ms": 18.933716,
+          "rollout_ms": 2.206258,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-step-block-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1204.367351,
+          "remove_add_1000_pairs_ms": 25.262003,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2936832,
+          "launcher_peak_rss_bytes": 13713408,
+          "elapsed_ms": 22.692098,
+          "periodic_cdf_ms": 20.192627,
+          "rollout_ms": 2.285319,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    }
+  ],
+  "application_receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 30528,
+      "thread_priority": 0,
+      "cpus_allowed": "0-7"
+    },
+    "thread_environment_after": {
+      "thread_id": 30528,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.005412,
+        "input_copy_allocation_ms": 0.879842,
+        "native_cdf_wall_ms": 26.975098,
+        "output_copy_ms": 0.474324,
+        "native_total_ms": 28.334676,
+        "native_cdf_thread_cpu_ms": 25.710368
+      },
+      {
+        "lock_wait_ms": 0.003418,
+        "input_copy_allocation_ms": 1.118205,
+        "native_cdf_wall_ms": 27.178915,
+        "output_copy_ms": 0.57491,
+        "native_total_ms": 28.875448,
+        "native_cdf_thread_cpu_ms": 25.619956
+      },
+      {
+        "lock_wait_ms": 0.001709,
+        "input_copy_allocation_ms": 1.177449,
+        "native_cdf_wall_ms": 26.872315,
+        "output_copy_ms": 0.890096,
+        "native_total_ms": 28.941569,
+        "native_cdf_thread_cpu_ms": 25.614747
+      },
+      {
+        "lock_wait_ms": 0.002279,
+        "input_copy_allocation_ms": 1.313842,
+        "native_cdf_wall_ms": 26.342855,
+        "output_copy_ms": 0.949911,
+        "native_total_ms": 28.608887,
+        "native_cdf_thread_cpu_ms": 25.727741
+      },
+      {
+        "lock_wait_ms": 0.002116,
+        "input_copy_allocation_ms": 1.061483,
+        "native_cdf_wall_ms": 26.578206,
+        "output_copy_ms": 0.56482,
+        "native_total_ms": 28.206625,
+        "native_cdf_thread_cpu_ms": 25.789838
+      }
+    ],
+    "fit_ms": 1637.739666,
+    "cdf_trials_ms": [
+      29.16862,
+      29.18046,
+      29.291993,
+      29.138468,
+      28.518717
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790876796709
+  },
+  "binder_receipt": {
+    "passed": true,
+    "service_pid": 30652,
+    "client_pid": 30623,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_cache_hit_verified": true,
+    "history_repeat_cdf_ms": 30.86141,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790876822586
+  },
+  "tests": {
+    "count": 309,
+    "seconds": 31.056,
+    "passed": true
+  },
+  "application_15ms_gate_passed": false,
+  "host_comparison": {
+    "cases": 54,
+    "max_cdf_absolute_difference": 9.992007221626409e-16,
+    "tolerance": 1e-12,
+    "states": [
+      1,
+      4,
+      16
+    ],
+    "pairs": [
+      0,
+      63,
+      1000
+    ],
+    "horizons": [
+      1,
+      7,
+      8,
+      9,
+      20,
+      120
+    ]
+  },
+  "sha256": {
+    "native/periodic_spectrum.cpp": "21c8a17669eb45f3c0a4a4cddb94ab2a31ca9eab93fd3f2484a5d70057c2c244",
+    "android/build/traceform.apk": "6e540ec77c2beb82ee723593198faa9b4c562875bdc3429072a3af7a97c501d8",
+    "/private/tmp/traceform-spectrum-recurrence-benchmark": "c6ab56bcbaba04aa20091e289e1dc593fb0e092278f53b6e7668bc50f93b5eef",
+    "/private/tmp/traceform-spectrum-recurrence-parity": "25b345cf7decdf1c0b4c4d38948a25a7fa8a268b0226e76a4244e5a688edc30f"
+  }
+}

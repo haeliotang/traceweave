@@ -1,0 +1,24 @@
+{
+  "protocol": "traceform.native-warm-audit-validation.v1",
+  "apk_sha256": "9174ae252003efb2eae967dd0a0beccde9d0c56ea2d2444cff150b4c2ae0004a",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeVerificationReceiver.java": "c7394f010a9ceea234e1941bfb393bee6d3cd0eeee2602d5f4cf68f93ef1ed60",
+    "android/src/org/traceform/edge/NativeWarmAudit.java": "ee1cb2697eab9e384f362c6815d111239261647110777738adf81ac0303f602c",
+    "android/src/org/traceform/edge/WeeklyMaintenanceJob.java": "4d612dbfa2bdb5a45b4aae4c6750fc58959dd3baeb3d9611ec77160a00e4b005"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "android_fixture_executed": false,
+  "related_host_tests": {
+    "passed": 2,
+    "seconds": 0.93,
+    "scope": "weekly transient retry control flow and Warm clock, not actual Android WarmAudit execution"
+  },
+  "scope": "Warm row framing SHA256, integer bucket/time/count, model/normalizer/token, finite distance and optional token-potential binding; gates native weekly calibration",
+  "open": [
+    "actual Android Warm audit fixture",
+    "Cold graph full audit",
+    "long-term model lifecycle admission",
+    "original full goal gates"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "scope": "synthetic_private_protocol_output_matches_public_statement_not_owner_authentication",
+  "python_suite": {
+    "tests": 268,
+    "passed": true,
+    "seconds": 16.251
+  },
+  "sources": {
+    "traceform/dynamics/private_alignment_output.py": "015e74c1ea4d691cbedc3148c36f377428b7afcb738d216d46d23aa3144de7eb",
+    "tests/test_private_alignment_output.py": "01867095cb79c3bcb3a36b73f492597156cb4669f422df5bd81c72c7163da3cd",
+    "native/private_alignment_probe/verify_gw_relation.py": "043e31179df916dec81349102db40ad8b4a588c5aab09f9294c86d567f90488e",
+    "native/private_alignment_probe/README.md": "0cedafa3fa942e017b3303d60694bb8e0a2a0f50628189faeb42067167b6bf18"
+  },
+  "reports": {
+    "private_gw_statement_match_2x2_arm_host.json": {
+      "sha256": "43d9ad357926693a0def1c1e98bd6359abff5b48200c6f05fce7e9c63661389e",
+      "passed": true,
+      "cases": 12
+    },
+    "private_gw_statement_match_2x3_arm_host.json": {
+      "sha256": "4c700680b4a31e406fe5c61b9261d52a0c359a571d618509e5be1f533472b8f0",
+      "passed": true,
+      "cases": 12
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "receipt": {
+    "passed": false,
+    "error": "android.database.sqlite.SQLiteReadOnlyDatabaseException: attempt to write a readonly database (code 8 SQLITE_READONLY)",
+    "completed_epoch_ms": 1790892123305
+  },
+  "scope": "initial_snapshot_with_query_only_and_immediate_transaction_before_Android35_readonly_fix",
+  "initial_failure_apk_digest_not_retained": true
+}

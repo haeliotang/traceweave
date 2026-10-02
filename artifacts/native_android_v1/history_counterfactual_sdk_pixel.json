@@ -1,0 +1,51 @@
+{
+  "scope": "native_readonly_history_CLAMP_DWELL_Binder_not_complete_actuation_loop",
+  "tests": {
+    "count": 317,
+    "seconds": 27.669,
+    "passed": true
+  },
+  "synthetic_history": {
+    "passed": true,
+    "history_counterfactual_verified": true,
+    "completed_epoch_ms": 1790885818064,
+    "history_records": 6,
+    "excluded_history_records": 1,
+    "eligible_pairs": 3,
+    "closed_cache_rejected": true
+  },
+  "readonly_binder": {
+    "passed": true,
+    "service_pid": 21547,
+    "client_pid": 21502,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_backend_policy_verified": true,
+    "counterfactual_parity_and_invalid_states_verified": true,
+    "history_cache_hit_verified": false,
+    "history_repeat_compute_ms": 5.451945,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790885876944
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_pass": true,
+  "limits": [
+    "Explicit caller-selected state set is not validated human risk",
+    "Exact CDF counterfactual path; full window speed and memory not accepted",
+    "No automatic CSD MC bandit actuator integration",
+    "No live sensor collection or actuator effects tested"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/HistoryForecast.java": "bd80853e09689888d6e779e0848f48a350be026b195252ed3f5e6d6136aabf05",
+    "android/src/org/traceform/edge/HistoryForecastFixture.java": "c853202b19bee83e5ea5c823d709581dddcada9feb254d5fcbb26b8d99e03c5a",
+    "android/src/org/traceform/edge/CanonicalClient.java": "b104c6084ec8d0db1d5a53828e97f5902d290c2e74b589ba05f2956945bdc0b6",
+    "android/src/org/traceform/edge/EdgeService.java": "96a1079b42e0180d7b9c94702c02c843fec5438dcabd26af54cdaade8df53b46",
+    "android/src/org/traceform/edge/MainActivity.java": "0ac801ffb0ffce97808e2f854edd22f0212ead73f921cdc214a0fa4507cf96cd",
+    "android/build/traceform.apk": "4923151a107cb9bcfb568736dfcb0a2d4c9fc6ef169418dd2fabcf56006cfe18",
+    "android/build/traceform-sdk.jar": "1bef938c8b30acf54aa4d7927075f6cd9ecbcca9845e191a8c35a3253eafd824"
+  }
+}

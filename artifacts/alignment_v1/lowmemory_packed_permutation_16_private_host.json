@@ -1,0 +1,755 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 3790251,
+  "wires": 3802699,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.7671120410086587,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonzero_diagonal",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8686782919976395,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.859746667003492,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "elapsed_seconds": 1.8300733339856379,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8137534580018837,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.9028639169991948,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "negative_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.817373541998677,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "out_of_range_distance",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8776693330146372,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "triangle_violation",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8528629590000492,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "elapsed_seconds": 1.8959182499966118,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "elapsed_seconds": 1.7696974580176175,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8541107919882052,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.8542185830010567,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 1.7680629579990637,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "search": "six_bit_quantized_with_exact_final_loss_gate",
+  "search_distance_shift": 14,
+  "commitment": "uniform_packed_v2",
+  "circuit_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03",
+  "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "sources_sha256": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "ac92611a38941bb78bf132c29e55750d36e92a0102cc1a561330146850ea5274",
+    "native/private_alignment_probe/commitment.h": "ed93788821a727b922884a903fa657dde4184cad612c644c805e0a3698223b57",
+    "native/private_alignment_probe/square20.h": "96f4b86cde359522e14bb9166c707f572106f7202324960fb8d041d382fe932c",
+    "native/private_alignment_probe/generate_square20.cpp": "b9f072fa69682bad7a11653afddf8b4495a83e61ba2150b62cc3145645603c35",
+    "native/private_alignment_probe/verify_square20.py": "d4bc93acf2c65b9a369ba1ce3c46003f8baad3f8272bccd5ec5cf3bcd696e267",
+    "native/private_alignment_probe/compact_circuit.py": "98d68115233fc9ac7d3793242d377ab47149b630bad2d20eecaea1aed38ecaa3",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "8deef1e2e7a73b86307a9ba6e574d4f1ca0accd0b152ed0cd286041d4b9b5c69",
+    "native/private_alignment_probe/run_uniform_permutation.py": "8628a945dbdf042f78246ed7ce3cd7f5ef246d034e813c9c1d68d54c3fe06f3b",
+    "native/private_alignment_probe/run_usb_client.py": "820a69f1a793b0d394eb08157528b2297e4958cd3c63d5d349d23df417d702b4",
+    "traceform/dynamics/integer_transport.py": "8ec6387302836718afa6300ec3b5bf76e69c557854929eb1a20b9cf9a17e432f",
+    "tests/test_integer_transport.py": "bf9c8ee9e2dfa52fb985e4df70819a66ff997ab146498ca1c1f2590cfead6d63",
+    "tests/test_private_circuit_compaction.py": "668a4d1834fa56311421de86b74f8e3ed8cc2a5dd863db3cbd1f4152c4ffd3c5",
+    "tests/test_private_usb_client.py": "33677286a62efee2730908665529de8f1eb09b84a469e2bc02ebab721c2396d9"
+  },
+  "four_node_private": {
+    "passed": true,
+    "nodes": 4,
+    "gates": 735981,
+    "wires": 737845,
+    "cases": [
+      {
+        "case": "identical",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.5815701250103302,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonzero_diagonal",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.48456020798766986,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "transposition",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6041287090047263,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "reversal",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "72000000000000000000",
+        "elapsed_seconds": 0.4931472919997759,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "asymmetric",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.4798693750053644,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "nonuniform_same_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.6051763330178801,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "negative_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.5821945000207052,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "out_of_range_distance",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.582891458994709,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "triangle_violation",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.49285687500378117,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "different_scale",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "98000000000000000000",
+        "elapsed_seconds": 0.608166332996916,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "large_80bit_objective",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "750000000000000000000000",
+        "elapsed_seconds": 0.584692249976797,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "wrong_total",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.48815883399220183,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "session_mismatch",
+        "passed": true,
+        "valid": false,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.5151745420007501,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "changed_nonce",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "0",
+        "elapsed_seconds": 0.49150066697620787,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      },
+      {
+        "case": "full_precision_rejection",
+        "passed": true,
+        "valid": true,
+        "objective_numerator": "95751272000000000000",
+        "elapsed_seconds": 0.5852543750079349,
+        "parties": [
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          },
+          {
+            "exit_code": 0,
+            "output_matches": true,
+            "stderr": ""
+          }
+        ],
+        "error": null
+      }
+    ],
+    "search": "six_bit_quantized_with_exact_final_loss_gate",
+    "search_distance_shift": 14,
+    "commitment": "uniform_packed_v2",
+    "circuit_sha256": "ab84da8f14bdaf12e20f6a74a69819efcf3dda789af92b7cde9ac6e816eecdad",
+    "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+    "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit"
+  },
+  "plain": {
+    "passed": true,
+    "nodes": 16,
+    "gates": 3790251,
+    "inputs_per_owner": 6224,
+    "search": "six_bit_quantized_with_exact_final_loss_gate",
+    "search_distance_shift": 14,
+    "commitment": "uniform_packed_v2",
+    "circuit_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03",
+    "cases": [
+      {
+        "case": "identical",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonzero_diagonal",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "transposition",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "reversal",
+        "valid": true,
+        "objective_numerator": "45696000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "asymmetric",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonuniform_same_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "negative_distance",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "out_of_range_distance",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "triangle_violation",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "different_scale",
+        "valid": true,
+        "objective_numerator": "41106000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "large_80bit_objective",
+        "valid": true,
+        "objective_numerator": "937500000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "wrong_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "session_mismatch",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "changed_nonce",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      }
+    ],
+    "scope": "plaintext_synthetic_recorded_gate_validation_not_private_execution_or_security_audit"
+  },
+  "rewrite": {
+    "input_gates": 4080640,
+    "output_gates": 3790251,
+    "common_gates_reused": 122430,
+    "gate_hash_cache_capacity": 262144,
+    "input_wires": 4093088,
+    "output_wires": 3802699,
+    "input_sha256": "472a1bdd5b75e555cbd5bda997f8edaef99695efd7c3735e3b742f92c47cd35d",
+    "output_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03",
+    "scope": "constant_folding_bounded_gate_reuse_dead_gate_elimination_not_security_audit"
+  },
+  "host_peak_memory": {
+    "case": "identical",
+    "elapsed_seconds": 1.9708213330013677,
+    "parties": [
+      {
+        "exit_code": 0,
+        "output_matches": true,
+        "measurement": "        1.96 real         1.40 user         0.30 sys\n           831766528  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               53284  page reclaims\n                  83  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n               15053  messages sent\n               21486  messages received\n                   0  signals received\n                2315  voluntary context switches\n                1775  involuntary context switches\n         21461662653  instructions retired\n          5300408394  cycles elapsed\n           827687944  peak memory footprint\n"
+      },
+      {
+        "exit_code": 0,
+        "output_matches": true,
+        "measurement": "        1.85 real         1.55 user         0.31 sys\n           941408256  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               59996  page reclaims\n                  86  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n               10731  messages sent\n               30413  messages received\n                   0  signals received\n                2359  voluntary context switches\n                1685  involuntary context switches\n         23840890479  instructions retired\n          5815472772  cycles elapsed\n           937362488  peak memory footprint\n"
+      }
+    ]
+  },
+  "host_tests": {
+    "passed": true,
+    "tests": 349,
+    "seconds": 35.526
+  },
+  "commitment_contract": "traceform.gw.uniform-packed.v2 NUL, owner byte, node byte, LE32 scale, LE32 uniform mass, session32, nonce32, lexicographic upper triangle 20-bit LSB-first zero-padded to bytes; requires original complete metric validation and exactly uniform masses",
+  "search_scope": "six-bit distances shifted 14, one lexicographic transposition sweep, original full-precision final objective with candidate rejection above identity; no unrestricted transport or global optimum certificate",
+  "android_status": "separate receipt required"
+}

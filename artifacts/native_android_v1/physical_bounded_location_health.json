@@ -1,0 +1,99 @@
+{
+  "checked_epoch": 1790826895.7593153,
+  "rows": 38,
+  "recent": [
+    {
+      "timestamp_utc": "2026-10-01T03:51:36.153239Z",
+      "availability": {
+        "motion": "AVAILABLE",
+        "environment": "AVAILABLE",
+        "place": "TEMPORARILY_UNAVAILABLE",
+        "connectivity": "AVAILABLE",
+        "device_relation": "AVAILABLE",
+        "audio_context": "AVAILABLE"
+      },
+      "sample_latencies_ms": {
+        "motion": 2442.68,
+        "environment": 2442.68,
+        "place": 31176.85,
+        "connectivity": 2077.57,
+        "device_relation": 1274.01,
+        "audio_context": 4918.78
+      },
+      "location_request": null,
+      "location_age_ms": null,
+      "location_age_upper_bound_ms": null
+    },
+    {
+      "timestamp_utc": "2026-10-01T03:52:18.126759Z",
+      "availability": {
+        "motion": "AVAILABLE",
+        "environment": "AVAILABLE",
+        "place": "AVAILABLE",
+        "connectivity": "AVAILABLE",
+        "device_relation": "AVAILABLE",
+        "audio_context": "NOT_SAMPLED"
+      },
+      "sample_latencies_ms": {
+        "motion": 2443.25,
+        "environment": 2443.25,
+        "place": 30679.77,
+        "connectivity": 1977.83,
+        "device_relation": 1270.41,
+        "audio_context": 0.0
+      },
+      "location_request": "updates",
+      "location_age_ms": 118.0,
+      "location_age_upper_bound_ms": null
+    },
+    {
+      "timestamp_utc": "2026-10-01T03:53:36.965183Z",
+      "availability": {
+        "motion": "UNAVAILABLE",
+        "environment": "UNAVAILABLE",
+        "place": "TEMPORARILY_UNAVAILABLE",
+        "connectivity": "AVAILABLE",
+        "device_relation": "AVAILABLE",
+        "audio_context": "AVAILABLE"
+      },
+      "sample_latencies_ms": {
+        "motion": 2505.55,
+        "environment": 2505.55,
+        "place": 31232.59,
+        "connectivity": 1956.69,
+        "device_relation": 1270.04,
+        "audio_context": 3828.39
+      },
+      "location_request": null,
+      "location_age_ms": null,
+      "location_age_upper_bound_ms": null
+    },
+    {
+      "timestamp_utc": "2026-10-01T03:54:17.787764Z",
+      "availability": {
+        "motion": "UNAVAILABLE",
+        "environment": "UNAVAILABLE",
+        "place": "TEMPORARILY_UNAVAILABLE",
+        "connectivity": "AVAILABLE",
+        "device_relation": "AVAILABLE",
+        "audio_context": "NOT_SAMPLED"
+      },
+      "sample_latencies_ms": {
+        "motion": 2521.19,
+        "environment": 2521.19,
+        "place": 31220.7,
+        "connectivity": 2089.25,
+        "device_relation": 1368.76,
+        "audio_context": 0.0
+      },
+      "location_request": null,
+      "location_age_ms": null,
+      "location_age_upper_bound_ms": null
+    }
+  ],
+  "sources": {
+    "physical_location_v2.py": "0ed24c58d3381531d8001caa203c15f7ae2851d1e527760616b9f1156dc12c4a",
+    "physical_observation_v2.py": "83fd936409d4ab7f2edb0eb00973ce2a86c051a8a5dd659ecb024fac6ad9a893",
+    "physical_acquisition_v2.py": "ddf9aacc31f4bddc8fbe8c79204c3d7d31adf0dbf2eadca2046e370b450fed4b"
+  }
+}

@@ -1,0 +1,280 @@
+{
+  "scope": "adopted_eight_step_moment_reuse_synthetic_monthly_native_and_APK_tests",
+  "adopted": true,
+  "runs": [
+    {
+      "cmd": "/data/local/tmp/traceform-spectrum-step-block-parity --canonical-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "scope": "full_month_ARM_spectral_CDF_parity_with_reference_scratch",
+          "max_cdf_absolute_difference": 7.771561172376096e-16,
+          "tolerance": 1e-12,
+          "same_draw_occupancy_equal": true
+        },
+        {
+          "spectrum_fit_ms": 195.147136,
+          "remove_add_1000_pairs_ms": 4.211223,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 5652480,
+          "launcher_peak_rss_bytes": 13611008,
+          "elapsed_ms": 3.323283,
+          "periodic_cdf_ms": 2.371012,
+          "rollout_ms": 0.921549,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-streamed-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1198.30713,
+          "remove_add_1000_pairs_ms": 25.203288,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2985984,
+          "launcher_peak_rss_bytes": 13611008,
+          "elapsed_ms": 33.072632,
+          "periodic_cdf_ms": 30.67631,
+          "rollout_ms": 2.200643,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-step-block-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1199.091025,
+          "remove_add_1000_pairs_ms": 25.27417,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2940928,
+          "launcher_peak_rss_bytes": 13611008,
+          "elapsed_ms": 22.773437,
+          "periodic_cdf_ms": 20.223958,
+          "rollout_ms": 2.285197,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-step-block-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1196.811198,
+          "remove_add_1000_pairs_ms": 25.281128,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2969600,
+          "launcher_peak_rss_bytes": 13611008,
+          "elapsed_ms": 22.499145,
+          "periodic_cdf_ms": 20.031494,
+          "rollout_ms": 2.266316,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-streamed-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1201.562704,
+          "remove_add_1000_pairs_ms": 25.140096,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2985984,
+          "launcher_peak_rss_bytes": 13611008,
+          "elapsed_ms": 31.676433,
+          "periodic_cdf_ms": 29.212443,
+          "rollout_ms": 2.203084,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    }
+  ],
+  "application_receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 25096,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "thread_environment_after": {
+      "thread_id": 25096,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.006918,
+        "input_copy_allocation_ms": 1.046671,
+        "native_cdf_wall_ms": 28.733968,
+        "output_copy_ms": 0.451823,
+        "native_total_ms": 30.23938,
+        "native_cdf_thread_cpu_ms": 28.145225
+      },
+      {
+        "lock_wait_ms": 0.00236,
+        "input_copy_allocation_ms": 0.825765,
+        "native_cdf_wall_ms": 28.341106,
+        "output_copy_ms": 0.533569,
+        "native_total_ms": 29.7028,
+        "native_cdf_thread_cpu_ms": 27.445271
+      },
+      {
+        "lock_wait_ms": 0.00411,
+        "input_copy_allocation_ms": 1.130086,
+        "native_cdf_wall_ms": 28.653809,
+        "output_copy_ms": 0.833943,
+        "native_total_ms": 30.621948,
+        "native_cdf_thread_cpu_ms": 27.64445
+      },
+      {
+        "lock_wait_ms": 0.001913,
+        "input_copy_allocation_ms": 1.134114,
+        "native_cdf_wall_ms": 28.506267,
+        "output_copy_ms": 0.670735,
+        "native_total_ms": 30.313029,
+        "native_cdf_thread_cpu_ms": 27.348229
+      },
+      {
+        "lock_wait_ms": 0.001668,
+        "input_copy_allocation_ms": 1.371786,
+        "native_cdf_wall_ms": 29.465942,
+        "output_copy_ms": 0.637492,
+        "native_total_ms": 31.476888,
+        "native_cdf_thread_cpu_ms": 28.169961
+      }
+    ],
+    "fit_ms": 1678.230062,
+    "cdf_trials_ms": [
+      31.057454,
+      29.988648,
+      30.932943,
+      30.67334,
+      31.872721
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790875729194
+  },
+  "tests": {
+    "count": 309,
+    "seconds": 27.212,
+    "passed": true
+  },
+  "application_15ms_gate_passed": false,
+  "host_comparison": {
+    "cases": 54,
+    "bitwise_equal": true,
+    "states": [
+      1,
+      4,
+      16
+    ],
+    "pairs": [
+      0,
+      63,
+      1000
+    ],
+    "horizons": [
+      1,
+      7,
+      8,
+      9,
+      20,
+      120
+    ]
+  },
+  "sha256": {
+    "native/periodic_spectrum.cpp": "888525e2e77f35ef4ecda234b6d0fa71268bfa5b966801111449fe25ce46390d",
+    "tests/test_native_periodic_spectrum.py": "2bb468da13f3f9ef4bc9cef40333a4a2870d3023564e3020f4926548d7b448cd",
+    "android/build/traceform.apk": "61896958dac27d7659f0e788499209a13f252e7e3b73d3c9c2a7eb188080cb13",
+    "/private/tmp/traceform-spectrum-step-block-benchmark": "a2f73c8f264d4c5d2920142e44daf2753a3d381244ca8fb63727f0af4a0df7d0",
+    "/private/tmp/traceform-spectrum-step-block-parity": "35f3f0e946227b41652f8139af02eb4abbc41f89dec7be99516b6cc331fed3ce"
+  }
+}

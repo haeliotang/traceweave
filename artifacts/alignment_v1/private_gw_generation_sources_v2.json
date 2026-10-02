@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-01",
+  "scope": "contemporaneous_generation_and_host_verification_sources_not_android_or_independent_security_audit",
+  "sha256": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "3a51a74829fa9db51b1ac845c7a70b37c3078a3930f458a954de8f7cdd93018f",
+    "native/private_alignment_probe/smoke.cpp": "34364ee6482307e98bf94040cc6f78cbde28e3e7aa9952c99f0cdb9b107af770",
+    "native/private_alignment_probe/verify_gw_relation.py": "8ef62fa8c3cdf7b1da0464d54084e05bfb66589d9b9d67bedfa0543dbc41292a",
+    "native/private_alignment_probe/dependencies.json": "a049e82694fa9a226350c8a084af9faf8010205bcbac7533928c590723f7feaa",
+    "traceform/dynamics/alignment_statement.py": "1250d6c5f517fe08f1abca39d20600e8efcd9777286d00f2c934514fdb84a52f"
+  },
+  "generator_binary_sha256": "a23848599b13f85df261345d8640faedc5237e65903af67606519fa35833276a",
+  "validated_instances": [
+    {
+      "nodes": [
+        2,
+        2
+      ],
+      "gates": 311603,
+      "cases_passed": 9
+    },
+    {
+      "nodes": [
+        2,
+        3
+      ],
+      "gates": 698281,
+      "cases_passed": 9
+    }
+  ]
+}

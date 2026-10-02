@@ -1,0 +1,9 @@
+{
+  "tests": 16,
+  "passed": false,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 1,
+  "cause": "test_runner_missing_production_PYTHONTZPATH_UTC",
+  "scope": "isolated_synthetic_weekly_structure_and_maintenance"
+}

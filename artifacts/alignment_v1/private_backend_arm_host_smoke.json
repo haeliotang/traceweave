@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "synthetic_cases": [
+    {
+      "expected_public_output": "000010",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "expected_public_output": "111100",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "expected_public_output": "100000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "binary_sha256": "e13a80c176b57b46769577b65464a8f408df063cdb68126baef43467a0e9b235",
+  "circuit_sha256": "507a539f19c7e774da17b0dac687ae6b68ef9994c98fd041972a026a09432aef",
+  "scope": "fixed_backend_arm_host_compatibility_not_private_gw_or_security_audit"
+}

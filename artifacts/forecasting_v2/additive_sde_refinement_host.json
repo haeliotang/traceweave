@@ -1,0 +1,24 @@
+{
+  "command": "python3 -m unittest tests.test_continuous_dynamics -q",
+  "scope": "additive_1D_OU_EM_strong_refinement_shared_Brownian_paths_not_empirical_128D_fit",
+  "new_case_passed": true,
+  "source_sha256": "d794442fc486d0940ff76f1eb3b971a719a8b0f190a6361b6dd95c607ce1cab3",
+  "runs": 256,
+  "steps": [
+    4,
+    8,
+    16,
+    32
+  ],
+  "ratio_gate": [
+    1.8,
+    2.3
+  ],
+  "finest_rmse_upper_bound": 0.01,
+  "affected_suite": {
+    "tests": 23,
+    "passed": true,
+    "elapsed_seconds": 8.451
+  },
+  "diff_check_passed": true
+}

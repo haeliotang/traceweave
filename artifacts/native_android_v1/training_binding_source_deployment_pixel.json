@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "path": "traceform/representation/manifold_lattice.py",
+      "sha256": "9661e3e2190a78f61ecbe876ea78d90a61222e66c1e5ddd0ea37a914bf45524b"
+    },
+    {
+      "path": "tests/test_manifold_lattice.py",
+      "sha256": "b7a26479060d2cfcf776f6e63e4e4f096bf78da2492840d37685a1204f55652b"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

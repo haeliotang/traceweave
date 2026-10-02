@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "wrong_pin",
+      "passed": true,
+      "parties": [
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS peer certificate pin rejected\n"
+        },
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS peer readiness rejected\n"
+        }
+      ]
+    },
+    {
+      "case": "wrong_trust",
+      "passed": true,
+      "parties": [
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS peer authentication rejected\n"
+        },
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS peer readiness rejected\n"
+        }
+      ]
+    },
+    {
+      "case": "wrong_key",
+      "passed": true,
+      "parties": [
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS peer authentication rejected\n"
+        },
+        {
+          "exit_code": 1,
+          "no_public_output": true,
+          "stderr": "TLS identity configuration rejected\n"
+        }
+      ]
+    }
+  ],
+  "scope": "synthetic_loopback_tls_identity_rejection"
+}

@@ -1,0 +1,19 @@
+{
+  "tests": 298,
+  "passed": true,
+  "elapsed_seconds": 22.385,
+  "apk_bytes": 3765151,
+  "apk_sha256": "7e6974422ce6c8a593f5106b6f78821eae9b15d8e36ea1a3dc41dda1684c774a",
+  "source_sha256": {
+    "android/src/org/traceform/edge/FeatureReadings.java": "021da008eb1581665b9c9505017c7879664ed18a160bb53d4bc9fb811af27a90",
+    "android/src/org/traceform/edge/FeatureFixtures.java": "615fc91738444a32227b3212b4c0eabaf31fd1724a76dc668aa3bae0d669fef7",
+    "tests/test_native_feature_readings.py": "47717279ae2fc9e6a5dcc3f5f80824944a290e525a04952da3d4a31d00b572ef"
+  },
+  "scope": "fresh_accelerometer_frame_acf_synthetic_formulas_not_live_acquisition",
+  "affected_native_tests_after_clock_rollback_fix": {
+    "tests": 15,
+    "passed": true,
+    "elapsed_seconds": 4.54
+  },
+  "full_suite_preceded_clock_rollback_fix": true
+}

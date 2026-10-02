@@ -1,0 +1,27 @@
+{
+  "device": "Pixel 6a",
+  "night_display_available_from_shell": true,
+  "configured_min_kelvin": 686,
+  "configured_max_kelvin": 4082,
+  "termux_uid": 10216,
+  "termux_write_secure_settings_granted_observed": false,
+  "termux_overlay_read": {
+    "exit_code": 20,
+    "reason": "service_not_accessible"
+  },
+  "termux_settings_default_user_read": {
+    "exit_code": 255,
+    "required_permission": "INTERACT_ACROSS_USERS"
+  },
+  "termux_settings_explicit_user_0_read": {
+    "exit_code": 255,
+    "required_permissions_any": [
+      "MANAGE_USERS",
+      "CREATE_USERS",
+      "QUERY_USERS"
+    ]
+  },
+  "writes_or_permission_grants_performed": false,
+  "scope": "read_only_capability_probe_not_color_actuation_or_optical_measurement",
+  "next_path": "native_android_content_resolver_and_device_resource_capability_integration"
+}

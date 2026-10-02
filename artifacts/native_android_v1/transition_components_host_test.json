@@ -1,0 +1,8 @@
+{
+  "tests": 292,
+  "passed": true,
+  "elapsed_seconds": 19.946,
+  "affected_tests": 7,
+  "independent_random_graph_cases": 80,
+  "scope": "transition_graph_components_empty_input_and_stream_boundaries_not_weekly_structural_evolution"
+}

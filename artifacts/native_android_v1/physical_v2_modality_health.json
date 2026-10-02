@@ -1,0 +1,17 @@
+{
+  "scope": "post_recovery_modality_health_not_scientific_acceptance",
+  "initial_v2_all_modalities_available": true,
+  "post_recovery": {
+    "motion": "TEMPORARILY_UNAVAILABLE",
+    "environment": "TEMPORARILY_UNAVAILABLE",
+    "place": "TEMPORARILY_UNAVAILABLE",
+    "connectivity": "PARTIALLY_AVAILABLE",
+    "device_relation": "UNAVAILABLE",
+    "audio_context": "TEMPORARILY_UNAVAILABLE"
+  },
+  "native_termux_battery_probe": "timeout_exit_124",
+  "reader_watermark_matches_source": "2026-10-01T03:17:43.682027Z",
+  "source_records": 10,
+  "hot_records": 65,
+  "remaining_work": "diagnose_global_Termux_API_timeout_before_health_acceptance"
+}

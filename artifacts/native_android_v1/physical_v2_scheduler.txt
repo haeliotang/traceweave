@@ -1,0 +1,40 @@
+  JOB #u0a216/11402: 73c2ee0 com.termux.api/.apis.JobSchedulerAPI$JobSchedulerService
+    u0a216 tag=*job*r/com.termux.api/.apis.JobSchedulerAPI$JobSchedulerService
+    Source: uid=u0a216 user=0 pkg=com.termux.api
+    JobInfo:
+      Service: com.termux.api/.apis.JobSchedulerAPI$JobSchedulerService
+      PERIODIC: interval=+15m0s0ms flex=+15m0s0ms
+      PERSISTED
+      Priority: 300 [DEFAULT]
+      Requires: charging=false batteryNotLow=true deviceIdle=false
+      Has media backup exemption=false 
+      Extras: {com.termux.api.jobscheduler_script_path=/data/data/com.termux/files/home/traceform/scripts/physical_supervision_v2_job.sh}
+      Backoff: policy=1 initial=+30s0ms
+      Has early constraint
+      Has late constraint
+    Required constraints: BATTERY_NOT_LOW TIMING_DELAY DEADLINE FLEXIBILITY [0xc0200002]
+    Dynamic constraints:
+    Satisfied constraints: BATTERY_NOT_LOW FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED WITHIN_QUOTA [0x3600002]
+    Unsatisfied constraints: TIMING_DELAY DEADLINE [0xc0000000]
+    Num Required Flexible constraints: 0
+    Num Dropped Flexible constraints: 0
+    Constraint history:
+      -1m49s311ms = FLEXIBILITY [0x200000]
+      -1m49s311ms = BATTERY_NOT_LOW FLEXIBILITY [0x200002]
+      -1m49s311ms = BATTERY_NOT_LOW FLEXIBILITY BACKGROUND_NOT_RESTRICTED [0x600002]
+      -1m49s311ms = BATTERY_NOT_LOW FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED [0x2600002]
+      -1m49s311ms = BATTERY_NOT_LOW FLEXIBILITY DEVICE_NOT_DOZING BACKGROUND_NOT_RESTRICTED WITHIN_QUOTA [0x3600002]
+    Doze whitelisted: true
+    Uid: active
+    Tracking: BATTERY TIME QUOTA
+    Implicit constraints:
+      readyNotDozing: true
+      readyNotRestrictedInBg: true
+      readyComponentEnabled: true
+    Started with foreground flag: false
+    Standby bucket: EXEMPTED
+    Enqueue time: -1m49s311ms
+    Run time: earliest=+26m4s915ms, latest=+41m4s915ms, original latest=+41m4s915ms
+    Last successful run: 2026-10-01 08:57:09
+    Restricted due to: none.
+    Ready: false (job=false user=true !restricted=true !pending=true !active=true !backingup=true comp=true)

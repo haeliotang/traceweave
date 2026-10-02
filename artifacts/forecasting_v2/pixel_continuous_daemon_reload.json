@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-01",
+  "device": "Pixel 6a",
+  "old_owner": {"pid": 25859, "start_ticks": "4956384", "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"},
+  "new_owner": {"pid": 23172, "start_ticks": "5547934", "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"},
+  "new_owner_remained_live": true,
+  "first_observed_latest_timestamp_utc": "2026-10-01T08:46:22.510520Z",
+  "second_observed_latest_timestamp_utc": "2026-10-01T08:46:52.641519Z",
+  "source_mode": "live_follow",
+  "disabled_haptics": true,
+  "shadow_mode": true,
+  "silent_flag_present": true,
+  "device_task_tests_passed": 3,
+  "device_task_tests_elapsed_seconds": 1.087,
+  "device_source_sha256": {
+    "scripts/phone_edge_manifold_daemon.py": "39a6953609ae6af0b8f500b2c5ac31fb28fdffcc1d820d8bda45e1555b3a9435",
+    "scripts/predict_continuous_edge.py": "9322f5c1dc63ef8a6dfa8dad666f0a483ee9d1b2cb83be2b7fc47b131fd49239",
+    "traceform/forecasting/continuous_sandbox.py": "8d0d5220b0614c120a52664fbfd74ef5d0787f6d05bf145783bbd7510eaa3691",
+    "tests/test_continuous_sandbox.py": "fe01c0327eac2f5d90ccf793e09d8f278a05445c292a4ff3b5327d3aaacb21f7"
+  },
+  "scope": "deployed_live_reader_and_synthetic_worker_tests_not_naturally_triggered_continuous_prediction_or_physical_effect",
+  "natural_csd_worker_completion_observed": false
+}

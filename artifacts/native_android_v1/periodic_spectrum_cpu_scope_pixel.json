@@ -1,0 +1,159 @@
+{
+  "scope": "synthetic_affinity_control_comparison_not_full_causal_performance_explanation",
+  "app_receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 22228,
+      "thread_priority": 0,
+      "cpus_allowed": "0-7"
+    },
+    "thread_environment_after": {
+      "thread_id": 22228,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.005371,
+        "input_copy_allocation_ms": 1.072917,
+        "native_cdf_wall_ms": 62.988159,
+        "output_copy_ms": 0.760742,
+        "native_total_ms": 64.827189,
+        "native_cdf_thread_cpu_ms": 60.021767
+      },
+      {
+        "lock_wait_ms": 0.001953,
+        "input_copy_allocation_ms": 1.146973,
+        "native_cdf_wall_ms": 63.840169,
+        "output_copy_ms": 1.14563,
+        "native_total_ms": 66.134725,
+        "native_cdf_thread_cpu_ms": 60.937582
+      },
+      {
+        "lock_wait_ms": 0.001017,
+        "input_copy_allocation_ms": 1.051921,
+        "native_cdf_wall_ms": 62.938843,
+        "output_copy_ms": 1.379272,
+        "native_total_ms": 65.371053,
+        "native_cdf_thread_cpu_ms": 60.529664
+      },
+      {
+        "lock_wait_ms": 0.000611,
+        "input_copy_allocation_ms": 0.914103,
+        "native_cdf_wall_ms": 54.158447,
+        "output_copy_ms": 1.315959,
+        "native_total_ms": 56.38912,
+        "native_cdf_thread_cpu_ms": 51.609131
+      },
+      {
+        "lock_wait_ms": 0.000976,
+        "input_copy_allocation_ms": 1.265666,
+        "native_cdf_wall_ms": 63.0094,
+        "output_copy_ms": 1.081258,
+        "native_total_ms": 65.3573,
+        "native_cdf_thread_cpu_ms": 60.550085
+      }
+    ],
+    "fit_ms": 2422.725261,
+    "cdf_trials_ms": [
+      65.802734,
+      66.65153,
+      65.74231,
+      57.059773,
+      65.741293
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790875142290
+  },
+  "standalone_default": [
+    {
+      "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+    },
+    {
+      "spectrum_fit_ms": 254.171997,
+      "remove_add_1000_pairs_ms": 4.18986,
+      "summary_payload_bytes": 596104,
+      "fit_and_update_in_prediction_timer": false,
+      "phase_and_prior_preparation_in_fit_timer": true,
+      "history_arrays_retained": false
+    },
+    {
+      "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+      "phase_construction": "sdk_weekday_and_local_fraction",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 3002368,
+      "launcher_peak_rss_bytes": 13447168,
+      "elapsed_ms": 4.342407,
+      "periodic_cdf_ms": 3.390951,
+      "rollout_ms": 0.920492,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    }
+  ],
+  "standalone_cpu_0_3": [
+    {
+      "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+    },
+    {
+      "spectrum_fit_ms": 1196.412313,
+      "remove_add_1000_pairs_ms": 25.138632,
+      "summary_payload_bytes": 596104,
+      "fit_and_update_in_prediction_timer": false,
+      "phase_and_prior_preparation_in_fit_timer": true,
+      "history_arrays_retained": false
+    },
+    {
+      "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+      "phase_construction": "sdk_weekday_and_local_fraction",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "history_pairs": 86400,
+      "peak_rss_bytes": 2936832,
+      "launcher_peak_rss_bytes": 13447168,
+      "elapsed_ms": 32.884115,
+      "periodic_cdf_ms": 30.444702,
+      "rollout_ms": 2.249186,
+      "mass_conserved": true,
+      "phase_preparation_timed": false
+    }
+  ],
+  "application_affinity_modified": false,
+  "system_settings_modified": false,
+  "prediction_15ms_gate_passed": false,
+  "code_comparison": {
+    "cdf_symbol_bytes": {
+      "shared": 1268,
+      "standalone": 1268
+    },
+    "apply_delta_symbol_bytes": {
+      "shared": 820,
+      "standalone": 820
+    },
+    "cdf_instruction_mnemonic_sequences_equal": true,
+    "cdf_instruction_counts": [
+      317,
+      317
+    ],
+    "scope": "instruction_structure_comparison_not_binary_identity_or_complete_environment_proof"
+  },
+  "sha256": {
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "17366df8f28e66121dad54cb3f3b1d04b5e2465d8170a5fb71b7413de3c95d92",
+    "android/build/traceform.apk": "4ce3da6bf643f209411436a4056f730946b153c0d64539eb93c32ef8df4b556f",
+    "android/build/lib/arm64-v8a/libtraceform.so": "80a7ed091a9f083c83e1e482e07ce98176f952cdb3ef47c385c16b960546a273",
+    "/private/tmp/traceform-spectrum-streamed-benchmark": "d39f4787f6205c0813c064b09c73438080715ebbfb68cd19460c3925e8de5193"
+  }
+}

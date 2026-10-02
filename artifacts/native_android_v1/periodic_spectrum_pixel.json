@@ -1,0 +1,55 @@
+{
+  "scope": "standalone_native_spectrum_monthly_fit_update_forecast_not_Android_SDK_workflow",
+  "production_selected": false,
+  "pairs": 86400,
+  "states": 16,
+  "horizon": 120,
+  "rollouts": 300,
+  "predict_ms": [
+    4.338827,
+    4.334148
+  ],
+  "cdf_ms": [
+    3.371013,
+    3.381022
+  ],
+  "rss_bytes": [
+    4952064,
+    5001216
+  ],
+  "fits_ms": [
+    208.099447,
+    242.655965
+  ],
+  "remove_add_1000_pairs_ms": [
+    4.270589,
+    4.237426
+  ],
+  "summary_payload_bytes": 596104,
+  "phase_preparation_timed": false,
+  "fit_in_predict_timer": false,
+  "decimal_5MB_gate_passed_all_runs": false,
+  "15ms_predict_gate_passed_all_runs": true,
+  "parity": {
+    "all_month_CDF_max_absolute_difference": 7.771561172376096e-16,
+    "tolerance": 1e-12,
+    "shared_draw_occupancy_equal": true,
+    "rss_includes_reference_scratch_bytes": 5627904
+  },
+  "tests": {
+    "passed": true,
+    "count": 308,
+    "seconds": 24.772
+  },
+  "removal_contract": "caller must validate expired transition against authoritative eligible history; summary alone does not authenticate records",
+  "source_sha256": {
+    "native/periodic_spectrum.h": "65c08914b1ad69ba362a01dd57e59da8a126e248671e524565be28235afe6d3a",
+    "native/periodic_spectrum.cpp": "e292c831554046793c09ae60f3ac22f7f49028745a2f10c4d7603ac58c2aa9d7",
+    "native/periodic_spectrum_benchmark.cpp": "2292c998c9fce1de6c25d67cc126623fc8910c41b8a0792736f76f6e43885f2c",
+    "tests/test_native_periodic_spectrum.py": "c13f3d616e09fd043d4c5a7915674563b0c3425fc5c0efe337a4dea3cffcfe38"
+  },
+  "device_binary_sha256": {
+    "/private/tmp/traceform-spectrum-benchmark": "9dcfde1b3490fd5cc203e72d31f4d979d2c847ebef2f8a955b9160e2291c44db",
+    "/private/tmp/traceform-spectrum-parity": "ca2dd693518707d029870b6f6135c09ff7653b7060ae5ef5490a83d146009618"
+  }
+}

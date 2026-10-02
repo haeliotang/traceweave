@@ -1,0 +1,10 @@
+{
+  "apk_sha256": "be24b6ef386afd002f41fcb2fa46bf63494459c4f7111953b56cdc1c4754e3a2",
+  "apk_bytes": 12685,
+  "source_sha256": {
+    "scripts/build_sdk_permission_probe.py": "0036108c5c7c5f7d8196a9949186e96d88fbb7e16ff4dd919ca7b2dbe98576dd",
+    "android/security_probe/AndroidManifest.xml": "69dc87f8e5990664e28ec77d48918d2e6bdb29ece8f1a22ad327fa9548564b66",
+    "android/security_probe/src/org/traceform/sdkprobe/MainActivity.java": "16fce9f739b6fb8902afdcc57e5c2695e94d77e9b5047fb16ff2efbe57a67170"
+  },
+  "scope": "separate_development_signer_permission_probe_only"
+}

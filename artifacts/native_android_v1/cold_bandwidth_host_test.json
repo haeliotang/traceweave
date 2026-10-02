@@ -1,0 +1,14 @@
+{
+  "full_host_suite": {
+    "tests": 286,
+    "passed": true,
+    "elapsed_seconds": 19.763
+  },
+  "affected_tests": {
+    "continuous_dynamics": 18,
+    "tiered_storage": 14,
+    "passed": true
+  },
+  "scope": "cold_potential_bandwidth_persistence_and_finite_parameters_not_identified_bifurcations",
+  "legacy_cold_payloads_rewritten": false
+}

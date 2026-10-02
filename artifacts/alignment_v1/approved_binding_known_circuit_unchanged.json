@@ -1,0 +1,13 @@
+{
+  "input_gates": 4080640,
+  "output_gates": 3790251,
+  "common_gates_reused": 122430,
+  "gate_hash_cache_capacity": 262144,
+  "input_wires": 4093088,
+  "output_wires": 3802699,
+  "input_sha256": "472a1bdd5b75e555cbd5bda997f8edaef99695efd7c3735e3b742f92c47cd35d",
+  "output_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03",
+  "scope": "regenerated_old_known_statement_circuit_byte_identical_after_new_approved_mode",
+  "passed": true,
+  "expected_sha256": "fbeaf35131dc63a556067e132f0fb1015fcce5abdd2b3fd2ec47b0474f5dfa03"
+}

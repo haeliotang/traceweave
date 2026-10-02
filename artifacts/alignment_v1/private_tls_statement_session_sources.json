@@ -1,0 +1,24 @@
+{
+  "scope": "synthetic_tls_to_bound_statement_session_consistency",
+  "regression_before_fix": "mismatching_transport_and_statement_sessions_both_exited_zero",
+  "host_binary_sha256": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+  "pixel_binary_sha256": "8407ab0c33150069e574caacf88c9d3dad5b1d1404056a8cb23b9cd77527b0a0",
+  "device_binary_sha256": "8407ab0c33150069e574caacf88c9d3dad5b1d1404056a8cb23b9cd77527b0a0",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "6ad2d5a5774e5549b9d3c22ddefbf194e2b202fb92d521151da1696005716b58",
+    "native/private_alignment_probe/tls_io.h": "5fabff8e8dc7e9dd1d9ad6b3b5116c2887fc37efc274b200547d3204ab472ef4",
+    "native/private_alignment_probe/verify_transport_statement.py": "6f042bf7ab1ed21561a1570bbdf45151518df6183984e6fadc30bbb06041826d"
+  },
+  "reports": {
+    "private_tls_statement_session_arm_host.json": {
+      "passed": true,
+      "cases": 3,
+      "sha256": "d68a12cef36011c8c7dc7600b089d2155e93f896767c00d50e4176d7cfed02b8"
+    },
+    "private_tls_statement_session_pixel.json": {
+      "passed": true,
+      "cases": 3,
+      "sha256": "967ff7bfcccb62b2c7a3ce0bd01c7c8f403ab7ffa17cec7fd7cc242d3c486259"
+    }
+  }
+}

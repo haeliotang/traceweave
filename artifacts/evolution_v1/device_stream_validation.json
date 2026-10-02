@@ -1,0 +1,17 @@
+{
+  "valid": true,
+  "records": 410,
+  "invalid_timestamps": 0,
+  "nonchronological_pairs": 0,
+  "nonfinite_values": 0,
+  "gaps_over_300_seconds": 2,
+  "scope": "timestamp_order_and_numeric_integrity_not_sensor_truth_or_completeness",
+  "execution_scope": "read_only_all_retained_hot_validation_no_training_or_activation",
+  "targeted_device_tests": 5,
+  "verified_device_source_sha256": {
+    "traceform/evolution/guarded_calibration.py": "6b40e978db3de5d298e73433c3978ca888a0a471686d4c58057e64282427c634",
+    "traceform/streaming/tiered_storage.py": "d5eaac6dee639c8bba780ff1105ec2fd7ff122cb543e8d71908e47ee70681391",
+    "scripts/maintain_edge_runtime.py": "7016a50baaa9db477f28177ad7cb57aa62cd7078f18f6f8931ed6ce71030117a",
+    "tests/test_guarded_calibration.py": "82334a302c7f0581cd3fbc1e365e20e015cc247de9b2fdb503d1e934a51b70c4"
+  }
+}

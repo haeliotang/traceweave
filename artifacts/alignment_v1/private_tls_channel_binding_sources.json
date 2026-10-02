@@ -1,0 +1,27 @@
+{
+  "scope": "synthetic_host_tls_channel_protocol_binding_not_android_or_replay_policy",
+  "binary_sha256": "c59d84bd8799bcac1face2aa29532659133f24047a7f9f4b7b7fed5f46fd307c",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "9b97ed54ccb3ef02ddf059d7254168ecf52b8a159f17d22c932d526d097cefda",
+    "native/private_alignment_probe/tls_io.h": "e74c359d04211c4a67393ba81f47c0be7af2e2abf83d09ca04d93df296ad5ef9",
+    "native/private_alignment_probe/verify_tls_binding.py": "9ef5f494932ccf08cce28e7a35f824ca2b4336315169afc4e07fe088b0e8eb6d",
+    "native/private_alignment_probe/verify_tls_rejection.py": "cf0cec1b0bd6b4841bc6e8d8f4df5eef57335a61249b68577b4de2040127883e"
+  },
+  "reports": {
+    "private_tls_channel_binding_arm_host.json": {
+      "passed": true,
+      "cases": 6,
+      "sha256": "48b27b273ca4e79cf26ed9743080abe258123dcfa5aa44be7261202b69b91eef"
+    },
+    "private_tls_bound_identity_rejection_arm_host.json": {
+      "passed": true,
+      "cases": 3,
+      "sha256": "23d73286b50c5caa2fcf70f2746b128e6ff7bb303901780ffd8c42c5d8278488"
+    },
+    "private_tls_bound_gw_2x2_arm_host.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "ef0c3ee1a1ff7e1d007ecea26b72e1823ce3233a07025f49f9bad769b60bd9e9"
+    }
+  }
+}

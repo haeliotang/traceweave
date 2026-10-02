@@ -1,0 +1,21 @@
+{
+  "scope": "host_native_periodic_cdf_against_independent_subtraction_formula",
+  "states": 7,
+  "horizon": 17,
+  "history_pairs": 257,
+  "phase_scales": [
+    6.283185307179586,
+    32.0,
+    1e+16,
+    1e+308
+  ],
+  "maximum_allowed_cdf_error": 1e-12,
+  "passed": true,
+  "full_suite": {
+    "tests": 285,
+    "passed": true,
+    "elapsed_seconds": 19.226
+  },
+  "device_binary_changed": false,
+  "test": "test_periodic_cdf_random_and_large_phases_match_direct_formula"
+}

@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "path": "tests/test_guarded_calibration.py",
+      "sha256": "65ee9384932fbb678e47f7472cf4eea231a3832161889e819e1a78bf11c5962b"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

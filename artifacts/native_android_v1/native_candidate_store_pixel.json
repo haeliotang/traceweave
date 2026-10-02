@@ -1,0 +1,97 @@
+{
+  "receipt": {
+    "passed": true,
+    "clean": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 0,
+      "continuous_pairs": 3,
+      "segment_boundaries": 1,
+      "source_sha256": "19214299afde819aa0f02931c93dd4f7ebd24c550ef29e7327036716224427df",
+      "candidate_input_available": true,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 4,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "changed_binding": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "27fda3e1cf1612a9a312fe87618679c658dfbd9cf9e0888af6ba2e559d6d1a8c",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "malformed": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "be69fd01a28ead907b58dccae5c04fee0eacb7e849dfcb8c53771364beef3fe9",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "topology_assessed_records": 3,
+      "mean_energy_distance": 2.4285662894,
+      "topographic_error": 0,
+      "topology_model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+      "scope": "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration"
+    },
+    "invalid_coordinates_verified": true,
+    "cancellation_verified": true,
+    "incremental_fit": {
+      "six_epochs_completed": true,
+      "updates": 72,
+      "baseline_unchanged": true,
+      "invalid_input_rejected": true,
+      "candidate_activated": false
+    },
+    "candidate_calibration": {
+      "chronological_70_30_verified": true,
+      "holdout_change_does_not_change_fit": true,
+      "source_change_detected": true,
+      "accepted": true,
+      "candidate_activated": false
+    },
+    "snapshot": {
+      "source_identity_preserved": true,
+      "source_lock_released": true,
+      "later_source_change_isolated": true,
+      "snapshot_write_rejected": true
+    },
+    "persistence": {
+      "reopened_source_parent_binding": true,
+      "idempotent_save": true,
+      "rejected_candidate_not_saved": true,
+      "corruption_rejected": true,
+      "candidate_activated": false
+    },
+    "scope": "synthetic_SQLite_full_audit_not_live_calibration",
+    "completed_epoch_ms": 1790892998934,
+    "verification_entry": "DUMP_protected_debug_receiver"
+  },
+  "affected_local_tests": {
+    "count": 5,
+    "passed": true,
+    "seconds": 3.025
+  },
+  "scope": "synthetic_candidate_persistence_binding_idempotence_corruption_not_model_activation",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeCandidateStore.java": "7a91a2a47c3700f39d8d1ea2cf3a6c9932c8a5d02be40efe1c202d54ecabbbd4",
+    "android/src/org/traceform/edge/ModelEngine.java": "355ab900ff19901c49b12c5bfe50d78cf44cf254f48a90666c12602f1d69d16c",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "789ced953db8b756f667f11a98e97cd95efd0e0949f9cf10674a5d0ab8460ee8",
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "1908391ec333a9206f28475315d7bf7db9e45515e07005d72ced924734c7ff33",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "63f078afa45ba1fa800e6a7246431c2c30c490cba1aac9623286cb74fcf0a9f0",
+    "android/build/traceform.apk": "444323d1cd6cdeacc7b8e1f0033764b61bd31eace588a9b25c52a32ba4921e8c"
+  },
+  "freeze_pre_post_passed": true
+}

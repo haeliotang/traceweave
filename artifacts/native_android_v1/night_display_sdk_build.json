@@ -1,0 +1,15 @@
+{
+  "apk_sha256": "c9c11fa5b7285a6c4544b8576f8f981a4c3996dac1093533ed10ccf0a9841b13",
+  "source_sha256": {
+    "android/src/org/traceform/edge/CanonicalClient.java": "262d9fc984d67fccccc34c6a96dd71b53763c5448792616ef59d061a0ef49254",
+    "android/src/org/traceform/edge/EdgeService.java": "c984bcce976c4853f69f8338b62c33bcffe358ad0ade54e18c9e07818ddd80d4",
+    "android/src/org/traceform/edge/MainActivity.java": "ac532632ced1c4c70fd1484df3591d2a85a9a7a823556daea57b09e0335ca692",
+    "android/src/org/traceform/edge/NightDisplay.java": "36abcd049a7bc49d5355454f77c4de62f2913076925cd89f005b6050a0d9ac0e"
+  },
+  "affected_native_tests": {
+    "passed": true,
+    "tests": 15,
+    "elapsed_seconds": 5.042
+  },
+  "scope": "built_and_installed_read_only_night_display_binder_transaction_3"
+}

@@ -1,0 +1,338 @@
+{
+  "passed": true,
+  "nodes": 4,
+  "gates": 894627,
+  "wires": 896491,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.5401567090011667,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.5460754999949131,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.5638147089921404,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.6509777909959666,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.6594812090042979,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "98000000000000000000",
+      "elapsed_seconds": 0.5519464169919956,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "750000000000000000000000",
+      "elapsed_seconds": 0.6375274999882095,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.5419170829991344,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.6345480830059387,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 0.6391479580197483,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "full_precision_rejection",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "5984454500000000000",
+      "elapsed_seconds": 0.642075791984098,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "search": "eight_bit_quantized_with_exact_final_loss_gate",
+  "circuit_sha256": "cdd24915a266eef456194e63e296433196c4d8d1fc45c6eea64c3b2d54ee2646",
+  "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "123c46f670fd92861f1ffd50a83c3a5c48772e7b2c175bcb6372661bd3b2d6a6",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "91021f744842f1aa7824e54aca140d142701c82ef7ad7f5c8a4438c3bbaf7c2c",
+    "native/private_alignment_probe/run_uniform_permutation.py": "94965fc4b37989a7b56154ebafb484f3819d456930c8988805b979c1451c3fe1",
+    "native/private_alignment_probe/compact_circuit.py": "1afe8da87ce907c7a88cae989bc6adef3edf6749814632177c489d4a254c58b2",
+    "native/private_alignment_probe/run_usb_client.py": "820a69f1a793b0d394eb08157528b2297e4958cd3c63d5d349d23df417d702b4",
+    "traceform/dynamics/integer_transport.py": "16306253760bb4f2e6188f774aeb1af41f4314635a193d5629f11df0fc1d18bd",
+    "/private/tmp/traceform-quantized-gw-generator": "550a2125ff83e5a025e96ac2705c8b0b5133ec4b4d53cfce12cbd606f1bf9537",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2"
+  },
+  "recorded_gate_validation": {
+    "passed": true,
+    "nodes": 4,
+    "gates": 894627,
+    "inputs_per_owner": 932,
+    "search": "eight_bit_quantized_with_exact_final_loss_gate",
+    "circuit_sha256": "cdd24915a266eef456194e63e296433196c4d8d1fc45c6eea64c3b2d54ee2646",
+    "cases": [
+      {
+        "case": "identical",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "transposition",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "reversal",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "asymmetric",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonuniform_same_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "different_scale",
+        "valid": true,
+        "objective_numerator": "98000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "large_80bit_objective",
+        "valid": true,
+        "objective_numerator": "750000000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "wrong_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "session_mismatch",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "changed_nonce",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "full_precision_rejection",
+        "valid": true,
+        "objective_numerator": "5984454500000000000",
+        "passed": true
+      }
+    ],
+    "scope": "plaintext_synthetic_recorded_gate_validation_not_private_execution_or_security_audit"
+  },
+  "contract": {
+    "uniform_masses": true,
+    "search_distance_shift": 12,
+    "search_distance_bits": 8,
+    "objective_precision": "original full integer distance",
+    "candidate_acceptance": "final exact loss <= identity exact loss",
+    "private_commitment": "unchanged original full metric/mass/session/nonce SHA256 v1"
+  },
+  "host_tests": {
+    "tests": 344,
+    "passed": true,
+    "seconds": 35.528
+  },
+  "limits": [
+    "Search path may differ from exact permutation descent",
+    "No unrestricted transport or global optimum guarantee",
+    "16-node Android practicality remains unaccepted",
+    "Synthetic identities and inputs; no real owner enrollment or security audit"
+  ]
+}

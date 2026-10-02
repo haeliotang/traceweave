@@ -1,0 +1,29 @@
+{
+  "protocol": "traceform.native-weekly-maintenance-validation.v1",
+  "apk_sha256": "c1eaf7aad3e3ccab3bd86a2f8fc6fac7a0b19f68374c66244dfff9adf2f5a3fb",
+  "apk_bytes": 3904415,
+  "source_sha256": {
+    "android/AndroidManifest.xml": "0a6e40d0763d2dba82625419ae92cdecee6bf7ad8339af2e7d9d1f9c4011ffca",
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "4703e9752ec3b6db8604ba9f97f87ae7ffc70851a15f73e69ea12ff107c3f5f8",
+    "android/src/org/traceform/edge/EdgeService.java": "9477f60f13952c57815a067f543f47131420530c93369ed7be56ee4898df3df9",
+    "android/src/org/traceform/edge/WeeklyMaintenanceClock.java": "62aa171347008559db88bb251fe684f93f063a396437f2b58b9c51bb2ff13fbd",
+    "android/src/org/traceform/edge/WeeklyMaintenanceJob.java": "35f901059f5fe84fbdc527c6f380072e21ff9133b1e20207a6ef2b3d9950564b"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "job_runtime_verified": false,
+  "related_host_tests": {
+    "passed": 6,
+    "seconds": 2.62,
+    "scope": "weekly clock, cross-process lease, Python maintenance; not Android JobService execution"
+  },
+  "job_id": 34716,
+  "activation_enabled": false,
+  "open": [
+    "Android lifecycle and scheduling validation",
+    "candidate retention beyond four accepted bundles",
+    "Cold/Warm lifecycle admission and automatic activation",
+    "all original scientific privacy performance gates",
+    "deployment and repository push"
+  ]
+}

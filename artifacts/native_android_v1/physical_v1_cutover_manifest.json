@@ -1,0 +1,18 @@
+{
+  "scope": "preserved_v1_source_at_v2_cutover",
+  "timestamp_utc": "2026-10-01T03:09:38.123518+00:00",
+  "files": {
+    "physical_observations.jsonl": {
+      "sha256": "3bea9c6b1f26a3cc6dc38cdc5e520e467c077304d345532b527d7bc3367923bf",
+      "bytes": 24997268
+    },
+    "physical_transitions.jsonl": {
+      "sha256": "37a1806dd71238f3c8b469a5f674305a8d46aeaf83877752a82134c5c41a7e41",
+      "bytes": 1442147
+    },
+    "physical_episodes.jsonl": {
+      "sha256": "ce8fcf39377f354c0afce419a875a62d416b345ea28da12f0649d8803705c2e0",
+      "bytes": 1606724
+    }
+  }
+}

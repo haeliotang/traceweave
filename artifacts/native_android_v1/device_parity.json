@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "cases": 8,
+  "maximum_error": 2.7284841053187847e-12,
+  "scope": "canonical_vector_normalization_and_kinetic_quantization"
+}

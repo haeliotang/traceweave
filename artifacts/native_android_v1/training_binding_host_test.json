@@ -1,0 +1,15 @@
+{
+  "tests": 296,
+  "passed": true,
+  "elapsed_seconds": 20.567,
+  "affected_tests": 11,
+  "regression_before_fix": {
+    "failures": 3,
+    "fields": [
+      "session_id",
+      "model_sha256",
+      "normalizer_sha256"
+    ]
+  },
+  "scope": "candidate_training_history_reset_at_session_and_coordinate_bindings"
+}

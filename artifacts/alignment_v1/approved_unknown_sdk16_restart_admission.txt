@@ -1,0 +1,5 @@
+unknown(u0a235/jid34716)
+Could not find job 34716 in package org.traceform.edge.synthetic / user 0
+{"case":"different_scale","expected_valid":true,"available_memory_before_entry_bytes":969498624,"low_memory_before_entry":false,"passed":false,"error":"java.lang.IllegalStateException: private alignment memory admission rejected","nonce":"e76f8ca0-f4d7-4482-bed9-1da46ecf292d","job_id":34716,"elapsed_ms":54.086018,"sdk_int":37,"completed_epoch_ms":1790928166310,"scope":"synthetic_one_app_private_participant_with_separate_mac_peer_no_collection_no_owner_enrollment"}
+
+Scope: terminal admission failure; this does not demonstrate replay rejection across app restarts.

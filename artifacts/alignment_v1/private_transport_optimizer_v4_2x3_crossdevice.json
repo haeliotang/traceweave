@@ -1,0 +1,199 @@
+{
+  "passed": true,
+  "gates": 1637823,
+  "cases": [
+    {
+      "case": "feasible_rectangular",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "odd_distance",
+      "valid": true,
+      "expected_numerator": "196393534941780000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "triangle_violation",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "asymmetric",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "diagonal_nonzero",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "mass_out_of_range",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_session",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_nonce",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "session_mismatch",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "wrong_mass_total",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "zero_mass_row",
+      "valid": true,
+      "expected_numerator": "213333439999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "circuit_sha256": "b8c5db553a1408b8cc377baf2a96c7ca2f9132f9736ff19cca09a46a617948d0",
+  "binary_sha256": "0f7dd9ec12d64bf3cc252db8693478a7f08db5a5ce7ad6f13deb24ce875c0437",
+  "first_nodes": 2,
+  "second_nodes": 3,
+  "optimized_transport": true,
+  "scope": "synthetic_private_single_sweep_transport_descent_not_global_optimum_or_security_audit"
+}

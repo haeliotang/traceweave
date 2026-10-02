@@ -1,0 +1,34 @@
+{
+  "scope": "forced_Android_JobScheduler_no_pending_recovery_not_reboot_or_actual_display_recovery",
+  "tests": {
+    "count": 303,
+    "seconds": 23.232,
+    "passed": true
+  },
+  "schedule": {
+    "nonce": "931a3456-22f3-4da4-a315-6d65855bc579",
+    "job_id": 34713,
+    "persisted": true,
+    "client_process_id": 9179,
+    "completed_epoch_ms": 1790872557250
+  },
+  "dispatch": "waiting_then_cmd_jobscheduler_run_forced",
+  "completion": {
+    "delivered": false,
+    "reason": "no_pending_recovery",
+    "eligible_for_outcome": false,
+    "settings_write_attempts": 0,
+    "nonce": "931a3456-22f3-4da4-a315-6d65855bc579",
+    "job_id": 34713,
+    "service_process_id": 9285,
+    "retry": false,
+    "completed_epoch_ms": 1790872591028
+  },
+  "sha256": {
+    "android/AndroidManifest.xml": "d1866385ec26c7e9d9a9e563210de5b0b04dc2e43741a63683d97c9b02531317",
+    "android/src/org/traceform/edge/ColorRecoveryJob.java": "fab89fb12c615ed34d991892bcea5441a7625babaae97b82072cb7921fa63c45",
+    "android/src/org/traceform/edge/NightDisplay.java": "9c437fdddbcba531b07435e42d70d667b48dc568207ccebf6a2cbc1b155f841e",
+    "android/src/org/traceform/edge/MainActivity.java": "bc43b1382b6f3822e3dc68bebdf3ef0581eaddf25fd6c4ff8dd1ccf663077abd",
+    "android/build/traceform.apk": "a6ccf4f01577a1c453c6b739783bb418765fb9f74624f2b14fc0700b79b96ce6"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "protocol": "traceform.android-platform-version-guards.v1",
+  "sdk_api_metadata_sha256": "74573d56d0712739b4763d2a5db64acfe309f3c098a6135257572f1f5302dbcf",
+  "api_introductions": {
+    "android/app/job/JobParameters.getStopReason()I": {
+      "name": "getStopReason()I",
+      "since": "31"
+    },
+    "android/database/sqlite/SQLiteDatabase.beginTransactionReadOnly()V": {
+      "name": "beginTransactionReadOnly()V",
+      "since": "35"
+    }
+  },
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeColdAudit.java": "ada50b299d13d636f6c1945911d5dc92262ebc6b81edc57ac471aced00e4b9dd",
+    "android/src/org/traceform/edge/NativeWarmAudit.java": "9889170e38f5594b4f2ffe7dd52f9a121f03e9e35277adbb2c2ebb4ace3fe978",
+    "android/src/org/traceform/edge/NativeVerificationJob.java": "83225764efac1e11336ee24c71b7891bf16b97e4bbd224c262ff673e97dd89e7",
+    "tests/test_native_warm_sql_types.py": "15cdd5a0b6dade893881b83f854086e7214a219b8fded661ae75ab1bf1061a19"
+  },
+  "host_before_fix": "NoSuchMethodError: beginTransactionReadOnly at NativeWarmAudit.run",
+  "host_after_fix": "API26_and_API34_UnsupportedOperationException_before_missing_method_invocation_API35_SQL_type_cases_pass",
+  "related_host_tests_passed": 3,
+  "android_source_compilation": true,
+  "installed": false,
+  "scope": "host_version_standin_and_official_local_SDK_metadata_not_API26_or_API34_device_execution"
+}

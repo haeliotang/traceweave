@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "tests": 302,
+  "elapsed_seconds": 22.648,
+  "apk_sha256": "29e5adb3ae37ec5cf51304e18522303629305803abe19c5633488ba2e483cf2f",
+  "source_sha256": {
+    "android/src/org/traceform/edge/ColorTemperatureAdjustment.java": "f9aa620d0d16181595d83b709fdbbad5375857bd33bb4e36b5e682a2a99e81e2",
+    "android/src/org/traceform/edge/NightDisplay.java": "af539bcc544c3065ddd3cb9b83cec847c273710ba9ea5f2ef6e610c01ecf8ce7",
+    "android/src/org/traceform/edge/ColorTemperatureFixture.java": "b4c516c553a2e9fdb5483f14ae3bdf34cb05f033c058544b156bbc9326ecf2b2",
+    "tests/test_native_color_temperature.py": "3f383dda4dcc512b7403dadcc6cc76ae40997fe17c41dcd651456458b5813316",
+    "traceform/intervention/closed_loop.py": "e07fd3316a493b3069b4122fe7eafd597cf56f0c94ae64b2b23fd035642050c5",
+    "tests/test_closed_loop.py": "45beb2bd288e87a7c88935119de4b29d34d63794f6d82e746ce751c0182dd9a6"
+  },
+  "scope": "simulated_failed_restoration_and_censored_delivery_reward_veto_not_physical_intervention"
+}

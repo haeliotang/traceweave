@@ -1,0 +1,26 @@
+{
+  "scope": "synthetic_protocol_v2_legacy_version_rejection_and_mac_pixel_gw",
+  "protocol_version": 2,
+  "regression_before_fix": "legacy_version_frame_accepted_then_auxiliary_phase_timed_out_15_seconds",
+  "temporary_forward_removed": true,
+  "pixel_binary_sha256": "2f43165d1efbefe77091aabf97de05eb3f0079eb753307b3ca761e5111bba0ce",
+  "device_binary_sha256": "2f43165d1efbefe77091aabf97de05eb3f0079eb753307b3ca761e5111bba0ce",
+  "host_binary_sha256": "499aa0228af047eb8ca71e5c84b9b1ef40732cbc1be0aa1d0ea241e557a7ad3b",
+  "sources": {
+    "native/private_alignment_probe/tls_io.h": "5fabff8e8dc7e9dd1d9ad6b3b5116c2887fc37efc274b200547d3204ab472ef4",
+    "native/private_alignment_probe/verify_tls_binding.py": "dc412acd5ab9314e1a7b0185ea730741facd74716dde3720b3b6b797e3a5f329",
+    "native/private_alignment_probe/smoke.cpp": "9b97ed54ccb3ef02ddf059d7254168ecf52b8a159f17d22c932d526d097cefda"
+  },
+  "reports": {
+    "private_tls_protocol_v2_binding_arm_host.json": {
+      "passed": true,
+      "cases": 7,
+      "sha256": "a4d6dacd59a39ae5572774b23c14635ea5d0b0f739e9b1ade00830038852a5fc"
+    },
+    "private_tls_protocol_v2_gw_2x2_crossdevice.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "fc6049c96275f3795ec3cd4b3dc7be3a7e08510e6f7c4111ad6d2d37fc8863f2"
+    }
+  }
+}

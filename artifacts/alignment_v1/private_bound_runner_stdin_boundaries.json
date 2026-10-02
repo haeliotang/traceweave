@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "binary_sha256": "4fb2c6a10f6f8b1ffce33d003d4ccf32a4185df6d79fb40a49d52e056c8971a2",
+  "cases": [
+    {
+      "case": "empty",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "case": "nonbinary",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "case": "oversized",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "case": "wrong_dimension",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "case": "second_line",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "case": "legacy_argument",
+      "exit_code": 2,
+      "passed": true
+    }
+  ],
+  "scope": "bounded_stdin_validation_before_network"
+}

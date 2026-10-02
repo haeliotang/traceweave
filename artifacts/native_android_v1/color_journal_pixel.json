@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "unprivileged_native_guard": {
+    "delivered": false,
+    "restored": false,
+    "restoration_status": "not_needed",
+    "eligible_for_outcome": false,
+    "reason": "disabled_or_permission_denied",
+    "settings_write_attempts": 0,
+    "scope": "temporary_night_display_setting_readback_not_optical_measurement_or_human_response",
+    "checked": true
+  },
+  "scope": "simulated_color_adjustment_persistent_journal_reopen_and_native_permission_guard_not_display_change",
+  "completed_epoch_ms": 1790871432800
+}

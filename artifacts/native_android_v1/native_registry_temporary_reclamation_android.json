@@ -1,0 +1,45 @@
+{
+  "failure": {
+    "chunk_id": "a547ae",
+    "wall_time_seconds": 0.196772375,
+    "exit_code": 1,
+    "original_token_count": 44,
+    "output": "{\"passed\":false,\"error\":\"java.lang.IllegalStateException: abandoned registry write escaped cleanup: 0000000000000000000000000000000000000000000000000000000000000555.json.new\"}\n"
+  },
+  "success": {
+    "chunk_id": "d40988",
+    "wall_time_seconds": 1.003691584,
+    "session_id": 51245,
+    "original_token_count": 53,
+    "output": "{\"passed\":true,\"abandoned_owned_writes_reclaimed\":true,\"unrelated_file_preserved\":true,\"activation_and_rollback_preserved\":true,\"scope\":\"synthetic_abandoned_files_not_real_process_kill_at_each_write_boundary\"}\n"
+  },
+  "regression": {
+    "chunk_id": "1d49ca",
+    "wall_time_seconds": 1.002895041,
+    "session_id": 86410,
+    "original_token_count": 216,
+    "output": "{\"temporary\":{\"passed\":true,\"abandoned_owned_writes_reclaimed\":true,\"unrelated_file_preserved\":true,\"activation_and_rollback_preserved\":true,\"scope\":\"synthetic_abandoned_files_not_real_process_kill_at_each_write_boundary\"},\"history\":{\"passed\":true,\"database_admission_precedes_pointer_publication\":true,\"reload_requires_admitted_model\":true,\"weekly_publication_reopen_and_replay_idempotent\":true,\"weekly_marker_survives_rollback\":true,\"publication_failure_preserves_old_pointer\":true,\"publication_retry_idempotent\":true,\"database_admission_failure_does_not_publish\":true,\"unbound_reference_rejected\":true,\"scope\":\"synthetic_android_database_file_failure_boundaries_not_process_kill_or_live_service_reload\"},\"backup\":{\"passed\":true,\"backup_only_snapshots_counted_and_reclaimed\":true,\"scope\":\"synthetic_registry_file_retention_not_database_reference_coordinator\"}}\n"
+  },
+  "regression_terminal": {
+    "chunk_id": "7ac468",
+    "wall_time_seconds": 1.7791e-05,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "host_tests": {
+    "count": 5,
+    "passed": true,
+    "elapsed_seconds": 1.159
+  },
+  "uploaded_directory_removed": true,
+  "primary_app_replaced": false,
+  "scope": "owned_abandoned_synthetic_file_reclamation_under_registry_lease_not_actual_kill_at_every_write_boundary",
+  "override_dex_sha256": "67eed44befb08e89b4804575c64d9127c747c108b4d19e16d200de3a9fc089ad",
+  "helper_source": "package org.traceform.edge;\nimport org.json.JSONArray;\nimport org.json.JSONObject;\npublic final class TemporaryRegistryProbe {\n    public static void main(String[] args) throws Exception {\n        JSONArray names=new JSONArray(), medians=new JSONArray(), iqrs=new JSONArray(), centers=new JSONArray(), velocity=new JSONArray();\n        for(int i=0;i<128;i++){names.put(\"synthetic_\"+i);medians.put(0.0);iqrs.put(1.0);}\n        for(int i=0;i<256;i++){centers.put(0.0);velocity.put(0.0);}\n        JSONObject core=new JSONObject().put(\"normalizer_sha256\",String.format(\"%064d\",9))\n            .put(\"feature_names\",names).put(\"tokens\",new JSONArray().put(\"A\").put(\"B\"))\n            .put(\"medians\",medians).put(\"iqrs\",iqrs).put(\"centers\",centers).put(\"center_velocity\",velocity)\n            .put(\"grid_coordinates\",new JSONArray().put(new JSONArray().put(0).put(0)).put(new JSONArray().put(0).put(1)))\n            .put(\"kinetic_weight\",0.35).put(\"ema_alpha\",0.4);\n        ModelEngine model=ModelEngine.fromRegistry(core,String.format(\"%064d\",1),String.format(\"%064d\",7));\n        try { System.out.println(new JSONObject().put(\"temporary\",NativeRegistryFixture.verifyTemporaryRetention(model,new java.io.File(args[0]))).put(\"history\",NativeRegistryFixture.verifyHistoryAdmission(model,new java.io.File(args[0]))).put(\"backup\",NativeRegistryFixture.verifyBackupRetention(model,new java.io.File(args[0])))); }\n        catch(Throwable error) { System.out.println(new JSONObject().put(\"passed\",false).put(\"error\",error.toString())); System.exit(1); }\n    }\n}\n",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeModelRegistry.java": "29323706c5d23d0e474854b9e4288a015074c8d8756859d4074a0969d2cbbd58",
+    "android/src/org/traceform/edge/NativeRegistryFixture.java": "38133c8bbbe43647be0eaada1b7cdbf4b4375219dc9e39aad23f26a7b918b615"
+  },
+  "dependency_library_sha256": "95a1ce4c2fd65b8f7910383a09b3f3cfdf404e932d3212e949737b335d63d43a"
+}

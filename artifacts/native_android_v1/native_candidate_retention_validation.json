@@ -1,0 +1,19 @@
+{
+  "protocol": "traceform.native-candidate-retention-validation.v1",
+  "apk_sha256": "dd38bbd08d19df4aece54408431d9c2f2dc453bfd6e4d9be149915aeddfc8933",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeCandidateStore.java": "4da13448fbfae7e302442442c67c0ee4bf5d13a8c3ad0bbd53136ec171ca06db",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "e7595c560f659a2239ee20e9de2c166d0979052c3088140a6c57932242513d86"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "android_fixture_executed": false,
+  "host_regression_before_fix": "IllegalStateException: four retained candidate bundles maximum",
+  "host_scope": "production file/hash/retention code with narrow JSON, model and AtomicFile stand-ins; not Android JSON validation or AtomicFile recovery",
+  "retention": "four sha-named base files; validate digest/protocol before removing oldest, preserve idempotent target",
+  "limitations": [
+    "pruning before write can lose an old inactive candidate if subsequent write fails",
+    "backup-only crash remnants and Android recovery not covered",
+    "immutable registry snapshots and Cold/Warm model lifecycle are independent"
+  ]
+}

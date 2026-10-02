@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "database_failure_injected": true,
+  "scope": "android_database_open_failure_releases_synthetic_worker_no_capture_resources",
+  "completed_epoch_ms": 1790864240205
+}

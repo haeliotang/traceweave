@@ -1,0 +1,65 @@
+{
+  "device": "Pixel 6a",
+  "abi": "arm64-v8a",
+  "runs": [
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4419584,
+      "elapsed_ms": 1.742594,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4370432,
+      "elapsed_ms": 1.355551,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4485120,
+      "elapsed_ms": 1.501994,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4460544,
+      "elapsed_ms": 1.765096,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4374528,
+      "elapsed_ms": 1.488933,
+      "mass_conserved": true
+    }
+  ],
+  "maximum_peak_rss_bytes": 4485120,
+  "maximum_elapsed_ms": 1.765096,
+  "scope": "synthetic_standalone_16_state_120_step_core_process_not_full_android_service_or_continuous_sde",
+  "binary_sha256": "9ade52fe2668b7e7df18aae38fe5c91d12749b641f04728e02d4e3f58684dd06",
+  "source_sha256": {
+    "native/traceform_core.cpp": "53da121125d702664e7fcae1d0c43a03db052979feeb691a0b238d39c4248911",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_benchmark.cpp": "04fb039974e14a23a50aeb94f2743e8b246d213767f8e0f947aeac1f8a8db6af"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "completed_epoch_ms": 1790858492201,
+  "scope": "synthetic_magnetic_window_and_electrical_formulas_not_live_acquisition",
+  "new_features": [
+    "battery_internal_impedance_miliohm",
+    "thermodynamic_joule_heat_loss_watts"
+  ],
+  "host_tests_passed": 10,
+  "limits": "Proxy only: voltage is cached battery broadcast; delta V / delta I does not identify electrochemical resistance. No device temperature or measured heat claim.",
+  "full_python_suite": {
+    "tests": 280,
+    "passed": true,
+    "seconds": 19.326
+  }
+}

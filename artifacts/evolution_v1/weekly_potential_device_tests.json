@@ -1,0 +1,18 @@
+{
+  "device_serial": "[REDACTED_DEVICE_SERIAL]",
+  "runtime": "native Termux Python",
+  "environment": {"PYTHONTZPATH": "/data/data/com.termux/files/usr/share/zoneinfo"},
+  "test_modules": ["tests.test_runtime_maintenance", "tests.test_tiered_storage", "tests.test_continuous_dynamics"],
+  "tests_discovered": 30,
+  "passed": 29,
+  "skipped": 1,
+  "skipped_scope": "host-only Android command interception",
+  "elapsed_seconds": 3.622,
+  "initial_attempt": "one failure from missing PYTHONTZPATH in direct invocation; production wrapper already exports the correct path",
+  "sources": {
+    "traceform/evolution/potential_maintenance.py": "87a098ba3ff4fb03a3e4abfa5edf9dd96280208a50ecd3cffc35773c744ebc18",
+    "scripts/maintain_edge_runtime.py": "a6d5b88b9004dbeae62db85cd01c1bfc6ae05bface55a9185427658f9bdebf04",
+    "tests/test_runtime_maintenance.py": "70eb14a09c88684c11fefef9f1d47a345e747166c48731f57c94726ff92ea110"
+  },
+  "scope": "source deployment with rollback copies and isolated device fixtures; not natural Sunday execution or live potential fitting"
+}

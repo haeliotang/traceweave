@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "tests": 298,
+  "elapsed_seconds": 22.973,
+  "apk_sha256": "ada3c1558f42aa62b9f44de2759d44306841ddaf27b9074f8608fef875d0e6fc",
+  "apk_bytes": 3765151,
+  "source_sha256": {
+    "android/src/org/traceform/edge/FeatureReadings.java": "96ca9804f0d2421376e7db9ac7dbbe0012c2f924dbe10ab0d3ba0c15824dd162",
+    "android/src/org/traceform/edge/FeatureFixtures.java": "bbace55a59fd5b892becc9df00481a6281cc32c8fb92a9e970617b32978c24d9",
+    "tests/test_native_feature_readings.py": "6e9ecbfd5e1e85b2f9d4fc3bd27d0fbee0d7cf6514a2b841eb908b2d4c8e71dc"
+  },
+  "ordinal_order": 3,
+  "delay_sample_frames": 1,
+  "max_window_frames": 25,
+  "minimum_untied_patterns": 8,
+  "ties": "excluded",
+  "scope": "derived_accelerometer_ordinal_entropy_not_live_acquisition_or_predictive_validation"
+}

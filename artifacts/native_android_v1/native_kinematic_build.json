@@ -1,0 +1,27 @@
+{
+  "apk_sha256": "7180d144a6d6be60aa0623c19fc4c63a8b960abb0634a116f8e5bb2b95eaa027",
+  "apk_bytes": 176875,
+  "library_bytes": 409304,
+  "abi": "arm64-v8a",
+  "signing": "local_development_only",
+  "source_sha256": {
+    "scripts/build_native_android.py": "2febf0ef1e0511d3ae0203d585ad8dbecf624971bb3b5be32d195ce71a40f788",
+    "android/AndroidManifest.xml": "414d461fcb2f79baff4098cb8e1568310cbb2a153c3846f003ef42c6548717b8",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_core.cpp": "53da121125d702664e7fcae1d0c43a03db052979feeb691a0b238d39c4248911",
+    "native/traceform_jni.cpp": "5419567c596cdf8a0b72796b567e4ff4cf484b908054f023c5ec110ad9bf2327",
+    "android/src/org/traceform/edge/CanonicalClient.java": "6beef639541702e0574c2aa8e40900a72efe73fd05595084c7ca009178b7ed9f",
+    "android/src/org/traceform/edge/EdgeService.java": "1286a1b32437b6060916e5737fd5b0b8534681ba7291c092b86e88d88d77459a",
+    "android/src/org/traceform/edge/FeatureReadings.java": "a0c06ec8f56b1d7bede744adc088b4f7bcfe3eacda9984a55040b9e3d0200b72",
+    "android/src/org/traceform/edge/KinematicState.java": "df37a27f69b9928d73224595a97e7efaa6aaea78e5ffdf9e0d46a0bb4a0d8a67",
+    "android/src/org/traceform/edge/MainActivity.java": "e4c5e5df19d17fc786bad061628769458f0b4c110104d2d8de18d1e36b4898f1",
+    "android/src/org/traceform/edge/ModelEngine.java": "d2730879a14f5045c55d6d4dab1803b0ff728b5a48d2b8cfe4cc5e5de4543823",
+    "android/src/org/traceform/edge/NativeCore.java": "baf5b2f146af83390dcee21d224e410f8876af93f134955cb43d8153012338b9"
+  },
+  "model_binding": {
+    "model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+    "normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+    "model_version": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3"
+  },
+  "scope": "native_canonical_vector_sdk_and_partial_sensor_adapter_not_full_python_sensorium_parity"
+}

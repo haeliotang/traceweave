@@ -1,0 +1,306 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 14086626,
+  "wires": 14099074,
+  "cases": [
+    {
+      "case": "identical",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 7.264700083993375,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "transposition",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 7.079825041000731,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "reversal",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "elapsed_seconds": 7.194308417005232,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "asymmetric",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 6.996910374989966,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "nonuniform_same_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 6.732625459000701,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "different_scale",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "elapsed_seconds": 7.178717000002507,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "large_80bit_objective",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "elapsed_seconds": 6.662056125001982,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "wrong_total",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 7.025716958974954,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "session_mismatch",
+      "passed": true,
+      "valid": false,
+      "objective_numerator": "0",
+      "elapsed_seconds": 6.77817341699847,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    },
+    {
+      "case": "changed_nonce",
+      "passed": true,
+      "valid": true,
+      "objective_numerator": "0",
+      "elapsed_seconds": 6.529684000008274,
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ],
+      "error": null
+    }
+  ],
+  "circuit_sha256": "cea66c5f75ea7f67d31f5fd20ba83d8581baecd2cd08186297ade7e0829ddace",
+  "launcher_sha256": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd",
+  "scope": "synthetic_separate_party_input_MPC_not_real_owner_enrollment_or_security_audit",
+  "source_bindings": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "2e7e74413cbfc0ba68b913b5a879514fb332ddd1a2d9be06c014c63a16c65ace",
+    "native/private_alignment_probe/run_uniform_permutation.py": "7b4230087469d5eea883091b9b40e89d93e68a786d2bfcc8fcfacf8f45461c9d",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "15099bae1755dd842bb9cff9104ae662c282a921959af4fb4d9a9fb2070835c0",
+    "traceform/dynamics/integer_transport.py": "23720f954222e96d30e05562cf76ac7e2a4e6112f5deb52e34ea82f7c869aded",
+    "native/private_alignment_probe/smoke.cpp": "6ad2d5a5774e5549b9d3c22ddefbf194e2b202fb92d521151da1696005716b58",
+    "/private/tmp/traceform-private-alignment-tls-bound-v4": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+    "/private/tmp/traceform-private-tls-bound-runner-v2": "a4077d51858f1332e9876af2c762db81cb121699e4878af34db4b70c1d6284cd"
+  },
+  "compactor_sha256": "1afe8da87ce907c7a88cae989bc6adef3edf6749814632177c489d4a254c58b2",
+  "rewrite": {
+    "input_gates": 15807751,
+    "output_gates": 14086626,
+    "input_wires": 15820199,
+    "output_wires": 14099074,
+    "input_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+    "output_sha256": "cea66c5f75ea7f67d31f5fd20ba83d8581baecd2cd08186297ade7e0829ddace",
+    "scope": "public_constant_folding_and_dead_gate_elimination_not_security_audit"
+  },
+  "recorded_gate_validation": {
+    "passed": true,
+    "nodes": 16,
+    "gates": 14086626,
+    "inputs_per_owner": 6224,
+    "circuit_sha256": "cea66c5f75ea7f67d31f5fd20ba83d8581baecd2cd08186297ade7e0829ddace",
+    "cases": [
+      {
+        "case": "identical",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "transposition",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "reversal",
+        "valid": true,
+        "objective_numerator": "45696000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "asymmetric",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "nonuniform_same_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "different_scale",
+        "valid": true,
+        "objective_numerator": "41106000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "large_80bit_objective",
+        "valid": true,
+        "objective_numerator": "937500000000000000000000",
+        "passed": true
+      },
+      {
+        "case": "wrong_total",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "session_mismatch",
+        "valid": false,
+        "objective_numerator": "0",
+        "passed": true
+      },
+      {
+        "case": "changed_nonce",
+        "valid": true,
+        "objective_numerator": "0",
+        "passed": true
+      }
+    ],
+    "scope": "plaintext_synthetic_recorded_gate_validation_not_private_execution_or_security_audit"
+  },
+  "limits": [
+    "One lexicographic strict-improvement permutation sweep with equal uniform masses",
+    "Not a general transport optimizer or global optimum certificate",
+    "Not real owner enrollment, production authorization, or cryptographic security audit"
+  ],
+  "android_status": "not_tested_for_rewritten_variant; original_variant_resource_boundary_failed"
+}

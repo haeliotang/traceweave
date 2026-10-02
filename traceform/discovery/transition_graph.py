@@ -11,6 +11,8 @@ from dataclasses import asdict, dataclass
 import datetime
 from typing import Any, Dict, List, Tuple
 
+from traceform.forecasting.continuity import same_stream_segment
+
 
 @dataclass
 class TransitionGraphMetrics:
@@ -21,9 +23,49 @@ class TransitionGraphMetrics:
     stationary_distribution: Dict[str, float]
     top_transition_edges: List[Dict[str, Any]]
     strongly_connected_components_count: int
+    stationarity_residual: float = 0.0
+    stationary_converged: bool = False
+    stationary_iterations: int = 0
+    valid_transition_count: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+def _strong_component_count(nodes, edges):
+    adjacency = {node: [] for node in nodes}
+    reverse = {node: [] for node in nodes}
+    for edge in edges:
+        adjacency[edge["source"]].append(edge["target"])
+        reverse[edge["target"]].append(edge["source"])
+    visited, order = set(), []
+    for node in nodes:
+        if node in visited:
+            continue
+        visited.add(node)
+        stack = [(node, iter(adjacency[node]))]
+        while stack:
+            current, neighbors = stack[-1]
+            following = next(neighbors, None)
+            if following is None:
+                stack.pop()
+                order.append(current)
+            elif following not in visited:
+                visited.add(following)
+                stack.append((following, iter(adjacency[following])))
+    visited, count = set(), 0
+    for node in reversed(order):
+        if node in visited:
+            continue
+        count += 1
+        visited.add(node)
+        pending = [node]
+        while pending:
+            for following in reverse[pending.pop()]:
+                if following not in visited:
+                    visited.add(following)
+                    pending.append(following)
+    return count
 
 
 def build_transition_graph(
@@ -52,7 +94,9 @@ def build_transition_graph(
         dt_s = (t2 - t1).total_seconds()
 
         # Respect audit discipline: do not bridge gaps > 30 minutes
-        if dt_s > max_gap_seconds:
+        if (not 0 < dt_s <= max_gap_seconds or not same_stream_segment(records[i], records[i + 1])
+                or any(records[i].get(key) != records[i + 1].get(key)
+                       for key in ("session_id", "model_sha256", "normalizer_sha256"))):
             continue
 
         u = records[i]["state_token"]
@@ -73,7 +117,7 @@ def build_transition_graph(
             for v in nodes:
                 cnt = edge_counts[u][v]
                 if cnt > 0:
-                    prob = round(cnt / denom, 5)
+                    prob = cnt / denom
                     trans_matrix[u][v] = prob
                     active_edges.append(
                         {
@@ -90,32 +134,28 @@ def build_transition_graph(
     n_nodes = len(nodes)
     if n_nodes == 0:
         return {}, TransitionGraphMetrics(
-            node_count=0,
-            edge_count=0,
-            self_loop_fraction=0.0,
-            mean_out_degree=0.0,
-            graph_entropy=0.0,
+            total_nodes=0,
+            total_directed_edges=0,
+            graph_density=0.0,
             reciprocity_ratio=0.0,
             stationary_distribution={},
             top_transition_edges=[],
             strongly_connected_components_count=0,
         )
     pi = {u: 1.0 / n_nodes for u in nodes}
-    for _ in range(100):
+    residual = float("inf")
+    for iteration in range(1, 1001):
         next_pi = {u: 0.0 for u in nodes}
         for u in nodes:
-            p_u = pi[u]
-            row = trans_matrix[u]
-            for v, p_uv in row.items():
-                next_pi[v] += p_u * p_uv
-        # Normalization
-        tot = sum(next_pi.values())
-        if tot > 0:
-            pi = {u: next_pi[u] / tot for u in nodes}
+            for v, probability in trans_matrix[u].items():
+                next_pi[v] += pi[u] * probability
+        residual = sum(abs(next_pi[u] - pi[u]) for u in nodes)
+        if residual <= 1e-10 or iteration == 1000:
+            break
+        # Lazification preserves stationary distributions and removes periodic oscillation.
+        pi = {u: (pi[u] + next_pi[u]) / 2 for u in nodes}
 
-    pi_rounded = {
-        u: round(pi[u], 5) for u in sorted(nodes, key=lambda x: pi[x], reverse=True)
-    }
+    pi_rounded = {u: pi[u] for u in sorted(nodes, key=lambda x: pi[x], reverse=True)}
 
     # Graph Density and Reciprocity (excluding self-loops)
     non_self_edges = [e for e in active_edges if e["source"] != e["target"]]
@@ -145,7 +185,11 @@ def build_transition_graph(
         reciprocity_ratio=reciprocity,
         stationary_distribution=pi_rounded,
         top_transition_edges=inter_state_edges[:10],
-        strongly_connected_components_count=1,  # Single primary ergodic component
+        strongly_connected_components_count=_strong_component_count(nodes, active_edges),
+        stationarity_residual=residual,
+        stationary_converged=residual <= 1e-10,
+        stationary_iterations=iteration,
+        valid_transition_count=valid_step_count,
     )
 
     return trans_matrix, metrics

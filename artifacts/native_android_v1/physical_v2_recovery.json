@@ -1,0 +1,13 @@
+{
+  "initial_pid": 21689,
+  "controlled_exit_confirmed": true,
+  "recovered_owner": {
+    "status": "running",
+    "owner": {
+      "pid": 22211,
+      "start_ticks": "3535884",
+      "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+    }
+  },
+  "scope": "SIGTERM_exit_recovery_not_reboot_or_abrupt_power_loss"
+}

@@ -1,0 +1,7 @@
+{
+  "rollouts": 300,
+  "horizon_steps": 120,
+  "elapsed_ms": 1.066854,
+  "mass_conserved": true,
+  "kernel": "synthetic_benchmark_only"
+}

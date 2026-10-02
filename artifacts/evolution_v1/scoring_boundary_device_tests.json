@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-01",
+  "device": "Pixel 6a",
+  "host_affected_tests_passed": 18,
+  "device_tests": ["tests.test_guarded_calibration", "tests.test_manifold_lattice"],
+  "device_tests_passed": 15,
+  "device_elapsed_seconds": 2.960,
+  "exit_code": 0,
+  "device_source_sha256": {
+    "traceform/evolution/guarded_calibration.py": "f8f0b7019e6ca0b648d11a5b0dc8579e43223f2cd6ef4309f9dfe4addfca7a75",
+    "tests/test_guarded_calibration.py": "c87796f222c389297a072a548720a3c62fd61df38f4878fee21be281c7079a88"
+  },
+  "scope": "synthetic_scoring_boundary_regression_not_real_candidate_acceptance",
+  "real_active_model_changed": false
+}

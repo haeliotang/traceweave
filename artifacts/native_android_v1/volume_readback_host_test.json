@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "tests": 300,
+  "elapsed_seconds": 21.43,
+  "source_sha256": {
+    "traceform/intervention/closed_loop.py": "6818944957d18cf849a4b0a25311f47540ddee650118861bb46d119143638a88",
+    "tests/test_closed_loop.py": "3586adeeb0e4240d400f3a6aa0ef91cf25a567611a16f0836fa5dbbf0a693fe4"
+  },
+  "scope": "volume_command_readback_and_conditional_restoration_with_mocked_apis_not_physical_intervention"
+}

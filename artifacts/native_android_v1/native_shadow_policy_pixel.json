@@ -1,0 +1,71 @@
+{
+  "scope": "native_shadow_contextual_policy_persistent_trial_ledger_not_complete_feedback_loop",
+  "tests": {
+    "count": 319,
+    "seconds": 28.437,
+    "passed": true,
+    "final_device_context_binding_changed_after_host_suite": true
+  },
+  "device_policy": {
+    "passed": true,
+    "reopen_cooldown_boundary_verified": true,
+    "fatigue_and_success_reset_verified": true,
+    "learned_context_selection_verified": true,
+    "shadow_no_policy_credit_verified": true,
+    "actuator_calls": 0,
+    "scope": "synthetic_sqlite_shadow_policy_not_real_delivery_or_feedback",
+    "completed_epoch_ms": 1790886893175
+  },
+  "device_automatic_shadow": {
+    "passed": true,
+    "bound_trigger": {
+      "passed": true,
+      "gate_and_cooldown_verified": true,
+      "history_unchanged": true,
+      "collection_started": false,
+      "actuator_calls": 0,
+      "comparison": {
+        "action_type": "CLAMP_DWELL",
+        "max_dwell_steps": 10,
+        "selected_risk_states": [
+          "M01"
+        ],
+        "scenario_seed": 43,
+        "mean_jsd": 0.7867235023730049,
+        "peak_jsd": 0.9999999999999999,
+        "peak_step": 10,
+        "terminal_risk_change": -0.9633333333333334,
+        "recommendation": "RECOMMEND_INTERVENTION",
+        "evidence_scope": "modeled_forced_escape_not_physical_actuator_effect_or_execution_authority"
+      },
+      "scope": "synthetic_service_CSD_gate_to_history_MC_shadow_not_live_capture_or_actuation"
+    },
+    "replaced_trigger": {
+      "passed": true,
+      "trigger_mismatch_rejected": true,
+      "collection_started": false,
+      "actuator_calls": 0
+    },
+    "completed_epoch_ms": 1790886898848
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "No actual actuator call or live collection started",
+    "Learned statistics in device fixture are manually seeded synthetic counts, not observed human feedback",
+    "Native delayed outcomes and authenticated actuator policy not connected",
+    "Worker attempt cooldown remains in memory; persisted cooldown covers recorded proposals",
+    "Thirty-day ledger compaction implemented but multi-year storage not accepted"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/ContextualPolicy.java": "17e3694a39f8b023182d40c1367463b5656424ee5f4d459f68f9a7d44fe8730c",
+    "android/src/org/traceform/edge/ShadowTrialLedger.java": "1a27714738b6dff7beff3f8ba5311336cbbc5562c03503ea305a62be65d6f8c8",
+    "android/src/org/traceform/edge/ShadowPolicyFixture.java": "11b82cff60efdb2d88e279bdb3771308a04f9ccd4d4781b87954ab7cd46aa0bf",
+    "android/src/org/traceform/edge/ShadowComparisonFixture.java": "256fb898b3a1165a364418b7cd55d1ae38b06d8aba3c8a12b9aca9aa4e1f371e",
+    "android/src/org/traceform/edge/EdgeService.java": "5c5f02be729c2fd724351fd7f937013f825b90dedfe1ec36b138e50d454bede6",
+    "android/src/org/traceform/edge/MainActivity.java": "adaefbd7be846ad5545407b2078e6256c3f3e123c97f871b55ca6d33d57f0f61",
+    "tests/test_native_contextual_policy.py": "c47cccbc2396959efe1bfb7cd32bc1385a563d10df2e6261440e1d947026d743",
+    "android/build/traceform.apk": "ca311e30cedef3e6c92bf22fc2850b19a30c051bf1b99d345069576b5e2e54ea"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "dimension": 128,
+  "anchors": 2,
+  "maximum_orthogonal_gradient": 0.0,
+  "maximum_orthogonal_hessian": 0.0,
+  "scope": "synthetic_orthogonal_flat_directions_in_gaussian_anchor_potential_not_human_stability"
+}

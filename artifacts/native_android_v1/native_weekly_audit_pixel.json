@@ -1,0 +1,50 @@
+{
+  "receipt": {
+    "passed": true,
+    "clean": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 0,
+      "continuous_pairs": 3,
+      "segment_boundaries": 1,
+      "source_sha256": "19214299afde819aa0f02931c93dd4f7ebd24c550ef29e7327036716224427df",
+      "candidate_input_available": true,
+      "candidate_activation_authorized": false,
+      "scope": "retained_hot_source_binding_and_coordinates_not_calibration_or_topological_strain"
+    },
+    "changed_binding": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "27fda3e1cf1612a9a312fe87618679c658dfbd9cf9e0888af6ba2e559d6d1a8c",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "scope": "retained_hot_source_binding_and_coordinates_not_calibration_or_topological_strain"
+    },
+    "malformed": {
+      "protocol": "traceform.native-weekly-audit.v1",
+      "records": 4,
+      "invalid_records": 1,
+      "continuous_pairs": 1,
+      "segment_boundaries": 2,
+      "source_sha256": "be69fd01a28ead907b58dccae5c04fee0eacb7e849dfcb8c53771364beef3fe9",
+      "candidate_input_available": false,
+      "candidate_activation_authorized": false,
+      "scope": "retained_hot_source_binding_and_coordinates_not_calibration_or_topological_strain"
+    },
+    "invalid_coordinates_verified": true,
+    "cancellation_verified": true,
+    "scope": "synthetic_SQLite_full_audit_not_live_calibration",
+    "completed_epoch_ms": 1790890589798
+  },
+  "scope": "synthetic_audit_component_not_weekly_pipeline_acceptance",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeWeeklyAudit.java": "907d629ff109174d4b33060a104c3005ddacf5e167b928071910a7f064d610c8",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "f52907325e7bcfbc051c83c43edb4c40fd3424e016bdc20397815d50cac625f8",
+    "android/src/org/traceform/edge/MainActivity.java": "31bd50f0940b6c6ff093f9986e32995b65482380f7826d170f49d513ae0f42ca",
+    "android/build/traceform.apk": "fed84f1e7286e7b709feba884099b5f3af96c351bc4955fdb0a1661c1e6f15ad"
+  },
+  "freeze_pre_post_passed": true
+}

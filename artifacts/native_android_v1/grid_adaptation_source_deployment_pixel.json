@@ -1,0 +1,21 @@
+{
+  "sources": [
+    {
+      "path": "traceform/evolution/guarded_calibration.py",
+      "sha256": "f1fa7b062ed8fb27c39e891053aa6f16b47c2da8a410421f9e4b78497af34c2d"
+    },
+    {
+      "path": "traceform/representation/manifold_lattice.py",
+      "sha256": "85b2c5a57f2933066f9477dd8548b9589451ba02ea3897309dbfebc6d497d0fd"
+    },
+    {
+      "path": "tests/test_guarded_calibration.py",
+      "sha256": "fb14669a9feb2e5a96e911bc2813d697b3398029ef7d5c7f767894ec8e078d93"
+    },
+    {
+      "path": "tests/test_manifold_lattice.py",
+      "sha256": "19153982c5b2b693f6a0b29f3317017e921c417f0cc7e077511432aad1538994"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

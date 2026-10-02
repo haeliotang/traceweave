@@ -1,0 +1,29 @@
+{
+  "device": "Pixel 6a",
+  "date": "2026-10-01",
+  "tests": ["tests.test_continuous_dynamics", "tests.test_manifold_lattice", "tests.test_sandbox_simulator"],
+  "tests_passed": 37,
+  "elapsed_seconds": 31.610,
+  "exit_code": 0,
+  "device_hashes_match_host": true,
+  "source_sha256": {
+    "traceform/dynamics/continuous.py": "3acc59d621cfee94a5a14fe5c0d1896b865e0b8ef71730ab2f62bbc1b1f82cc3",
+    "traceform/representation/manifold_lattice.py": "4bbc87ab3bca27e75d4b5cbd1d56f9677fbb2b2dbfd1e56a8b686e002204ca30",
+    "traceform/forecasting/sandbox_simulator.py": "163b69f116d4901ab35e5ddacc19c5cd695b61851be67c6e0cd706eba17f0d82",
+    "tests/test_continuous_dynamics.py": "ac7dde15b951b7a153e4d574352c7ffdb68ce15d2135c78bfeedf4e51991120a",
+    "tests/test_manifold_lattice.py": "ae4dbd0267b8d6254d132f081904dddb6a488aaead909bd13af90269d8e2bb89",
+    "tests/test_sandbox_simulator.py": "527661bc966da9de85f186f57cfd8471d4ebdacb11c2402f1fb0ae955105a3ad"
+  },
+  "reader_health": {
+    "pid": 25859,
+    "start_ticks": "4956384",
+    "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5",
+    "latest_timestamp_utc": "2026-10-01T08:36:38.373137Z",
+    "latest_source_mode": "live_follow",
+    "disabled_haptics": true,
+    "shadow_mode": true,
+    "silent_flag_present": true
+  },
+  "daemon_restarted": false,
+  "scope": "synthetic_fresh_process_device_tests_not_live_continuous_scheduling_or_physical_effect"
+}

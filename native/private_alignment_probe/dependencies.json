@@ -1,0 +1,19 @@
+{
+  "scope": "isolated_compatibility_probe_not_production_dependency_selection",
+  "emp-ag2pc": {"repository": "https://github.com/emp-toolkit/emp-ag2pc", "tag": "v0.3.0", "commit": "356cfd824772af9334ac9a994d1eec17ab5f565a"},
+  "emp-tool": {"repository": "https://github.com/emp-toolkit/emp-tool", "tag": "0.3.0", "commit": "11093a7d2160e7e7a4dcae3ffd9e6935bf2b8c1c"},
+  "emp-ot": {"repository": "https://github.com/emp-toolkit/emp-ot", "tag": "0.3.0", "commit": "52b32c8371c09c1567e3d650c0f0adfbb229a270"},
+  "host_openssl_version": "3.6.2",
+  "temporary_transport_patch": {"file": "emp-tool/io/net_io_channel.h", "before": "htonl(INADDR_ANY)", "after": "htonl(INADDR_LOOPBACK)", "reason": "synthetic_probe_listens_only_on_loopback"},
+  "android_build_verified": true,
+  "android_build_scope": "isolated_arm64_probe_not_production_apk_private_protocol",
+  "android_openssl": {"tag": "openssl-3.5.8", "commit": "f4dc4d58b48d346a8270183f89acf826d459b0ca", "linkage": "static_temporary_build"},
+  "bounded_gw_relation_generator_implemented": true,
+  "complete_private_alignment_implemented": false,
+  "private_transport_descent_implemented": true,
+  "private_transport_descent_scope": "single_deterministic_four_cycle_sweep_not_global_optimum_or_complete_alignment",
+  "model_commitment_binding_implemented": true,
+  "model_commitment_binding_scope": "synthetic_private_feasible_gw_same_input_sha256_outputs_not_signed_application_verification",
+  "sha_compression_circuit": {"file": "emp-tool/circuits/files/bristol_fashion/sha256.txt", "sha256": "bd0a91bb7e97bb60c1468fe8caecc546af3f832bd4152d9c8c4e7527412dd11d"},
+  "independent_security_audit_completed": false
+}

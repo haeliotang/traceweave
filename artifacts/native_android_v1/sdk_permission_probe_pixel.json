@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "reason": "java.lang.SecurityException: Not allowed to bind to service Intent { xflg=0x4 cmp=org.traceform.edge/.EdgeService }",
+  "requested_signature_permission_denied": true,
+  "target_required_permission": "org.traceform.edge.CANONICAL_INPUT",
+  "target_exported": true,
+  "target_uid": 10196,
+  "client_uid": 10211,
+  "completed_epoch_ms": 1790861602271,
+  "scope": "differently_signed_application_service_binding_denial_not_raw_binder_transaction_test",
+  "target_signer_sha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+  "probe_signer_sha256": "91b86c1e69b1267797e8f4d4b08574afbb8461c5c96c72f2e9381645c5f82378",
+  "cleanup": {
+    "uninstall_succeeded": true,
+    "package_lookup_after_uninstall_empty": true
+  }
+}

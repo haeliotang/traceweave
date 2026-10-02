@@ -1,0 +1,34 @@
+{
+  "apk_sha256": "44c11aee5d8bb0e4b7d4d657ab5b2fe2a542b4973e2e7285f5ea2803822e0b4d",
+  "apk_bytes": 189163,
+  "library_bytes": 409704,
+  "abi": "arm64-v8a",
+  "signing": "local_development_only",
+  "benchmark_sha256": "d99eae0e92339a5b5ceb06dfc3bc51e405678f98cd89efde370148cc84f1d182",
+  "benchmark_bytes": 551960,
+  "source_sha256": {
+    "scripts/build_native_android.py": "74f7957b4d0d25d8a5d7f79b7020f4a6fe0bbd34842f3a584dda65a73735addd",
+    "android/AndroidManifest.xml": "f63b06a3c2b5f8df8ee135fe010ea72af3192b79791ac939a3459929ead706be",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_core.cpp": "1aa06760c521eaab29d3ccc37e7a8d139693eb1f83250bf8e1bf9deeb71fa632",
+    "native/traceform_jni.cpp": "5419567c596cdf8a0b72796b567e4ff4cf484b908054f023c5ec110ad9bf2327",
+    "native/traceform_benchmark.cpp": "04fb039974e14a23a50aeb94f2743e8b246d213767f8e0f947aeac1f8a8db6af",
+    "android/src/org/traceform/edge/CanonicalClient.java": "6beef639541702e0574c2aa8e40900a72efe73fd05595084c7ca009178b7ed9f",
+    "android/src/org/traceform/edge/ColdTrajectory.java": "dd0766c389971c7d8132d7465d8db36eb21c7334619a9d1cfa667aac3cab52e4",
+    "android/src/org/traceform/edge/EdgeService.java": "3a903f620f056584c948788bb5c692018a8d77d8e2e7421b1cff2b8acd822721",
+    "android/src/org/traceform/edge/FeatureReadings.java": "1224fea295a3699368582fcfa3f379a65280f7767298e100d8d3063a7ddb2a6a",
+    "android/src/org/traceform/edge/KinematicState.java": "aaed663818804cc8b1b06c62b587cc00611c9acbcffccbd35744068e81c890a7",
+    "android/src/org/traceform/edge/MainActivity.java": "ee78cdfcefbe21ec626beeb015cf5808fdd5c4bd7de803249dab305b7e46f85f",
+    "android/src/org/traceform/edge/ModelEngine.java": "30943ba4cc66d17d5e3d97e7c95058bd84608952de5d9e2e70dce13f7fe1d807",
+    "android/src/org/traceform/edge/NativeCore.java": "baf5b2f146af83390dcee21d224e410f8876af93f134955cb43d8153012338b9",
+    "android/src/org/traceform/edge/SampleClock.java": "dcab8077619901f79dde2346f143ff55a3094fb15ec8fc0c7a5012bd934eb5f8",
+    "android/src/org/traceform/edge/WarmBucket.java": "d1058d120491b10114d34b949442e8cad1ccd9bc7bb94afc3b285d2f15c19aa5",
+    "android/src/org/traceform/edge/WarmTrajectory.java": "5d88f12ad1b6641417188e74884c74f8ac0b40b540b63781848dbf0725819e89"
+  },
+  "model_binding": {
+    "model_sha256": "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b",
+    "normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+    "model_version": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3"
+  },
+  "scope": "native_canonical_vector_sdk_and_partial_sensor_adapter_not_full_python_sensorium_parity"
+}

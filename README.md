@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-139%2F139%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-356%2F356%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -18,6 +18,37 @@
 [![Stability](https://img.shields.io/badge/Temporal%20Stability-Confirmed%20(p%3C0.001)-purple)]()
 
 ---
+
+## Stage 11–14 progress (2026-10-02)
+
+The next-stage engineering implementation is substantially in place. The full
+host suite passes **356 tests**. Stage 11–14 is **not yet fully accepted**;
+[the completion audit](docs/stage11_14_completion_audit.md) records the remaining
+requirements and evidence boundaries.
+
+| Area | Implemented and verified | Remaining work |
+| --- | --- | --- |
+| Continuous dynamics and time kernels | Continuous SDE/Euler–Maruyama rollouts, daily/weekly smoothing, controlled 128D covariance and refinement checks | Empirical held-out drift/diffusion, fractional-memory identification and conservative-potential validity |
+| Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Authorized real intervention and causal-effect evidence; defaults remain shadow/silent |
+| Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Final production-source deployment, actual Sunday delivery and meaningful long-term bifurcation parameters |
+| Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Final primary-app update and complete native feature provenance; these measurements do not cover whole-app or private-MPC memory |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations | Guarded normal unknown-score Android coverage, app-restart replay, packed-v2 public proof integration, real owner enrollment and independent security assessment |
+
+A real changed-model regression revealed a score before the SDK checked its
+approved commitment. The dedicated approved circuit now checks both parties'
+signed session/model bindings **before public reveal** and masks all849 output
+bits on mismatch. All22 separate-party host MPC cases pass; the Pixel6a SDK
+changed-model case also passes with a separate Mac participant (34.204s,
+all-zero peer output). See [host regression](artifacts/alignment_v1/approved_binding_pre_reveal_native.json)
+and [device receipt](artifacts/alignment_v1/approved_binding_guard_android_success.json).
+Earlier memory-admission, scheduling and expired synthetic-certificate failures
+remain recorded separately. The test APK and USB forward have been removed.
+
+The primary app currently installed on Pixel6a is an older build. Final deployment
+and full scientific acceptance remain open. This repository snapshot publishes
+implementation and bounded test evidence; it does not establish causal efficacy,
+zero-knowledge sharing completion or the whole-app<5MB target. See the
+[acceptance ledger](docs/next_stage_acceptance.md) and [native SDK scope](docs/native_android_sdk.md).
 
 ## 1. Scientific Motivation
 
@@ -288,7 +319,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 139 unit tests across 26 test modules (100% PASS)
+└── tests/                                 # 356 host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -321,9 +352,9 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (139/139 Passing)
+### A. Run Unit Tests (356/356 Host Tests Passing)
 ```bash
-# Run full 139-test suite locally:
+# Run the full host suite locally:
 python3 -m unittest discover tests
 
 # Or run with pytest:

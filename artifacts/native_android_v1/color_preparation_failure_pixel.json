@@ -1,0 +1,23 @@
+{
+  "scope": "preparation_failure_external_target_race_regression_not_actual_display_change",
+  "regression_before": "FAILED: settings changed despite scheduling failure",
+  "regression_after": "1 test passed, 0.441s",
+  "full_suite": {
+    "passed": true,
+    "count": 303,
+    "seconds": 22.635
+  },
+  "pixel": {
+    "passed": true,
+    "completed_epoch_ms": 1790872714633,
+    "native_reason": "disabled_or_permission_denied",
+    "settings_write_attempts": 0,
+    "overlapping_adjustment_rejected": true,
+    "overlapping_recovery_rejected": true
+  },
+  "sha256": {
+    "android/src/org/traceform/edge/ColorTemperatureAdjustment.java": "2546712b76f89f9e6e04cd0209403a487854f0a9831cc13eb2a522ce46fdb1a0",
+    "tests/test_native_color_temperature.py": "9ec18f4d540e420ffcbb9661da2713812ed7f20a5253c9da57a4c78b572df93a",
+    "android/build/traceform.apk": "4623c410428d02c4a0aaa281e80902e6bce483a4a486df6438e662e71e93729c"
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "passed": true,
+  "gates": 1070658,
+  "cases": [
+    {
+      "case": "feasible_rectangular",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "uniform_nonzero",
+      "valid": true,
+      "expected_numerator": "357777795554880000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "odd_distance",
+      "valid": true,
+      "expected_numerator": "202219140767368348800000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "triangle_violation",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "asymmetric",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "diagonal_nonzero",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "marginal_mismatch",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "negative_transport",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "mass_out_of_range",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_session",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "changed_nonce",
+      "valid": true,
+      "expected_numerator": "179999839999680000000000",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "session_mismatch",
+      "valid": false,
+      "expected_numerator": "0",
+      "parties": [
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        },
+        {
+          "exit_code": 0,
+          "output_matches": true,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "circuit_sha256": "c9423b6efd1f398f4be5677d97bd791da3c5553c20ece05994aab7df4e985184",
+  "binary_sha256": "4fb2c6a10f6f8b1ffce33d003d4ccf32a4185df6d79fb40a49d52e056c8971a2",
+  "first_nodes": 2,
+  "second_nodes": 3,
+  "scope": "synthetic_private_feasible_gw_same_input_commitments_not_optimizer_or_security_audit"
+}

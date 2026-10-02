@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "tests": 302,
+  "elapsed_seconds": 23.331,
+  "apk_sha256": "3cf6db0df08f424a329c8fa8e2f2b0ccc90a0e0322a35a3b6d4f357f4c6856a9",
+  "source_sha256": {
+    "android/src/org/traceform/edge/ColorTemperatureJournal.java": "8efc901898ca7b7b763b042e9d41801a94cb1cde135a5c098a3eeb9b48175715",
+    "android/src/org/traceform/edge/ColorTemperatureAdjustment.java": "c9adca070d9d4cdac046d2785efda143a216fb1bd4bbabb6f9537111eef9d5fc",
+    "android/src/org/traceform/edge/NightDisplay.java": "717badfbac002ee95821b8d0045662d893b737525e228f2dfea438107ddcc734",
+    "android/src/org/traceform/edge/ColorTemperatureFixture.java": "39a860f0f16cf2aa83b35d16bec07be6b56dd8d2f5059bd21060e9d8d1093b20",
+    "tests/test_native_color_temperature.py": "d78deb8f855b904a844ea22b5188558fb24a0c140b331bccef8386f5d271c69f"
+  },
+  "record_bytes": 12,
+  "scope": "atomic_private_record_reopen_and_simulated_conditional_recovery_not_real_process_death_or_power_loss"
+}

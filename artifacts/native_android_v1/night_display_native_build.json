@@ -1,0 +1,15 @@
+{
+  "apk_sha256": "68823c3b86e4a572b4e992921f932dccad1f087861323c159ab61bbbde13b7c3",
+  "apk_bytes": 3765151,
+  "source_sha256": {
+    "android/src/org/traceform/edge/NightDisplay.java": "36abcd049a7bc49d5355454f77c4de62f2913076925cd89f005b6050a0d9ac0e",
+    "android/src/org/traceform/edge/MainActivity.java": "80ceb2c957cb7312fd8dd9414185b81fe340b829010608e3a424bc4dc121ad82"
+  },
+  "scope": "built_and_usb_installed_native_read_only_night_display_capability",
+  "settings_writes": 0,
+  "affected_native_tests": {
+    "tests": 15,
+    "passed": true,
+    "elapsed_seconds": 4.616
+  }
+}

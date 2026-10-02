@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "path": "traceform/discovery/transition_graph.py",
+      "sha256": "39774f9786bf8f10eabe780a29ed443048ee05ab114d4af0c90aba00315c1b3c"
+    },
+    {
+      "path": "tests/test_discovery.py",
+      "sha256": "028b901739cfb2281646c4451d2d7893c65c1aee7b5551f93cb221bf24a6ecd5"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

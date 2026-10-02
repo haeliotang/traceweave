@@ -1,0 +1,282 @@
+{
+  "scope": "pipeline_component_diagnosis_and_fixed_16_state_rollout_search",
+  "hashes": {
+    "native/traceform_core.cpp": "7e58f426057eb6d99669ca559bfa949f9c0c6afcbfc79479c8f167f957dfb161",
+    "tests/test_native_core.py": "8de7cac1b86e339aa60cc929c536644197be253fe064ec0fa572c05a507b3095",
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "99be1ae43781c03721de0fc27690d0913b0c0e797ab3b4e17d89d78ea4074192",
+    "android/build/traceform.apk": "ef896f3bee20cd27de47f464293a4b3fbd80d9c12241356f3dd23115d2e16877"
+  },
+  "tests": {
+    "count": 313,
+    "seconds": 26.478,
+    "passed": true
+  },
+  "before_components": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 18096,
+      "thread_priority": 0,
+      "cpus_allowed": "0-7"
+    },
+    "thread_environment_after": {
+      "thread_id": 18096,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.006104,
+        "input_copy_allocation_ms": 1.076375,
+        "native_cdf_wall_ms": 17.944702,
+        "output_copy_ms": 1.005371,
+        "native_total_ms": 20.032552,
+        "native_cdf_thread_cpu_ms": 16.488852
+      },
+      {
+        "lock_wait_ms": 0.00122,
+        "input_copy_allocation_ms": 0.778931,
+        "native_cdf_wall_ms": 13.725545,
+        "output_copy_ms": 0.6521,
+        "native_total_ms": 15.157796,
+        "native_cdf_thread_cpu_ms": 13.104493
+      },
+      {
+        "lock_wait_ms": 0.001302,
+        "input_copy_allocation_ms": 1.059042,
+        "native_cdf_wall_ms": 14.049804,
+        "output_copy_ms": 0.842123,
+        "native_total_ms": 15.952271,
+        "native_cdf_thread_cpu_ms": 13.228026
+      },
+      {
+        "lock_wait_ms": 0.003215,
+        "input_copy_allocation_ms": 1.310547,
+        "native_cdf_wall_ms": 16.549764,
+        "output_copy_ms": 0.892293,
+        "native_total_ms": 18.755819,
+        "native_cdf_thread_cpu_ms": 15.755412
+      },
+      {
+        "lock_wait_ms": 0.001994,
+        "input_copy_allocation_ms": 1.012695,
+        "native_cdf_wall_ms": 13.986573,
+        "output_copy_ms": 1.164022,
+        "native_total_ms": 16.165284,
+        "native_cdf_thread_cpu_ms": 13.43978
+      }
+    ],
+    "fit_ms": 1991.140626,
+    "cdf_trials_ms": [
+      20.986694,
+      15.392456,
+      16.284831,
+      19.136719,
+      16.564412
+    ],
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "pipeline_trials_ms": [
+      28.486369,
+      25.139527,
+      20.154134,
+      22.237671,
+      26.521973
+    ],
+    "pipeline_rollouts": 300,
+    "pipeline_profiles": [
+      {
+        "normalization_ms": 1.083821,
+        "quantization_ms": 0.599162,
+        "cdf_ms": 17.724162,
+        "rollouts_ms": 9.079224
+      },
+      {
+        "normalization_ms": 0.54183,
+        "quantization_ms": 0.230143,
+        "cdf_ms": 16.778361,
+        "rollouts_ms": 7.589193
+      },
+      {
+        "normalization_ms": 0.275024,
+        "quantization_ms": 0.133871,
+        "cdf_ms": 12.970988,
+        "rollouts_ms": 6.774251
+      },
+      {
+        "normalization_ms": 0.31543,
+        "quantization_ms": 0.162475,
+        "cdf_ms": 15.063965,
+        "rollouts_ms": 6.695801
+      },
+      {
+        "normalization_ms": 0.418294,
+        "quantization_ms": 0.179647,
+        "cdf_ms": 18.104411,
+        "rollouts_ms": 7.819621
+      }
+    ],
+    "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790879911486
+  },
+  "isolated_comparison": [
+    {
+      "path": "traceform-spectrum-rotated-benchmark",
+      "chunk_id": "eba90b",
+      "wall_time_seconds": 1.26203325,
+      "exit_code": 0,
+      "original_token_count": 175,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1190.680665,\"remove_add_1000_pairs_ms\":25.055216,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2957312,\"launcher_peak_rss_bytes\":13959168,\"elapsed_ms\":9.180257,\"periodic_cdf_ms\":6.713582,\"rollout_ms\":2.258911,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-fixed-search",
+      "chunk_id": "28a408",
+      "wall_time_seconds": 1.260009,
+      "exit_code": 0,
+      "original_token_count": 175,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1193.930420,\"remove_add_1000_pairs_ms\":25.105998,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":3022848,\"launcher_peak_rss_bytes\":13963264,\"elapsed_ms\":8.968628,\"periodic_cdf_ms\":6.734863,\"rollout_ms\":1.995565,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-fixed-search",
+      "chunk_id": "03c24f",
+      "wall_time_seconds": 1.2487300829999999,
+      "exit_code": 0,
+      "original_token_count": 175,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1198.816936,\"remove_add_1000_pairs_ms\":25.111206,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":2977792,\"launcher_peak_rss_bytes\":13967360,\"elapsed_ms\":9.024333,\"periodic_cdf_ms\":6.777914,\"rollout_ms\":1.957764,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    },
+    {
+      "path": "traceform-spectrum-rotated-benchmark",
+      "chunk_id": "66afa6",
+      "wall_time_seconds": 1.241549666,
+      "exit_code": 0,
+      "original_token_count": 175,
+      "output": "{\"cdf_fixture_fingerprint\":\"ee14ebf250e4e700\"}\n{\"spectrum_fit_ms\":1192.911377,\"remove_add_1000_pairs_ms\":25.365886,\"summary_payload_bytes\":596104,\"fit_and_update_in_prediction_timer\":false,\"phase_and_prior_preparation_in_fit_timer\":true,\"history_arrays_retained\":false}\n{\"scope\":\"isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases\",\"phase_construction\":\"sdk_weekday_and_local_fraction\",\"dimension\":128,\"states\":16,\"horizon_steps\":120,\"rollouts\":300,\"history_pairs\":86400,\"peak_rss_bytes\":3035136,\"launcher_peak_rss_bytes\":13979648,\"elapsed_ms\":9.247436,\"periodic_cdf_ms\":6.787232,\"rollout_ms\":2.259725,\"mass_conserved\":true,\"phase_preparation_timed\":false}\n"
+    }
+  ],
+  "installed_APK": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 19257,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "thread_environment_after": {
+      "thread_id": 19257,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.006917,
+        "input_copy_allocation_ms": 0.917603,
+        "native_cdf_wall_ms": 9.70166,
+        "output_copy_ms": 0.413981,
+        "native_total_ms": 11.040161,
+        "native_cdf_thread_cpu_ms": 9.225832
+      },
+      {
+        "lock_wait_ms": 0.00118,
+        "input_copy_allocation_ms": 0.781698,
+        "native_cdf_wall_ms": 9.614746,
+        "output_copy_ms": 0.669759,
+        "native_total_ms": 11.067383,
+        "native_cdf_thread_cpu_ms": 9.263102
+      },
+      {
+        "lock_wait_ms": 0.001669,
+        "input_copy_allocation_ms": 0.791788,
+        "native_cdf_wall_ms": 9.348918,
+        "output_copy_ms": 0.842814,
+        "native_total_ms": 10.985189,
+        "native_cdf_thread_cpu_ms": 9.256673
+      },
+      {
+        "lock_wait_ms": 0.002889,
+        "input_copy_allocation_ms": 0.938273,
+        "native_cdf_wall_ms": 9.518352,
+        "output_copy_ms": 0.76652,
+        "native_total_ms": 11.226034,
+        "native_cdf_thread_cpu_ms": 9.222574
+      },
+      {
+        "lock_wait_ms": 0.001912,
+        "input_copy_allocation_ms": 0.838501,
+        "native_cdf_wall_ms": 9.726278,
+        "output_copy_ms": 0.739421,
+        "native_total_ms": 11.306112,
+        "native_cdf_thread_cpu_ms": 9.23755
+      }
+    ],
+    "fit_ms": 1674.701132,
+    "cdf_trials_ms": [
+      11.963379,
+      11.397257,
+      11.336182,
+      11.667359,
+      11.681397
+    ],
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "pipeline_trials_ms": [
+      18.869263,
+      16.397989,
+      15.996257,
+      16.65564,
+      16.533569
+    ],
+    "pipeline_rollouts": 300,
+    "pipeline_profiles": [
+      {
+        "normalization_ms": 1.108765,
+        "quantization_ms": 0.575521,
+        "cdf_ms": 12.067504,
+        "rollouts_ms": 5.117473
+      },
+      {
+        "normalization_ms": 0.301798,
+        "quantization_ms": 0.16862,
+        "cdf_ms": 10.94279,
+        "rollouts_ms": 4.984781
+      },
+      {
+        "normalization_ms": 0.219238,
+        "quantization_ms": 0.13676,
+        "cdf_ms": 11.080688,
+        "rollouts_ms": 4.559571
+      },
+      {
+        "normalization_ms": 0.218872,
+        "quantization_ms": 0.147705,
+        "cdf_ms": 11.378093,
+        "rollouts_ms": 4.91097
+      },
+      {
+        "normalization_ms": 0.263142,
+        "quantization_ms": 0.119263,
+        "cdf_ms": 10.703003,
+        "rollouts_ms": 5.448161
+      }
+    ],
+    "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790880122156
+  },
+  "limits": [
+    "Full APK synthetic computation pipeline remains 15.996257..18.869263 ms, fails 15 ms",
+    "Native standalone rollout benefit is approximately 0.26..0.30 ms; does not explain all APK before/after change",
+    "No frequency/temperature observation; timings cannot establish environmental equivalence",
+    "First fit, phases, random draws and history scan excluded; whole APK memory not accepted"
+  ]
+}

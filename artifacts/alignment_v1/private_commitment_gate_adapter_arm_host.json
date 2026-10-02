@@ -1,0 +1,233 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "owner": 0,
+      "nodes": 1,
+      "case": "zero",
+      "preimage_bytes": 101,
+      "gates": 250607,
+      "passed": true,
+      "circuit_sha256": "934f9e625ab41c01df3a355fc4d96fef66818a1d46e4064881dea9fd05687b18"
+    },
+    {
+      "owner": 0,
+      "nodes": 1,
+      "case": "varied",
+      "preimage_bytes": 101,
+      "gates": 250607,
+      "passed": true,
+      "circuit_sha256": "934f9e625ab41c01df3a355fc4d96fef66818a1d46e4064881dea9fd05687b18"
+    },
+    {
+      "owner": 0,
+      "nodes": 1,
+      "case": "changed_session",
+      "preimage_bytes": 101,
+      "gates": 250607,
+      "passed": true,
+      "circuit_sha256": "934f9e625ab41c01df3a355fc4d96fef66818a1d46e4064881dea9fd05687b18"
+    },
+    {
+      "owner": 0,
+      "nodes": 1,
+      "case": "changed_nonce",
+      "preimage_bytes": 101,
+      "gates": 250607,
+      "passed": true,
+      "circuit_sha256": "934f9e625ab41c01df3a355fc4d96fef66818a1d46e4064881dea9fd05687b18"
+    },
+    {
+      "owner": 0,
+      "nodes": 1,
+      "case": "changed_model",
+      "preimage_bytes": 101,
+      "gates": 250607,
+      "passed": true,
+      "circuit_sha256": "934f9e625ab41c01df3a355fc4d96fef66818a1d46e4064881dea9fd05687b18"
+    },
+    {
+      "owner": 1,
+      "nodes": 1,
+      "case": "zero",
+      "preimage_bytes": 101,
+      "gates": 250624,
+      "passed": true,
+      "circuit_sha256": "0aaa37d629d66692f613824b4595f472b7d94503bd4c295fb27611da1044e81f"
+    },
+    {
+      "owner": 1,
+      "nodes": 1,
+      "case": "varied",
+      "preimage_bytes": 101,
+      "gates": 250624,
+      "passed": true,
+      "circuit_sha256": "0aaa37d629d66692f613824b4595f472b7d94503bd4c295fb27611da1044e81f"
+    },
+    {
+      "owner": 1,
+      "nodes": 1,
+      "case": "changed_session",
+      "preimage_bytes": 101,
+      "gates": 250624,
+      "passed": true,
+      "circuit_sha256": "0aaa37d629d66692f613824b4595f472b7d94503bd4c295fb27611da1044e81f"
+    },
+    {
+      "owner": 1,
+      "nodes": 1,
+      "case": "changed_nonce",
+      "preimage_bytes": 101,
+      "gates": 250624,
+      "passed": true,
+      "circuit_sha256": "0aaa37d629d66692f613824b4595f472b7d94503bd4c295fb27611da1044e81f"
+    },
+    {
+      "owner": 1,
+      "nodes": 1,
+      "case": "changed_model",
+      "preimage_bytes": 101,
+      "gates": 250624,
+      "passed": true,
+      "circuit_sha256": "0aaa37d629d66692f613824b4595f472b7d94503bd4c295fb27611da1044e81f"
+    },
+    {
+      "owner": 0,
+      "nodes": 2,
+      "case": "zero",
+      "preimage_bytes": 117,
+      "gates": 253422,
+      "passed": true,
+      "circuit_sha256": "5b828e0bd0dd82d70ba8e7588154b7d5779d4722e6d5f113d55c5c6ce6037c2c"
+    },
+    {
+      "owner": 0,
+      "nodes": 2,
+      "case": "varied",
+      "preimage_bytes": 117,
+      "gates": 253422,
+      "passed": true,
+      "circuit_sha256": "5b828e0bd0dd82d70ba8e7588154b7d5779d4722e6d5f113d55c5c6ce6037c2c"
+    },
+    {
+      "owner": 0,
+      "nodes": 2,
+      "case": "changed_session",
+      "preimage_bytes": 117,
+      "gates": 253422,
+      "passed": true,
+      "circuit_sha256": "5b828e0bd0dd82d70ba8e7588154b7d5779d4722e6d5f113d55c5c6ce6037c2c"
+    },
+    {
+      "owner": 0,
+      "nodes": 2,
+      "case": "changed_nonce",
+      "preimage_bytes": 117,
+      "gates": 253422,
+      "passed": true,
+      "circuit_sha256": "5b828e0bd0dd82d70ba8e7588154b7d5779d4722e6d5f113d55c5c6ce6037c2c"
+    },
+    {
+      "owner": 0,
+      "nodes": 2,
+      "case": "changed_model",
+      "preimage_bytes": 117,
+      "gates": 253422,
+      "passed": true,
+      "circuit_sha256": "5b828e0bd0dd82d70ba8e7588154b7d5779d4722e6d5f113d55c5c6ce6037c2c"
+    },
+    {
+      "owner": 1,
+      "nodes": 3,
+      "case": "zero",
+      "preimage_bytes": 141,
+      "gates": 381097,
+      "passed": true,
+      "circuit_sha256": "6a6ed634e7499b3f972e23246a340d32d9b970bd31021684f2841b4184790628"
+    },
+    {
+      "owner": 1,
+      "nodes": 3,
+      "case": "varied",
+      "preimage_bytes": 141,
+      "gates": 381097,
+      "passed": true,
+      "circuit_sha256": "6a6ed634e7499b3f972e23246a340d32d9b970bd31021684f2841b4184790628"
+    },
+    {
+      "owner": 1,
+      "nodes": 3,
+      "case": "changed_session",
+      "preimage_bytes": 141,
+      "gates": 381097,
+      "passed": true,
+      "circuit_sha256": "6a6ed634e7499b3f972e23246a340d32d9b970bd31021684f2841b4184790628"
+    },
+    {
+      "owner": 1,
+      "nodes": 3,
+      "case": "changed_nonce",
+      "preimage_bytes": 141,
+      "gates": 381097,
+      "passed": true,
+      "circuit_sha256": "6a6ed634e7499b3f972e23246a340d32d9b970bd31021684f2841b4184790628"
+    },
+    {
+      "owner": 1,
+      "nodes": 3,
+      "case": "changed_model",
+      "preimage_bytes": 141,
+      "gates": 381097,
+      "passed": true,
+      "circuit_sha256": "6a6ed634e7499b3f972e23246a340d32d9b970bd31021684f2841b4184790628"
+    },
+    {
+      "owner": 0,
+      "nodes": 4,
+      "case": "zero",
+      "preimage_bytes": 173,
+      "gates": 385774,
+      "passed": true,
+      "circuit_sha256": "115f8df1e30cc6af36a0b1fe7569c16feb96302993ffc97f9cda514b36ca9b60"
+    },
+    {
+      "owner": 0,
+      "nodes": 4,
+      "case": "varied",
+      "preimage_bytes": 173,
+      "gates": 385774,
+      "passed": true,
+      "circuit_sha256": "115f8df1e30cc6af36a0b1fe7569c16feb96302993ffc97f9cda514b36ca9b60"
+    },
+    {
+      "owner": 0,
+      "nodes": 4,
+      "case": "changed_session",
+      "preimage_bytes": 173,
+      "gates": 385774,
+      "passed": true,
+      "circuit_sha256": "115f8df1e30cc6af36a0b1fe7569c16feb96302993ffc97f9cda514b36ca9b60"
+    },
+    {
+      "owner": 0,
+      "nodes": 4,
+      "case": "changed_nonce",
+      "preimage_bytes": 173,
+      "gates": 385774,
+      "passed": true,
+      "circuit_sha256": "115f8df1e30cc6af36a0b1fe7569c16feb96302993ffc97f9cda514b36ca9b60"
+    },
+    {
+      "owner": 0,
+      "nodes": 4,
+      "case": "changed_model",
+      "preimage_bytes": 173,
+      "gates": 385774,
+      "passed": true,
+      "circuit_sha256": "115f8df1e30cc6af36a0b1fe7569c16feb96302993ffc97f9cda514b36ca9b60"
+    }
+  ],
+  "sha_compression_circuit_sha256": "bd0a91bb7e97bb60c1468fe8caecc546af3f832bd4152d9c8c4e7527412dd11d",
+  "generator_sha256": "5b6f910ca6b753f908de47250ea09c484e5ff3115ea9640511d9dee367af5366",
+  "scope": "independent_commitment_gate_evaluation_not_gw_integration_or_protocol_execution"
+}

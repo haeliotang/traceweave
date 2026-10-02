@@ -1,0 +1,25 @@
+{
+  "scope": "host_Python_fitted_spectrum_prototype_not_native_performance_gate",
+  "pairs": 86400,
+  "states": 16,
+  "horizon": 120,
+  "fit_ms": 1158.717540994985,
+  "query_ms": 486.1195409903303,
+  "sampled_row_l1_difference": 7.840950111415168e-16,
+  "weight_truncation_bound_exact_arithmetic_only": 4.924561042378302e-18,
+  "max_row_truncation_bound": 7.808158758745314e-15,
+  "edges": 256,
+  "float64_moment_payload_bytes": 593920,
+  "incremental_updates": false,
+  "production_selected": false,
+  "source_sha256": {
+    "traceform/forecasting/periodic_spectrum.py": "287163d8626f6d380c0a0c1f14080c78dc613a99933041c28739b4b579680593",
+    "tests/test_periodic_spectrum.py": "0b12fd95fe3a42ac804200f1f9fea353d8db36c4c652ccdb35b71b3fce8c94b5"
+  },
+  "tests": {
+    "full_count": 307,
+    "full_seconds": 24.159,
+    "passed": true,
+    "additional_validation_cases": "affected 4 tests passed after snapshot timezone and invalid prior cases"
+  }
+}

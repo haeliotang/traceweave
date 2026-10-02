@@ -1,0 +1,67 @@
+{
+  "maintenance": {
+    "timestamp_utc": "2026-10-01T04:41:53.201887+00:00",
+    "last_calibration_week": null,
+    "compaction": {
+      "hot_deleted": 0,
+      "warm_deleted": 0,
+      "counts": {
+        "hot": 167,
+        "warm": 167,
+        "cold": 17
+      }
+    },
+    "event_segments_deleted": 0,
+    "physical_segments_deleted": {
+      "observations": 0,
+      "transitions": 0,
+      "episodes": 0
+    },
+    "retained_versions": [
+      "2b95a904e6dfadc4caf783bcf4e1a58dd4c21aa54ee6b05f6b3482816230aebc",
+      "f3797745004c52c08bcbf1819a380ab9fd0a30aa66a8b4db149b3037539fc5c8"
+    ],
+    "cold_bundle": {
+      "bytes": 16320,
+      "sha256": "e40f8972ef034aa9db5a35b93a4cc3513d527833ed8481ba632d654a59f2c08b",
+      "state_spaces": 1,
+      "retained_models": 2,
+      "scope": "cumulative_label_lineage_counts_not_fixed_model_probabilities"
+    }
+  },
+  "health": {
+    "bytes": 16320,
+    "retained_registry_json_bytes": 85589,
+    "cold_table_page_bytes": 24576,
+    "sha256": "e40f8972ef034aa9db5a35b93a4cc3513d527833ed8481ba632d654a59f2c08b",
+    "model_digests_verified": true,
+    "retained_models": 2,
+    "exported_total_transitions": 156,
+    "current_total_transitions": 156,
+    "state_space_sizes": [
+      6
+    ],
+    "exported_watermark": "2026-10-01T04:40:47.761503Z",
+    "current_watermark": "2026-10-01T04:40:47.761503Z",
+    "current_cold_namespace": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3",
+    "normalizer_bindings": [
+      "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5"
+    ],
+    "daemon_owner": {
+      "pid": 11730,
+      "start_ticks": "4066388",
+      "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+    },
+    "silent_flag": true,
+    "source_sha256": {
+      "traceform/streaming/tiered_storage.py": "6059689b3d6341fdee85ea4127b599d5fa3bb30a95d42d793cd3f34e2e48923e",
+      "traceform/evolution/guarded_calibration.py": "459d0a3c5418c3f3696d8589ac09e4dc6964d5746f3a19078bc8119150070d66",
+      "scripts/phone_edge_manifold_daemon.py": "dbd04f799a768b759ce549f7d1fc7c18aa90d2760244387b935e103bf310bdc7",
+      "scripts/maintain_edge_runtime.py": "adb88cd8e453ee673259e24bee92ed0412928287879eb8870a5bbe9f2a8659b6"
+    }
+  },
+  "host_tests": 226,
+  "native_tiered_tests": 8,
+  "native_calibration_tests": 3,
+  "scope": "bounded_cold_checkpoint_and_attributable_table_pages_not_total_database_or_application_memory"
+}

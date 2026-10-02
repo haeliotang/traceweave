@@ -17,6 +17,9 @@ import math
 import time
 import unittest
 
+from traceform.dynamics.continuous import ContinuousDynamics
+from traceform.representation.manifold_lattice import DynamicalEnergyManifold, ManifoldNode
+
 from traceform.forecasting.sandbox_simulator import (
     SandboxSimulator,
     ScenarioIntervention,
@@ -28,6 +31,105 @@ from traceform.forecasting.sandbox_simulator import (
 
 
 class TestSandboxSimulator(unittest.TestCase):
+    def test_exact_five_percent_reduction_is_not_recommended(self):
+        import copy
+        from unittest.mock import patch
+        simulator = SandboxSimulator().fit_from_transition_matrix({'A': {'A': 1}, 'B': {'B': 1}})
+        baseline = simulator.simulate_rollouts('A', horizon_steps=2, num_rollouts=100)
+        for remaining, recommended in ((95, False), (94, True)):
+            scenario = copy.deepcopy(baseline)
+            scenario.absorption_probabilities = {'A': remaining / 100, 'B': (100 - remaining) / 100}
+            scenario.state_occupancy_by_step[-1] = scenario.absorption_probabilities
+            scenario.entropy_by_step[-1] = _compute_shannon_entropy(scenario.absorption_probabilities)
+            with patch.object(simulator, 'simulate_rollouts', side_effect=[baseline, scenario]):
+                comparison = simulator.simulate_counterfactual('A', ScenarioIntervention(action_type='CLAMP_DWELL', max_dwell_steps=3),
+                    horizon_steps=2, num_rollouts=100, high_risk_states={'A'})
+            self.assertEqual(comparison.recommended_path == 'RECOMMEND_INTERVENTION', recommended)
+
+    def test_recommendation_counts_risk_increases_as_well_as_decreases(self):
+        simulator = SandboxSimulator().fit_from_transition_matrix({'A': {'A': 1}, 'B': {'B': 1}})
+        intervention = ScenarioIntervention(action_type='FORCE_STATE', target_state='B', at_step=1)
+        for risk_states in ({'A', 'B'}, None, set()):
+            comparison = simulator.simulate_counterfactual(
+                'A', intervention, horizon_steps=3, num_rollouts=10, high_risk_states=risk_states)
+            self.assertNotEqual(comparison.recommended_path, 'RECOMMEND_INTERVENTION')
+            self.assertAlmostEqual(sum(comparison.risk_delta_map.values()), 0)
+            self.assertNotIn('lower dissipation energy', comparison.summary_insight)
+        comparison = simulator.simulate_counterfactual(
+            'A', intervention, horizon_steps=3, num_rollouts=10, high_risk_states={'A'})
+        self.assertEqual(comparison.recommended_path, 'RECOMMEND_INTERVENTION')
+        self.assertEqual(comparison.risk_delta_map, {'A': -1})
+
+    def test_continuous_phase_velocity_resets_for_each_rollout(self):
+        model = ContinuousDynamics()
+        model.dimension = 1
+        model.model_version = 'v1'
+        model.anchors = [{'center': [0], 'drift': [1], 'noise_covariance': [[0]]}]
+        manifold = DynamicalEnergyManifold()
+        manifold.nodes = [ManifoldNode(0, (0, 0), 'A', [0], [1]),
+                          ManifoldNode(1, (0, 1), 'B', [0], [-1])]
+        manifold.last_obs_vector, manifold.last_velocity = [9], [8]
+        sim = SandboxSimulator(step_nominal_seconds=1).fit_from_transition_matrix({'A': {'A': 1}, 'B': {'B': 1}})
+        for hurst in (None, .25):
+            branch = sim.simulate_continuous_rollouts(
+                model, {'continuous_vector': [0], 'continuous_velocity': [-1], 'model_version': 'v1'},
+                None, horizon_steps=3, num_rollouts=7, hurst=hurst,
+                phase_quantize=lambda x, v: manifold.quantize_phase(x, v)[0],
+                velocity_ema_alpha=manifold.ema_alpha)
+            self.assertEqual(branch.state_occupancy_by_step, [{'B': 1}, {'B': 1}, {'A': 1}])
+            self.assertEqual(branch.sample_paths, [['B', 'B', 'A']] * 5)
+        self.assertEqual(manifold.last_obs_vector, [9])
+        self.assertEqual(manifold.last_velocity, [8])
+
+    def test_continuous_branches_aggregate_all_runs_without_discrete_jumps(self):
+        model = ContinuousDynamics()
+        model.dimension = 128
+        model.model_version = 'v1'
+        model.anchors = [{'center': [0] * 128, 'drift': [1] * 128,
+                          'noise_covariance': [[0] * 128 for _ in range(128)]}]
+        sim = SandboxSimulator(step_nominal_seconds=1, energy_map={'A': 0, 'B': 2})
+        sim.fit_from_transition_matrix({'A': {'A': 1}, 'B': {'B': 1}})
+        record = {'continuous_vector': [0] * 128, 'model_version': 'v1'}
+        for hurst in (None, .25):
+            branch = sim.simulate_continuous_rollouts(
+                model, record, lambda vector: 'B' if vector[127] >= 2 else 'A',
+                horizon_steps=4, num_rollouts=7, hurst=hurst)
+            self.assertEqual(branch.state_occupancy_by_step, [{'A': 1}, {'A': 1}, {'B': 1}, {'B': 1}])
+            self.assertEqual(branch.absorption_probabilities, {'B': 1})
+            self.assertEqual(branch.mean_hitting_steps['B'], 2)
+            self.assertEqual(branch.expected_cumulative_energy, 1)
+            self.assertEqual(len(branch.sample_paths), 5)
+            self.assertEqual(branch.to_dict()['dynamics_evidence']['hurst'], hurst)
+        record['model_version'] = 'v2'
+        with self.assertRaisesRegex(ValueError, 'provenance'):
+            sim.simulate_continuous_rollouts(model, record, lambda vector: 'A')
+        record['model_version'] = 'v1'
+        with self.assertRaisesRegex(ValueError, 'vocabulary'):
+            sim.simulate_continuous_rollouts(model, record, lambda vector: 'unknown', num_rollouts=1)
+
+    def test_continuous_decimal_step_has_exact_requested_horizon(self):
+        model = ContinuousDynamics()
+        model.dimension = 1
+        model.model_version = 'v1'
+        model.anchors = [{'center': [0], 'drift': [1], 'noise_covariance': [[0]]}]
+        sim = SandboxSimulator(step_nominal_seconds=.1).fit_from_transition_matrix({'A': {'A': 1}})
+        for hurst in (None, .25):
+            branch = sim.simulate_continuous_rollouts(
+                model, {'continuous_vector': [0], 'model_version': 'v1'}, lambda vector: 'A',
+                horizon_steps=7, num_rollouts=2, hurst=hurst)
+            self.assertEqual(len(branch.sample_paths[0]), 7)
+            self.assertEqual(branch.state_occupancy_by_step, [{'A': 1}] * 7)
+
+    def test_nonpositive_timestamp_gaps_are_not_transitions(self):
+        records = [
+            {"timestamp_utc": "2026-10-01T02:01:00Z", "state_token": "M01"},
+            {"timestamp_utc": "2026-10-01T02:00:00Z", "state_token": "M02"},
+            {"timestamp_utc": "2026-10-01T02:00:00Z", "state_token": "M03"},
+        ]
+        sim = SandboxSimulator().fit_from_records(records)
+        self.assertEqual(sim.global_trans["M01"], {"M01": 1.0})
+        self.assertEqual(sim.global_trans["M02"], {"M02": 1.0})
+
     def setUp(self):
         self.vocab = ["M01", "M02", "M03", "M04"]
         self.energy_map = {"M01": 0.2, "M02": 0.8, "M03": 1.5, "M04": 3.0}

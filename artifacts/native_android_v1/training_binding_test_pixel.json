@@ -1,0 +1,9 @@
+{
+  "tests": 21,
+  "passed": true,
+  "elapsed_seconds": 6.059359458988183,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "scope": "isolated_synthetic_weekly_structure_and_maintenance_tests_no_live_history"
+}

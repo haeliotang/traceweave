@@ -1,0 +1,35 @@
+{
+  "scope": "short_screen_on_HOME_background_observation_not_reboot_doze_or_full_native_acceptance",
+  "first": {
+    "frames": 8,
+    "last_frame_epoch_ms": 1790833280845,
+    "session_id": "0ad87d3f-29f2-4faa-afc7-e645a1443715",
+    "last_timestamp_utc": "2026-10-01T05:41:20.845Z",
+    "elapsed_realtime_nanos": 44349579399991,
+    "dt_seconds": 1.029607708,
+    "continuous_from_previous": true,
+    "observed_feature_count": 2,
+    "derived_feature_count": 12,
+    "proxy_feature_count": 2,
+    "supplied_feature_count": 16,
+    "missing_feature_count": 112,
+    "running": true
+  },
+  "last": {
+    "frames": 45,
+    "last_frame_epoch_ms": 1790833322441,
+    "session_id": "0ad87d3f-29f2-4faa-afc7-e645a1443715",
+    "last_timestamp_utc": "2026-10-01T05:42:02.441Z",
+    "elapsed_realtime_nanos": 44391175124783,
+    "dt_seconds": 1.157809205,
+    "continuous_from_previous": true,
+    "observed_feature_count": 2,
+    "derived_feature_count": 12,
+    "proxy_feature_count": 2,
+    "supplied_feature_count": 16,
+    "missing_feature_count": 112,
+    "running": true
+  },
+  "additional_frames": 37,
+  "elapsed_seconds": 41.595724792
+}

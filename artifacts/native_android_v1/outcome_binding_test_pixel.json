@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "tests": 13,
+  "skipped": 0,
+  "elapsed_seconds": 0.292,
+  "scope": "synthetic_outcome_binding_and_mocked_actuator_not_live_intervention"
+}

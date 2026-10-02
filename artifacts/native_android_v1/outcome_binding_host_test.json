@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "tests": 299,
+  "elapsed_seconds": 22.07,
+  "source_sha256": {
+    "traceform/intervention/closed_loop.py": "4afafedca3a10caec760b49e577fa952d4c27d82bf9d45f20b1261a59e041e2c",
+    "tests/test_closed_loop.py": "eac7008638d62b4246cc92de7ed5db8c452e71088c8bb0a3fadeb1a05ad390bd"
+  },
+  "regression_before_fix": "three_binding_changes_were_evaluated_instead_of_censored",
+  "scope": "outcome_censoring_across_session_model_and_normalizer_digest_changes_not_human_causal_effect"
+}

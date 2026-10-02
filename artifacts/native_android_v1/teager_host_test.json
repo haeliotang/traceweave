@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "tests": 298,
+  "elapsed_seconds": 21.465,
+  "apk_sha256": "aa698ba8dafe5171988b8ac2607820488b735aad9adfb892f8c8ac6228b99d28",
+  "apk_bytes": 3765151,
+  "source_sha256": {
+    "android/src/org/traceform/edge/FeatureReadings.java": "2aca4687076b9558d1b5fc39cdc88a40956d28c79e79eab2b6c64b9872faf5c5",
+    "android/src/org/traceform/edge/FeatureFixtures.java": "22e2ad2335ae1dbd1594147b6b75413bfc1bf8fe50c750fbed3dfd36383d7978",
+    "tests/test_native_feature_readings.py": "809e34913c3b729d14c363ea310afb1eb87588a9283422151926652e97f7512a"
+  },
+  "formula": "clip(middle_squared_minus_previous_times_latest,0,10)",
+  "scope": "three_accelerometer_magnitudes_including_gravity_delayed_middle_frame_operator_not_joules_or_live_validation"
+}

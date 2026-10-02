@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "completed_epoch_ms": 1790858325045,
+  "scope": "synthetic_magnetic_and_window_formulas_not_live_acquisition",
+  "new_features": [
+    "geomagnetic_quadrupole_anisotropy_ratio",
+    "barometric_buoyancy_energy_flux"
+  ],
+  "evidence_boundary": "Device-coordinate magnetic component ratio is derived; pressure buoyancy formula is a proxy, not measured energy. Full 128-feature native acquisition is not established."
+}

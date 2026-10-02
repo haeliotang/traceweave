@@ -1,0 +1,57 @@
+{
+  "scope": "standalone_native_CLAMP_DWELL_counterfactual_not_complete_service_policy",
+  "hashes": {
+    "native/traceform_core.h": "2354751d89912c682aa74d3acb88d16fd7fca73401a82454752547619a447ae4",
+    "native/traceform_core.cpp": "5208f9fc7f7edf51033fba325197e0c617fcbd47ed1de3cc94282fe3e6ef4414",
+    "native/traceform_jni.cpp": "d1eb039f73db490f2f1380106b8494b7f4ff4657e2ba4c7640f6046d59e99f81",
+    "android/src/org/traceform/edge/NativeCore.java": "be36b2549307a698c2f941f5736dd2ed55e7005552f0d812357c0219cb5c410b",
+    "android/src/org/traceform/edge/CounterfactualDecision.java": "aa4f25057b876e802559b9f9713f8625710eeb1ee4c89641abfa56c6019ed892",
+    "android/src/org/traceform/edge/CounterfactualFixture.java": "00a4e8493afda4aa498e13612a9c614e252764b69d65bd2e567933115564e77b",
+    "android/src/org/traceform/edge/MainActivity.java": "94d4431a6f0db514f78c79df1bf484f0a98ca0faec530cc4c3e84b28ae31305b",
+    "tests/test_native_core.py": "7f1e1485fdb60820fd7a0cd7e5e94242b878ec1a344f201b4de9f385abc6f151",
+    "traceform/forecasting/sandbox_simulator.py": "993cad01c7de9c8081ec23a532fc31e9d63e2023df5358db007310264cdcf316",
+    "tests/test_sandbox_simulator.py": "5d0aa5a19e364db2a1614325b1509ca5b4da8eed585b634a84ecb0b21f41018e",
+    "android/build/traceform.apk": "7a7b0cf761726cffdae918f5637ddd863657d9a3fbe81563fad2a3c5a856eecd"
+  },
+  "tests": {
+    "count": 317,
+    "seconds": 26.415,
+    "passed": true
+  },
+  "device_synthetic": {
+    "passed": true,
+    "runs_per_branch": 300,
+    "horizon_steps": 12,
+    "native_compute_ms": 0.67273,
+    "baseline_parity": true,
+    "clamp_fallback_verified": true,
+    "single_step_and_invalid_draw_verified": true,
+    "exact_five_percent_not_recommended": true,
+    "recommendation": "RECOMMEND_INTERVENTION",
+    "terminal_risk_change": -1,
+    "mean_jsd": 0.5,
+    "collection_started": false,
+    "actuator_calls": 0,
+    "scope": "synthetic_forced_escape_scenario_not_physical_actuator_effect_or_live_policy",
+    "completed_epoch_ms": 1790885100656
+  },
+  "phone_python": {
+    "tests": 14,
+    "seconds": 2.978,
+    "passed": true,
+    "initial_environment_failure": "2 ZoneInfoNotFoundError UTC; Termux has no tzdata module",
+    "test_environment": "PYTHONTZPATH points to existing Debian usr/share/zoneinfo",
+    "frozen_pre": 12,
+    "frozen_post": 12,
+    "frozen_checks_passed": true,
+    "source_deployed": true,
+    "existing_runtime_restarted": false
+  },
+  "limits": [
+    "Not wired into EdgeService CSD gate or history forecast",
+    "Synthetic clamp is a modeled forced escape, not physical actuator efficacy",
+    "Supplied-draw parity aligns canonical CDF order; Python Random.choice fallback does not share seeded draw sequence",
+    "Timing excludes CDF, draw preparation, metrics, history and model fitting; not full 120-step performance acceptance",
+    "Complete Stage 11-14 scope, memory and scientific acceptance remain open"
+  ]
+}

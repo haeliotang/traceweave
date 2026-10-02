@@ -1,0 +1,49 @@
+--- native/traceform_core.cpp
++++ traceform-core-block-probe.cpp
+@@ -46,21 +46,33 @@
+         double* matrix = output + step * states * states;
+         for (std::size_t index = 0; index < states * states; ++index) matrix[index] = 5 * prior[index];
+     }
+-    for (std::size_t pair = 0; pair < pairs; ++pair) {
+-        double observed_day = observed_phases[pair * 2], observed_week = observed_phases[pair * 2 + 1];
+-        double day_cos = std::cos(observed_day), day_sin = std::sin(observed_day);
+-        double week_cos = std::cos(observed_week), week_sin = std::sin(observed_week);
++    // Experimental cache-local traversal; additions retain pair order per output cell.
++    constexpr std::size_t block_size = 64;
++    double trig[block_size * 4];
++    for (std::size_t base = 0; base < pairs; base += block_size) {
++        std::size_t count = std::min(block_size, pairs - base);
++        for (std::size_t lane = 0; lane < count; ++lane) {
++            std::size_t pair = base + lane;
++            trig[lane * 4] = std::cos(observed_phases[pair * 2]);
++            trig[lane * 4 + 1] = std::sin(observed_phases[pair * 2]);
++            trig[lane * 4 + 2] = std::cos(observed_phases[pair * 2 + 1]);
++            trig[lane * 4 + 3] = std::sin(observed_phases[pair * 2 + 1]);
++        }
+         for (std::size_t step = 0; step < horizon; ++step) {
+             double day = query_phases[step * 2], week = query_phases[step * 2 + 1];
+-            double day_delta = day - observed_day, week_delta = week - observed_week;
+-            if (!std::isfinite(day_delta) || !std::isfinite(week_delta)) return -1;
+-            // Preserve subtraction-based argument reduction for unusually large phases.
+-            double day_similarity = std::abs(day) > 32 || std::abs(observed_day) > 32
+-                ? std::cos(day_delta) : query_trig[step * 4] * day_cos + query_trig[step * 4 + 1] * day_sin;
+-            double week_similarity = std::abs(week) > 32 || std::abs(observed_week) > 32
+-                ? std::cos(week_delta) : query_trig[step * 4 + 2] * week_cos + query_trig[step * 4 + 3] * week_sin;
+-            double weight = std::exp(2 * (day_similarity - 1) + 2 * (week_similarity - 1));
+-            output[step * states * states + sources[pair] * states + targets[pair]] += weight;
++            double* matrix = output + step * states * states;
++            for (std::size_t lane = 0; lane < count; ++lane) {
++                std::size_t pair = base + lane;
++                double observed_day = observed_phases[pair * 2], observed_week = observed_phases[pair * 2 + 1];
++                double day_delta = day - observed_day, week_delta = week - observed_week;
++                if (!std::isfinite(day_delta) || !std::isfinite(week_delta)) return -1;
++                double day_similarity = std::abs(day) > 32 || std::abs(observed_day) > 32
++                    ? std::cos(day_delta) : query_trig[step * 4] * trig[lane * 4] + query_trig[step * 4 + 1] * trig[lane * 4 + 1];
++                double week_similarity = std::abs(week) > 32 || std::abs(observed_week) > 32
++                    ? std::cos(week_delta) : query_trig[step * 4 + 2] * trig[lane * 4 + 2] + query_trig[step * 4 + 3] * trig[lane * 4 + 3];
++                double weight = std::exp(2 * (day_similarity - 1) + 2 * (week_similarity - 1));
++                matrix[sources[pair] * states + targets[pair]] += weight;
++            }
+         }
+     }
+     for (std::size_t step = 0; step < horizon; ++step) {

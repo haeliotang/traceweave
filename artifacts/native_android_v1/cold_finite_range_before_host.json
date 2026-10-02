@@ -1,0 +1,13 @@
+{
+  "scope": "regression_run_before_finite_range_fix",
+  "tests": 20,
+  "failures": 6,
+  "errors": 6,
+  "passed": false,
+  "observed_errors": [
+    "ZeroDivisionError_bandwidth_square_underflow",
+    "OverflowError_bandwidth_or_distance_square",
+    "nonfinite_outputs_not_rejected"
+  ],
+  "test_file": "tests/test_continuous_dynamics.py"
+}

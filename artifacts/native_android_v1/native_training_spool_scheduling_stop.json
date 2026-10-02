@@ -1,0 +1,18 @@
+{
+  "dispatch": {
+    "job_id": 34715,
+    "nonce": "4b4a008a-a73f-43f5-a277-fb86bd78c62b",
+    "scheduled_epoch_ms": 1790896286559
+  },
+  "terminal_reason": "JobScheduler STOP constraints",
+  "completed_receipt": false,
+  "last_receipt_nonce": "3ea0cb6c-9a08-4ae4-a8fa-06c80ad70e99",
+  "training_spool_files_after_stop": 0,
+  "scope": "system_scheduling_stop_not_algorithm_result",
+  "source_sha256": {
+    "android/src/org/traceform/edge/TrainingVectors.java": "aba6985ba4382f47106465cb7287b4fc5d789360e07e1dc530ca8e3b31af912e",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "be867ccbb58049ef4a5f7e9f8271971ffe3b424177e56b04145a8bbe070c32dc",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "a28e3bbb30159c19167f0a018c7213bb0d515c05b3c945a17a2a4ca881f408f8",
+    "android/build/traceform.apk": "27ec58bb85f7931d09e16f909944aeafd9458bb2db5c702bdf8b6de13fb7c5d1"
+  }
+}

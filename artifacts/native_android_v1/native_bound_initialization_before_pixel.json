@@ -1,0 +1,5 @@
+{
+  "passed": false,
+  "error": "java.lang.IllegalStateException: bound stop did not release worker and cancel samples",
+  "completed_epoch_ms": 1790864181482
+}

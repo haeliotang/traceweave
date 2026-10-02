@@ -1,0 +1,58 @@
+{
+  "scope": "automatic_shadow_trigger_history_binding_regression",
+  "failing_device": {
+    "passed": false,
+    "error": "java.lang.IllegalStateException: older initial history accepted as trigger frame",
+    "completed_epoch_ms": 1790886395475
+  },
+  "passing_device": {
+    "passed": true,
+    "bound_trigger": {
+      "passed": true,
+      "gate_and_cooldown_verified": true,
+      "history_unchanged": true,
+      "collection_started": false,
+      "actuator_calls": 0,
+      "comparison": {
+        "action_type": "CLAMP_DWELL",
+        "max_dwell_steps": 10,
+        "selected_risk_states": [
+          "M01"
+        ],
+        "scenario_seed": 43,
+        "mean_jsd": 0.7867235023730049,
+        "peak_jsd": 0.9999999999999999,
+        "peak_step": 10,
+        "terminal_risk_change": -0.9633333333333334,
+        "recommendation": "RECOMMEND_INTERVENTION",
+        "evidence_scope": "modeled_forced_escape_not_physical_actuator_effect_or_execution_authority"
+      },
+      "scope": "synthetic_service_CSD_gate_to_history_MC_shadow_not_live_capture_or_actuation"
+    },
+    "replaced_trigger": {
+      "passed": true,
+      "trigger_mismatch_rejected": true,
+      "collection_started": false,
+      "actuator_calls": 0
+    },
+    "completed_epoch_ms": 1790886446837
+  },
+  "focused_host": {
+    "passed": true,
+    "tests": 1,
+    "seconds": 0.443
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "Warm bucket replacement can make trigger unavailable; no trigger snapshot retained",
+    "Binding checked after computation; mismatched comparison is removed before publication",
+    "Synthetic service evidence not live capture or actuator outcome"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/EdgeService.java": "fd42b70a7ef1099960d21461608b7a537f62933e2f323fefb5e39a9c4e637a10",
+    "android/src/org/traceform/edge/ShadowComparisonFixture.java": "8253be277e7b2851ff162405272af402fe619f3d1cb3a5d914c48d505e5ce093",
+    "android/build/traceform.apk": "fedbff820583f90726be4f7a36d86d049244bc02975d4030bad0c24f661e196a"
+  }
+}

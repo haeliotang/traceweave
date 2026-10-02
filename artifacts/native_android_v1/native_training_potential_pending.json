@@ -1,0 +1,48 @@
+{
+  "local_full_suite": {
+    "passed": true,
+    "count": 327,
+    "seconds": 31.801,
+    "scope": "before_Android_JobService_lifetime_fix"
+  },
+  "affected_tests_after_job_fix": {
+    "passed": true,
+    "count": 5,
+    "seconds": 3.04
+  },
+  "python_drift_projection_parity": {
+    "dimensions": [
+      1,
+      3,
+      128
+    ],
+    "cases": 6,
+    "includes_far_center_weight_underflow": true
+  },
+  "apk_installed": true,
+  "apk_bytes": 3892127,
+  "verification_job": {
+    "id": 34715,
+    "nonce": "1b57ef3d-8af2-41ca-88fc-1691b5ca96c5",
+    "scheduled_epoch_ms": 1790894286224,
+    "last_observed_state": "terminal with matching passed receipt",
+    "completed": true
+  },
+  "last_receipt_completed_epoch_ms": 1790894825436,
+  "receipt_is_current": true,
+  "freeze_before_install": true,
+  "source_sha256": {
+    "android/src/org/traceform/edge/EmpiricalGraphPotential.java": "d39dfb444d125cb5692eb85ad56b3eb9ae4544890e71a46c146f2f1978002871",
+    "android/src/org/traceform/edge/NativePotentialCalibration.java": "a6b666b8c42f8c35bc29003c39f6f61f013163cf6b0c48455159f68bbd8cf7d3",
+    "android/src/org/traceform/edge/NativeCandidateCalibration.java": "d23ea700c7d027e27bc44e4ed0288bcb251c4b801f52df87c9d28fb3ac1763c5",
+    "android/src/org/traceform/edge/ModelEngine.java": "6b1d457fde582e32abd784ef937d83a73d36e59863c242394233ab6e96dd806e",
+    "android/src/org/traceform/edge/NativeVerificationReceiver.java": "88249b5de53be88bea1a2b5e681c7387152deb786c07308b06667152c8838e16",
+    "android/src/org/traceform/edge/NativeVerificationJob.java": "617cfb43fa95af5d38082f99cd9e9b308a077b9060131171b5535b9a78be257e",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "d2dbe6d0dab147c242f9b13f646bdc471d4ca310bda73764b344d38c32f58ad0",
+    "android/AndroidManifest.xml": "ac515bd4018902bf38b06d035d11272bab93423b5efe7d480057eccc44ef6289",
+    "tests/test_native_graph_potential.py": "1910598f2110e5b9381fb8b6434a75a9dd9455947e92f31b4451c6c430e4feb3",
+    "android/build/traceform.apk": "9cfc5630863b52455aee3824aafeff7c4eb7783233ad26237de6587504b72ad9"
+  },
+  "scope": "native_training_drift_projection_and_energy_order_with_device_verification_pending_not_live_model_activation",
+  "resolved_by": "native_training_potential_pixel.json"
+}

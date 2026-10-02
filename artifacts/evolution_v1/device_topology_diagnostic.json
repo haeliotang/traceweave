@@ -1,0 +1,12 @@
+{
+  "records": 401,
+  "retained_hot_records": 401,
+  "mean_energy_distance": 1875.9708254364089,
+  "p95_energy_distance": 2569.591,
+  "occupied_states": 7,
+  "topographic_error": 0.09226932668329177,
+  "registry_version": "2b95a904e6dfadc4caf783bcf4e1a58dd4c21aa54ee6b05f6b3482816230aebc",
+  "module_sha256": "b1cc4cffe313f8ea40e3bdab572870830b10bb3bf0b17cb914396740a0e6f66e",
+  "scope": "read_only_full_retained_hot_topology_diagnostic_no_candidate_training_or_activation",
+  "targeted_device_tests": 4
+}

@@ -1,0 +1,18 @@
+{
+  "scope": "android_public_statement_match_api_host_tested_installed_not_device_protocol_execution",
+  "apk_sha256": "77d8ed6af2ddf9242f715ae0711071df2a33318a6026438100b932093348a476",
+  "device_apk_sha256": "77d8ed6af2ddf9242f715ae0711071df2a33318a6026438100b932093348a476",
+  "installation_succeeded": true,
+  "sdk_contains_private_output_class": true,
+  "python_suite": {
+    "tests": 269,
+    "passed": true,
+    "seconds": 15.831
+  },
+  "sources": {
+    "android/src/org/traceform/edge/PrivateAlignmentOutput.java": "7fb0a3957021f2b873aaac500165b9e886a0c5796fb4bf9556a518af2b13b095",
+    "android/src/org/traceform/edge/ProofVerifier.java": "7f1925805f69ec1259a76a2272d5e28168c792c7301257104aace4d5973779cc",
+    "scripts/build_native_android.py": "076e51ff8250bf8f386c9c93a7b476e1c10906e1322ef84ca2b2decd56371b93",
+    "tests/test_native_private_alignment_output.py": "41f149334e2371f82301b9bf27e88b92fa56e04cb31cbcc34e72cfb771f9caf5"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "job_id": 11401,
+  "package": "com.termux.api",
+  "before_script_mode": "644",
+  "after_script_mode": "755",
+  "before_receipt_timestamp_utc": "2026-10-01T04:54:16.541935+00:00",
+  "after_receipt_timestamp_utc": "2026-10-01T06:55:44.123488+00:00",
+  "hot_records": 418,
+  "cold_rows": 22,
+  "cold_checkpoint_bytes": 16337,
+  "calibration_triggered": false,
+  "scope": "forced_registered_jobscheduler_delivery_and_actual_maintenance_completion_not_sunday_or_reboot_acceptance"
+}

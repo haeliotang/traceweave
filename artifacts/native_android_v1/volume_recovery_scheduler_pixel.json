@@ -1,0 +1,42 @@
+{
+  "scope": "Android_persisted_volume_recovery_scheduler_no_pending_record",
+  "schedule": {
+    "nonce": "f9c7ec76-8ecc-482d-bdc6-7d09676c0b9c",
+    "job_id": 34714,
+    "persisted": true,
+    "client_process_id": 13979,
+    "scope": "no_pending_volume_recovery_scheduler_fixture",
+    "completed_epoch_ms": 1790888044409
+  },
+  "completion": {
+    "delivered": false,
+    "eligible_for_outcome": false,
+    "reason": "no_pending_volume_recovery",
+    "volume_write_attempts": 0,
+    "nonce": "f9c7ec76-8ecc-482d-bdc6-7d09676c0b9c",
+    "job_id": 34714,
+    "service_process_id": 14307,
+    "retry": false,
+    "failure_fixture": false,
+    "completed_epoch_ms": 1790888076888
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "focused_test": {
+    "count": 1,
+    "seconds": 0.325,
+    "passed": true
+  },
+  "limits": [
+    "No actual pending volume record or audio writes",
+    "No reboot performed; persisted metadata not proof of reboot survival",
+    "Active trial delivery chain and full acceptance incomplete"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/VolumeRecoveryJob.java": "426440d07a58131939cc62d913de4891955894e7afc7020dfc935fd56301d445",
+    "android/src/org/traceform/edge/NativeMicroActuator.java": "f567af53c96c02b5075f151ed9e7d7d30723c3037414f5ada450b12b6b433c69",
+    "android/src/org/traceform/edge/MainActivity.java": "e3f76918dac8839285fc1a920573c54696d8c1b3ef93e013c62ac3bcb0686df7",
+    "android/build/traceform.apk": "367bd97ebed03e4da62344d62fbbd9cc26636487b522740926651502f2af6376"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "device": "Pixel 6a",
+  "features": {
+    "passed": true,
+    "scope": "synthetic_magnetic_and_window_formulas_not_live_acquisition",
+    "completed_epoch_ms": 1790836677835
+  },
+  "cold": {
+    "passed": true,
+    "scope": "native_cold_atomic_idempotent_backfill_boundaries_binding_namespace_bound_and_atomic_size_fixture",
+    "completed_epoch_ms": 1790836697961
+  },
+  "warm": {
+    "passed": true,
+    "scope": "native_sqlite_warm_backfill_rollback_existing_bucket_and_idempotence_fixture",
+    "completed_epoch_ms": 1790836757553
+  },
+  "apk_sha256": "4be97ca90ad47629f00ec866259aa898fc44d09e6b8c1b89ff800016601416b7",
+  "source_sha256": {
+    "scripts/build_native_android.py": "74f7957b4d0d25d8a5d7f79b7020f4a6fe0bbd34842f3a584dda65a73735addd",
+    "android/AndroidManifest.xml": "f63b06a3c2b5f8df8ee135fe010ea72af3192b79791ac939a3459929ead706be",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_core.cpp": "1aa06760c521eaab29d3ccc37e7a8d139693eb1f83250bf8e1bf9deeb71fa632",
+    "native/traceform_jni.cpp": "5419567c596cdf8a0b72796b567e4ff4cf484b908054f023c5ec110ad9bf2327",
+    "native/traceform_benchmark.cpp": "04fb039974e14a23a50aeb94f2743e8b246d213767f8e0f947aeac1f8a8db6af",
+    "android/src/org/traceform/edge/CanonicalClient.java": "6beef639541702e0574c2aa8e40900a72efe73fd05595084c7ca009178b7ed9f",
+    "android/src/org/traceform/edge/ColdTrajectory.java": "36f07380cb3ab4f2aec75b9f37dc8a053dbf420811a23b6071598ab2d228f8e9",
+    "android/src/org/traceform/edge/EdgeService.java": "3a903f620f056584c948788bb5c692018a8d77d8e2e7421b1cff2b8acd822721",
+    "android/src/org/traceform/edge/FeatureFixtures.java": "fbd48d7873e26a78d692997d7f36fe6ecadb2897bf217143e628357aad78d398",
+    "android/src/org/traceform/edge/FeatureReadings.java": "1224fea295a3699368582fcfa3f379a65280f7767298e100d8d3063a7ddb2a6a",
+    "android/src/org/traceform/edge/KinematicState.java": "aaed663818804cc8b1b06c62b587cc00611c9acbcffccbd35744068e81c890a7",
+    "android/src/org/traceform/edge/MainActivity.java": "22e57c3a1318ecc7a63b73878e7a325b04ee216a1adb355ac6a137119b39ddf6",
+    "android/src/org/traceform/edge/ModelEngine.java": "30943ba4cc66d17d5e3d97e7c95058bd84608952de5d9e2e70dce13f7fe1d807",
+    "android/src/org/traceform/edge/NativeCore.java": "baf5b2f146af83390dcee21d224e410f8876af93f134955cb43d8153012338b9",
+    "android/src/org/traceform/edge/SampleClock.java": "dcab8077619901f79dde2346f143ff55a3094fb15ec8fc0c7a5012bd934eb5f8",
+    "android/src/org/traceform/edge/WarmBucket.java": "d1058d120491b10114d34b949442e8cad1ccd9bc7bb94afc3b285d2f15c19aa5",
+    "android/src/org/traceform/edge/WarmTrajectory.java": "5d88f12ad1b6641417188e74884c74f8ac0b40b540b63781848dbf0725819e89"
+  }
+}

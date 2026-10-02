@@ -24,6 +24,7 @@ from typing import Any, Deque, Dict, List, Optional, Tuple
 
 from traceform.representation.normalizer import MultimodalNormalizer
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
+from traceform.representation.provenance import content_digest, input_inventory
 
 
 @dataclass
@@ -74,6 +75,7 @@ class EdgeManifoldDaemon:
         csd_threshold_sigma: float = 2.5,
         boot_epoch_file: Optional[Path | str] = None,
         max_inter_frame_gap_seconds: float = 300.0,
+        source_mode: str = "unspecified",
     ) -> None:
         self.normalizer = normalizer
         self.manifold = manifold
@@ -82,6 +84,11 @@ class EdgeManifoldDaemon:
         self.csd_threshold_sigma = csd_threshold_sigma
         self.boot_epoch_file = Path(boot_epoch_file) if boot_epoch_file else None
         self.max_gap_seconds = max_inter_frame_gap_seconds
+        self.source_mode = source_mode
+        self.model_digest = content_digest(manifold.to_dict())
+        self.normalizer_digest = content_digest(normalizer.to_dict())
+        self.model_version = content_digest({"manifold": self.model_digest, "normalizer": self.normalizer_digest})
+        self.continuity_epoch = 0
 
         # Ring buffer storing recent (u, v, proj_dist)
         self.coord_buffer: Deque[Tuple[float, float, float]] = deque(
@@ -142,6 +149,7 @@ class EdgeManifoldDaemon:
     def reset_continuity(self) -> None:
         """Resets velocity, ring buffer, and dwell steps across reboots or long downtimes."""
         self.coord_buffer.clear()
+        self.continuity_epoch += 1
         self.timestamps.clear()
         self.var_history.clear()
         self.ar1_history.clear()
@@ -173,17 +181,27 @@ class EdgeManifoldDaemon:
         obs_time = None
         try:
             dt_obj = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            obs_time = dt_obj.timestamp()
+            if dt_obj.tzinfo is not None:
+                obs_time = dt_obj.timestamp()
         except Exception:
             pass
 
+        dt_seconds = 30.0
+        continuous = False
         if self.last_observation_ts is not None and obs_time is not None:
             gap = obs_time - self.last_observation_ts
-            if gap > self.max_gap_seconds or gap < -60.0:
+            if gap > self.max_gap_seconds or gap < 0:
                 self.reset_continuity()
+            elif gap > 0:
+                dt_seconds = gap
+                continuous = True
+        elif obs_time is None:
+            self.reset_continuity()
         self.last_observation_ts = obs_time
 
-        token, coord, dist = self.manifold.quantize(obs, self.normalizer)
+        token, coord, dist = self.manifold.quantize(
+            obs, self.normalizer, dt_seconds=dt_seconds
+        )
         u, v = float(coord[0]), float(coord[1])
         proj = math.sqrt(u * u + v * v)
 
@@ -298,6 +316,19 @@ class EdgeManifoldDaemon:
         inference_ms = (time.perf_counter() - t0) * 1000.0
 
         quantized_payload = {
+            "protocol": "traceform.edge-manifold-frame.v2",
+            "model_version": self.model_version,
+            "model_sha256": self.model_digest,
+            "normalizer_sha256": self.normalizer_digest,
+            "source_mode": self.source_mode,
+            "boot_id": self.current_boot_id,
+            "continuity_epoch": self.continuity_epoch,
+            "continuous_from_previous": continuous,
+            "frame_interval_seconds": dt_seconds if continuous else None,
+            "input_inventory": input_inventory(obs),
+            "upstream_feature_provenance": obs.get("feature_provenance", {}),
+            "continuous_vector": list(self.manifold.last_obs_vector or []),
+            "continuous_velocity": list(self.manifold.last_velocity or []),
             "observation_id": obs.get("observation_id", ""),
             "timestamp_utc": ts,
             "state_token": token,

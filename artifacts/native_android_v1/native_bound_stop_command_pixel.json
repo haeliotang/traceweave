@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "service_pid": 29251,
+  "client_pid": 29222,
+  "collection_started": false,
+  "frame_count_unchanged": true,
+  "invalid_request_rejected": true,
+  "stop_command_acknowledged": true,
+  "historical_occupancy_parity": true,
+  "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+  "completed_epoch_ms": 1790864007048
+}

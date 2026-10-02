@@ -23,6 +23,8 @@ import datetime
 import fcntl
 import json
 import os
+import statistics
+import signal
 from pathlib import Path
 import subprocess
 import sys
@@ -37,8 +39,13 @@ from traceform.representation.normalizer import MultimodalNormalizer
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 from traceform.streaming.edge_manifold_daemon import EdgeManifoldDaemon, EdgeDaemonEvent
 
-from traceform.intervention.haptic_engine import HapticEngine
+from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActuator
+from traceform.forecasting.sandbox_simulator import SandboxSimulator, ScenarioIntervention
+from traceform.forecasting.continuity import same_stream_segment
+from traceform.evolution.model_registry import ModelRegistry
 from traceform.probes.digital_sensorium import DigitalSensoriumProbe
+from traceform.streaming.tiered_storage import TieredStorage
+from traceform.streaming.rolling_ledger import RollingLedger, RotationAwareTail
 
 
 def main():
@@ -79,6 +86,12 @@ def main():
     parser.add_argument("--buffer-size", type=int, default=60, help="Ring buffer size for CSD estimation")
     parser.add_argument("--dwell-steps", type=int, default=60, help="Dwell alert threshold steps")
     parser.add_argument("--disable-haptics", action="store_true", help="Disable haptic vibration and notification feedback")
+    parser.add_argument("--storage-mode", choices=["mirror", "tiered"], default="mirror", help="Tiered mode omits unbounded manifold JSONL output")
+    parser.add_argument("--storage-database", type=Path, help="Transactional hot/warm/cold store")
+    parser.add_argument("--intervention-mode", choices=["off", "shadow", "active"], default="shadow")
+    parser.add_argument("--intervention-actions", nargs="+", choices=["pulse", "notification", "volume_duck"], default=["pulse", "notification"])
+    parser.add_argument("--timezone", default="UTC", help="IANA timezone for predictive time kernels")
+    parser.add_argument("--model-registry", type=Path, help="Versioned active model bundles and rollback pointer")
     args = parser.parse_args()
 
     print("=" * 76)
@@ -113,6 +126,17 @@ def main():
         print(f"[!] Error: Model file not found at {args.model_file}")
         sys.exit(1)
 
+    registry = ModelRegistry(args.model_registry or args.output_stream.parent / "model_registry")
+    active_bundle = registry.active()
+    if active_bundle is None:
+        baseline_version = registry.register(manifold.to_dict(), normalizer.to_dict(), {"accepted": True, "evidence_scope": "supplied_baseline_not_new_scientific_validation"})
+        registry.activate(baseline_version)
+        active_bundle = registry.active()
+    manifold = DynamicalEnergyManifold.from_dict(active_bundle["manifold"])
+    normalizer = MultimodalNormalizer.from_dict(active_bundle["normalizer"])
+    active_registry_version = active_bundle["version"]
+    last_registry_check = time.monotonic()
+
     daemon = EdgeManifoldDaemon(
         normalizer=normalizer,
         manifold=manifold,
@@ -120,6 +144,7 @@ def main():
         dwell_threshold_steps=args.dwell_steps,
         csd_threshold_sigma=2.5,
         boot_epoch_file=args.output_stream.parent / "boot_epoch.json",
+        source_mode="historical_replay" if args.simulate else "live_follow",
     )
 
     args.output_stream.parent.mkdir(parents=True, exist_ok=True)
@@ -143,27 +168,50 @@ def main():
     if not args.raw_ledger.exists():
         args.raw_ledger.touch()
 
-    stream_out = args.output_stream.open("a", encoding="utf-8")
-    events_out = args.events_file.open("a", encoding="utf-8")
+    stream_out = args.output_stream.open("a", encoding="utf-8") if args.storage_mode == "mirror" else None
+    events_out = RollingLedger(args.events_file, max_bytes=8 * 1024 * 1024, retention_seconds=30 * 86400)
+    storage_database = args.storage_database or args.output_stream.parent / "edge_storage.sqlite"
+    store = TieredStorage(storage_database)
+    last_compaction = time.monotonic()
 
     processed_count = 0
     total_latency_ms = 0.0
     total_events_count = 0
-    haptics = HapticEngine(
-        enabled=not args.disable_haptics,
-        silent_flag_file=str(args.output_stream.parent / ".silent"),
+    intervention_loop = ClosedLoopIntervention(
+        args.output_stream.parent / "interventions.sqlite",
+        MicroActuator(enabled=not args.disable_haptics, silent_file=args.output_stream.parent / ".silent"),
+        mode=args.intervention_mode, actions=args.intervention_actions,
     )
 
 
     digital_probe = DigitalSensoriumProbe()
+    continuous_job = None
+    continuous_job_started = None
+    continuous_output = args.output_stream.parent / 'continuous_prediction.json'
+
+    def stop_daemon(signum, frame):
+        raise KeyboardInterrupt
+
+    previous_stop_handler = signal.signal(signal.SIGTERM, stop_daemon)
 
     try:
-        with args.raw_ledger.open("r", encoding="utf-8") as in_f:
-            if args.follow:
-                in_f.seek(0, os.SEEK_END)
-
+        reader = RotationAwareTail(args.raw_ledger, follow=True) if args.follow else args.raw_ledger.open("r", encoding="utf-8")
+        with reader as in_f:
             while True:
-                line = in_f.readline()
+                if continuous_job is not None:
+                    status = continuous_job.poll()
+                    if status is not None:
+                        if continuous_output.is_file():
+                            events_out.append(json.loads(continuous_output.read_text()))
+                        else:
+                            events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'exit_code': status})
+                        continuous_job = None
+                    elif time.monotonic() - continuous_job_started >= 900:
+                        continuous_job.kill()
+                        continuous_job.wait()
+                        continuous_job = None
+                        events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'reason': '900_second_timeout'})
+                line = in_f.read_line() if args.follow else in_f.readline()
                 if not line:
                     if args.simulate:
                         break
@@ -179,27 +227,87 @@ def main():
                 except Exception:
                     continue
 
+                if args.follow and in_f.discontinuous:
+                    daemon.reset_continuity()
+                    in_f.discontinuous = False
+
                 if "digital_context" not in obs and args.follow:
                     wifi_cnt = obs.get("connectivity", {}).get("wifi_ap_count", 0)
                     obs["digital_context"] = digital_probe.sample_digital_interaction_metrics(fallback_wifi_ap_count=wifi_cnt)
 
+                if time.monotonic() - last_registry_check >= 30:
+                    updated = registry.active()
+                    if updated["version"] != active_registry_version:
+                        manifold = DynamicalEnergyManifold.from_dict(updated["manifold"])
+                        normalizer = MultimodalNormalizer.from_dict(updated["normalizer"])
+                        daemon = EdgeManifoldDaemon(normalizer, manifold, ring_buffer_size=args.buffer_size,
+                                                    dwell_threshold_steps=args.dwell_steps,
+                                                    source_mode="historical_replay" if args.simulate else "live_follow")
+                        daemon.continuity_epoch = int(time.time_ns())
+                        active_bundle = updated
+                        active_registry_version = updated["version"]
+                        events_out.append({"event_type": "MODEL_ACTIVATED", "registry_version": active_registry_version})
+                    last_registry_check = time.monotonic()
                 payload, events = daemon.process_observation(obs)
+                payload["cold_state_namespace"] = active_bundle["validation"].get("cold_state_namespace", daemon.model_version)
                 processed_count += 1
                 total_latency_ms += payload["inference_ms"]
 
-                stream_out.write(json.dumps(payload) + "\n")
-                stream_out.flush()
+                inserted = store.append(obs, payload)
+                if inserted:
+                    for outcome in intervention_loop.observe(payload):
+                        events_out.append(outcome)
+                if stream_out is not None:
+                    stream_out.write(json.dumps(payload) + "\n")
+                    stream_out.flush()
+                if time.monotonic() - last_compaction >= 3600:
+                    store.compact(datetime.datetime.now(datetime.timezone.utc))
+                    last_compaction = time.monotonic()
 
                 if events:
                     for ev in events:
                         total_events_count += 1
                         ev_dict = ev.to_dict()
-                        events_out.write(json.dumps(ev_dict) + "\n")
-                        events_out.flush()
+                        events_out.append(ev_dict)
                         print(f"  >>> [{ev.warning_level}] {ev.event_type} at {ev.timestamp_utc}: {ev.message}")
 
-                        if ev.warning_level in ["CRITICAL", "ELEVATED", "NOTICE", "ADAPTATION"]:
-                            haptics.trigger(ev.event_type, ev.warning_level, ev.message)
+                        if inserted and ev.event_type == 'CSD_TIPPING' and continuous_job is None:
+                            continuous_output.unlink(missing_ok=True)
+                            try:
+                                continuous_job = subprocess.Popen([
+                                    sys.executable, str(PROJECT_ROOT / 'scripts/predict_continuous_edge.py'),
+                                    '--database', str(storage_database),
+                                    '--model-registry', str(registry.root),
+                                    '--registry-version', active_registry_version,
+                                    '--through-timestamp', payload['timestamp_utc'],
+                                    '--output-file', str(continuous_output),
+                                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                continuous_job_started = time.monotonic()
+                            except OSError as error:
+                                events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED',
+                                                   'reason': 'worker_start_failed', 'error_type': type(error).__name__})
+
+                        if inserted and ev.event_type == "CSD_TIPPING" and payload["dwell_steps"] >= args.dwell_steps and args.intervention_mode != "off":
+                            recent = store.hot_records(limit=2048)
+                            # Fit only the current uninterrupted representation segment.
+                            start = len(recent) - 1
+                            while start > 0 and same_stream_segment(recent[start - 1], recent[start]):
+                                start -= 1
+                            recent = recent[start:]
+                            if len(recent) >= 20:
+                                intervals = [row["frame_interval_seconds"] for row in recent if row.get("frame_interval_seconds")]
+                                nominal_step = statistics.median(intervals) if intervals else 30.0
+                                simulator = SandboxSimulator(step_nominal_seconds=nominal_step, timezone_name=args.timezone).fit_from_records(recent, max_gap_seconds=300)
+                                comparison = simulator.simulate_counterfactual(
+                                    payload["state_token"], ScenarioIntervention(action_type="CLAMP_DWELL", max_dwell_steps=10),
+                                    horizon_steps=30, num_rollouts=100,
+                                    high_risk_states={payload["state_token"]},
+                                    start_time_utc=datetime.datetime.fromisoformat(payload["timestamp_utc"].replace("Z", "+00:00")),
+                                )
+                                phase = simulator.periodic_kernel.phases(datetime.datetime.fromisoformat(payload["timestamp_utc"].replace("Z", "+00:00")))[0]
+                                decision = intervention_loop.propose(payload, ev.event_type, comparison, int(phase * 4 / (2 * 3.141592653589793)))
+                                if decision:
+                                    events_out.append(decision)
 
                 if processed_count % 25 == 0 or processed_count == 1:
                     avg_lat = total_latency_ms / processed_count
@@ -216,9 +324,18 @@ def main():
     except KeyboardInterrupt:
         print("\n[*] Daemon interrupted by user.")
     finally:
-        stream_out.close()
-        events_out.close()
-        haptics.shutdown()
+        signal.signal(signal.SIGTERM, previous_stop_handler)
+        if continuous_job is not None and continuous_job.poll() is None:
+            continuous_job.terminate()
+            try:
+                continuous_job.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                continuous_job.kill()
+                continuous_job.wait()
+        if stream_out is not None:
+            stream_out.close()
+        store.close()
+        intervention_loop.close()
         try:
             if pid_path.exists():
                 pid_path.unlink()

@@ -1,0 +1,31 @@
+--- native/periodic_spectrum.cpp
++++ periodic-spectrum-neon.cpp
+@@ -2,6 +2,9 @@
+ #include <algorithm>
+ #include <cmath>
+ #include <stdexcept>
++#if defined(__aarch64__)
++#include <arm_neon.h>
++#endif
+ 
+ static constexpr double pi = 3.14159265358979323846;
+ static bool canonical(double day, double week) {
+@@ -79,7 +82,17 @@
+             if (counts_[edge]) {
+                 std::size_t offset = edge * frequencies;
+                 weight = coefficients_[0] * cosine_[offset];
+-                for (std::size_t frequency = 1; frequency < frequencies; ++frequency)
++                std::size_t frequency = 1;
++#if defined(__aarch64__)
++                float64x2_t sum = vdupq_n_f64(0);
++                for (; frequency + 1 < frequencies; frequency += 2) {
++                    float64x2_t real = vmulq_f64(vld1q_f64(cosine + frequency), vld1q_f64(cosine_.data() + offset + frequency));
++                    float64x2_t imaginary = vmulq_f64(vld1q_f64(sine + frequency), vld1q_f64(sine_.data() + offset + frequency));
++                    sum = vaddq_f64(sum, vaddq_f64(real, imaginary));
++                }
++                weight += vgetq_lane_f64(sum, 0) + vgetq_lane_f64(sum, 1);
++#endif
++                for (; frequency < frequencies; ++frequency)
+                     weight += cosine[frequency] * cosine_[offset + frequency] + sine[frequency] * sine_[offset + frequency];
+             }
+             if (!std::isfinite(weight) || weight < 0) return -1;

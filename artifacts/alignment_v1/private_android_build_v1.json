@@ -1,0 +1,29 @@
+{
+  "scope": "isolated_android_private_backend_build_and_synthetic_smoke_not_full_alignment",
+  "binary_sha256": "e0d7b45aa3deff7bc42b9c80ac9f0a836ffbf5c12e0ff66aa2714f9a0ccae517",
+  "device_binary_sha256": "e0d7b45aa3deff7bc42b9c80ac9f0a836ffbf5c12e0ff66aa2714f9a0ccae517",
+  "binary_bytes": 6919816,
+  "android_api": 26,
+  "abi": "arm64-v8a",
+  "openssl_tag": "openssl-3.5.8",
+  "openssl_commit": "f4dc4d58b48d346a8270183f89acf826d459b0ca",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "35e0c70f97a3fc17765083a86e7e590bfe042b49702f0f044c50309d744a1dc8",
+    "native/private_alignment_probe/dependencies.json": "9acbf66f8e3963f54788a82e6cc6907b3650b2ffa2b418012830ac7dcaac62d0"
+  },
+  "smoke_report": "private_backend_pixel_smoke.json",
+  "smoke_passed": true,
+  "runner_wrapper_sha256": "3f567896cbedc2d8c573169a4a08198048864ce63ede88081b7f16e022eb1c58",
+  "gw_reports": {
+    "private_gw_statement_match_2x2_pixel.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "2b26f3bfb4b4fb0bb3af1ed276bcc2ef501c92251f2d4ebc87d5ab6c66ffee7d"
+    },
+    "private_gw_statement_match_2x3_pixel.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "22c2488f68a9166aa38f968743ee554c1235f5fb849eae03ff51463ca8aa1442"
+    }
+  }
+}

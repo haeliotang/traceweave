@@ -1,0 +1,80 @@
+{
+  "passed": true,
+  "nodes": 16,
+  "gates": 15807751,
+  "inputs_per_owner": 6224,
+  "circuit_sha256": "98fab2891a01e7b81d71dc60dfeb855e5bfff09de70a49bce5ecf5757c9acad1",
+  "cases": [
+    {
+      "case": "identical",
+      "valid": true,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "transposition",
+      "valid": true,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "reversal",
+      "valid": true,
+      "objective_numerator": "45696000000000000000000",
+      "passed": true
+    },
+    {
+      "case": "asymmetric",
+      "valid": false,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "nonuniform_same_total",
+      "valid": false,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "different_scale",
+      "valid": true,
+      "objective_numerator": "41106000000000000000000",
+      "passed": true
+    },
+    {
+      "case": "large_80bit_objective",
+      "valid": true,
+      "objective_numerator": "937500000000000000000000",
+      "passed": true
+    },
+    {
+      "case": "wrong_total",
+      "valid": false,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "session_mismatch",
+      "valid": false,
+      "objective_numerator": "0",
+      "passed": true
+    },
+    {
+      "case": "changed_nonce",
+      "valid": true,
+      "objective_numerator": "0",
+      "passed": true
+    }
+  ],
+  "scope": "plaintext_synthetic_recorded_gate_validation_not_private_execution_or_security_audit",
+  "source_sha256": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "2e7e74413cbfc0ba68b913b5a879514fb332ddd1a2d9be06c014c63a16c65ace",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "15099bae1755dd842bb9cff9104ae662c282a921959af4fb4d9a9fb2070835c0",
+    "traceform/dynamics/integer_transport.py": "23720f954222e96d30e05562cf76ac7e2a4e6112f5deb52e34ea82f7c869aded",
+    "tests/test_integer_transport.py": "89c6070e0798d4e54cfea67a6ade3ee640c9188e24257fb648f4ac229769ed3c"
+  },
+  "generator_binary_sha256": "edb95f5c64aff302d626d0771ea896f57841d445a5b7f8fcbe57061b36e4549a",
+  "circuit_bytes": 514780763,
+  "initial_gates": 18876335,
+  "initial_circuit_bytes": 622168989
+}

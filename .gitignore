@@ -45,6 +45,9 @@ data/.silent
 data/*.lock
 data/*.pid
 data/*.log
+data/*.sqlite
+data/*.sqlite-wal
+data/*.sqlite-shm
 
 
 # macOS
@@ -59,3 +62,15 @@ data/*.log
 *.swp
 *.swo
 *~
+
+# Versioned rolling runtime metadata
+data/physical_v2_intent.json
+data/*.jsonl.lock
+data/*.jsonl.segment.*
+
+# Bounded runtime cold checkpoint
+data/cold_statistics.json.gz
+data/.cold_statistics.json.gz.tmp
+
+# Rust proof backend build outputs
+native/zk_alignment/target/

@@ -1,0 +1,71 @@
+{
+  "scope": "automatic_native_CSD_dwell_to_MC_shadow_not_complete_closed_loop",
+  "tests": {
+    "count": 318,
+    "seconds": 27.368,
+    "passed": true
+  },
+  "synthetic_service": {
+    "passed": true,
+    "gate_and_cooldown_verified": true,
+    "history_unchanged": true,
+    "collection_started": false,
+    "actuator_calls": 0,
+    "comparison": {
+      "action_type": "CLAMP_DWELL",
+      "max_dwell_steps": 10,
+      "selected_risk_states": [
+        "M01"
+      ],
+      "scenario_seed": 43,
+      "mean_jsd": 0.7867235023730049,
+      "peak_jsd": 0.9999999999999999,
+      "peak_step": 10,
+      "terminal_risk_change": -0.9633333333333334,
+      "recommendation": "RECOMMEND_INTERVENTION",
+      "evidence_scope": "modeled_forced_escape_not_physical_actuator_effect_or_execution_authority"
+    },
+    "scope": "synthetic_service_CSD_gate_to_history_MC_shadow_not_live_capture_or_actuation",
+    "completed_epoch_ms": 1790886217814
+  },
+  "lifecycle": {
+    "passed": true,
+    "database_failure_injected": false,
+    "scope": "android_bound_stop_synthetic_worker_cancelled_history_sdk_available_no_capture_resources",
+    "completed_epoch_ms": 1790886233905
+  },
+  "readonly_binder": {
+    "passed": true,
+    "service_pid": 25384,
+    "client_pid": 25355,
+    "collection_started": false,
+    "frame_count_unchanged": true,
+    "invalid_request_rejected": true,
+    "stop_command_acknowledged": false,
+    "historical_occupancy_parity": true,
+    "history_backend_policy_verified": true,
+    "counterfactual_parity_and_invalid_states_verified": true,
+    "history_cache_hit_verified": false,
+    "history_repeat_compute_ms": 5.346476,
+    "scope": "authorized_same_uid_cross_process_binder_history_forecast_no_collection",
+    "completed_epoch_ms": 1790886259928
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "No live sampling started; acquisition-to-trigger end-to-end still unverified",
+    "Cooldown lives in service memory, not persisted across restarts",
+    "No contextual bandit, delayed outcomes or actuator authorization integrated",
+    "Shadow latest receipt only, not a retained trial ledger",
+    "Not full memory/performance/scientific acceptance"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/ShadowComparisonWorker.java": "0bef35af62506681515ebfc7d9f20709d261518bd3e2dd84893da4298ab9cefa",
+    "android/src/org/traceform/edge/ShadowComparisonFixture.java": "af965027f0568b2897ca891ec3cab0682be473a5c506e2e77b32dad432304fa9",
+    "android/src/org/traceform/edge/EdgeService.java": "6c6c7130cfb4c73a01fa48a3cdfe69b012fd337c091998162ab058b51f212573",
+    "android/src/org/traceform/edge/MainActivity.java": "d4b6ef32b6393b3eaf0eb5a3ce46453dc7664249f99aec8665bc34ffae9a848e",
+    "tests/test_native_shadow_comparison.py": "18f9a08767bd53591ead5de229ab3105240cbb90adb1be3c2f0a659fd1bf8b60",
+    "android/build/traceform.apk": "9212d271bb5b0f02743e0db1b89b46af8665783d467fbf6955aaae519ba72cff"
+  }
+}

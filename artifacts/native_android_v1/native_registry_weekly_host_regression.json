@@ -1,0 +1,22 @@
+{
+  "protocol": "traceform.host-next-stage-regression.v1",
+  "command": "python3 -m pytest -q",
+  "tests_passed": 346,
+  "subtests_passed": 156,
+  "elapsed_seconds": 38.0,
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeModelRegistry.java": "ad56569a481b9fcd8098e460c1d4f1b69efc39595560ed1f01db6b0fe705ab06",
+    "android/src/org/traceform/edge/WeeklyMaintenanceClock.java": "62aa171347008559db88bb251fe684f93f063a396437f2b58b9c51bb2ff13fbd",
+    "android/src/org/traceform/edge/WeeklyMaintenanceJob.java": "35f901059f5fe84fbdc527c6f380072e21ff9133b1e20207a6ef2b3d9950564b",
+    "android/src/org/traceform/edge/NativeCandidateStore.java": "4da13448fbfae7e302442442c67c0ee4bf5d13a8c3ad0bbd53136ec171ca06db",
+    "android/src/org/traceform/edge/EdgeService.java": "9477f60f13952c57815a067f543f47131420530c93369ed7be56ee4898df3df9",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "e7595c560f659a2239ee20e9de2c166d0979052c3088140a6c57932242513d86"
+  },
+  "scope": "host suite only; native Android job and registry fixtures are compiled but not executed by this suite",
+  "pending_device_job": {
+    "id": 34715,
+    "observed_state": "waiting"
+  },
+  "goal_complete": false,
+  "repository_pushed": false
+}

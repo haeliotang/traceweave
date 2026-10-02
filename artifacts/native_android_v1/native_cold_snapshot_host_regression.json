@@ -1,0 +1,14 @@
+{
+  "protocol": "traceform.native-cold-snapshot-host-regression.v1",
+  "passed": 348,
+  "subtests_passed": 156,
+  "elapsed_seconds": 36.75,
+  "source_sha256": {
+    "android/src/org/traceform/edge/WeeklySnapshot.java": "e0d7e34a839ca5f369a50f436dff6cdfc55a0351489d886381df26312ebbc49e",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "79efa33a4e458314fb4b26d58fc331b35b0867f0a90da5cc77dc43b060f02734",
+    "android/src/org/traceform/edge/NativeWarmAudit.java": "b0e67322da4fcb3a189bcb412e4dc6066841330736b08ccd00ba8abaafda2070",
+    "tests/test_native_warm_sql_types.py": "7ede0eda454c8e95a988cff933ff53cbffcc970cb6c4f052a5ad4e6ef3b79c3e",
+    "tests/test_native_weekly_retry.py": "07bca154450aa249b3f771c69ac63c3f25705a4030729975d8eb8f80f4f8cf01"
+  },
+  "scope": "host_suite_not_android_snapshot_or_registry_fixture"
+}

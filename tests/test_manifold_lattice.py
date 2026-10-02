@@ -12,6 +12,92 @@ from traceform.representation.manifold_lattice import (
 
 
 class TestManifoldLattice(unittest.TestCase):
+    def test_training_velocity_resets_across_long_and_nonpositive_gaps(self):
+        manifold = DynamicalEnergyManifold(ema_alpha=.4)
+        for times in ([0, 1, 1000, 1001], [0, 1, 1, 2], [0, 1, 0, 1]):
+            velocities = manifold._compute_phase_velocities([[0], [1], [100], [101]], times)
+            self.assertEqual(velocities[2], [0])
+            self.assertAlmostEqual(velocities[3][0], .4)
+
+    def test_training_resets_normalizer_and_velocity_at_stream_boundaries(self):
+        from unittest.mock import patch
+        class Normalizer:
+            def __init__(self):
+                self.resets = 0
+            def reset_state(self):
+                self.resets += 1
+            def transform(self, observation):
+                return observation['vector'], None
+        observations = [{'timestamp_utc': f'2026-10-01T00:00:0{index}Z',
+                         'vector': [index], 'boot_id': 'old' if index < 2 else 'new'}
+                        for index in range(4)]
+        normalizer = Normalizer()
+        manifold = DynamicalEnergyManifold(grid_height=1, grid_width=1)
+        with patch.object(manifold, '_compute_phase_velocities', wraps=manifold._compute_phase_velocities) as velocity_fit:
+            manifold.fit_discovery_window(observations, normalizer, epochs=1)
+        self.assertEqual(normalizer.resets, 2)
+        self.assertEqual(velocity_fit.call_args.kwargs['discontinuities'], [True, False, True, False])
+        velocities = manifold._compute_phase_velocities([[0], [1], [2], [3]], [0, 1, 2, 3],
+                                                       discontinuities=[True, False, True, False])
+        self.assertEqual(velocities[2], [0])
+        self.assertAlmostEqual(velocities[3][0], .4)
+
+    def test_training_resets_at_session_and_coordinate_binding_changes(self):
+        from unittest.mock import patch
+        class Normalizer:
+            def __init__(self):
+                self.resets = 0
+            def reset_state(self):
+                self.resets += 1
+            def transform(self, observation):
+                return observation['vector'], None
+        for field in ('session_id', 'model_sha256', 'normalizer_sha256'):
+            observations = [{'timestamp_utc': f'2026-10-01T00:00:0{index}Z',
+                             'vector': [index], field: 'old' if index < 2 else 'new'}
+                            for index in range(4)]
+            normalizer = Normalizer()
+            manifold = DynamicalEnergyManifold(grid_height=1, grid_width=1)
+            with self.subTest(field=field), patch.object(manifold, '_compute_phase_velocities',
+                    wraps=manifold._compute_phase_velocities) as velocity_fit:
+                manifold.fit_discovery_window(observations, normalizer, epochs=1)
+                self.assertEqual(normalizer.resets, 2)
+                self.assertEqual(velocity_fit.call_args.kwargs['discontinuities'], [True, False, True, False])
+
+    def test_incremental_fit_updates_existing_nodes_without_resampling_or_relabeling(self):
+        from unittest.mock import patch
+        class Normalizer:
+            def transform(self, observation):
+                return observation['vector'], None
+        manifold = DynamicalEnergyManifold(grid_height=1, grid_width=1)
+        manifold.nodes = [ManifoldNode(0, (0, 0), 'retained-token', [10.0], [0.0])]
+        with patch('random.Random.sample', side_effect=AssertionError('incremental fit must not resample')):
+            tokens = manifold.fit_discovery_window(
+                [{'timestamp_utc': '2026-10-01T00:00:00Z', 'vector': [0.0]}],
+                Normalizer(), epochs=1, warm_start=True)
+        self.assertEqual(tokens, ['retained-token'])
+        self.assertEqual(manifold.nodes[0].grid_coord, (0, 0))
+        self.assertAlmostEqual(manifold.nodes[0].center_x[0], 9)
+        self.assertEqual(manifold.nodes[0].center_v, [0])
+        manifold.nodes[0].center_v = []
+        with self.assertRaisesRegex(ValueError, 'dimension'):
+            manifold.fit_discovery_window([{'vector': [0]}], Normalizer(), warm_start=True)
+
+    def test_simulated_phase_quantization_preserves_real_sensor_history(self):
+        manifold = DynamicalEnergyManifold()
+        manifold.nodes = [ManifoldNode(0, (0, 0), 'A', [0] * 128, [1] * 128),
+                          ManifoldNode(1, (0, 1), 'B', [0] * 128, [-1] * 128)]
+        manifold.last_obs_vector = [3] * 128
+        manifold.last_velocity = [4] * 128
+        for velocity, expected in (([1] * 128, 'A'), ([-1] * 128, 'B')):
+            token, _, distance = manifold.quantize_phase([0] * 128, velocity)
+            self.assertEqual(token, expected)
+            self.assertEqual(distance, 0)
+        self.assertEqual(manifold.last_obs_vector, [3] * 128)
+        self.assertEqual(manifold.last_velocity, [4] * 128)
+        for vector, velocity in (([0], [0]), ([0] * 128, [0]), ([float('nan')] * 128, [0] * 128)):
+            with self.assertRaises(ValueError):
+                manifold.quantize_phase(vector, velocity)
+
     def setUp(self):
         self.normalizer = MultimodalNormalizer()
         # Synthetic observations with continuous features

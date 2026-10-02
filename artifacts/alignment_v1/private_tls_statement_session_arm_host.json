@@ -1,0 +1,52 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "matching",
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "case": "mismatching",
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "transport statement session rejected\n"
+        },
+        {
+          "passed": true,
+          "exit_code": 1,
+          "stderr": "transport statement session rejected\n"
+        }
+      ]
+    },
+    {
+      "case": "invalid_masked",
+      "parties": [
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "binary_sha256": "e69984ddf78324c69ff6598160c50f24646b92c244bf2761942251e80b43b3c2",
+  "scope": "synthetic_tls_to_public_statement_session_binding"
+}

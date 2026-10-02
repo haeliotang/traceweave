@@ -1,0 +1,293 @@
+{
+  "scope": "block16_spectrum_probe_and_installed_APK_synthetic_monthly_validation",
+  "hashes": {
+    "native/periodic_spectrum.cpp": "95777bc2ab160e4c910bb42a0176e198a2c54622c01d128f28fcc6b052232087",
+    "tests/test_native_periodic_spectrum.py": "55146badbcb3cffd6b651b0a9542c6604c128478c6a0d7b6f7c6cd772ee2b3a4",
+    "android/build/traceform.apk": "402b92c6073fba8f6d051cb368b29aa226cd6c2a3ca58c17824c52049d266c79"
+  },
+  "tests": {
+    "count": 310,
+    "seconds": 26.064,
+    "passed": true
+  },
+  "probe_runs": [
+    {
+      "block": 8,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1197.896688,
+          "remove_add_1000_pairs_ms": 25.102457,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3035136,
+          "launcher_peak_rss_bytes": 14110720,
+          "elapsed_ms": 21.306925,
+          "periodic_cdf_ms": 18.857951,
+          "rollout_ms": 2.218913,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "block": 16,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1196.057333,
+          "remove_add_1000_pairs_ms": 25.106649,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3026944,
+          "launcher_peak_rss_bytes": 14110720,
+          "elapsed_ms": 17.241089,
+          "periodic_cdf_ms": 14.767986,
+          "rollout_ms": 2.220947,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "block": 32,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1197.465048,
+          "remove_add_1000_pairs_ms": 25.137167,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2916352,
+          "launcher_peak_rss_bytes": 14114816,
+          "elapsed_ms": 18.802286,
+          "periodic_cdf_ms": 16.365885,
+          "rollout_ms": 2.248576,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "block": 32,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1193.654379,
+          "remove_add_1000_pairs_ms": 25.166667,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3047424,
+          "launcher_peak_rss_bytes": 14114816,
+          "elapsed_ms": 18.755452,
+          "periodic_cdf_ms": 16.308512,
+          "rollout_ms": 2.212769,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "block": 16,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1192.558025,
+          "remove_add_1000_pairs_ms": 25.466105,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3067904,
+          "launcher_peak_rss_bytes": 14114816,
+          "elapsed_ms": 17.588827,
+          "periodic_cdf_ms": 15.133952,
+          "rollout_ms": 2.20817,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "block": 8,
+      "exit_code": 0,
+      "reports": [
+        {
+          "cdf_fixture_fingerprint": "3c1348b2f6600067"
+        },
+        {
+          "spectrum_fit_ms": 1196.702759,
+          "remove_add_1000_pairs_ms": 25.121175,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2945024,
+          "launcher_peak_rss_bytes": 14114816,
+          "elapsed_ms": 21.162232,
+          "periodic_cdf_ms": 18.717286,
+          "rollout_ms": 2.255086,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    }
+  ],
+  "installed_APK_receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 7619,
+      "thread_priority": 0,
+      "cpus_allowed": "0-7"
+    },
+    "thread_environment_after": {
+      "thread_id": 7619,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.001709,
+        "input_copy_allocation_ms": 0.427938,
+        "native_cdf_wall_ms": 19.639323,
+        "output_copy_ms": 0.465983,
+        "native_total_ms": 20.534953,
+        "native_cdf_thread_cpu_ms": 18.956868
+      },
+      {
+        "lock_wait_ms": 0.001912,
+        "input_copy_allocation_ms": 0.541626,
+        "native_cdf_wall_ms": 17.371745,
+        "output_copy_ms": 0.511678,
+        "native_total_ms": 18.426961,
+        "native_cdf_thread_cpu_ms": 16.070147
+      },
+      {
+        "lock_wait_ms": 0.002197,
+        "input_copy_allocation_ms": 0.545573,
+        "native_cdf_wall_ms": 20.293538,
+        "output_copy_ms": 0.493246,
+        "native_total_ms": 21.334554,
+        "native_cdf_thread_cpu_ms": 19.752239
+      },
+      {
+        "lock_wait_ms": 0.001628,
+        "input_copy_allocation_ms": 0.50004,
+        "native_cdf_wall_ms": 21.002523,
+        "output_copy_ms": 0.491943,
+        "native_total_ms": 21.996134,
+        "native_cdf_thread_cpu_ms": 19.964112
+      },
+      {
+        "lock_wait_ms": 0.002197,
+        "input_copy_allocation_ms": 0.547607,
+        "native_cdf_wall_ms": 19.938762,
+        "output_copy_ms": 0.475301,
+        "native_total_ms": 20.963867,
+        "native_cdf_thread_cpu_ms": 18.910725
+      }
+    ],
+    "fit_ms": 1693.948975,
+    "cdf_trials_ms": [
+      21.16455,
+      18.722493,
+      21.535726,
+      22.209799,
+      21.154785
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790878335069
+  },
+  "limits": [
+    "CPU allowed range changed from 0-7 to 0-3 during SDK fixture; per-instruction CPU unobserved",
+    "Independent benchmark fingerprints match for this workload, not a universal bitwise proof",
+    "Initial fit excluded from prediction timer",
+    "Actual application query and full prediction exceed 15 ms",
+    "Complete application memory and live window maintenance not verified"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "input_gates": 4085248,
+  "output_gates": 3794901,
+  "common_gates_reused": 122388,
+  "gate_hash_cache_capacity": 262144,
+  "input_wires": 4099232,
+  "output_wires": 3808885,
+  "input_sha256": "340c7ce48abf2ac06d1c011950d03a8e184630aa32075e46fd0a14979b1102bb",
+  "output_sha256": "ba00463c74f7899a069305ab7edf8041234dea76ae6fb5a430182191c924dca2",
+  "scope": "constant_folding_bounded_gate_reuse_dead_gate_elimination_not_security_audit",
+  "source_sha256": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "9347c4c6ca546af917ac5bfdf06fbc60c32bb527efee4ebd0f962dd61aa9c54f",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "88e9a95e061030ed52254769381c71dcf4ce5dfdc8d5de265df03c7318dce425",
+    "native/private_alignment_probe/run_uniform_permutation.py": "717a43fa9e705648a9239262a522adc731cfc6691bc8de9f23cbaf51883997a1"
+  }
+}

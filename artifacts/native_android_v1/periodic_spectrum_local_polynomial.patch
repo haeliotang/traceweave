@@ -1,0 +1,63 @@
+--- native/periodic_spectrum.cpp.before
++++ native/periodic_spectrum.cpp
+@@ -65,6 +65,60 @@
+         }
+         if (std::abs(mass - 1) > 1e-12) return -1;
+     }
++    // Local order-18 Taylor evaluation retains all 145 fitted frequencies.
++    // Outside the bounded phase radius, use the direct frequency path below.
++    constexpr std::size_t degree = 18;
++    constexpr double radius = 0.02;
++    double center = queries[1] + std::remainder(queries[(horizon - 1) * 2 + 1] - queries[1], 2 * pi) / 2;
++    bool local = true;
++    for (std::size_t step = 0; step < horizon; ++step) {
++        if (!canonical(queries[step * 2], queries[step * 2 + 1])) return -1;
++        if (std::abs(std::remainder(queries[step * 2 + 1] - center, 2 * pi)) > radius) local = false;
++    }
++    if (local && horizon >= 64) {
++        double arguments[2880];
++        for (std::size_t step = 0; step < horizon; ++step)
++            arguments[step] = std::remainder(queries[step * 2 + 1] - center, 2 * pi) / radius;
++        double basis_real[degree + 1][frequencies]{}, basis_imaginary[degree + 1][frequencies]{};
++        for (std::size_t frequency = 1; frequency < frequencies; ++frequency) {
++            double real = std::cos(frequency * center), imaginary = std::sin(frequency * center), factor = 2 * coefficients_[frequency];
++            for (std::size_t order = 0; order <= degree; ++order) {
++                double sign = (order / 2) % 2 ? -1 : 1;
++                basis_real[order][frequency] = sign * factor * (order % 2 ? -imaginary : real);
++                basis_imaginary[order][frequency] = sign * factor * (order % 2 ? real : imaginary);
++                factor *= frequency * radius / (order + 1);
++            }
++        }
++        for (std::size_t edge = 0; edge < states_ * states_; ++edge) {
++            double polynomial[degree + 1]{};
++            if (counts_[edge]) {
++                std::size_t offset = edge * frequencies;
++                for (std::size_t order = 0; order <= degree; ++order)
++                    for (std::size_t frequency = 1; frequency < frequencies; ++frequency)
++                        polynomial[order] += basis_real[order][frequency] * cosine_[offset + frequency]
++                            + basis_imaginary[order][frequency] * sine_[offset + frequency];
++                polynomial[0] += coefficients_[0] * cosine_[offset];
++            }
++            for (std::size_t step = 0; step < horizon; ++step) {
++                double argument = arguments[step];
++                double weight = polynomial[degree];
++                for (std::size_t order = degree; order > 0; --order) weight = weight * argument + polynomial[order - 1];
++                if (!std::isfinite(weight) || weight < 0) return -1;
++                output[step * states_ * states_ + edge] = 5 * prior[edge] + weight;
++            }
++        }
++        for (std::size_t step = 0; step < horizon; ++step)
++            for (std::size_t source = 0; source < states_; ++source) {
++                double* row = output + step * states_ * states_ + source * states_;
++                double total = 0, cumulative = 0;
++                for (std::size_t target = 0; target < states_; ++target) total += row[target];
++                for (std::size_t target = 0; target < states_; ++target) {
++                    cumulative += row[target] / total;
++                    row[target] = target == states_ - 1 ? 1 : std::min(1.0, cumulative);
++                }
++            }
++        return 0;
++    }
+     constexpr std::size_t block = 16;
+     for (std::size_t start = 0; start < horizon; start += block) {
+         std::size_t count = std::min(block, horizon - start);

@@ -1,0 +1,13 @@
+{
+  "protocol": "traceform.native-weekly-retry-validation.v1",
+  "apk_sha256": "e70640619d9f71e2ebd1121d4cf0f9fdf94d9b90a620cb94f6628aaf707333a7",
+  "source_sha256": {
+    "android/src/org/traceform/edge/WeeklyMaintenanceJob.java": "d12c589526ae422ba60f87369b5ca206bf12d3a1dc5edb5ba20566d612a29952"
+  },
+  "installed": false,
+  "host_failed_before_fix": "transient lock completed the week",
+  "affected_tests_passed": 5,
+  "test_seconds": 2.42,
+  "scope": "actual JobService retry/receipt control flow with platform stand-ins; not Android lifecycle proof",
+  "build_and_signature_verified": true
+}

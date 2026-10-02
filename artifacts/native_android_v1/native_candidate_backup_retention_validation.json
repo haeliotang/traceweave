@@ -1,0 +1,26 @@
+{
+  "protocol": "traceform.native-candidate-backup-retention.v1",
+  "apk_sha256": "b3dcb26347479de856bd3a84814e213d7599f3eaada5f2f15ec5cafc54151429",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeCandidateStore.java": "0b8f6f61df0e1705499637b0291069b8b4a6ec3d3c8f7a70ff9d95b4308f6c90",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "008649cac0578e4930e1c7c4416f5f30906546de2b287e0247c3c7f1d63abe93"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "host_regression_failed_before_fix": "AssertionError: oldest retained when another candidate had backup only",
+  "affected_host_tests": {
+    "passed": 3,
+    "seconds": 1.58
+  },
+  "host_scope": "production candidate identity enumeration/hash/retention with narrow AtomicFile/JSON stand-ins; Android recovery not verified",
+  "android_backup_fixture_executed": false,
+  "active_installed_validation": {
+    "nonce": "90628b4d-3800-458f-b08e-7934666ca73b",
+    "state": "active ready",
+    "covers_this_backup_fix": false
+  },
+  "limitations": [
+    "partial .new remnants are not reclaimed",
+    "full goal remains incomplete"
+  ]
+}

@@ -12,6 +12,28 @@ from traceform.streaming.edge_manifold_daemon import (
 
 
 class TestEdgeManifoldDaemon(unittest.TestCase):
+    def test_quantizer_receives_actual_frame_interval(self):
+        from unittest.mock import patch
+
+        first = {"timestamp_utc": "2026-10-01T02:00:00Z", "motion": {}}
+        second = {"timestamp_utc": "2026-10-01T02:00:01Z", "motion": {}}
+        with patch.object(self.manifold, "quantize", wraps=self.manifold.quantize) as quantize:
+            self.daemon.process_observation(first)
+            self.daemon.process_observation(second)
+        self.assertEqual(quantize.call_args.kwargs["dt_seconds"], 1.0)
+
+    def test_stream_evidence_and_short_clock_rollback(self):
+        first = {"timestamp_utc": "2026-10-01T02:00:02Z", "motion": {}}
+        second = {"timestamp_utc": "2026-10-01T02:00:01Z", "motion": {}}
+        before, _ = self.daemon.process_observation(first)
+        after, _ = self.daemon.process_observation(second)
+        self.assertEqual(len(before["model_version"]), 64)
+        self.assertEqual(before["model_version"], after["model_version"])
+        self.assertGreater(after["continuity_epoch"], before["continuity_epoch"])
+        self.assertFalse(after["continuous_from_previous"])
+        self.assertIsNone(after["frame_interval_seconds"])
+        self.assertEqual(after["dwell_steps"], 1)
+
     def setUp(self):
         # Create normalizer and DETM model
         self.normalizer = MultimodalNormalizer()

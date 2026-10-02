@@ -1,0 +1,25 @@
+{
+  "observed_watermark_utc": "2026-10-01T03:41:42.762936Z",
+  "acquisition_owner": {
+    "pid": 27971,
+    "start_ticks": "3704992",
+    "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+  },
+  "api_reset": {
+    "process_pid": 27734,
+    "native_battery_reply_exit_code": 0,
+    "scope": "temporary_reply_restoration"
+  },
+  "new_frames_after_restart": 5,
+  "downstream_hot_rows": 86,
+  "latest_availability": {
+    "motion": "UNAVAILABLE",
+    "environment": "UNAVAILABLE",
+    "place": "TEMPORARILY_UNAVAILABLE",
+    "connectivity": "PARTIALLY_AVAILABLE",
+    "device_relation": "UNAVAILABLE",
+    "audio_context": "NOT_SAMPLED"
+  },
+  "acceptance": "persistent_sensing_health_unresolved",
+  "host_tests": 207
+}

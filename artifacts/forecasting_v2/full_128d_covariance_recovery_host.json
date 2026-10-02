@@ -1,0 +1,15 @@
+{
+  "command": "python3 -m unittest tests.test_continuous_dynamics -q",
+  "tests": 24,
+  "passed": true,
+  "elapsed_seconds": 8.731,
+  "source_sha256": "90f01c2e7075ce43c72fa475b7c6bf7943a73ec5f06f028f4bd15f7b9cd84dd9",
+  "dimension": 128,
+  "controlled_adjacent_increments": 512,
+  "interval_seconds": [
+    0.5,
+    1.5
+  ],
+  "covariance_reference": "L L^T; diagonal L=.75, subdiagonal L=.25",
+  "scope": "controlled_full_rank_second_moment_recovery_not_Gaussianity_or_empirical_human_dynamics"
+}

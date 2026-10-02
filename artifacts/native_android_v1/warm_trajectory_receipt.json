@@ -1,0 +1,26 @@
+{
+  "health": {
+    "warm_rows": 202,
+    "represented_frames": 202,
+    "first_timestamp": "2026-10-01T02:41:19.636853Z",
+    "last_timestamp": "2026-10-01T04:59:34.981997Z",
+    "hot_watermark": "2026-10-01T04:59:34.981997Z",
+    "discontinuous_rows": 48,
+    "missing_bucket_rows": 40,
+    "migration_scope": "retained_hot_only_no_occupancy_reconstruction",
+    "ordered_unique_buckets_verified": true,
+    "representative_bucket_binding_verified": true,
+    "daemon_owner": {
+      "pid": 15666,
+      "start_ticks": "4152500",
+      "boot_id": "5c8663a7-4c31-4127-8eb2-d3ab3c1719c5"
+    },
+    "source_sha256": {
+      "traceform/streaming/tiered_storage.py": "7c65062003c3efb949d7de53834a8835bf0d1e381907f334a1e09d4c23ed5f5d",
+      "scripts/compact_edge_storage.py": "40ebcfbce4dbc3cf6086b3fb21bf1aaa07fbb61cb127907075787e06254a474a"
+    },
+    "evidence_scope": "current_ordered_downsampled_frames_not_30_days_of_observed_history"
+  },
+  "host_tests": 231,
+  "native_storage_tests": 13
+}

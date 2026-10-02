@@ -1,0 +1,7 @@
+{
+  "converged": false,
+  "iterations": 1000,
+  "reported_residual": 0.0002360873574789868,
+  "independent_residual": 0.0002360873574789868,
+  "scope": "synthetic_slow_mixing_graph_convergence_flag"
+}

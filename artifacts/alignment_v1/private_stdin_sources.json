@@ -1,0 +1,26 @@
+{
+  "scope": "bounded_stdin_synthetic_protocol_regression",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "1f0b03b845dc47496b961a65067652e9cab803ba227b3f1f186a9f43308b2436",
+    "native/private_alignment_probe/run_smoke.py": "edc68d6a02c92cd1339942bb574e459a3f1984894eb4e44cfc81ec9e2f3f73b6",
+    "native/private_alignment_probe/verify_loss_cell.py": "b1b8e9b812e671a44daa9ad10b40e7590cb5019c59f7532efc6e683d22f58420",
+    "native/private_alignment_probe/verify_gw_relation.py": "35cbd4f0eb9b2c31178f50938ec8742c7a600496d534743b641976f12ef0b0e3",
+    "native/private_alignment_probe/generate_gw_relation.cpp": "b3026589ff28b6e330ea7db8fd989d50b9a558d16017f65fce3fc9cc64da5e4d",
+    "native/private_alignment_probe/generate_loss_cell.cpp": "2e51beecb7ff4ad93c9cacc75b931f3d1f5af070be189083e6406788e2596e18",
+    "native/private_alignment_probe/dependencies.json": "a049e82694fa9a226350c8a084af9faf8010205bcbac7533928c590723f7feaa"
+  },
+  "reports": [
+    "private_stdin_boundaries_arm_host.json",
+    "private_backend_stdin_arm_host.json",
+    "private_loss_cell_stdin_arm_host.json",
+    "private_gw_relation_stdin_2x2_arm_host.json",
+    "private_gw_relation_stdin_2x3_arm_host.json"
+  ],
+  "report_sha256": {
+    "private_stdin_boundaries_arm_host.json": "78378b5ba0a5e11b71ca4ae3362750ec4078ef899d9294ee73d2c210286a240a",
+    "private_backend_stdin_arm_host.json": "e70db93c0d4b8c37e37ca4e5dfa052c5804d7b5717c06cba6f122ce7c6ca9c9f",
+    "private_loss_cell_stdin_arm_host.json": "f974134a01c86c0ae5e7d14cd14bd6b05cd88d0972758523c3de95a080548804",
+    "private_gw_relation_stdin_2x2_arm_host.json": "a9e0983745692bee640ccb11eef6e60d2dddb3f3112ab6ba7e185ec5a55a8ec1",
+    "private_gw_relation_stdin_2x3_arm_host.json": "f4dc4af036dc2713694c0cbca7cd5cca6ff1c90d0ae3cd17540d14b56a7c6801"
+  }
+}

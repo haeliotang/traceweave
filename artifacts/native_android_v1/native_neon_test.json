@@ -1,0 +1,95 @@
+{
+  "device": "Pixel 6a",
+  "apk": {
+    "parity": {
+      "passed": true,
+      "cases": 8,
+      "maximum_error": 1.8189894035458565e-12,
+      "scope": "canonical_vector_normalization_and_kinetic_quantization"
+    },
+    "benchmark": {
+      "rollouts": 300,
+      "horizon_steps": 120,
+      "elapsed_ms": 6.69218,
+      "mass_conserved": true,
+      "kernel": "synthetic_benchmark_only"
+    },
+    "model_version": "352c7b4be556514b2472523aca8cdf5d46713a42288dc4a780c68bfe15fc86e3",
+    "passed": true,
+    "completed_epoch_ms": 1790836119916
+  },
+  "standalone_runs": [
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4521984,
+      "elapsed_ms": 1.062053,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4431872,
+      "elapsed_ms": 1.814941,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4366336,
+      "elapsed_ms": 2.843994,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4407296,
+      "elapsed_ms": 3.172485,
+      "mass_conserved": true
+    },
+    {
+      "scope": "standalone_native_core_synthetic_workload_including_process_runtime",
+      "dimension": 128,
+      "states": 16,
+      "horizon_steps": 120,
+      "rollouts": 300,
+      "peak_rss_bytes": 4395008,
+      "elapsed_ms": 2.755371,
+      "mass_conserved": true
+    }
+  ],
+  "scope": "explicit_neon_normalization_and_quantization_canonical_parity_and_synthetic_rollout_not_full_sensor_parity",
+  "apk_sha256": "a2974f7708b82070cececb4f0be57bc0438ab34621061aa50342abffba5d45eb",
+  "binary_sha256": "d99eae0e92339a5b5ceb06dfc3bc51e405678f98cd89efde370148cc84f1d182",
+  "source_sha256": {
+    "scripts/build_native_android.py": "74f7957b4d0d25d8a5d7f79b7020f4a6fe0bbd34842f3a584dda65a73735addd",
+    "android/AndroidManifest.xml": "f63b06a3c2b5f8df8ee135fe010ea72af3192b79791ac939a3459929ead706be",
+    "native/traceform_core.h": "a279bb387605c81030da96c81134eefc94a70847e3e84571f1ca0fa2232d8d29",
+    "native/traceform_core.cpp": "1aa06760c521eaab29d3ccc37e7a8d139693eb1f83250bf8e1bf9deeb71fa632",
+    "native/traceform_jni.cpp": "5419567c596cdf8a0b72796b567e4ff4cf484b908054f023c5ec110ad9bf2327",
+    "native/traceform_benchmark.cpp": "04fb039974e14a23a50aeb94f2743e8b246d213767f8e0f947aeac1f8a8db6af",
+    "android/src/org/traceform/edge/CanonicalClient.java": "6beef639541702e0574c2aa8e40900a72efe73fd05595084c7ca009178b7ed9f",
+    "android/src/org/traceform/edge/ColdTrajectory.java": "dd0766c389971c7d8132d7465d8db36eb21c7334619a9d1cfa667aac3cab52e4",
+    "android/src/org/traceform/edge/EdgeService.java": "ce42b70cecf60844c949fd00dcbc4f1b2b2703d49790c8f5e7610194a609011c",
+    "android/src/org/traceform/edge/FeatureReadings.java": "e9b6bbf561876bff4ae94f71c9a19525807822bd3b8b182b899032c23c4a2b96",
+    "android/src/org/traceform/edge/KinematicState.java": "aaed663818804cc8b1b06c62b587cc00611c9acbcffccbd35744068e81c890a7",
+    "android/src/org/traceform/edge/MainActivity.java": "ee78cdfcefbe21ec626beeb015cf5808fdd5c4bd7de803249dab305b7e46f85f",
+    "android/src/org/traceform/edge/ModelEngine.java": "30943ba4cc66d17d5e3d97e7c95058bd84608952de5d9e2e70dce13f7fe1d807",
+    "android/src/org/traceform/edge/NativeCore.java": "baf5b2f146af83390dcee21d224e410f8876af93f134955cb43d8153012338b9",
+    "android/src/org/traceform/edge/SampleClock.java": "dcab8077619901f79dde2346f143ff55a3094fb15ec8fc0c7a5012bd934eb5f8",
+    "android/src/org/traceform/edge/WarmBucket.java": "d1058d120491b10114d34b949442e8cad1ccd9bc7bb94afc3b285d2f15c19aa5",
+    "android/src/org/traceform/edge/WarmTrajectory.java": "5d88f12ad1b6641417188e74884c74f8ac0b40b540b63781848dbf0725819e89"
+  }
+}

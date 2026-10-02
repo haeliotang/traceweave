@@ -1,0 +1,20 @@
+{
+  "protocol": "traceform.native-full-retained-snapshot-validation.v1",
+  "apk_sha256": "252dbeb3d3f30a69c52d9df9afa9a8001060f0c98e44511703281d184f3bfa68",
+  "source_sha256": {
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "0ab5ce92ba364979933a9ad6ce64b83ebb2c524ba320fe783cedab1854730c0d",
+    "android/src/org/traceform/edge/WeeklySnapshot.java": "b3d2de2c83f8465e560bec7d3d29c44a324c793e15d6239ca9442f27a79d9954"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "android_warm_snapshot_fixture_executed": false,
+  "snapshot_scope": "48h Hot plus 30d Warm copied in one source read-only transaction; explicit source Warm table availability",
+  "limits": {
+    "hot_records": 172800,
+    "warm_records": 86400
+  },
+  "warm_content_audit_implemented": false,
+  "related_tests_scope": "host weekly retry and warm clock; not Android snapshot copy",
+  "pending_device_nonce": "cce177df-87ef-45c0-be50-7d12d47d6086",
+  "latest_receipt_nonce": "90628b4d-3800-458f-b08e-7934666ca73b"
+}

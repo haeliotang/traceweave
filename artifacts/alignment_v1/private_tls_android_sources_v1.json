@@ -1,0 +1,22 @@
+{
+  "scope": "android_loopback_mutual_tls_synthetic_gw_not_real_owner_enrollment",
+  "binary_sha256": "94c3bf57d3ca2147b9d4f13b4224673544268055dd2a54137b4d9fdc330e3625",
+  "device_binary_sha256": "94c3bf57d3ca2147b9d4f13b4224673544268055dd2a54137b4d9fdc330e3625",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "5062900c7259b6553555c568e7928b761ec5bb35a56950f87b9b33665e40fb11",
+    "native/private_alignment_probe/tls_io.h": "f1de3dfc5069f62d7497f983302385324778093275fc217ce93ee3759609774a",
+    "native/private_alignment_probe/verify_tls_rejection.py": "d546c1bfdf7a17e44e54e3ccea9bf96c384fdab1ddf75d59663cf4037a3332f4"
+  },
+  "reports": {
+    "private_tls_identity_rejection_pixel.json": {
+      "passed": true,
+      "cases": 3,
+      "sha256": "8392f7b2eb0399531b7704d6cd4b20339500b6189623ee4a678694ff884f2c8f"
+    },
+    "private_tls_gw_statement_match_2x2_pixel.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "5ce71cfbdc5e2c1b39224819e0ef4e2b998149d49d638a0cecd2e632dd1b8576"
+    }
+  }
+}

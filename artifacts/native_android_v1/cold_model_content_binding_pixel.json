@@ -1,0 +1,30 @@
+{
+  "failed_baseline": {
+    "passed": false,
+    "error": "java.lang.IllegalStateException: model content boundary entered cold graph",
+    "completed_epoch_ms": 1790890024890
+  },
+  "final_receipt": {
+    "passed": true,
+    "model_content_boundary_verified": true,
+    "registered_model_content_binding_verified": true,
+    "missing_model_content_excluded": true,
+    "scope": "native_cold_atomic_idempotent_backfill_boundaries_binding_namespace_bound_and_atomic_size_fixture",
+    "completed_epoch_ms": 1790890138470
+  },
+  "local_tests": {
+    "count": 322,
+    "passed": true,
+    "seconds": 28.86
+  },
+  "freeze_pre_post_passed": true,
+  "evidence_scope": "synthetic_memory_SQLite_boundary_binding_and_checkpoint_not_live_history_repair",
+  "baseline_sha256": {
+    "android/src/org/traceform/edge/ColdTrajectory.java": "3d47a268ff075202021611d1b923340569ceb3f57c29627538d286c1aeb74bfc",
+    "android/build/traceform.apk": "6633fa4ec6519770e6a35d15fef5c651e24387e68d1293dcc81deb435dd2b3bc"
+  },
+  "final_sha256": {
+    "android/src/org/traceform/edge/ColdTrajectory.java": "bdf3b9e5d3fd6c7dc9c7ba9f521e3550b56caa7d9e0a16df2b811a978499a190",
+    "android/build/traceform.apk": "04aa6e287a0fd6d819f5f916ebd98a28960c4772641282e4e571b9dd0859db8f"
+  }
+}

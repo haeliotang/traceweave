@@ -1,0 +1,75 @@
+{
+  "scope": "native_delayed_feedback_window_and_ledger_synthetic_not_active_intervention_acceptance",
+  "tests": {
+    "count": 320,
+    "seconds": 28.351,
+    "passed": true
+  },
+  "device_feedback": {
+    "passed": true,
+    "delivery_and_binding_censor_verified": true,
+    "ten_minute_feedback_and_idempotence_verified": true,
+    "restart_censor_verified": true,
+    "shadow_not_rewarded": true,
+    "actuator_calls": 0,
+    "scope": "synthetic_delivered_trial_receipts_and_SQLite_feedback_not_actual_actuation_or_human_outcomes",
+    "completed_epoch_ms": 1790887302075
+  },
+  "device_shadow": {
+    "passed": true,
+    "bound_trigger": {
+      "passed": true,
+      "gate_and_cooldown_verified": true,
+      "history_unchanged": true,
+      "collection_started": false,
+      "actuator_calls": 0,
+      "comparison": {
+        "action_type": "CLAMP_DWELL",
+        "max_dwell_steps": 10,
+        "selected_risk_states": [
+          "M01"
+        ],
+        "scenario_seed": 43,
+        "mean_jsd": 0.7867235023730049,
+        "peak_jsd": 0.9999999999999999,
+        "peak_step": 10,
+        "terminal_risk_change": -0.9633333333333334,
+        "recommendation": "RECOMMEND_INTERVENTION",
+        "evidence_scope": "modeled_forced_escape_not_physical_actuator_effect_or_execution_authority"
+      },
+      "scope": "synthetic_service_CSD_gate_to_history_MC_shadow_not_live_capture_or_actuation"
+    },
+    "replaced_trigger": {
+      "passed": true,
+      "trigger_mismatch_rejected": true,
+      "collection_started": false,
+      "actuator_calls": 0
+    },
+    "completed_epoch_ms": 1790887308890
+  },
+  "device_lifecycle": {
+    "passed": true,
+    "database_failure_injected": false,
+    "scope": "android_bound_stop_synthetic_worker_cancelled_history_sdk_available_no_capture_resources",
+    "completed_epoch_ms": 1790887335800
+  },
+  "frozen_pre": 12,
+  "frozen_post": 12,
+  "frozen_checks_passed": true,
+  "limits": [
+    "No actual delivery receipt or human feedback collected",
+    "Production mode still only generates shadow trials; observing states in fixture are explicitly synthetic",
+    "Feedback SQLite processing after sampling commit not measured for sustained CPU performance",
+    "Actuator authorization/delivery/restoration chain not connected",
+    "Complete Stage11-14 performance memory scientific and final publication acceptance open"
+  ],
+  "hashes": {
+    "android/src/org/traceform/edge/FeedbackWindow.java": "cd22995637afb96f804dc65f9b6656746791d4ee9a13a639b672da7c0149c9d3",
+    "android/src/org/traceform/edge/NativeFeedbackLedger.java": "4bc00df5f71f3fc251825ce100f4cf7ab52896e8b7047b07eeb49ca8ef963fb2",
+    "android/src/org/traceform/edge/NativeFeedbackFixture.java": "a4ddbaa7261ce0f4cf783783b139c0fa32cb49c9688bb5366248a6ceb9d47b16",
+    "android/src/org/traceform/edge/EdgeService.java": "6694e1ebb56197e5490ed4afbb1172e1951d00d87accd89f4f7e4cc272099481",
+    "android/src/org/traceform/edge/MainActivity.java": "30c7e37dfdd82ad4c2f82d216ddceaed420cbf23bcc9d9b08272c55ed29b1323",
+    "tests/test_native_feedback_window.py": "c544d9cf7ad0b8d61996f2907dcff5728ad5d6408e484dc7a366e1f72bf8e159",
+    "android/build/traceform.apk": "b21b992c01e0e1a80375884d4c97dca61c00fd8f30dbc2bf8222146eddd3e6a1"
+  }
+}

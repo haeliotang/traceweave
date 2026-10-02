@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "first": {
+    "verified": true,
+    "exit_code": 0,
+    "session_consumed": true
+  },
+  "repeated": {
+    "verified": false,
+    "exit_code": 1,
+    "reason": "replayed session"
+  },
+  "modified_fields_rejected": [
+    "objective",
+    "session",
+    "first_commitment",
+    "second_commitment"
+  ],
+  "rejection_ledger_unchanged": true,
+  "scope": "synthetic_signed_statement_output_match_not_android_private_protocol",
+  "completed_epoch_ms": 1790848910076,
+  "apk_sha256": "73fb682e43f0f0579a62e7ffa83252c4b6510ce60f87f98bdf9df3296b2ae7e2",
+  "source_sha256": {
+    "android/src/org/traceform/edge/MainActivity.java": "514b223cfaeac4f426d6888a70670a27b11fe2a5211713452a28be2ebf8847b2",
+    "android/src/org/traceform/edge/ProofVerifier.java": "7f1925805f69ec1259a76a2272d5e28168c792c7301257104aace4d5973779cc",
+    "android/src/org/traceform/edge/PrivateAlignmentOutput.java": "7fb0a3957021f2b873aaac500165b9e886a0c5796fb4bf9556a518af2b13b095"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "scope": "sequential_native_api_checks_without_raw_values",
+  "initial_api_process_reset_pid": 29239,
+  "successful_checks": ["native_battery", "debian_battery", "sensor", "sensor_cleanup", "location_network_last", "wifi_connection", "audio_route"],
+  "battery_reply_after_each_successful_check": true,
+  "location_once": {"timeout_seconds": 15, "elapsed_seconds": 15.024},
+  "battery_after_location_once": {"timeout_seconds": 5, "elapsed_seconds": 5.014},
+  "interpretation": "location_once_followed_by_global_reply_failure_reproduced; mechanism_unresolved",
+  "production_supervision_desired": "STOPPED",
+  "reason": "bounded_isolation_of_repeated_api_timeouts"
+}

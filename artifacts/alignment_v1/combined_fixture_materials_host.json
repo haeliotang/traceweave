@@ -1,0 +1,21 @@
+{
+  "scope": "fresh_synthetic_matching_groth16_and_private_participant_fixture_not_distributed_prover",
+  "independent_commitment_decode_passed": true,
+  "runtime_roles": [
+    1,
+    2
+  ],
+  "public_files": [
+    "owner0.sig",
+    "owner1.sig",
+    "proof.bin",
+    "public_inputs.bin",
+    "verifying_key.bin"
+  ],
+  "private_directory_mode": "0o700",
+  "proof_sha256": "e81ce7745b915dff72d9fceae3913f1b277ba1ce33525a2d4783c8b2b7aaa37b",
+  "source_sha256": "21aa213712514cc0fa677ebe3d3acf84381fd3d3833137af5cd9faf3b937fdd7",
+  "host_proof_verified": true,
+  "host_replay_rejected": true,
+  "nested_private_export_rejected": true
+}

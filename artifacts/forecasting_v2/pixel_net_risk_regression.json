@@ -1,0 +1,12 @@
+{
+  "device": "Pixel 6a",
+  "date": "2026-10-01",
+  "test": "tests.test_sandbox_simulator.TestSandboxSimulator.test_recommendation_counts_risk_increases_as_well_as_decreases",
+  "exit_code": 0,
+  "tests_passed": 1,
+  "sandbox_sha256": "163b69f116d4901ab35e5ddacc19c5cd695b61851be67c6e0cd706eba17f0d82",
+  "test_file_sha256": "527661bc966da9de85f186f57cfd8471d4ebdacb11c2402f1fb0ae955105a3ad",
+  "scope": "synthetic_device_regression_and_source_deployment_not_running_daemon_reload_or_physical_effect",
+  "daemon_restarted": false,
+  "actuators_triggered": false
+}

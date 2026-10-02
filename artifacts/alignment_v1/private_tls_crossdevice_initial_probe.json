@@ -1,0 +1,17 @@
+{
+  "scope": "synthetic_mac_pixel_tls_over_usb_not_full_gw_completion",
+  "small_circuit": {
+    "both_exit_codes": [
+      0,
+      0
+    ],
+    "both_public_output": "000010",
+    "passed": true
+  },
+  "bound_2x2_gw": {
+    "passed": false,
+    "observed": "party_1_communicate_timeout_60_seconds",
+    "root_cause": "not_yet_identified"
+  },
+  "temporary_forwards_removed": true
+}

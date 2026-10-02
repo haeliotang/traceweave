@@ -1,0 +1,7 @@
+{
+  "tests": 293,
+  "passed": true,
+  "elapsed_seconds": 19.957,
+  "affected_tests": 8,
+  "scope": "periodic_graph_stationarity_and_explicit_convergence_not_weekly_structural_evolution"
+}

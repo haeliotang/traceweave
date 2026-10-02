@@ -1,0 +1,38 @@
+{
+  "scope": "synthetic_mac_pixel_private_single_sweep_descent_not_global_optimum_or_security_audit",
+  "protocol_version": 2,
+  "temporary_forward_removed": true,
+  "host_binary_sha256": "499aa0228af047eb8ca71e5c84b9b1ef40732cbc1be0aa1d0ea241e557a7ad3b",
+  "pixel_binary_sha256": "2f43165d1efbefe77091aabf97de05eb3f0079eb753307b3ca761e5111bba0ce",
+  "device_binary_sha256": "2f43165d1efbefe77091aabf97de05eb3f0079eb753307b3ca761e5111bba0ce",
+  "sources": {
+    "native/private_alignment_probe/smoke.cpp": "9b97ed54ccb3ef02ddf059d7254168ecf52b8a159f17d22c932d526d097cefda",
+    "native/private_alignment_probe/tls_io.h": "5fabff8e8dc7e9dd1d9ad6b3b5116c2887fc37efc274b200547d3204ab472ef4",
+    "native/private_alignment_probe/generate_gw_relation.cpp": "f02588ffe434497ec4884b86c8b9de8d31033701e83e8b05d90c8b7388414356",
+    "native/private_alignment_probe/verify_gw_relation.py": "d943541d8a962d56ce8e1bac4a27f0bd2c3fe28bcb941ed8206d21825375ae7a",
+    "native/private_alignment_probe/run_usb_client.py": "8820bc507754dd27e956841c9c0f7fa44011429416de60902f37ba84ebb467b5"
+  },
+  "reports": {
+    "private_transport_optimizer_2x2_crossdevice.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "dbc0738aa38dbb2a4547ebdc382ed0ea662b16834bb31f522f6b0d499a6f3e4b",
+      "circuit_sha256": "1fc4dc076b5ebd24c036c9f10259e22449d8ccaa73c0747f3c3bc5f93dc4690b"
+    },
+    "private_transport_optimizer_2x3_crossdevice.json": {
+      "passed": true,
+      "cases": 11,
+      "sha256": "b2684c0e8dad6dc85358fb85466738bf6f6086527c95f22761405b9bcc2609b7",
+      "circuit_sha256": "b8c5db553a1408b8cc377baf2a96c7ca2f9132f9736ff19cca09a46a617948d0"
+    }
+  },
+  "python_suite": {
+    "tests": 276,
+    "passed": true
+  },
+  "limitations": [
+    "synthetic inputs only",
+    "one descent sweep; no stationary-point or global-optimum certificate",
+    "USB loopback transport; no production enrollment or APK MPC integration"
+  ]
+}

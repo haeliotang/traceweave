@@ -1,0 +1,24 @@
+{
+  "protocol": "traceform.native-weekly-admission-control-flow.v1",
+  "source_sha256": {
+    "android/src/org/traceform/edge/WeeklyMaintenanceJob.java": "44aea8193390dfa842191572b4cf49f247349fefde266fbf28778ecc372652c8",
+    "tests/test_native_weekly_retry.py": "b446cc45bfbc98578888eb457ea161005048d4431a3090e78f7e4fc12d6b8a00"
+  },
+  "before_fix": {
+    "test_failed": true,
+    "assertion": "accepted weekly candidate was not activated or receipt overwrote activation"
+  },
+  "after_fix": {
+    "passed": true,
+    "verified": [
+      "accepted_candidate_activation_and_true_receipt",
+      "capacity_refusal_keeps_accepted_candidate_pending",
+      "registry_and_sqlite_lock_retry_without_completed_receipt"
+    ]
+  },
+  "execution_context": "host_real_WeeklyMaintenanceJob_control_flow_with_platform_and_admission_standins",
+  "android_source_compilation": true,
+  "installed": false,
+  "scope": "control_flow_not_android_scheduler_live_history_or_crash_idempotence",
+  "remaining_blocker": "publication_before_weekly_receipt_requires_window_idempotence_before_deployment"
+}

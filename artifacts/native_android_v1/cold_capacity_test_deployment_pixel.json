@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "path": "tests/test_tiered_storage.py",
+      "sha256": "b63f1d98e718c6f6207d85975f69cab3ec05a722141059e7dac7802cc33f09ee"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

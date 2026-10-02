@@ -1,0 +1,186 @@
+{
+  "scope": "ARM_double_vector_reduction_synthetic_monthly_probe_under_cpu_0_3",
+  "adopted": false,
+  "reason": "no_latency_improvement_under_restricted_cpu_scope",
+  "runs": [
+    {
+      "cmd": "/data/local/tmp/spectrum-incremental-neon-arm",
+      "exit_code": 0,
+      "records": []
+    },
+    {
+      "cmd": "/data/local/tmp/traceform-spectrum-neon-parity --canonical-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "scope": "full_month_ARM_spectral_CDF_parity_with_reference_scratch",
+          "max_cdf_absolute_difference": 8.881784197001252e-16,
+          "tolerance": 1e-12,
+          "same_draw_occupancy_equal": true
+        },
+        {
+          "spectrum_fit_ms": 212.139445,
+          "remove_add_1000_pairs_ms": 4.359457,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false
+        },
+        {
+          "scope": "isolated_child_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 5689344,
+          "launcher_peak_rss_bytes": 13549568,
+          "elapsed_ms": 3.263631,
+          "periodic_cdf_ms": 2.294963,
+          "rollout_ms": 0.939332,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-streamed-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1192.143555,
+          "remove_add_1000_pairs_ms": 25.138916,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2990080,
+          "launcher_peak_rss_bytes": 13553664,
+          "elapsed_ms": 31.364014,
+          "periodic_cdf_ms": 28.853272,
+          "rollout_ms": 2.292643,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-neon-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "8eca3758efab304b"
+        },
+        {
+          "spectrum_fit_ms": 1206.427694,
+          "remove_add_1000_pairs_ms": 25.201213,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2969600,
+          "launcher_peak_rss_bytes": 13553664,
+          "elapsed_ms": 32.36084,
+          "periodic_cdf_ms": 29.825724,
+          "rollout_ms": 2.340698,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-neon-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "8eca3758efab304b"
+        },
+        {
+          "spectrum_fit_ms": 1195.070598,
+          "remove_add_1000_pairs_ms": 25.138225,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 3010560,
+          "launcher_peak_rss_bytes": 13557760,
+          "elapsed_ms": 32.233236,
+          "periodic_cdf_ms": 29.794718,
+          "rollout_ms": 2.223714,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    },
+    {
+      "cmd": "taskset 0f /data/local/tmp/traceform-spectrum-streamed-benchmark --streamed-monthly-history",
+      "exit_code": 0,
+      "records": [
+        {
+          "cdf_fixture_fingerprint": "76d14fdf2b7282d4"
+        },
+        {
+          "spectrum_fit_ms": 1192.17155,
+          "remove_add_1000_pairs_ms": 25.122844,
+          "summary_payload_bytes": 596104,
+          "fit_and_update_in_prediction_timer": false,
+          "phase_and_prior_preparation_in_fit_timer": true,
+          "history_arrays_retained": false
+        },
+        {
+          "scope": "isolated_child_fitted_spectrum_normalization_quantization_cdf_and_rollouts_precomputed_phases",
+          "phase_construction": "sdk_weekday_and_local_fraction",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 2965504,
+          "launcher_peak_rss_bytes": 13557760,
+          "elapsed_ms": 31.481812,
+          "periodic_cdf_ms": 29.017415,
+          "rollout_ms": 2.260661,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ]
+    }
+  ],
+  "scalar_production_unchanged": true,
+  "sha256": {
+    "native/periodic_spectrum.cpp": "e292c831554046793c09ae60f3ac22f7f49028745a2f10c4d7603ac58c2aa9d7",
+    "/private/tmp/periodic-spectrum-neon.cpp": "52d44b684654b29b4c34d87814affa04251a74a997b9eed79bf39b82a88ec14f",
+    "/private/tmp/traceform-spectrum-neon-benchmark": "885d5767a19c7f19902be9614ae9a68915418e36774ca54ae12c8274a20aa6fc",
+    "/private/tmp/traceform-spectrum-neon-parity": "a17409de4b6413e07ac1b66a11676ddd641c1686ae048a94518bef93f0bfc406",
+    "/private/tmp/spectrum-incremental-neon-arm": "3e0ea444d2c482df2fbb6a3b023d794d8c61f53432eee22dce127081d530e205"
+  }
+}

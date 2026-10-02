@@ -1,0 +1,7 @@
+{
+  "tests": 288,
+  "passed": true,
+  "elapsed_seconds": 20.27,
+  "affected_tests": 34,
+  "scope": "representable_bandwidth_scaled_distances_and_finite_potential_outputs_not_bifurcation_identification"
+}

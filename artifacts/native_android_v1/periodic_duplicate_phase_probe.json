@@ -1,0 +1,7 @@
+{
+  "history_pairs": 86400,
+  "exact_double_phase_groups": 57086,
+  "mathematical_30s_week_groups": 20160,
+  "scope": "current_benchmark_phase_generator_no_time_rounding",
+  "pair_fraction_requiring_unique_weight": 0.6607175925925926
+}

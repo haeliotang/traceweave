@@ -1,0 +1,141 @@
+{
+  "device": "Pixel 6a",
+  "binary_sha256": "b0be8c01ac3f69bdf3247af3647c6d3640babcb76dffd73e21f4310e55a55e5b",
+  "scope": "synthetic_standalone_core_includes_periodic_cdf_not_java_phase_preparation_sqlite_or_full_android_runtime",
+  "limits": {
+    "elapsed_ms": 15,
+    "peak_rss_bytes": 5000000
+  },
+  "cases": {
+    "small_history": {
+      "runs": [
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 11808768,
+          "elapsed_ms": 3.090048,
+          "periodic_cdf_ms": 0.899455,
+          "rollout_ms": 2.095581,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 11812864,
+          "elapsed_ms": 1.623291,
+          "periodic_cdf_ms": 0.332886,
+          "rollout_ms": 1.25114,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 11833344,
+          "elapsed_ms": 1.965699,
+          "periodic_cdf_ms": 0.500813,
+          "rollout_ms": 1.414632,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 11833344,
+          "elapsed_ms": 3.024658,
+          "periodic_cdf_ms": 0.792196,
+          "rollout_ms": 2.150798,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 78,
+          "peak_rss_bytes": 11833344,
+          "elapsed_ms": 1.646322,
+          "periodic_cdf_ms": 0.332438,
+          "rollout_ms": 1.274943,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ],
+      "maximum_elapsed_ms": 3.090048,
+      "maximum_peak_rss_bytes": 11833344,
+      "performance_gate_passed": false
+    },
+    "monthly_warm_history": {
+      "runs": [
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 11841536,
+          "elapsed_ms": 321.757447,
+          "periodic_cdf_ms": 320.424316,
+          "rollout_ms": 1.282389,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 11845632,
+          "elapsed_ms": 360.990683,
+          "periodic_cdf_ms": 359.492107,
+          "rollout_ms": 1.436076,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        },
+        {
+          "scope": "standalone_native_normalization_quantization_periodic_cdf_and_rollouts_precomputed_phases",
+          "dimension": 128,
+          "states": 16,
+          "horizon_steps": 120,
+          "rollouts": 300,
+          "history_pairs": 86400,
+          "peak_rss_bytes": 11853824,
+          "elapsed_ms": 360.476075,
+          "periodic_cdf_ms": 358.94222,
+          "rollout_ms": 1.478068,
+          "mass_conserved": true,
+          "phase_preparation_timed": false
+        }
+      ],
+      "maximum_elapsed_ms": 360.990683,
+      "maximum_peak_rss_bytes": 11853824,
+      "performance_gate_passed": false
+    }
+  },
+  "before_fix": {
+    "android_benchmark_exit_code": 1,
+    "host_regression": "CDF maximum 1.0000000000000002 exceeded 1.0"
+  }
+}

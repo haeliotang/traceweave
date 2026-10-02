@@ -1,0 +1,10 @@
+{
+  "tests": 298,
+  "passed": true,
+  "elapsed_seconds": 22.065,
+  "synthetic_full_capacity_compressed_bytes": 246684,
+  "models": 4,
+  "states_per_model": 16,
+  "dimension": 128,
+  "scope": "lossless_full_capacity_sample_not_worst_case_bound_or_years_of_runtime"
+}

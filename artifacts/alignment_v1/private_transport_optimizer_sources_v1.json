@@ -1,0 +1,32 @@
+{
+  "scope": "synthetic_single_private_transport_sweep_not_global_optimum",
+  "reference_tests": {
+    "passed": true,
+    "tests": 4
+  },
+  "generator_binary_sha256": "d1b4cb000344ac44b887ca312e101dd79d30cd26bbdbba34d6e39e13b4e7c36b",
+  "sources": {
+    "native/private_alignment_probe/generate_gw_relation.cpp": "f02588ffe434497ec4884b86c8b9de8d31033701e83e8b05d90c8b7388414356",
+    "native/private_alignment_probe/verify_gw_relation.py": "d943541d8a962d56ce8e1bac4a27f0bd2c3fe28bcb941ed8206d21825375ae7a",
+    "traceform/dynamics/integer_transport.py": "569287b30f3a0a76ea775a16f570942ea41a9e9e0e8da6055e6d11f564e16bed",
+    "tests/test_integer_transport.py": "ed085ff2a493aba9df92c3d892adfe6b100c0a9bd2b68e824ddcc3c0e7df20c0"
+  },
+  "source_comment_added_after_compile": true,
+  "reports": {
+    "private_transport_optimizer_2x2_arm_host.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "0f1d974e43af71823770f78d8045c49d7fc50a710ff15f7c8a190f9e206a1210"
+    },
+    "private_transport_optimizer_2x3_arm_host.json": {
+      "passed": true,
+      "cases": 11,
+      "sha256": "f47ad1bc4921fade5596a0fb1f8037b60cd4e2e57c069dd23fadc35aa7bac87f"
+    },
+    "private_transport_optimizer_2x2_pixel.json": {
+      "passed": true,
+      "cases": 12,
+      "sha256": "b0cddf0f98d9d6e22c5ecfc4943b502be349ee40367c851ea242f0b6058bcc2a"
+    }
+  }
+}

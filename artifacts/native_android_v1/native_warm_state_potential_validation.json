@@ -1,0 +1,25 @@
+{
+  "protocol": "traceform.native-warm-state-potential-validation.v1",
+  "apk_sha256": "84f75d0149706fe7ac11f42ef4148ae4d4fcb67f199a7a61a0c979db3373ab8a",
+  "source_sha256": {
+    "android/src/org/traceform/edge/ModelEngine.java": "1ac88d032fff94627ffeaafecfb7d3469fc301ad63847745072dc70e242c514d",
+    "android/src/org/traceform/edge/NativeWeeklyAuditFixture.java": "12dc59be081063dcd5c78fbac5f9881cc9c96bf9945adcf8b3ed5029a6f30973",
+    "android/src/org/traceform/edge/WarmTrajectory.java": "1078cf3787e883ee9378a7ce40a2f68435cb9c235f89f7fa3455642739c85c37"
+  },
+  "build_and_signature_verified": true,
+  "installed": false,
+  "related_host_tests": {
+    "passed": 3,
+    "seconds": 1.07,
+    "scope": "warm bucket, SDK closure, graph potential; not new Android field or migration fixture execution"
+  },
+  "android_state_potential_fixture_executed": false,
+  "android_warm_potential_fixture_executed": false,
+  "semantics": "energy at quantized model center from empirical drift projection, gauge zero; no physical energy claim",
+  "unavailable_model": "explicit null state_relative_potential and false state_potential_available",
+  "active_device_job": {
+    "nonce": "cce177df-87ef-45c0-be50-7d12d47d6086",
+    "observed_state": "active ready",
+    "covers_this_change": false
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "scope": "standalone_SDK_fused_spectrum_rollouts_no_history_service_switch",
+  "hashes": {
+    "native/periodic_spectrum_jni.cpp": "d9c99c839e3eaa442e953d36a5a1eb2750e56be86268995b66d3152a73c989c4",
+    "android/src/org/traceform/edge/NativeCore.java": "ff54aa28bcbde1a4998a70a9d06b6f7e3cf0e3b73edabfeb3e6f2a75568b829b",
+    "android/src/org/traceform/edge/FittedPeriodicSpectrum.java": "70d622b416b902fc48889906a65ad0605c4350ddd7a9198370846a90302d1497",
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "d43c0cbc42ad261b3d6f0fcdc019ab3beace45828cd551ff31a782dee7426695",
+    "android/build/traceform.apk": "771c028a878628743a684e9c56f3f4521aa1908c9e194405394c0c464139d3f0"
+  },
+  "tests": {
+    "count": 313,
+    "seconds": 25.379,
+    "passed": true
+  },
+  "APK_receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "thread_environment_before": {
+      "thread_id": 20134,
+      "thread_priority": 0,
+      "cpus_allowed": "0-7"
+    },
+    "thread_environment_after": {
+      "thread_id": 20134,
+      "thread_priority": 0,
+      "cpus_allowed": "0-3"
+    },
+    "native_profiles": [
+      {
+        "lock_wait_ms": 0.007528,
+        "input_copy_allocation_ms": 0.868326,
+        "native_cdf_wall_ms": 15.999187,
+        "output_copy_ms": 0.759969,
+        "native_total_ms": 17.63501,
+        "native_cdf_thread_cpu_ms": 15.371213
+      },
+      {
+        "lock_wait_ms": 0.000651,
+        "input_copy_allocation_ms": 0.995727,
+        "native_cdf_wall_ms": 17.081543,
+        "output_copy_ms": 0.821574,
+        "native_total_ms": 18.899495,
+        "native_cdf_thread_cpu_ms": 16.450034
+      },
+      {
+        "lock_wait_ms": 0.002319,
+        "input_copy_allocation_ms": 0.773926,
+        "native_cdf_wall_ms": 18.776123,
+        "output_copy_ms": 1.41158,
+        "native_total_ms": 20.963948,
+        "native_cdf_thread_cpu_ms": 17.477052
+      },
+      {
+        "lock_wait_ms": 0.000407,
+        "input_copy_allocation_ms": 0.868367,
+        "native_cdf_wall_ms": 13.421916,
+        "output_copy_ms": 1.096313,
+        "native_total_ms": 15.387003,
+        "native_cdf_thread_cpu_ms": 13.073528
+      },
+      {
+        "lock_wait_ms": 0.002116,
+        "input_copy_allocation_ms": 1.769775,
+        "native_cdf_wall_ms": 13.864136,
+        "output_copy_ms": 1.66866,
+        "native_total_ms": 17.304687,
+        "native_cdf_thread_cpu_ms": 13.294879
+      }
+    ],
+    "fit_ms": 2441.919435,
+    "cdf_trials_ms": [
+      18.579916,
+      19.382609,
+      21.251465,
+      15.659383,
+      17.762411
+    ],
+    "maximum_cdf_error": 8.881784197001252e-16,
+    "pipeline_trials_ms": [
+      25.099976,
+      22.652303,
+      21.979166,
+      22.061075,
+      21.609944
+    ],
+    "pipeline_rollouts": 300,
+    "pipeline_profiles": [
+      {
+        "normalization_ms": 1.151734,
+        "quantization_ms": 0.538655,
+        "cdf_ms": 16.551799,
+        "rollouts_ms": 6.857788
+      },
+      {
+        "normalization_ms": 0.431397,
+        "quantization_ms": 0.166056,
+        "cdf_ms": 14.982544,
+        "rollouts_ms": 7.072306
+      },
+      {
+        "normalization_ms": 0.382975,
+        "quantization_ms": 0.188151,
+        "cdf_ms": 15.169067,
+        "rollouts_ms": 6.238973
+      },
+      {
+        "normalization_ms": 0.295247,
+        "quantization_ms": 0.184285,
+        "cdf_ms": 14.696249,
+        "rollouts_ms": 6.885294
+      },
+      {
+        "normalization_ms": 0.320516,
+        "quantization_ms": 0.159586,
+        "cdf_ms": 14.688802,
+        "rollouts_ms": 6.44104
+      }
+    ],
+    "fused_pipeline_trials_ms": [
+      20.721273,
+      21.68811,
+      22.279663,
+      21.483683,
+      20.194621
+    ],
+    "fused_occupancy_parity": true,
+    "fused_draw_and_handle_guards": true,
+    "pipeline_scope": "128D_normalization_16_state_quantization_fitted_CDF_300_rollouts_including_JNI_copy_not_fit_history_scan_or_phase_draw_preparation",
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790880323210
+  },
+  "guards_tested": [
+    "closed Java owner",
+    "forged native handle",
+    "draw shape mismatch",
+    "NaN draw",
+    "one-step horizon empty draws"
+  ],
+  "limits": [
+    "Fused complete synthetic computation pipeline 20.194621..22.279663 ms fails 15 ms",
+    "Per-trial separated path measured first, fused second; no randomized ordering or formal significance claim",
+    "HistoryForecast and SpectrumForecastCache still use separated path",
+    "Whole APK memory, initial fit, history scan, phases and random draw preparation are outside this timing gate"
+  ]
+}

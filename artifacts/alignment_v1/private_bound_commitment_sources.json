@@ -1,0 +1,39 @@
+{
+  "scope": "synthetic_same_input_private_gw_commitment_binding",
+  "sources": {
+    "native/private_alignment_probe/commitment.h": "a6d40005a0f95d946431b67feb5034a185ecfeb2b38c4c3b8989196066f02ac7",
+    "native/private_alignment_probe/generate_commitment.cpp": "a9446400d386320b3c3d3e6974431629c9993bb9a72768178f99bcf32df05894",
+    "native/private_alignment_probe/verify_commitment.py": "d86f266b335343eab1db430e8475fa7f0835687c8b6d59913feb432d985e2cd5",
+    "native/private_alignment_probe/generate_gw_relation.cpp": "6155b32fd93df747441009b6d05046c78fed6c3623a3b60bc2259a5059d7b02e",
+    "native/private_alignment_probe/verify_gw_relation.py": "eee29e4004268b7dc619beeab6f88c3d9df8d305e82ec59f0cbaad16ab71c43e",
+    "native/private_alignment_probe/smoke.cpp": "35e0c70f97a3fc17765083a86e7e590bfe042b49702f0f044c50309d744a1dc8",
+    "native/private_alignment_probe/dependencies.json": "06a5f04f1410fbce56370e969917d4fe51b799731b579dcf35d7ff283bb73aeb",
+    "native/private_alignment_probe/README.md": "cc2a8cfeb438b6982f0c5d1d08c4818d06cd17bf826241a04999bed6f5681cf3"
+  },
+  "reports": {
+    "private_commitment_gate_adapter_arm_host.json": {
+      "sha256": "4d6aad3c7fc5197a26cb57593f73f201d2b818f0a031dc2d3bc79dc5f3e0754a",
+      "passed": true
+    },
+    "private_gw_bound_commitments_2x2_arm_host.json": {
+      "sha256": "43d9ad357926693a0def1c1e98bd6359abff5b48200c6f05fce7e9c63661389e",
+      "passed": true
+    },
+    "private_gw_bound_commitments_2x3_arm_host.json": {
+      "sha256": "4c700680b4a31e406fe5c61b9261d52a0c359a571d618509e5be1f533472b8f0",
+      "passed": true
+    },
+    "private_backend_bound_runner_arm_host.json": {
+      "sha256": "934f1a9a4376580409e09cee17835a59a8cedf66290c845b43f89e24aff56e5f",
+      "passed": true
+    },
+    "private_loss_bound_runner_arm_host.json": {
+      "sha256": "737fedb1e5344d47a223321821f1d6c1476bc36b2d0dee8aedcaafb76b81cee4",
+      "passed": true
+    },
+    "private_bound_runner_stdin_boundaries.json": {
+      "sha256": "a4089f936d9c239c9bf7e5b4bb8a430fdf84ef18c999630546859dae9067e2be",
+      "passed": true
+    }
+  }
+}

@@ -13,6 +13,8 @@ import math
 import random
 from typing import Any, Dict, List, Optional, Tuple
 
+from traceform.forecasting.continuity import same_stream_segment
+
 
 def _sq_dist(v1: List[float], v2: List[float]) -> float:
     return sum((a - b) ** 2 for a, b in zip(v1, v2))
@@ -49,8 +51,8 @@ class ManifoldNode:
             node_id=d["node_id"],
             grid_coord=(d["grid_coord"][0], d["grid_coord"][1]),
             state_token=d["state_token"],
-            center_x=d["center_x"],
-            center_v=d["center_v"],
+            center_x=list(d["center_x"]),
+            center_v=list(d["center_v"]),
         )
 
 
@@ -80,7 +82,8 @@ class DynamicalEnergyManifold:
         self.last_velocity: Optional[List[float]] = None
 
     def _compute_phase_velocities(
-        self, vectors: List[List[float]], timestamps: Optional[List[float]] = None
+        self, vectors: List[List[float]], timestamps: Optional[List[float]] = None,
+        discontinuities: Optional[List[bool]] = None,
     ) -> List[List[float]]:
         """Computes smoothed phase velocities v(t) = dx/dt across feature frames."""
         n = len(vectors)
@@ -94,7 +97,12 @@ class DynamicalEnergyManifold:
         for i in range(1, n):
             dt = 1.0
             if timestamps and i < len(timestamps):
-                dt = max(0.1, timestamps[i] - timestamps[i - 1])
+                dt = timestamps[i] - timestamps[i - 1]
+            if not 0 < dt <= 300 or (discontinuities is not None and discontinuities[i]):
+                smooth_v = [0.0] * dim
+                velocities.append(list(smooth_v))
+                continue
+            dt = max(0.1, dt)
 
             raw_v = [(vectors[i][d] - vectors[i - 1][d]) / dt for d in range(dim)]
             # EMA smoothing to suppress high-frequency differential jitter
@@ -147,6 +155,7 @@ class DynamicalEnergyManifold:
         normalizer: Any,
         epochs: int = 6,
         seed: int = 42,
+        warm_start: bool = False,
     ) -> List[str]:
         """
         Fits 2D dynamical manifold over discovery observations using self-organizing
@@ -156,10 +165,6 @@ class DynamicalEnergyManifold:
             return []
 
         rng = random.Random(seed)
-        vectors = [normalizer.transform(obs)[0] for obs in observations]
-        n_points = len(vectors)
-        dim = len(vectors[0])
-
         # Parse timestamps for velocity estimation
         timestamps: List[float] = []
         for obs in observations:
@@ -173,32 +178,51 @@ class DynamicalEnergyManifold:
             except Exception:
                 timestamps.append(float(len(timestamps) * 30.0))
 
-        velocities = self._compute_phase_velocities(vectors, timestamps)
+        discontinuities = [True] + [
+            not 0 < timestamps[index] - timestamps[index - 1] <= 300
+            or not same_stream_segment(observations[index - 1], observations[index])
+            or any(observations[index - 1].get(key) != observations[index].get(key)
+                   for key in ("session_id", "model_sha256", "normalizer_sha256"))
+            for index in range(1, len(observations))]
+        vectors = []
+        reset_state = getattr(normalizer, 'reset_state', None)
+        for observation, discontinuous in zip(observations, discontinuities):
+            if discontinuous and reset_state is not None:
+                reset_state()
+            vectors.append(normalizer.transform(observation)[0])
+        n_points = len(vectors)
+        dim = len(vectors[0])
+        velocities = self._compute_phase_velocities(vectors, timestamps, discontinuities=discontinuities)
 
         # 1. Initialize 2D grid nodes by sampling observations
-        sample_indices = rng.sample(range(n_points), min(self.k_states, n_points))
-        while len(sample_indices) < self.k_states:
-            sample_indices.append(rng.choice(range(n_points)))
+        if warm_start:
+            if (len(self.nodes) != self.k_states or any(
+                    len(node.center_x) != dim or len(node.center_v) != dim for node in self.nodes)):
+                raise ValueError("incremental fit requires a complete dimension-matched manifold")
+        else:
+            sample_indices = rng.sample(range(n_points), min(self.k_states, n_points))
+            while len(sample_indices) < self.k_states:
+                sample_indices.append(rng.choice(range(n_points)))
 
-        self.nodes = []
-        node_id = 0
-        for u in range(self.height):
-            for v in range(self.width):
-                idx = sample_indices[node_id]
-                token = f"M{node_id + 1:02d}"
-                node = ManifoldNode(
-                    node_id=node_id,
-                    grid_coord=(u, v),
-                    state_token=token,
-                    center_x=list(vectors[idx]),
-                    center_v=list(velocities[idx]),
-                )
-                self.nodes.append(node)
-                self.token_to_coord[token] = (u, v)
-                node_id += 1
+            self.nodes = []
+            node_id = 0
+            for u in range(self.height):
+                for v in range(self.width):
+                    idx = sample_indices[node_id]
+                    token = f"M{node_id + 1:02d}"
+                    node = ManifoldNode(
+                        node_id=node_id,
+                        grid_coord=(u, v),
+                        state_token=token,
+                        center_x=list(vectors[idx]),
+                        center_v=list(velocities[idx]),
+                    )
+                    self.nodes.append(node)
+                    self.token_to_coord[token] = (u, v)
+                    node_id += 1
 
         # 2. Self-Organizing Topological Adaptation Loop
-        initial_lr = 0.5
+        initial_lr = 0.1 if warm_start else 0.5
         initial_sigma = max(self.height, self.width) / 2.0
         total_steps = epochs * n_points
 
@@ -236,6 +260,9 @@ class DynamicalEnergyManifold:
 
                 step += 1
 
+        if warm_start:
+            return [node.state_token for node in self.nodes]
+
         # Sort/Rank node tokens by stationary frequency so M01 is most visited
         node_counts = [0] * len(self.nodes)
         for idx in range(n_points):
@@ -258,6 +285,22 @@ class DynamicalEnergyManifold:
             nd.node_id = new_id
 
         return [nd.state_token for nd in self.nodes]
+
+    def quantize_phase(
+        self, vector: List[float], velocity: List[float],
+    ) -> Tuple[str, Tuple[int, int], float]:
+        """Quantize supplied phase coordinates without changing sensor history."""
+        if not self.nodes:
+            raise ValueError("fitted manifold nodes required")
+        dimension = len(self.nodes[0].center_x)
+        if (len(vector) != dimension or len(velocity) != dimension
+                or not all(math.isfinite(value) for value in list(vector) + list(velocity))
+                or any(len(node.center_x) != dimension or len(node.center_v) != dimension
+                       for node in self.nodes)):
+            raise ValueError("finite dimension-matched phase coordinates required")
+        best_node = min(self.nodes, key=lambda node: self.compute_energy_distance(vector, velocity, node))
+        return (best_node.state_token, best_node.grid_coord,
+                round(self.compute_energy_distance(vector, velocity, best_node), 4))
 
     def quantize(
         self,

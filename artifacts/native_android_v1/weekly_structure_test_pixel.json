@@ -1,0 +1,12 @@
+{
+  "tests": 16,
+  "executed_tests": 15,
+  "skipped": 1,
+  "passed": true,
+  "elapsed_seconds": 2.3566908779903315,
+  "failures": 0,
+  "errors": 0,
+  "skip_reason": "host_only_Android_tool_interception",
+  "timezone_path": "/data/data/com.termux/files/usr/share/zoneinfo",
+  "scope": "isolated_synthetic_weekly_structure_and_maintenance_tests_no_live_history"
+}

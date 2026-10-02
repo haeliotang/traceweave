@@ -1,0 +1,8 @@
+{
+  "adopted": false,
+  "sample_points": 100001,
+  "max_absolute_exp_error": 7.327471962526033e-15,
+  "scope": "scalar_formula_sample_not_native_cdf_parity_or_formal_error_bound",
+  "production_source_sha256": "7c6f55f16276570ee8a41e963d65fa2e8897c5be33451c33f6b605addb3fca04",
+  "experimental_source_sha256": "56a6f8d63b9aa2fe6a466670485fc65047bdc0be204fd31480ca3484ec1d3d5b"
+}

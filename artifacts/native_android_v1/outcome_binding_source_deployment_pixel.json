@@ -1,0 +1,13 @@
+{
+  "sources": [
+    {
+      "path": "traceform/intervention/closed_loop.py",
+      "sha256": "4afafedca3a10caec760b49e577fa952d4c27d82bf9d45f20b1261a59e041e2c"
+    },
+    {
+      "path": "tests/test_closed_loop.py",
+      "sha256": "eac7008638d62b4246cc92de7ed5db8c452e71088c8bb0a3fadeb1a05ad390bd"
+    }
+  ],
+  "scope": "atomic_source_deployment_no_runtime_restart_or_actuation"
+}

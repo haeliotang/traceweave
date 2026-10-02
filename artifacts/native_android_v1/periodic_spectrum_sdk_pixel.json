@@ -1,0 +1,42 @@
+{
+  "scope": "APK_JNI_fitted_spectrum_synthetic_monthly_parity_lifecycle_latency_gate_failed",
+  "receipt": {
+    "passed": true,
+    "history_pairs": 86400,
+    "states": 16,
+    "horizon": 120,
+    "fit_ms": 1562.659344,
+    "cdf_trials_ms": [
+      46.488525,
+      50.753093,
+      44.312866,
+      44.026164,
+      45.349934
+    ],
+    "maximum_cdf_error": 7.771561172376096e-16,
+    "closed_wrapper_rejected": true,
+    "stale_handle_rejected": true,
+    "forged_handle_rejected": true,
+    "malformed_fit_rejected": true,
+    "scope": "synthetic_monthly_JNI_fitted_snapshot_not_live_window_cache_or_full_memory_gate",
+    "completed_epoch_ms": 1790874704827
+  },
+  "tests": {
+    "count": 309,
+    "seconds": 26.047,
+    "passed": true
+  },
+  "prediction_15ms_gate_passed": false,
+  "production_forecast_selected": false,
+  "sha256": {
+    "native/periodic_spectrum_jni.cpp": "0ae16f28abd11ac1bafd531d430ea762837246969cdf8b96accb954d985b640c",
+    "native/periodic_spectrum.cpp": "e292c831554046793c09ae60f3ac22f7f49028745a2f10c4d7603ac58c2aa9d7",
+    "android/src/org/traceform/edge/FittedPeriodicSpectrum.java": "06d9c89d53761b79b11f722fcfe12c5b19fc9a3a173984e99bdf0c1ef9cb2fc2",
+    "android/src/org/traceform/edge/NativeCore.java": "e81d19b541c5bbdd1232035f80e95bc3bb0f9301cb16993bc80110f8779f7de2",
+    "android/src/org/traceform/edge/SpectrumSdkFixture.java": "65123cd576d21ee6041ac6fd0be7473431a7206fe78f498286a15c520230c791",
+    "android/src/org/traceform/edge/MainActivity.java": "7a654ef69a0114b4eec6ee8526ca0389cf3337bfbb63c3c9d87623a191c24e94",
+    "scripts/build_native_android.py": "d7cb230d1e77a52f7cdd0c43a4027acab844697a29d0137400a4f0fd205a9384",
+    "android/build/traceform.apk": "7e92252ad73ba5ec1e187168d6daf0510ce9304f1930c951e087fdcb7632c64a",
+    "android/build/traceform-sdk.jar": "e090aa5e301427793e194412a70d016f87df519389606653b5adee87de549688"
+  }
+}

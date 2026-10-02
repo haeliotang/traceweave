@@ -1,0 +1,39 @@
+{
+  "scope": "synthetic_nonlinear_zero_diffusion_numerical_refinement_not_empirical_validation",
+  "analytic_terminal": 0.15838317561914472,
+  "refinement": [
+    {
+      "step_seconds": 0.25,
+      "terminal": 0.12590725387499274,
+      "absolute_error": 0.03247592174415198
+    },
+    {
+      "step_seconds": 0.125,
+      "terminal": 0.14252449267057452,
+      "absolute_error": 0.015858682948570207
+    },
+    {
+      "step_seconds": 0.0625,
+      "terminal": 0.1505450926969425,
+      "absolute_error": 0.007838082922202227
+    },
+    {
+      "step_seconds": 0.03125,
+      "terminal": 0.1544865206417685,
+      "absolute_error": 0.003896654977376235
+    }
+  ],
+  "tests": {
+    "count": 312,
+    "seconds": 25.273,
+    "passed": true
+  },
+  "source_sha256": {
+    "traceform/dynamics/continuous.py": "2192f1a0d71b1cc854082c1ce7556a17c01cc920fc1b9bd760b31ebaf2f92174",
+    "tests/test_continuous_dynamics.py": "e9b091cc15b2be07277f72f444f42fdee1ecdcc1daa986a6b2c22360cfbd6111"
+  },
+  "regression": {
+    "before_fix": "NaN duration and infinite step both accepted; two test failures",
+    "after_fix": "NaN/infinite duration and step rejected"
+  }
+}
