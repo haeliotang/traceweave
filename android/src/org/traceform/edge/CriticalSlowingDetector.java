@@ -13,6 +13,7 @@ final class CriticalSlowingDetector {
     }
     private double[][] coordinates = new double[3][300];
     private boolean continuousInput;
+    private final double[] projectionResiduals = new double[300], axisResiduals = new double[300];
     private final double[] variances = new double[300], correlations = new double[300];
     private int size, next, baselineSize, baselineNext, dwell;
     private String token;
@@ -44,36 +45,40 @@ final class CriticalSlowingDetector {
         coordinates[vector.length][next] = projection;
         next = (next + 1) % 300; size = Math.min(300, size + 1);
         if (size < 20) return new Result(dwell, false, 0, 0, 0);
-        double[] dp = residuals(coordinates[vector.length]);
+        double xx = 0, meanX = (size - 1) / 2.0;
+        for (int index = 0; index < size; index++) xx += (index - meanX) * (index - meanX);
+        double[] dp = projectionResiduals;
+        residuals(coordinates[vector.length], dp, xx);
         double variance = 0, covariance = 0;
-        for (int axis = 0; axis < vector.length; axis++) variance += squareMean(residuals(coordinates[axis]));
+        for (int axis = 0; axis < vector.length; axis++) {
+            residuals(coordinates[axis], axisResiduals, xx);
+            variance += squareMean(axisResiduals, size);
+        }
         if (normalized) variance /= vector.length;
         for (int index = 0; index < size - 1; index++) covariance += dp[index] * dp[index + 1];
-        double lag1 = Math.max(-1, Math.min(1, covariance / (size - 1) / Math.max(1e-6, squareMean(dp))));
+        double lag1 = Math.max(-1, Math.min(1, covariance / (size - 1) / Math.max(1e-6, squareMean(dp, size))));
         variances[baselineNext] = variance; correlations[baselineNext] = lag1;
         baselineNext = (baselineNext + 1) % 300; baselineSize = Math.min(300, baselineSize + 1);
         boolean ready = baselineSize >= 10;
         double score = ready ? standardized(variance, variances) + standardized(lag1, correlations) : 0;
         return new Result(dwell, ready, variance, lag1, score);
     }
-    private double[] residuals(double[] values) {
-        double mean = 0, meanX = (size - 1) / 2.0, xx = 0, xy = 0;
-        double[] result = new double[size];
+    private void residuals(double[] values, double[] result, double xx) {
+        double mean = 0, meanX = (size - 1) / 2.0, xy = 0;
         int first = (next - size + 300) % 300;
         for (int index = 0; index < size; index++) { result[index] = values[(first + index) % 300]; mean += result[index]; }
         mean /= size;
         for (int index = 0; index < size; index++) {
             double x = index - meanX;
-            xx += x * x; xy += x * (result[index] - mean);
+            xy += x * (result[index] - mean);
         }
         double slope = xy / xx, intercept = mean - slope * meanX;
         for (int index = 0; index < size; index++) result[index] -= slope * index + intercept;
-        return result;
     }
-    private static double squareMean(double[] values) {
+    private static double squareMean(double[] values, int count) {
         double total = 0;
-        for (double value : values) total += value * value;
-        return total / values.length;
+        for (int index = 0; index < count; index++) total += values[index] * values[index];
+        return total / count;
     }
     private double standardized(double value, double[] history) {
         double mean = 0, squared = 0;

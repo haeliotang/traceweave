@@ -4,6 +4,7 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <application android:debuggable="true" android:label="Traceform synthetic binding">
+    <receiver android:name="org.traceform.edge.SyntheticContinuousCsdReceiver" android:exported="true" android:permission="android.permission.DUMP"/>
     <receiver android:name="org.traceform.edge.SyntheticWifiReceiver" android:exported="true" android:permission="android.permission.DUMP"/>
     <service android:name="org.traceform.edge.EdgeService" android:exported="false" android:process=":edge"/>
     <receiver android:name="org.traceform.edge.SyntheticBindingReceiver" android:exported="true" android:permission="android.permission.DUMP"/>

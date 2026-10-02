@@ -84,7 +84,7 @@ public final class CsdTest {
         for index in range(180):
             value = 0.5 + (rng.uniform(-0.001, 0.001) if index < 100 else 0.3 * math.sin((index - 100) / 4))
             def quantize(*args, **kwargs):
-                manifold.last_obs_vector = [value] * 128
+                manifold.last_obs_vector = [value + 0.01 * math.sin(axis + index) for axis in range(128)]
                 return 'M01', (1, 1), 0
             instant = datetime(2026, 10, 1, tzinfo=timezone.utc) + timedelta(seconds=index)
             with patch.object(manifold, 'quantize', side_effect=quantize):
@@ -94,7 +94,7 @@ public final class CsdTest {
             expected.append((frame['dwell_steps'], tipping,
                              daemon.var_history[-1] if daemon.var_history else 0,
                              daemon.ar1_history[-1] if daemon.ar1_history else 0))
-            samples.append(f'{value!r} {str(index > 0).lower()}')
+            samples.append(f'{index} {value!r} {str(index > 0).lower()}')
         self.assertGreater(alerts, 0)
         harness = '''package org.traceform.edge;
 public final class ContinuousCsdTest {
@@ -102,7 +102,8 @@ public final class ContinuousCsdTest {
         CriticalSlowingDetector detector = new CriticalSlowingDetector();
         java.util.Scanner input = new java.util.Scanner(System.in).useLocale(java.util.Locale.ROOT);
         while(input.hasNext()) {
-            double[] vector=new double[128];java.util.Arrays.fill(vector,input.nextDouble());
+            int index=input.nextInt();double value=input.nextDouble();
+            double[] vector=new double[128];for(int axis=0;axis<vector.length;axis++)vector[axis]=value+0.01*Math.sin(axis+index);
             CriticalSlowingDetector.Result r=detector.updateContinuous("M01",vector,input.nextBoolean());
             System.out.println(r.dwellSteps+" "+r.tipping+" "+r.variance+" "+r.lag1);
         }

@@ -461,6 +461,9 @@ traceform/
 ## 5. Quick Start & Execution
 
 ### A. Run Unit Tests (394/394 Host Tests Passing)
+
+The native continuous CSD detector reuses two bounded residual buffers and computes the shared time-axis denominator once per frame. The host suite passes all 394 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
+
 ```bash
 # Run the full host suite locally:
 python3 -m unittest discover tests
