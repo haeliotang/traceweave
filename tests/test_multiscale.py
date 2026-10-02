@@ -55,6 +55,13 @@ class TestMultiscaleDiffusion(unittest.TestCase):
         self.assertGreater(scales[0].transition_determinism, 0.9)
         self.assertEqual(scales[0].scale_factor, 1)
 
+    def test_msd_slope_does_not_identify_a_physical_driver(self):
+        for power in (0.0, 1.0, 2.0):
+            regime = self.auditor.estimate_hurst_exponent({lag: lag ** power for lag in (1, 2, 4, 8)})
+            self.assertAlmostEqual(regime.hurst_exponent, power / 2)
+            self.assertIn('not identified', regime.interpretation)
+            self.assertNotIn('strongly confined', regime.interpretation)
+
     def test_audit_multiscale_dynamics(self):
         # Mock records
         rng = random.Random(42)

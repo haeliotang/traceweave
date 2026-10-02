@@ -3,8 +3,8 @@ Multiscale Renormalization & Anomalous Diffusion Analysis.
 
 Quantifies trajectory diffusion regimes:
 1. Mean Squared Displacement (MSD) <(Delta r(tau))^2> over multiple temporal lags.
-2. Hurst exponent H estimation to differentiate sub-diffusion (potential well confinement)
-   from Brownian random walk and super-diffusive exploration.
+2. Finite-lag MSD slope diagnostics; these do not identify a stochastic driver
+   or prove a physical confinement mechanism.
 3. Temporal coarse-graining and transition determinism across scaling factors.
 """
 
@@ -145,13 +145,13 @@ class MultiscaleDiffusionAuditor:
 
         if h < 0.45:
             regime = "SUB_DIFFUSIVE"
-            interp = f"Sub-diffusive trapping (H={h:.3f} < 0.5): Trajectory is strongly confined inside potential well attractors."
+            interp = f"Finite-lag sub-diffusive MSD slope (H={h:.3f} < 0.5); physical driver and confinement mechanism not identified."
         elif h > 0.55:
             regime = "SUPER_DIFFUSIVE"
-            interp = f"Super-diffusive persistence (H={h:.3f} > 0.5): Trajectory exhibits active exploration / long-range jumps."
+            interp = f"Finite-lag super-diffusive MSD slope (H={h:.3f} > 0.5); physical driver and persistence mechanism not identified."
         else:
             regime = "BROWNIAN"
-            interp = f"Normal Brownian motion (H={h:.3f} ~ 0.5): Trajectory resembles memoryless uncorrelated random walk."
+            interp = f"Finite-lag Brownian-like MSD slope (H={h:.3f} ~ 0.5); Brownian driver and independent increments not identified."
 
         return DiffusionRegime(
             hurst_exponent=h,

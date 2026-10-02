@@ -12,7 +12,7 @@
 [![Code Health](https://img.shields.io/badge/Audit-100%25%20Verified%20(15%20Bugs%20Fixed)-teal)]()
 [![Hardware](https://img.shields.io/badge/Pixel%206a-Final%20Primary%20Update%20Pending-yellow)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
-[![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.054)-teal)]()
+[![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.0623)-teal)]()
 [![Macroscope 2.0](https://img.shields.io/badge/Macroscope%202.0-Interactive%20Canvas-pink)]()
 [![Forecasting](https://img.shields.io/badge/Top--1%20Forecast-88.4%25-blueviolet)]()
 [![Stability](https://img.shields.io/badge/Temporal%20Stability-Confirmed%20(p%3C0.001)-purple)]()
@@ -277,10 +277,10 @@ Integrating 2D Self-Organizing Topological Maps with kinetic momentum geodesics 
 - **Longitudinal Attractor Drift**: Dominant habit attractor exhibits stable retention across weeks with a low drift velocity of **0.569 grid steps / week**.
 - **Critical Slowing Down (CSD) Early Warning Signals**: 25 warning epochs detected via sliding lag-1 autocorrelation $AR(1)$ and spatial variance surges ($z \ge 2.5\sigma$). Successfully flagged the Friday-evening phase transition into the weekend regime ($AR(1) = 0.764$, $\sigma^2 = 3.89$, composite $= 5.76\sigma$).
 
-### H. Multiscale Renormalization & Anomalous Sub-Diffusion (Hurst Exponent $H = 0.0541$)
+### H. Multiscale MSD Slope Diagnostic (Archived $H = 0.0623$)
 Statistical mechanics analysis over lags spanning from 30 seconds to 8.5 hours ([`MULTISCALE_DIFFUSION_REPORT_v1.md`](artifacts/multiscale_v1/MULTISCALE_DIFFUSION_REPORT_v1.md)):
-- **Anomalous Sub-Diffusive Confinement**: Empirical Hurst exponent **$H = 0.0541$ ($R^2 = 0.8153$)**, decisively ruling out unconstrained Brownian random walk ($H = 0.5$). Proves mathematically that human daily trajectory dynamics are strictly bound inside potential well attractors on the manifold.
-- **Renormalization Group (Causal Emergence)**: Coarse-graining blocks from 30s to 32min reveals that transition determinism peaks at **$s^* = 16$ (8.0 minutes, Determinism $= 0.5882$)**, identifying the natural behavioral clock where macroscopic structure organically emerges.
+- **Archived finite-lag MSD slope**: The linked report and JSON record **$H = 0.0623$ ($R^2 = 0.7944$)** on the projected 2D token manifold. This slope does not identify fractional Brownian memory, reject a Brownian/null model statistically, or prove a physical potential-well mechanism. Continuous source-bound identification remains an open Stage 11 requirement.
+- **Archived coarse-graining diagnostic**: The linked report records a determinism maximum at **$s^* = 32$ (16.0 minutes, Determinism $= 0.6799$)** among its evaluated scales. This is a descriptive maximum, not causal emergence or an identified physiological clock.
 
 ### I. Personal Macroscope 2.0 & On-Device Edge Manifold Daemon
 - **Interactive Macroscope 2.0**: Self-contained HTML5/Canvas visualization ([`macroscope_dashboard_v2.html`](artifacts/macroscope_v2/macroscope_dashboard_v2.html)) featuring 3D isometric potential surfaces, longitudinal drift vector fields ($\vec{\nu}_{\text{drift}}$), synchronized dual-track CSD timelines, and anomalous diffusion log-log plots.
