@@ -532,6 +532,8 @@ open artifacts/macroscope_v2/macroscope_dashboard_v2.html
 ```
 
 ### H. Run On-Device Edge Manifold Daemon & CSD Resonance Closed Loop (Pixel 6a)
+The field startup wrapper preserves an existing daemon and silence flag. If its process query fails, it exits before changing the flag, launching another daemon or running telemetry sync; a failed query is not evidence that the daemon is absent.
+
 Process real-time physical frames on-device with sub-millisecond DETM quantization, online CSD tipping alerts, and vibration triggers:
 ```bash
 # Simulation mode over historical frames:

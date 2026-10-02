@@ -17,7 +17,13 @@ echo " Repository: git@github.com:haeliotang/traceform.git"
 echo "============================================================================"
 
 # Ensure edge daemon is running in silent mode
-if ! pgrep -f "phone_edge_manifold_daemon.py" > /dev/null; then
+daemon_query_status=0
+pgrep -f "phone_edge_manifold_daemon.py" > /dev/null || daemon_query_status=$?
+if [ "$daemon_query_status" -gt 1 ]; then
+    echo "[!] Unable to determine edge daemon state; startup aborted." >&2
+    exit "$daemon_query_status"
+fi
+if [ "$daemon_query_status" -eq 1 ]; then
     # A new unattended launch defaults to silent; preserve an existing runtime.
     touch "$DIR/data/.silent"
     echo "[*] Launching phone_edge_manifold_daemon.py (Silent Mode) in background..."
