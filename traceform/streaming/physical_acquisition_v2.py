@@ -29,6 +29,7 @@ class RollingPhysicalAcquisitionEngine:
         self.last_location_coords: Optional[Tuple[float, float]] = None
         self.last_audio_sample_time: float = 0.0
         self.last_location_sample_time: float = 0.0
+        self.last_location_attempt_monotonic: Optional[float] = None
 
         # Load prior state if available from ledger
         recent_obs = ledger.read_recent_observations(limit=1, ledger_path=ledger_dir / "physical_observations.jsonl")
@@ -53,6 +54,7 @@ class RollingPhysicalAcquisitionEngine:
         and durably appends to ledgers.
         """
         now_s = time.time()
+        location_now = time.monotonic()
 
         # Adaptive policy: determine if audio / location should be acquired
         include_audio = force_audio
@@ -68,8 +70,12 @@ class RollingPhysicalAcquisitionEngine:
             interval = 45.0
             if self.prior_observation and self.prior_observation.motion.get("stationary_likelihood", 1.0) > 0.8:
                 interval = 120.0
-            if (now_s - self.last_location_sample_time) >= interval or self.last_location_coords is None:
+            if self.last_location_attempt_monotonic is None or location_now - self.last_location_attempt_monotonic >= interval:
                 include_location = True
+
+        if include_location:
+            # Failed or interrupted attempts also consume the retry interval.
+            self.last_location_attempt_monotonic = location_now
 
         # Acquire frame
         obs = acquire_observation_frame(

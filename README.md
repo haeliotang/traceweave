@@ -481,6 +481,8 @@ pytest tests/ -v
 ```
 
 ### B. Physical Edge Deployment & Verification (Google Pixel 6a via ADB)
+The v2 collector retains adaptive 30-second stationary / 10-second moving frame scheduling. Location retries use monotonic attempt-based cooldowns, including failures; missing coordinates do not trigger a new slow request on every frame. This is not 1Hz sampling. See [the v2 acquisition scope](docs/rolling_physical_v2.md).
+
 ```bash
 # Verify attached hardware:
 adb devices

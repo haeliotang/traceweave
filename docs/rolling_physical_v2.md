@@ -54,3 +54,12 @@ The reported callback age and a conservative age upper bound including the
 entire request duration are recorded separately. No fresh-position claim is
 made when the device cannot obtain a recent position. This can extend a cycle
 to roughly 40 seconds; the current sampler is not a 1Hz implementation.
+
+Adaptive location retries now use the monotonic time of the last attempt,
+including failed or interrupted requests. Missing coordinates no longer bypass
+the 120-second stationary / 45-second moving retry intervals. Explicit forced
+location requests still override this cooldown. The runner retains its separate
+30-second stationary / 10-second moving frame schedule; this change reduces
+repeated request blocking and does not establish 1Hz sampling. Host regression
+checks cover unavailable replies, acquisition exceptions and forced requests.
+The running device collector has not been restarted with this change.
