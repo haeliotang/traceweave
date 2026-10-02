@@ -27,14 +27,16 @@
 分别记录，不能互相替代。
 
 最近记录的验证结果为 **356 项 Python 测试、16 项 Rust 测试通过**；
-本次为文档进度更新，未重新执行测试或新增真机实验。
+完整测试套件未因后续探针更新而重跑；最新绑定探针已完成真机验证，
+相关验证器进程测试另行通过（1 项）。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
 packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
 后者覆盖错误签名、无效证明、有效证明及应用进程重启后的重放拒绝。
 这些计数来自不同范围的验证，不能合并为完整协议验收。
 
-接下来仍需完成 MPC 实际输出与签名证明绑定、十六节点带批准防护的正常
+两节点已知分数的实际 MPC 输出与签名证明绑定已通过真机验证（4.641s）；
+这不覆盖十六节点未知分数流程。接下来仍需完成十六节点带批准防护的正常
 未知分数流程及其应用重启重放验证、双方私有证明生成，以及当前源码的
 主应用构建、USB 安装和集成检查。真实干预因果效果、实测连续动力学及
 长期生产调度仍需各自的验证证据。Pixel6a 主应用仍是旧版本；独立测试
@@ -51,7 +53,7 @@ requirements and evidence boundaries.
 | Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Authorized real intervention and causal-effect evidence; defaults remain shadow/silent |
 | Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Final production-source deployment, actual Sunday delivery and meaningful long-term bifurcation parameters |
 | Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Final primary-app update and complete native feature provenance; these measurements do not cover whole-app or private-MPC memory |
-| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations | Guarded normal unknown-score Android coverage, app-restart replay, MPC-result/proof binding and distributed proof integration, real owner enrollment and independent security assessment |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations; two-node known-statement MPC/proof binding | Guarded normal unknown-score Android coverage, app-restart replay, unknown-score proof integration and distributed private proving, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
 approved commitment. The dedicated approved circuit now checks both parties'
@@ -69,8 +71,12 @@ tampering and process-restart replay. See [packed-v2 proof evidence](artifacts/a
 Four signed SDK cases also pass inside application-private storage, including
 wrong-owner rejection and replay after an app-process restart. See the
 [signed SDK receipt](artifacts/alignment_v1/zk_packed_uniform_v2_signed_sdk_android.json).
-The synthetic prover knows both models; distributed private proving,
-MPC-result/proof binding and real-owner enrollment remain open.
+Actual separate-party two-node MPC output also matches the signed packed-v2
+statement inside the application SDK; the Mac independently matches the same
+849-bit result. See the [MPC/proof binding receipt](artifacts/alignment_v1/zk_packed_uniform_v2_mpc_binding_android.json).
+This is a known-statement synthetic case. The synthetic prover knows both models;
+distributed private proving, unknown-score proof integration and real-owner
+enrollment remain open.
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes

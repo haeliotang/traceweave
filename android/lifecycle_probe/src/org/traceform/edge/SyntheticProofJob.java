@@ -8,7 +8,7 @@ import java.io.File;
 import java.security.PublicKey;
 import org.json.JSONObject;
 
-/** Synthetic signed public proof inside the isolated application UID. */
+/** Synthetic signed proof, optionally bound to MPC with a separate Mac peer. */
 public final class SyntheticProofJob extends JobService {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private volatile Thread worker;
@@ -27,7 +27,24 @@ public final class SyntheticProofJob extends JobService {
                     new java.security.spec.X509EncodedKeySpec(OwnerAuthentication.readBounded(new File(root, "owner" + owner + ".der"), 256)));
                 report.put("case", label);
                 try {
-                    JSONObject result = ProofVerifier.verify(this, root, pin, owners);
+                    boolean compute = fixture.optBoolean("compute_alignment", false);
+                    JSONObject result;
+                    if (compute) {
+                        byte[] inputs = OwnerAuthentication.readBounded(new File(root, "public_inputs.bin"), 224);
+                        if (inputs.length != 224) throw new SecurityException("fixture statement length rejected");
+                        StringBuilder session = new StringBuilder();
+                        for (int value = 0; value < 32; value++) session.append(String.format("%02x", inputs[value < 31 ? 32 + value : 64] & 255));
+                        File circuit = new File(root, "circuit.txt");
+                        String peerPin = new String(OwnerAuthentication.readBounded(new File(root, "2.pin"), 64), "US-ASCII");
+                        String circuitPin = new String(OwnerAuthentication.readBounded(new File(root, "circuit.pin"), 64), "US-ASCII");
+                        String bits = new String(OwnerAuthentication.readBounded(new File(root, "own.bits"), 638), "US-ASCII");
+                        String[] command = {new File(getApplicationInfo().nativeLibraryDir, "libtraceform_private_participant.so").getAbsolutePath(),
+                            "1", "24885", circuit.getAbsolutePath(), new File(root, "1.pem").getAbsolutePath(),
+                            new File(root, "1.key").getAbsolutePath(), new File(root, "2.pem").getAbsolutePath(), peerPin, session.toString()};
+                        result = ProofVerifier.computeAndVerify(this, root, pin, owners, command, circuit, circuitPin, bits);
+                        report.put("mpc_output_bound_to_signed_proof", result.getBoolean("verified"))
+                            .put("computation_scope", "synthetic_two_node_known_statement_separate_mac_peer");
+                    } else result = ProofVerifier.verify(this, root, pin, owners);
                     if ("bad_owner".equals(label)) throw new IllegalStateException("invalid owner accepted");
                     boolean valid = result.getBoolean("verified");
                     if (valid != "valid".equals(label)) throw new IllegalStateException("unexpected proof result");
