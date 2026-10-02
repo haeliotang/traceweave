@@ -472,6 +472,8 @@ traceform/
 
 ### A. Run Unit Tests (403/403 Host Tests Passing)
 
+The [pressure-source candidate build](artifacts/alignment_v1/native_pressure_refresh_candidate_build.json) refreshes derivatives from each fresh endpoint using bounded five-second-or-longer references; freshness and coverage gates remain unchanged. The primary app has not been updated.
+
 The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The latest [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) remains uninstalled in the primary app. The host suite passes all 403 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
 
 ```bash
