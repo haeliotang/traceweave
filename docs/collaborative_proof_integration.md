@@ -52,3 +52,13 @@ trust-model change. Until resolved, retain the two-owner computation architectur
 The next implementation depends on a compatible protocol and witness-generation
 path, not just a new verifier adapter. Current synthetic tests and builds remain
 available; final privacy acceptance and full deployment remain open.
+
+For an unknown-score computation, the Android caller can now obtain the exact
+224-byte discovered statement with
+`PrivateAlignmentOutput.encodePublicStatement(outputBits)`. This uses the same
+strict output parser as binding verification and returns a fresh array. Owners
+must approve this complete statement and the resulting proof; the computation
+request approves only circuit/session/model bindings. Encoding does not generate
+a proof, establish an authenticated computation or replace
+`ProofVerifier.verifyPrivateAlignment`, which checks the approved proof package
+against every byte of the actual MPC output before invoking the native verifier.

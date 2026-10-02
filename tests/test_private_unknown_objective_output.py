@@ -39,6 +39,17 @@ public final class UnknownOutputTest {
         String zero = new String(Files.readAllBytes(root.resolve("zero.bits")), "US-ASCII");
         String large = new String(Files.readAllBytes(root.resolve("large.bits")), "US-ASCII");
         byte[] discovered = PrivateAlignmentOutput.verifyBindings(large, bindings);
+        byte[] publicStatement = PrivateAlignmentOutput.encodePublicStatement(large);
+        if (!Arrays.equals(publicStatement, discovered)) throw new AssertionError("public statement changed");
+        publicStatement[0] ^= 1;
+        if (!Arrays.equals(PrivateAlignmentOutput.encodePublicStatement(large), discovered))
+            throw new AssertionError("public statement aliases previous result");
+        for (String invalid : new String[]{null, large.substring(1), "2"+large.substring(1),
+                "0"+large.substring(1), new String(Files.readAllBytes(root.resolve("overflow.bits")),"US-ASCII")}) {
+            try { PrivateAlignmentOutput.encodePublicStatement(invalid); }
+            catch (SecurityException expected) { continue; }
+            throw new AssertionError("invalid public statement exported");
+        }
         if (discovered.length != 224 || discovered[0] != 17 || (discovered[9]&128) == 0)
             throw new AssertionError("unknown score truncated");
         PrivateAlignmentOutput.verify(large, discovered);

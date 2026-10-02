@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 
 public final class PrivateAlignmentOutput {
     public static void verify(String bits, byte[] publicInputs) {
-        byte[] encoded = encode(bits);
+        byte[] encoded = encodePublicStatement(bits);
         if (publicInputs == null || publicInputs.length != 224)
             throw new SecurityException("exact public statement encoding required");
         if (!MessageDigest.isEqual(encoded, publicInputs))
@@ -15,7 +15,7 @@ public final class PrivateAlignmentOutput {
     // Internal primitive for a separately authorized unknown-objective computation.
     // It checks bindings, not owner signatures, replay policy or a public proof.
     static byte[] verifyBindings(String bits, byte[] approvedBindings) {
-        byte[] encoded = encode(bits);
+        byte[] encoded = encodePublicStatement(bits);
         if (approvedBindings == null || approvedBindings.length != 192)
             throw new SecurityException("exact approved binding encoding required");
         if (!MessageDigest.isEqual(java.util.Arrays.copyOfRange(encoded, 32, 224), approvedBindings.clone()))
@@ -23,7 +23,10 @@ public final class PrivateAlignmentOutput {
         return encoded;
     }
 
-    private static byte[] encode(String bits) {
+    // Canonical discovered statement for subsequent owner approval/proof binding.
+    // Encoding alone does not authenticate an MPC result or verify a proof.
+    // Each call returns a fresh 224-byte array containing only public output.
+    public static byte[] encodePublicStatement(String bits) {
         if (bits == null || bits.length() != 849 || !bits.matches("[01]{849}"))
             throw new SecurityException("exact binary private alignment output required");
         if (bits.charAt(0) != '1') throw new SecurityException("private alignment witness rejected");
