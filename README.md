@@ -73,6 +73,9 @@ wrong-owner rejection and replay after an app-process restart. See the
 Actual separate-party two-node MPC output also matches the signed packed-v2
 statement inside the application SDK; the Mac independently matches the same
 849-bit result. See the [MPC/proof binding receipt](artifacts/alignment_v1/zk_packed_uniform_v2_mpc_binding_android.json).
+The latest probe also rejects replay through the computation entry after an
+actual app-process restart (87.202ms), with the session ledger unchanged and
+no peer connection available. See the [MPC restart receipt](artifacts/alignment_v1/zk_packed_uniform_v2_mpc_restart_android.json).
 This is a known-statement synthetic case. The synthetic prover knows both models;
 distributed private proving, unknown-score proof integration and real-owner
 enrollment remain open.

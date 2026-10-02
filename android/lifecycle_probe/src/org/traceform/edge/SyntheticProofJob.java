@@ -55,8 +55,12 @@ public final class SyntheticProofJob extends JobService {
                         throw new IllegalStateException("unexpected replay rejection");
                     report.put("verifier", result);
                 } catch (SecurityException error) {
-                    if (!"bad_owner".equals(label) || !"owner signature rejected".equals(error.getMessage())) throw error;
-                    report.put("signature_rejected", true);
+                    if ("bad_owner".equals(label) && "owner signature rejected".equals(error.getMessage()))
+                        report.put("signature_rejected", true);
+                    else if (fixture.optBoolean("compute_alignment", false) && "replay".equals(label)
+                             && "replayed session".equals(error.getMessage()))
+                        report.put("mpc_replay_rejected_before_launch", true);
+                    else throw error;
                 }
                 long bytes = new File(getFilesDir(), "zk_sessions.bin").length();
                 long expectedBytes = "valid".equals(label) || "replay".equals(label) ? 32 : 0;
