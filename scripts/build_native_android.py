@@ -42,6 +42,17 @@ def build_sdk_jar(classes, destination, android_jar):
     return sorted(retained)
 
 
+def prepare_signing_key(build, supplied):
+    if supplied is not None:
+        if not supplied.is_file():
+            raise FileNotFoundError('Explicit signing key must already exist: ' + str(supplied))
+        return supplied
+    key = build / "development.keystore"
+    if not key.exists():
+        subprocess.run(["keytool", "-genkeypair", "-keystore", str(key), "-storepass", "traceform-local", "-keypass", "traceform-local", "-alias", "traceform", "-dname", "CN=Traceform Local Development", "-keyalg", "RSA", "-validity", "3650"], check=True, capture_output=True)
+    return key
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ndk-root", type=Path, required=True)
@@ -50,6 +61,7 @@ def main():
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--zk-verifier", type=Path, help="Optional ARM64 public-only proof verifier executable")
     parser.add_argument("--private-participant", type=Path, help="Optional ARM64 TLS private-computation participant executable")
+    parser.add_argument("--keystore", type=Path, help="Existing local development signing key; required to preserve installed-app upgrade identity across output directories")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(root))
@@ -58,6 +70,7 @@ def main():
     from traceform.representation.provenance import content_digest
     build = args.output_dir or root / "android/build"
     build.mkdir(parents=True, exist_ok=True)
+    key = prepare_signing_key(build, args.keystore)
     classes, dex, libraries, assets = [build / name for name in ("classes", "dex", "lib/arm64-v8a", "assets")]
     for directory in (classes, dex, libraries, assets): directory.mkdir(parents=True, exist_ok=True)
     compiler = args.ndk_root / "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++"
@@ -103,9 +116,6 @@ def main():
             archive.write(args.private_participant, "lib/arm64-v8a/libtraceform_private_participant.so")
     aligned = build / "traceform-aligned.apk"
     subprocess.run([str(args.build_tools / "zipalign"), "-f", "-p", "4", str(unsigned), str(aligned)], check=True)
-    key = build / "development.keystore"
-    if not key.exists():
-        subprocess.run(["keytool", "-genkeypair", "-keystore", str(key), "-storepass", "traceform-local", "-keypass", "traceform-local", "-alias", "traceform", "-dname", "CN=Traceform Local Development", "-keyalg", "RSA", "-validity", "3650"], check=True, capture_output=True)
     apk = build / "traceform.apk"
     subprocess.run([str(args.build_tools / "apksigner"), "sign", "--ks", str(key), "--ks-pass", "pass:traceform-local", "--out", str(apk), str(aligned)], check=True)
     subprocess.run([str(args.build_tools / "apksigner"), "verify", "--verbose", str(apk)], check=True)

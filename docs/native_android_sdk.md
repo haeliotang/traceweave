@@ -1468,3 +1468,12 @@ non-increasing callback time, a gap over 600 seconds or collection reset clears
 both anchors. This avoids expiring an otherwise fresh derivative solely because
 the anchor rotation and freshness limits coincide. Flat accelerometer windows
 still leave autocorrelation decay undefined; coverage gates are unchanged.
+
+Development builds in separate output directories can reuse an existing signing
+identity with `build_native_android.py --keystore /absolute/path/to/development.keystore`.
+A supplied key must already exist; an absent key fails before native compilation
+rather than generating a replacement identity. With no option, the existing
+per-output-directory development-key behavior remains. Verify the signed APK
+certificate against the installed package before upgrading; never uninstall the
+primary app to work around a certificate mismatch. This is local development
+signing and does not establish release-key management or final deployment.

@@ -58,9 +58,9 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 使用事件入口仅保留聚合计数，权限撤回会立即清空缓存；
 事件计数不等于切换频率或确切解锁次数。
 这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
-[最新候选包记录](artifacts/alignment_v1/continuous_csd_native_candidate_build.json)，
+[最新候选包记录](artifacts/alignment_v1/native_upgrade_identity_candidate_build.json)，
 该候选包已包含共享 Wi-Fi 来源和原生连续 CSD 诊断，
-源码摘要、包内资产与签名验证通过；
+源码摘要、包内资产与签名验证通过；构建可显式复用既有开发签名密钥，避免新输出目录改变升级身份；
 尚未安装到主应用，不能作为最终部署验收依据。
 
 The next-stage engineering implementation is substantially in place. The full
