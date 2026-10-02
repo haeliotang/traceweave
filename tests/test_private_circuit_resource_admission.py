@@ -148,6 +148,40 @@ public class AdmissionTest {
             }
             throw new AssertionError("insufficient memory accepted");
         }
+        // A spent approved session is rejected before low-memory admission.
+        java.security.KeyPairGenerator keys=java.security.KeyPairGenerator.getInstance("EC");keys.initialize(256);
+        java.security.KeyPair[] pairs={keys.generateKeyPair(),keys.generateKeyPair()};
+        java.security.PublicKey[] owners={pairs[0].getPublic(),pairs[1].getPublic()};
+        byte[] replayBindings=new byte[192];
+        java.nio.file.Files.write(new java.io.File(context.cache,"bindings.bin").toPath(),replayBindings);
+        String approvedPin="ba00463c74f7899a069305ab7edf8041234dea76ae6fb5a430182191c924dca2";
+        for(int owner=0;owner<2;owner++) {
+            java.security.Signature signer=java.security.Signature.getInstance("SHA256withECDSA");
+            signer.initSign(pairs[owner].getPrivate());
+            signer.update("traceform.gw.compute-approval.v2\\0".getBytes("UTF-8"));signer.update((byte)owner);
+            signer.update(approvedPin.getBytes("US-ASCII"));signer.update(replayBindings);
+            java.nio.file.Files.write(new java.io.File(context.cache,"owner"+owner+".sig").toPath(),signer.sign());
+        }
+        context.manager.available=0;context.manager.low=true;
+        boolean resourceRejected=false;
+        try { UniformPrivateAlignment.computeApproved(context,command,circuit,context.cache,owners,bits); }
+        catch(IllegalStateException expected) { resourceRejected=expected.getMessage().equals("private alignment memory admission rejected"); }
+        if(!resourceRejected || new java.io.File(context.cache,"computation_sessions.bin").exists())
+            throw new AssertionError("preflight consumed unlaunched session");
+        try(AlignmentQueryLease lease=AlignmentQueryLease.acquire(context.cache)) {
+            ComputationSessions.reserve(context.cache,new byte[32],lease);
+        }
+        context.manager.available=0;context.manager.low=true;
+        try { UniformPrivateAlignment.computeApproved(context,command,circuit,context.cache,owners,bits); }
+        catch(SecurityException expected) {
+            if(!expected.getMessage().equals("replayed computation session")) throw expected;
+            if(new java.io.File(context.cache,"computation_sessions.bin").length()!=32)
+                throw new AssertionError("replay changed ledger");
+            for(java.io.File file:context.cache.listFiles())
+                if(file.getName().startsWith("private-circuit-")) throw new AssertionError("replay created snapshot");
+            context.manager.available=929L*1024*1024;context.manager.low=false;
+        }
+        if(context.manager.low) throw new AssertionError("replay not rejected before resource admission");
         context.manager.available=929L*1024*1024;context.manager.low=false;
         boolean shapeRejected = false;
         try { UniformPrivateAlignment.run(context,command,circuit,"101",inputs); }

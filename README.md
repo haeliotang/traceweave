@@ -27,7 +27,7 @@
 分别记录，不能互相替代。
 
 最近记录的验证结果为 **357 项 Python 测试、16 项 Rust 测试通过**；
-最新完整 Python 测试耗时 44.399s；实际绑定探针已完成真机验证。
+最新完整 Python 测试耗时 42.346s；实际绑定探针已完成真机验证。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
 packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
@@ -82,6 +82,11 @@ Its SDK now exports the unknown-score computation entry; external-client compila
 and dependency closure pass. See the [candidate build receipt](artifacts/alignment_v1/current_source_sdk_export_candidate.json).
 The latest device memory observation is below the unchanged sixteen-node admission
 threshold; no additional unknown-score device computation was started.
+
+Approved unknown-score requests now check durable replay state before resource
+admission or circuit snapshots, under the same query lease. Host regression
+confirms spent-session rejection and that resource rejection does not consume
+a new session. See the [replay preflight regression](artifacts/alignment_v1/computation_replay_preflight_host.json).
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes

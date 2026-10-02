@@ -1374,3 +1374,13 @@ is rebuilt; the public verifier and private participant reuse the existing
 candidate's native executables. This candidate has not replaced the primary
 app. The current device memory observation is below the unchanged sixteen-node
 admission threshold, so no new unknown-score device run was started.
+
+Approved unknown-score requests now perform a read-only durable session check
+under the query lease, after owner authentication and before memory admission
+or circuit snapshot creation. The launch-time reservation rechecks the same
+ledger and retains its fsync behavior. A spent-session low-memory regression
+failed before the change and passes afterward; an unlaunched fresh request
+still consumes no session. Full host tests pass (357, 42.346s), followed by the
+final expanded resource regression (2, 3.358s). The development candidate was
+rebuilt and its signature verified. This does not establish normal unknown-score
+or app-restart replay acceptance on Android; the primary app remains unchanged.

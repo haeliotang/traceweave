@@ -25,9 +25,10 @@ public final class UniformPrivateAlignment {
                                          PublicKey[] trustedOwners, String privateBits) throws Exception {
         try (AlignmentQueryLease lease = AlignmentQueryLease.acquire(context.getFilesDir())) {
             byte[] bindings = OwnerAuthentication.verifyComputation(request, APPROVED_CIRCUIT_DIGEST, trustedOwners);
-            Runnable checkResources = admit(context, privateBits);
             byte[] session = java.util.Arrays.copyOfRange(bindings, 0, 32);
             session[31] = bindings[32];
+            ComputationSessions.checkAvailable(context.getFilesDir(), session, lease);
+            Runnable checkResources = admit(context, privateBits);
             return PrivateParticipant.runPinnedComputation(command, circuit, context.getCacheDir(), APPROVED_CIRCUIT_DIGEST,
                 approvedInputs(privateBits, bindings), bindings, 128L * 1024 * 1024, checkResources, () -> {
                     ComputationSessions.reserve(context.getFilesDir(), session, lease);
