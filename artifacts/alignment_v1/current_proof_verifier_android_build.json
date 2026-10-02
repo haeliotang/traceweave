@@ -1,0 +1,18 @@
+{
+  "binary_sha256": "88f9e490be91ad21090f91a74e195cfa4341cf228fc1ddc3e0e0e0da07b90b3a",
+  "binary_bytes": 1042128,
+  "rustc_version": "rustc 1.94.0 (4a4ef493e 2026-03-02)\nbinary: rustc\ncommit-hash: 4a4ef493e3a1488c6e321570238084b38948f6db\ncommit-date: 2026-03-02\nhost: aarch64-apple-darwin\nrelease: 1.94.0\nLLVM version: 21.1.8\n",
+  "compiler_sha256": "4f26ad57dcb9b12f9791317a1387e3e8d6ad803d4bd20fcdc65142a91e903d45",
+  "abi": "arm64-v8a",
+  "android_api": 26,
+  "offline_locked": true,
+  "source_sha256": {
+    "scripts/build_proof_verifier_android.py": "18bebeb39f986ee3bae1410f0c374013d6a9c7d3bdee802b8689b309e139ad70",
+    "native/zk_alignment/Cargo.toml": "59404be94b2eb11d793246e71645eb07de046e19b08fb34a6535651379277ff3",
+    "native/zk_alignment/Cargo.lock": "4e5a1a810eea4e6f65fa3ead30c4de2caed6fcccf1b82438383c91dc15b33d67",
+    "native/zk_alignment/src/bin/fixture.rs": "357132449f2f239fd138b1fb326e06b84ad72a048cb85ccd2c10b131591dab79",
+    "native/zk_alignment/src/bin/verify.rs": "d744017adb31558f14726e19e4b86ca3389c4b9c97e9e013809c28b63245a7d3",
+    "native/zk_alignment/src/lib.rs": "941d3eaccf9b9fbe6199b95fd5dcc8ff140cd509282740b659817370dcf54cb5"
+  },
+  "scope": "public_only_verifier_build_not_private_prover_owner_enrollment_or_device_acceptance"
+}

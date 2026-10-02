@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-357%2F357%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-364%2F364%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,8 +26,8 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最近记录的验证结果为 **357 项 Python 测试、16 项 Rust 测试通过**；
-最新完整 Python 测试耗时 42.346s；实际绑定探针已完成真机验证。
+最近记录的验证结果为 **364 项 Python 测试、16 项 Rust 测试通过**；
+最新完整 Python 测试耗时 42.935s；实际绑定探针已完成真机验证。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
 packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
@@ -42,7 +42,7 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 应用已清理，默认运行策略保持 shadow/silent。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **357 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **364 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -114,6 +114,14 @@ two-node MPC/proof binding, app-restart replay and waiting-for-peer lifecycle
 checks on Pixel. See the [native build receipt](artifacts/alignment_v1/current_private_participant_android_build.json),
 [MPC receipt](artifacts/alignment_v1/rebuilt_participant_mpc_restart_android.json) and
 [lifecycle receipt](artifacts/alignment_v1/rebuilt_participant_lifecycle_android.json).
+
+The public verifier also rebuilds offline from the locked Rust crate via
+`scripts/build_proof_verifier_android.py`. The candidate now packages freshly
+compiled core JNI, private participant and public verifier. Four signed proof
+cases and actual two-node MPC/proof binding with restart replay pass on Pixel
+with this native combination. See the [verifier build](artifacts/alignment_v1/current_proof_verifier_android_build.json),
+[signed proof cases](artifacts/alignment_v1/all_native_source_signed_proof_android.json)
+and [MPC restart receipt](artifacts/alignment_v1/all_native_source_mpc_restart_android.json).
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes
