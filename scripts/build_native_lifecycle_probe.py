@@ -42,7 +42,7 @@ def main():
         "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
         "dependency_apk_sha256": hashlib.sha256(dependency.read_bytes()).hexdigest(),
         "source_sha256": {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
-        "scope": "separate_uid_actual_service_binding_synthetic_vectors_no_collection",
+        "scope": "separate_uid_service_binding_and_explicit_bounded_acquisition_probes",
     }
     (build / "build_report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"apk": str(apk.resolve()), "apk_sha256": report["apk_sha256"]}))
