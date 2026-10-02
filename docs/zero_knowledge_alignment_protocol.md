@@ -187,3 +187,24 @@ frozen checks pass after removing the test app and USB forward. This closes the
 single changed-model device regression, not normal guarded unknown-score
 coverage, cross-process app replay, resource-withdrawal/cancellation, packed-v2
 proof binding or real enrollment.
+
+## Packed-v2 public proof relation and Android public verifier
+
+The Rust backend now has an explicit `PackedUniformAlignmentCircuit`. It proves
+full valid metrics, uniform masses, permutation coupling and the exact squared
+loss, while hashing the packed-v2 strict upper-triangle 20-bit variables with
+owner, shape, scale, uniform mass, nonce and session. Its nonzero two-node proof
+and negative fixtures pass. A separate synthetic public package with numerator
+SCALE^4/8 passes actual Pixel public-only verification. Four altered public
+fields are rejected without creating the ledger, the valid proof consumes 32
+bytes, and replay from a separate process is rejected without growing it.
+`zk_packed_uniform_v2_android.json` binds source, key/package/verifier hashes and
+six exits. The verifier comes from the existing release candidate; its generic
+pinned Groth16 reader accepts the new independently generated v2 key. Temporary
+public files and ledger were removed, and the primary app was not updated.
+
+This relation proves a valid permutation coupling with the stated loss, not
+optimality or the exact search algorithm. Its synthetic prover knows both models.
+Owner-approved SDK verification, distributed private proving and production
+setup/key trust remain open. Existing v1 interfaces retain their commitment
+encoding and relation; no v1 certificate is substituted for v2 commitments.

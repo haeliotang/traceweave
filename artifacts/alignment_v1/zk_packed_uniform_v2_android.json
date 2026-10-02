@@ -1,0 +1,127 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "modified_objective",
+      "process": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Error: \"proof rejected\"\n"
+      },
+      "ledger_absent": true,
+      "passed": true
+    },
+    {
+      "case": "modified_session",
+      "process": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Error: \"proof rejected\"\n"
+      },
+      "ledger_absent": true,
+      "passed": true
+    },
+    {
+      "case": "modified_first_commitment",
+      "process": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Error: \"proof rejected\"\n"
+      },
+      "ledger_absent": true,
+      "passed": true
+    },
+    {
+      "case": "modified_second_commitment",
+      "process": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Error: \"proof rejected\"\n"
+      },
+      "ledger_absent": true,
+      "passed": true
+    },
+    {
+      "case": "valid_nonzero_packed_v2",
+      "process": {
+        "exit_code": 0,
+        "stdout": "{\"verified\":true,\"session_consumed\":true,\"scope\":\"local_pinned_proof_verification_and_replay_rejection_not_owner_authentication\"}\n",
+        "stderr": ""
+      },
+      "ledger_size": {
+        "exit_code": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      },
+      "passed": true
+    },
+    {
+      "case": "replay_separate_process",
+      "process": {
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Error: \"replayed session\"\n"
+      },
+      "ledger_size": {
+        "exit_code": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      },
+      "passed": true
+    }
+  ],
+  "verifying_key_pin": "932b81be82a47aea7cde4f9eff29a17f16993f8ecea5880adc62b02332f33974",
+  "public_package_sha256": {
+    "public_inputs.bin": "eba06e3c8a45c344f2cbdb38d3af16b37ec13e9794ced14f79c5e2be8de2200d",
+    "verifying_key.bin": "932b81be82a47aea7cde4f9eff29a17f16993f8ecea5880adc62b02332f33974",
+    "proof.bin": "6c44481c125ffec0b27bb85e49beb26386e43a06ff568cbab8461ff18ce1501d"
+  },
+  "scope": "synthetic_two_node_packed_v2_public_only_Android_shell_verification_not_owner_authenticated_SDK_or_distributed_prover",
+  "verifier_sha256": "77d3642ac6b62d0a92974b98614dc3d06d8ef63dd5d5ee5b81dddf539befa6c1",
+  "verifier_provenance": "generic_verifier_extracted_from_existing_release_candidate_16e28dbadc1a1bb0eb6f3e498e1595f5c206e305952736c4471d1f7d9193411c",
+  "rust_suite": {
+    "passed": true,
+    "library_tests": 10,
+    "verifier_tests": 4,
+    "integration_tests": 2
+  },
+  "cleanup": {
+    "dedicated_public_test_directory_removed": true,
+    "main_app_updated": false
+  },
+  "limitations": [
+    "two_node_synthetic_only",
+    "prover_knows_both_models",
+    "temporary_local_setup_not_production_trust",
+    "not_owner_authenticated_Android_SDK",
+    "not_distributed_proof_generation",
+    "does_not_prove_search_algorithm_or_optimality"
+  ],
+  "proof_generation_sources": {
+    "native/zk_alignment/src/lib.rs": "e61ac989d74c50b9bcbfe4623ebb94232e71b8a84890e509e137b476b50ac65c",
+    "native/zk_alignment/src/bin/fixture.rs": "357132449f2f239fd138b1fb326e06b84ad72a048cb85ccd2c10b131591dab79",
+    "native/zk_alignment/tests/verification_consumption.rs": "a43e0dc0ba5de33e2cec74b98a95011ea3dbc223a8261895ae68b303b63e6315",
+    "native/zk_alignment/Cargo.lock": "4e5a1a810eea4e6f65fa3ead30c4de2caed6fcccf1b82438383c91dc15b33d67"
+  },
+  "validation_sources": {
+    "native/zk_alignment/src/lib.rs": "941d3eaccf9b9fbe6199b95fd5dcc8ff140cd509282740b659817370dcf54cb5",
+    "native/zk_alignment/src/bin/fixture.rs": "357132449f2f239fd138b1fb326e06b84ad72a048cb85ccd2c10b131591dab79",
+    "native/zk_alignment/tests/verification_consumption.rs": "a43e0dc0ba5de33e2cec74b98a95011ea3dbc223a8261895ae68b303b63e6315",
+    "native/zk_alignment/Cargo.lock": "4e5a1a810eea4e6f65fa3ead30c4de2caed6fcccf1b82438383c91dc15b33d67"
+  },
+  "frozen_cleanup_sha256": "9ae146c49d90cab0a627edc1ea56dc0532cfd2b26fe2fac94427dd8cc11a6435",
+  "frozen_pass_markers": [
+    "FROZEN_AUTHORITY=PASS",
+    "PRODUCTION_INTEGRATION_IMPLEMENTATION_V1_FROZEN=PASS",
+    "PRODUCTION_ORCHESTRATOR_IMPLEMENTATION_V1_FROZEN=PASS",
+    "PRODUCTION_RUNTIME_IMPLEMENTATION_V1_FROZEN=PASS",
+    "DEPLOYMENT_CONTROL_ADAPTER_IMPLEMENTATION_V1_FROZEN=PASS",
+    "ANDROID_DEPLOYMENT_CLIENT_IMPLEMENTATION_V1_FROZEN=PASS",
+    "ANDROID_DESKTOP_INTEGRATION_V1_FROZEN=PASS",
+    "ANDROID_DESKTOP_INTEGRATION_V2_FROZEN=PASS",
+    "DEPLOYMENT_SUPERVISION_IMPLEMENTATION_V1_FROZEN=PASS",
+    "ANDROID_DESKTOP_INTEGRATION_V3_FROZEN=PASS",
+    "PHYSICAL_OBSERVATION_STACK_V1_FROZEN=PASS",
+    "PHYSICAL_RUNNER_SUPERVISION_V1_FROZEN=PASS"
+  ]
+}

@@ -32,7 +32,7 @@ requirements and evidence boundaries.
 | Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Authorized real intervention and causal-effect evidence; defaults remain shadow/silent |
 | Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Final production-source deployment, actual Sunday delivery and meaningful long-term bifurcation parameters |
 | Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Final primary-app update and complete native feature provenance; these measurements do not cover whole-app or private-MPC memory |
-| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations | Guarded normal unknown-score Android coverage, app-restart replay, packed-v2 public proof integration, real owner enrollment and independent security assessment |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations | Guarded normal unknown-score Android coverage, app-restart replay, packed-v2 owner-approved SDK/distributed proof integration, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
 approved commitment. The dedicated approved circuit now checks both parties'
@@ -43,6 +43,12 @@ all-zero peer output). See [host regression](artifacts/alignment_v1/approved_bin
 and [device receipt](artifacts/alignment_v1/approved_binding_guard_android_success.json).
 Earlier memory-admission, scheduling and expired synthetic-certificate failures
 remain recorded separately. The test APK and USB forward have been removed.
+
+The packed-v2 Rust proof relation also passes 16 Rust tests. A nonzero two-node
+public proof package passes 6 independent Pixel verifier cases, including field
+tampering and process-restart replay. See [packed-v2 proof evidence](artifacts/alignment_v1/zk_packed_uniform_v2_android.json).
+The synthetic prover knows both models; distributed private proving and
+owner-approved SDK integration remain open.
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes

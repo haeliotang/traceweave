@@ -83,3 +83,31 @@ Next: owner enrollment policy and device authentication validation; production
 setup provenance; two-owner secure computation; and on-device verification.
 Local synthetic setup will be explicitly experimental and will not establish
 production parameter trust or privacy between two model owners.
+
+## Packed-v2 uniform permutation proof relation
+
+`PackedUniformAlignmentCircuit` is an explicit separate relation. It requires
+equal 1..16-node shapes dividing SCALE, authenticated-format public bindings,
+uniform masses and transport entries restricted to 0 or SCALE/n. Existing row and
+column marginals therefore enforce a permutation coupling. Metric symmetry,
+zero diagonals, triangle inequalities and ranges still constrain the complete
+private matrices; the exact public squared-loss numerator is computed from them.
+SHA256 binds the `traceform.gw.uniform-packed.v2` domain, ordered owner, shape,
+SCALE, uniform mass, public session, private nonce and strictly upper-triangular
+20-bit little-endian distances, with zero byte padding. Tests match independent
+packed vectors and reject modified bindings, invalid metrics and fractional
+(nonpermutation) transport.
+
+`fixture --packed-uniform NEW_PUBLIC_DIRECTORY [NEW_PRIVATE_DIRECTORY]`
+generates a two-node synthetic public proof with nonzero numerator SCALE^4/8 and
+a fresh local experimental setup. Its public directory contains only the
+verifying key, randomized proof and seven canonical scalar inputs. The public
+CLI accepts the new independently pinned key and rejects modified public fields
+before consuming a session; a valid submission consumes exactly one session and
+replay is rejected. The existing fixture syntax and v1 relation remain available.
+
+This proves existence of a valid uniform permutation coupling with the claimed
+loss. It does not prove optimality or the exact private search algorithm. The
+synthetic prover knows both models. MPC-based distributed proof generation,
+production setup/key enrollment and end-to-end owner-approved Android integration
+remain open; a v1 proof/key must not silently be used for packed-v2 commitments.

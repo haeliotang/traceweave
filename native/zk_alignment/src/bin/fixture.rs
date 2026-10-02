@@ -1,14 +1,18 @@
 //! Synthetic proof package generator; never reads device models.
 use ark_bls12_381::{Bls12_381, Fr};
+use ark_ff::Field;
 use ark_groth16::Groth16;
 use ark_serialize::CanonicalSerialize;
 use rand::{rngs::OsRng, RngCore};
 use std::{error::Error, fs, path::PathBuf};
-use traceform_zk_alignment::{model_commitment, AlignmentBindings, AlignmentCircuit, SCALE};
+use traceform_zk_alignment::{model_commitment, packed_uniform_model_commitment, AlignmentBindings, AlignmentCircuit, PackedUniformAlignmentCircuit, SCALE};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let destination = PathBuf::from(std::env::args().nth(1).ok_or("output directory required")?);
-    let private_destination = std::env::args().nth(2).map(PathBuf::from);
+    let mut arguments = std::env::args().skip(1);
+    let first_argument = arguments.next().ok_or("output directory required")?;
+    let packed = first_argument == "--packed-uniform";
+    let destination = PathBuf::from(if packed { arguments.next().ok_or("output directory required")? } else { first_argument });
+    let private_destination = arguments.next().map(PathBuf::from);
     fs::create_dir(&destination)?;
     if let Some(path) = &private_destination {
         fs::create_dir(path)?;
@@ -22,22 +26,33 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     let metric = vec![vec![0, SCALE], vec![SCALE, 0]];
+    let second_metric = if packed { vec![vec![0, SCALE / 2], vec![SCALE / 2, 0]] } else { metric.clone() };
     let masses = vec![500000, 500000];
     let mut rng = OsRng;
     let mut session = [0u8; 32];
     let mut nonces = [[0u8; 32]; 2];
     rng.fill_bytes(&mut session);
     for nonce in &mut nonces { rng.fill_bytes(nonce); }
-    let commitments = [model_commitment(0, &metric, &masses, &session, &nonces[0]),
-                       model_commitment(1, &metric, &masses, &session, &nonces[1])];
+    let commitments = if packed {
+        [packed_uniform_model_commitment(0, &metric, &session, &nonces[0])?,
+         packed_uniform_model_commitment(1, &second_metric, &session, &nonces[1])?]
+    } else {
+        [model_commitment(0, &metric, &masses, &session, &nonces[0]),
+         model_commitment(1, &second_metric, &masses, &session, &nonces[1])]
+    };
     let circuit = AlignmentCircuit {
-        first: metric.clone(), second: metric, transport: vec![vec![500000, 0], vec![0, 500000]],
-        first_mass: masses.clone(), second_mass: masses, objective: Fr::from(0u64),
+        first: metric.clone(), second: second_metric, transport: vec![vec![500000, 0], vec![0, 500000]],
+        first_mass: masses.clone(), second_mass: masses,
+        objective: if packed { Fr::from(SCALE).pow([4]) / Fr::from(8u64) } else { Fr::from(0u64) },
         bindings: Some(AlignmentBindings { session, nonces, commitments }),
     };
     let inputs = circuit.public_inputs();
-    let key = Groth16::<Bls12_381>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)?;
-    let proof = Groth16::<Bls12_381>::create_random_proof_with_reduction(circuit, &key, &mut rng)?;
+    let key = if packed {
+        Groth16::<Bls12_381>::generate_random_parameters_with_reduction(PackedUniformAlignmentCircuit(circuit.clone()), &mut rng)?
+    } else { Groth16::<Bls12_381>::generate_random_parameters_with_reduction(circuit.clone(), &mut rng)? };
+    let proof = if packed {
+        Groth16::<Bls12_381>::create_random_proof_with_reduction(PackedUniformAlignmentCircuit(circuit), &key, &mut rng)?
+    } else { Groth16::<Bls12_381>::create_random_proof_with_reduction(circuit, &key, &mut rng)? };
     let mut bytes = Vec::new();
     key.vk.serialize_compressed(&mut bytes)?;
     fs::write(destination.join("verifying_key.bin"), bytes)?;
@@ -51,7 +66,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Synthetic local inputs only; never place witnesses in the public package.
         for owner in 0..2 {
             let mut bits = String::new();
-            for value in [0u64, SCALE, SCALE, 0, 500000, 500000] {
+            let distance = if packed && owner == 1 { SCALE / 2 } else { SCALE };
+            for value in [0u64, distance, distance, 0, 500000, 500000] {
                 for bit in 0..21 { bits.push(if (value >> bit) & 1 == 1 { '1' } else { '0' }); }
             }
             for value in session.iter().chain(nonces[owner].iter()) {
@@ -61,6 +77,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             fs::write(path.join(format!("{}.bits", 2 - owner)), bits)?;
         }
     }
-    println!("{{\"scope\":\"synthetic_local_setup_public_package_only\"}}");
+    println!("{{\"scope\":\"synthetic_local_setup_public_package_only\",\"commitment\":\"{}\"}}",
+             if packed { "uniform_packed_v2" } else { "full_metric_mass_v1" });
     Ok(())
 }
