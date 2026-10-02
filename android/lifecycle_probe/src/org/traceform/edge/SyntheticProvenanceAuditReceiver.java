@@ -25,7 +25,7 @@ public final class SyntheticProvenanceAuditReceiver extends BroadcastReceiver {
                         .put("normalizer_sha256", model.normalizerDigest).put("session_id", "synthetic_source_contract")
                         .put("source_mode", "native_sensor_subset").put("state_token", model.tokens[0])
                         .put("continuous_vector", new JSONArray(new double[128])).put("continuous_velocity", new JSONArray(new double[128]))
-                        .put("timestamp_epoch_ms", 1000).put("elapsed_realtime_nanos", 1000000000L).put("continuous_from_previous", false);
+                        .put("timestamp_epoch_ms", 1000).put("elapsed_realtime_nanos", 1000000000L).put("dt_seconds", 0).put("continuous_from_previous", false);
                     expect(db, frame, 1);
                     JSONArray missing = new JSONArray(); JSONObject provenance = new JSONObject();
                     for (String name : model.names) {
@@ -60,7 +60,12 @@ public final class SyntheticProvenanceAuditReceiver extends BroadcastReceiver {
                     two.getJSONObject("feature_provenance").put(model.names[1], new JSONObject(two.getJSONObject("feature_provenance").getJSONObject(model.names[0]).toString()));
                     changed = new JSONObject(two.toString()).put("supplied_features", new JSONArray(new String[]{model.names[1], model.names[0]}));
                     expectPair(db, two, changed, true, 0, 1);
-                    report.put("passed", true).put("cases", 12).put("collection_started", false).put("actuator_calls", 0)
+                    expectPair(db, frame, frame, true, 1, 0, 0.5);
+                    expectPair(db, frame, frame, true, 1, 0, "1");
+                    expectPair(db, frame, frame, true, 1, 0, -1);
+                    expectPair(db, frame, frame, false, 0, 0, 0);
+                    expectPair(db, frame, frame, true, 0, 1, 1.0000005);
+                    report.put("passed", true).put("cases", 17).put("collection_started", false).put("actuator_calls", 0)
                         .put("scope", "synthetic_native_frame_provenance_audit_not_sensor_or_scientific_validation");
                 }
             } catch (Exception error) {
@@ -73,8 +78,11 @@ public final class SyntheticProvenanceAuditReceiver extends BroadcastReceiver {
         }, "synthetic-source-audit").start();
     }
     private static void expectPair(SQLiteDatabase db, JSONObject before, JSONObject after, boolean continuous, int invalid, int pairs) throws Exception {
-        JSONObject first = new JSONObject(before.toString()).put("timestamp_epoch_ms", 1000).put("elapsed_realtime_nanos", 1000000000L).put("continuous_from_previous", false);
-        JSONObject second = new JSONObject(after.toString()).put("timestamp_epoch_ms", 2000).put("elapsed_realtime_nanos", 2000000000L).put("continuous_from_previous", continuous);
+        expectPair(db, before, after, continuous, invalid, pairs, 1);
+    }
+    private static void expectPair(SQLiteDatabase db, JSONObject before, JSONObject after, boolean continuous, int invalid, int pairs, Object interval) throws Exception {
+        JSONObject first = new JSONObject(before.toString()).put("timestamp_epoch_ms", 1000).put("elapsed_realtime_nanos", 1000000000L).put("dt_seconds", 0).put("continuous_from_previous", false);
+        JSONObject second = new JSONObject(after.toString()).put("timestamp_epoch_ms", 2000).put("elapsed_realtime_nanos", 2000000000L).put("dt_seconds", interval).put("continuous_from_previous", continuous);
         db.execSQL("DELETE FROM frames");
         db.execSQL("INSERT INTO frames VALUES (?,?)", new Object[]{1000, first.toString()});
         db.execSQL("INSERT INTO frames VALUES (?,?)", new Object[]{2000, second.toString()});

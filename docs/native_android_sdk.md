@@ -1513,3 +1513,10 @@ history. Explicit noncontinuous boundaries remain valid. Inventory order is
 irrelevant: comparison uses model feature names and provenance, not array order.
 This prevents an inconsistent declaration from entering automatic calibration;
 it does not establish the truth of the declared source.
+
+Native frame intervals must be finite, nonnegative numbers. Within a declared
+continuous segment, `dt_seconds` must be positive and agree with the elapsed
+realtime clock difference to within 1e-6 seconds. This is a serialization and
+calculation consistency tolerance, not a sensor timing-accuracy claim. An
+explicit session/reset boundary may retain zero interval. Contradictory
+intervals invalidate retained native input before automatic calibration.

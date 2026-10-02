@@ -105,6 +105,9 @@ final class NativeWeeklyAudit {
                             }
                             long gap = instant - previous.getLong("timestamp_epoch_ms");
                             double elapsedGap = (frame.getLong("elapsed_realtime_nanos") - (double) previous.getLong("elapsed_realtime_nanos")) / 1e6;
+                            if (continuous && kinds != null && (frame.getDouble("dt_seconds") <= 0
+                                    || Math.abs(frame.getDouble("dt_seconds") - elapsedGap / 1000.0) > 1e-6))
+                                throw new IllegalArgumentException("native interval disagrees with monotonic clocks");
                             continuous &= gap > 0 && gap <= 300000 && elapsedGap > 0 && Math.abs(gap - elapsedGap) <= 1000;
                         }
                         if (continuous) pairs++; else boundaries++;
@@ -137,6 +140,9 @@ final class NativeWeeklyAudit {
             .put("scope", "retained_hot_binding_and_active_model_nearest_two_diagnostic_not_candidate_calibration");
     }
     private static int[] validateNativeProvenance(JSONObject frame, JSONArray names) throws Exception {
+        if (!(frame.get("dt_seconds") instanceof Number) || !Double.isFinite(frame.getDouble("dt_seconds"))
+                || frame.getDouble("dt_seconds") < 0)
+            throw new IllegalArgumentException("finite nonnegative native interval required");
         if (!frame.getString("missing_policy").equals("median_imputation_not_measurement"))
             throw new IllegalArgumentException("native missing policy required");
         JSONObject provenance = frame.getJSONObject("feature_provenance");
