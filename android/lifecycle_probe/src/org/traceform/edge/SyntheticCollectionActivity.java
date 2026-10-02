@@ -19,8 +19,10 @@ public final class SyntheticCollectionActivity extends Activity {
         String nonce = getIntent().getStringExtra("nonce");
         try { java.util.UUID.fromString(nonce); }
         catch (RuntimeException invalid) { finish(); return; }
+        final boolean fullWindow = getIntent().getBooleanExtra("full_window", false);
+        final int durationMillis = fullWindow ? 360000 : 45000;
         android.widget.TextView message = new android.widget.TextView(this);
-        message.setText("正在验证连续采样\n45 秒后自动停止"); setContentView(message);
+        message.setText(fullWindow ? "正在验证连续采样\n6 分钟后自动停止" : "正在验证连续采样\n45 秒后自动停止"); setContentView(message);
         getSharedPreferences("interventions", MODE_PRIVATE).edit().putBoolean("enabled", false).commit();
         startForegroundService(new Intent(this, EdgeService.class)); started = true;
         handler.postDelayed(() -> {
@@ -30,10 +32,11 @@ public final class SyntheticCollectionActivity extends Activity {
                 catch (Exception error) { android.util.Log.e("Traceform", "collection probe failed", error); }
                 finish();
             }, 3000);
-        }, 45000);
+        }, durationMillis);
     }
     private void summarize(String nonce) throws Exception {
         int frames = 0, temperature = 0, continuous = 0, dimension = 0;
+        int readyFrames = 0, consecutive = 0, longestContinuous = 0, lastBreakFrame = 0;
         int coverageBreaks = 0, clockBreaks = 0, intervalBreaks = 0, unexplainedBreaks = 0;
         JSONObject coverageChanges = new JSONObject();
         JSONObject previous = null;
@@ -44,11 +47,14 @@ public final class SyntheticCollectionActivity extends Activity {
                 JSONObject row = new JSONObject(cursor.getString(0)); frames++;
                 JSONObject source = row.getJSONObject("feature_provenance").getJSONObject("env_device_temp_c");
                 if (source.optString("kind").equals("observed")) temperature++;
+                if (row.getJSONObject("csd").optBoolean("ready")) readyFrames++;
                 if (row.optBoolean("continuous_from_previous")) {
+                    consecutive++; longestContinuous = Math.max(longestContinuous, consecutive);
                     double dt = row.getDouble("dt_seconds"); continuous++;
                     sum += dt; min = Math.min(min, dt); max = Math.max(max, dt);
                 }
                 if (previous != null && !row.optBoolean("continuous_from_previous")) {
+                    consecutive = 0; lastBreakFrame = frames;
                     java.util.Set<String> before = features(previous), after = features(row);
                     boolean coverageChanged = !before.equals(after);
                     if (coverageChanged) {
@@ -71,6 +77,8 @@ public final class SyntheticCollectionActivity extends Activity {
             }
         }
         JSONObject report = new JSONObject().put("nonce", nonce).put("frames", frames)
+            .put("csd_ready_frames", readyFrames).put("longest_continuous_pairs", longestContinuous)
+            .put("final_continuous_pairs", consecutive).put("last_break_frame", lastBreakFrame)
             .put("temperature_observed_frames", temperature).put("continuous_pairs", continuous)
             .put("coverage_breaks", coverageBreaks).put("coverage_change_counts", coverageChanges)
             .put("clock_breaks", clockBreaks).put("interval_breaks", intervalBreaks)

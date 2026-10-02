@@ -1441,7 +1441,8 @@ remain missing. Foreground-service callback delivery and fresh readings are
 required; a sensor list entry alone does not establish production availability.
 
 The isolated `SyntheticCollectionActivity` explicitly starts the real collection
-service with interventions disabled, stops it after 45 seconds, and exports only
+service with interventions disabled, stops it after 45 seconds (or six minutes
+with the explicit `full_window` option), and exports only
 aggregate diagnostics before its weekly job is cancelled. Its continuity report
 compares adjacent supplied-feature sets and checks positive, bounded monotonic
 intervals and wall-clock agreement. Cause counts may overlap; an unexplained
@@ -1450,3 +1451,10 @@ and derived-window warm-up can change coverage without a dropped sample. The
 production continuity gate remains unchanged: coverage transitions must not be
 interpreted as measured velocity or uninterrupted CSD history. This bounded
 probe does not establish long-term stability or scientific acceptance.
+
+The longer probe counts ready diagnostic frames, longest and final continuous
+pair runs, and the index of the last coverage break. Total frame count does not
+prove a full uninterrupted 300-frame window. Post-stop JSON scanning may take
+longer than the short callback grace period; a missing receipt at an observation
+deadline is not proof that collection or receipt generation failed. Check the
+same stopped service and receipt before considering another run.
