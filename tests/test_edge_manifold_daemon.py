@@ -12,6 +12,27 @@ from traceform.streaming.edge_manifold_daemon import (
 
 
 class TestEdgeManifoldDaemon(unittest.TestCase):
+    def test_v2_provenance_survives_ledger_into_continuous_frame(self):
+        import tempfile
+        from pathlib import Path
+        from traceform.streaming.physical_observation_v2 import PhysicalObservation
+        from traceform.streaming.physical_ledger_v2 import append_observation, read_recent_observations
+
+        evidence = {'motion': {'adapter': 'synthetic_fixture', 'status': 'AVAILABLE',
+                              'measurement_scope': 'adapter_return_not_per_field_direct_measurement'}}
+        observation = PhysicalObservation.from_dict({
+            'timestamp_utc': '2026-10-01T02:00:00Z', 'observation_id': 'synthetic',
+            'motion': {'motion_energy': 0.1}, 'feature_provenance': evidence})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'observations.jsonl'
+            append_observation(observation, path)
+            restored = read_recent_observations(1, path)[0]
+        payload, _ = self.daemon.process_observation(restored.to_dict())
+        self.assertEqual(payload['upstream_feature_provenance'], evidence)
+        self.assertEqual(len(payload['continuous_vector']), 128)
+        self.assertEqual(payload['input_inventory']['measurement_status'],
+                         'unverified_unless_upstream_provenance_supplied')
+
     def test_quantizer_receives_actual_frame_interval(self):
         from unittest.mock import patch
 
