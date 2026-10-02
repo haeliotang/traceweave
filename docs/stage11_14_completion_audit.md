@@ -59,6 +59,15 @@ fractional memory, conservative-potential validity or causal-effect acceptance.
 The archived 26D state sequence remains ineligible; no empirical 128D fit has
 been performed using this tool.
 
+For existing device storage, the same diagnostic can read one SQLite hot-frame
+snapshot without exporting trajectory rows:
+`python3 scripts/validate_continuous_holdout.py --sqlite-file EDGE.sqlite
+--split-time TIMEZONE_AWARE_ISO_TIMESTAMP --output-file LOCAL_REPORT.json`.
+The split is explicit: earlier records train, records at or after it hold out.
+Both partition digests bind length-prefixed UTF-8 frames from the same read
+transaction. The report contains aggregate diagnostics and covariance matrices;
+its publication requires the applicable device-derived-data authorization.
+
 All 33 affected continuous-model tests pass (9.149s), including deterministic
 increment baseline checks, temporal-leakage rejection and an independent
 correlated two-coordinate covariance example. These controlled tests validate

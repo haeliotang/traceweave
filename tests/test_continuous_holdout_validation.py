@@ -1,8 +1,36 @@
 import unittest
-from scripts.validate_continuous_holdout import validate
+import datetime
+import json
+from pathlib import Path
+import sqlite3
+import tempfile
+from scripts.validate_continuous_holdout import validate, validate_sqlite
 
 
 class TestContinuousHoldoutValidation(unittest.TestCase):
+    def test_sqlite_partition_uses_time_and_never_updates_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'edge.sqlite'
+            rows = self.rows(0) + self.rows(4)
+            with sqlite3.connect(path) as connection:
+                connection.execute('CREATE TABLE hot (id TEXT, ts REAL, raw TEXT, frame TEXT)')
+                for i in reversed(range(len(rows))):
+                    connection.execute('INSERT INTO hot VALUES (?,?,?,?)',
+                                       (str(i), i, 'private raw sentinel', json.dumps(rows[i])))
+            before = path.read_bytes()
+            split = datetime.datetime.fromisoformat('2026-10-02T00:00:04+00:00')
+            result = validate_sqlite(path, split, dimension=1)
+            self.assertEqual(result['training_record_count'], 4)
+            self.assertEqual(result['holdout_record_count'], 4)
+            self.assertEqual(result['training_pair_count'], 3)
+            self.assertAlmostEqual(result['drift_increment_mse'], 0)
+            self.assertEqual(path.read_bytes(), before)
+            self.assertNotIn('private raw sentinel', json.dumps(result))
+            with self.assertRaisesRegex(ValueError, 'timezone-aware'):
+                validate_sqlite(path, split.replace(tzinfo=None), dimension=1)
+            with self.assertRaisesRegex(ValueError, 'complete dimension'):
+                validate_sqlite(path, split + datetime.timedelta(hours=1), dimension=1)
+
     def rows(self, start):
         return [{'timestamp_utc': f'2026-10-02T00:00:{i:02d}Z', 'continuous_vector': [2.0 * i],
                  'state_token': 'A', 'model_version': 'v1', 'model_sha256': '1' * 64,
