@@ -47,6 +47,16 @@ circuit uses an explicitly derived 929 MiB initial estimate (measured standalone
 peak plus 20% headroom and 192 MiB reserve), not a certified worst-case bound.
 The single SDK success does not close remaining protocol, privacy or science gates.
 
+Before dispatching an isolated unknown-score synthetic fixture, run
+`python3 scripts/preflight_private_computation_fixture.py --fixture FIXTURE_DIR
+--circuit APPROVED_CIRCUIT.txt`. It checks the pinned guarded circuit, canonical
+approval encoding, each party's session and packed-v2 model commitment, and both
+ECDSA signatures through the production Java approval verifier. It performs no
+device operation or objective computation. Fixture DER keys are synthetic test
+identities; passing this check does not establish real-owner enrollment, private
+proof generation or production acceptance. A fixture signed for the earlier
+unguarded circuit must be rejected rather than dispatched to the guarded SDK.
+
 ## Empirical continuous holdout entry
 
 `scripts/validate_continuous_holdout.py` rejects incomplete or mixed coordinate
