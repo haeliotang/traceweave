@@ -26,7 +26,8 @@ public final class SyntheticProofJob extends JobService {
                 for (int owner = 0; owner < 2; owner++) owners[owner] = java.security.KeyFactory.getInstance("EC").generatePublic(
                     new java.security.spec.X509EncodedKeySpec(OwnerAuthentication.readBounded(new File(root, "owner" + owner + ".der"), 256)));
                 report.put("case", label);
-                try {
+                if ("lifecycle".equals(label)) report.put("lifecycle", SyntheticPrivateLifecycle.verify(this, root));
+                else try {
                     boolean compute = fixture.optBoolean("compute_alignment", false);
                     JSONObject result;
                     if (compute) {
@@ -74,7 +75,9 @@ public final class SyntheticProofJob extends JobService {
                     report.put("nonce", parameters.getExtras().getString("nonce")).put("job_id", parameters.getJobId())
                         .put("elapsed_ms", (System.nanoTime()-started)/1e6).put("sdk_int", android.os.Build.VERSION.SDK_INT)
                         .put("completed_epoch_ms", System.currentTimeMillis())
-                        .put("scope", "synthetic_two_node_signed_packed_v2_public_proof_in_app_UID_no_collection_no_owner_enrollment");
+                        .put("scope", "lifecycle".equals(report.optString("case"))
+                            ? "synthetic_packaged_private_participant_cleanup_no_proof_verification_or_collection"
+                            : "synthetic_two_node_signed_packed_v2_public_proof_in_app_UID_no_collection_no_owner_enrollment");
                     NativeVerificationJob.write(new File(getFilesDir(), "proof_v2.json"), report);
                 } catch (Exception error) { android.util.Log.e("TraceformProbe", "proof receipt failed", error); }
             }

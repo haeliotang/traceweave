@@ -91,6 +91,11 @@ admission or circuit snapshots, under the same query lease. Host regression
 confirms spent-session rejection and that resource rejection does not consume
 a new session. See the [replay preflight regression](artifacts/alignment_v1/computation_replay_preflight_host.json).
 
+Packaged private-participant cancellation and resource-permission withdrawal
+pass on Pixel while waiting for a synthetic TLS peer: live children are observed,
+reaped and their snapshots removed. See the [lifecycle receipt](artifacts/alignment_v1/private_participant_lifecycle_android.json).
+This does not cover sixteen-node computation or actual system low-memory withdrawal.
+
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes
 implementation and bounded test evidence; it does not establish causal efficacy,
