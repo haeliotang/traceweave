@@ -12,16 +12,19 @@ matching `libtraceform.so` and assets in its host app. Input arrays must follow
 the normalizer's feature ordering and use its canonical raw-feature units.
 
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
-128 asset feature names against `EdgeService.java`, `FeatureReadings.java` and
-`NativeWifiSource.java`,
-with source hashes and exact line expressions. It locates 34 literal `put`
-assignments and five other name references; 89 names remain unresolved by this
+128 asset feature names against `EdgeService.java`, `FeatureReadings.java`,
+`NativeWifiSource.java` and `NativeMemoryPressure.java`,
+with source hashes and exact line expressions. It locates 35 literal `put`
+assignments and five other name references; 88 names remain unresolved by this
 literal index. The five referenced features now have manually traced production
 paths: accelerometer/gyroscope vector jerk and the three higher accelerometer
 derivatives. Sensor callbacks pass through `derivative` to `put(name, ...)` or
 the `HIGHER_ACCEL_NAMES` loop. Invalid vectors, inadequate history and time gaps
-can still leave these coordinates missing. Together, 39 names have located
+can still leave these coordinates missing. Together, 40 names have located
 literal or reviewed variable-dispatch paths; this is source coverage only.
+The memory-pressure path reads kernel-wide PSI `some avg10` as a fraction;
+procfs access denial or malformed input remains missing. This does not infer
+process-specific pressure or replace a denied source with available-memory estimates.
 These counts describe source text, not device capability: even a located
 assignment can produce missing, imputed, derived or proxy values. The index
 does not establish complete native acquisition or independent observability.

@@ -4,8 +4,9 @@
   "normalizer_file_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
   "source_sha256": {
     "android/src/org/traceform/edge/FeatureReadings.java": "6452f6566fbb29fdbc17ca959931ae86efab93ad5a2a00ac7f09da7a9415ddb6",
-    "android/src/org/traceform/edge/EdgeService.java": "b3cda3981c0304fc6d93dc96e2fb221aaa8aac60a5af16fb353f2f33575a8d0e",
-    "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b"
+    "android/src/org/traceform/edge/EdgeService.java": "2ed4a7cd53f70ab0b331df0ad84c7bbdae02564554e1d28929dc80a4bc0d8fe3",
+    "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b",
+    "android/src/org/traceform/edge/NativeMemoryPressure.java": "818f2fefadb182ef1ae8369d6dc8f6a8dcdbff895d51b7d38205c33acaf2ba42"
   },
   "limitations": [
     "Five variable dispatch paths are manually traced; this index remains incomplete for other helper chains and runtime conditions.",
@@ -13,9 +14,9 @@
     "No physical device observations were read."
   ],
   "status_counts": {
-    "literal_assignment_found": 34,
-    "name_reference_only": 5,
-    "unresolved_in_indexed_sources": 89
+    "literal_assignment_found": 35,
+    "unresolved_in_indexed_sources": 88,
+    "name_reference_only": 5
   },
   "features": [
     {
@@ -127,7 +128,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 239,
+          "line": 241,
           "expression": "observed.put(\"device_battery_fraction\", level >= 0 && scale > 0 ? level / (double) scale : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -140,7 +141,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 240,
+          "line": 242,
           "expression": "observed.put(\"device_is_plugged\", battery.hasExtra(BatteryManager.EXTRA_PLUGGED) ? (battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0 ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -153,7 +154,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 241,
+          "line": 243,
           "expression": "observed.put(\"device_is_charging\", battery.hasExtra(BatteryManager.EXTRA_STATUS) ? (battery.getIntExtra(BatteryManager.EXTRA_STATUS, 0) == BatteryManager.BATTERY_STATUS_CHARGING ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -184,7 +185,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 234,
+          "line": 236,
           "expression": "observed.put(\"conn_wifi_connected\", wifi.transportPresent ? 1 : 0, \"observed\",",
           "literal_put_assignment": true
         }
@@ -210,7 +211,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 220,
+          "line": 222,
           "expression": "observed.put(\"screen_on_ratio\", power.isInteractive() ? 1 : 0,",
           "literal_put_assignment": true
         }
@@ -235,7 +236,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 229,
+          "line": 231,
           "expression": "observed.put(\"audio_immersion_state\", headset ? 1 : 0, \"proxy\",",
           "literal_put_assignment": true
         }
@@ -287,7 +288,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 217,
+          "line": 219,
           "expression": "observed.put(\"battery_current_ua\", batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,",
           "literal_put_assignment": true
         }
@@ -1105,8 +1106,15 @@
     {
       "index": 110,
       "feature": "memory_pressure_stall_ratio",
-      "static_status": "unresolved_in_indexed_sources",
-      "source_points": []
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 215,
+          "expression": "observed.put(\"memory_pressure_stall_ratio\", NativeMemoryPressure.read(), \"derived\",",
+          "literal_put_assignment": true
+        }
+      ]
     },
     {
       "index": 111,

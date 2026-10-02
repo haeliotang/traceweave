@@ -212,6 +212,8 @@ public final class EdgeService extends Service implements SensorEventListener {
                 observed.clock(now, nanos);
                 observed.motion(nanos);
                 observed.windows(nanos);
+                observed.put("memory_pressure_stall_ratio", NativeMemoryPressure.read(), "derived",
+                    "kernel_memory_psi_some_avg10_percent_divided_by_100_not_process_specific", nanos, 5000000000L);
                 BatteryManager batteryManager = getSystemService(BatteryManager.class);
                 int batteryCurrent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW);
                 observed.put("battery_current_ua", batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,
