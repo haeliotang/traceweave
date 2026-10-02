@@ -6,7 +6,7 @@ class TestContinuousRecordReadiness(unittest.TestCase):
     def records(self):
         return [{'timestamp_utc': f'2026-10-02T00:00:0{i}Z', 'continuous_vector': [float(i)] * 128,
                  'model_version': 'v1', 'model_sha256': '1' * 64, 'normalizer_sha256': '2' * 64,
-                 'boot_id': 'boot', 'continuity_epoch': 1, 'source_mode': 'synthetic'} for i in range(3)]
+                 'state_token': 'A', 'boot_id': 'boot', 'continuity_epoch': 1, 'source_mode': 'synthetic'} for i in range(3)]
 
     def test_accepts_bound_records_and_rejects_legacy_shape(self):
         self.assertTrue(audit(self.records())['ready_for_fit'])

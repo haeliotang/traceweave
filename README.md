@@ -101,6 +101,11 @@ all 5,961 records contain legacy 26D normalized features and lack the required
 continuous-vector coordinate bindings. The input audit finds zero eligible pairs;
 see [empirical input readiness](artifacts/forecasting_v2/empirical_128d_input_readiness.json).
 This does not invalidate the original 26D analyses or establish 128D dynamics.
+`python3 scripts/validate_continuous_holdout.py --train-file TRAIN.jsonl
+--holdout-file HOLDOUT.jsonl --output-file REPORT.json` evaluates only strictly
+later, matching-coordinate 128D records. It reports increment prediction errors
+against persistence and full residual/predicted covariance rates; it does not
+automatically assign scientific acceptance.
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes

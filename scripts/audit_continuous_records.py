@@ -36,7 +36,7 @@ def audit(records, dimension=128, max_gap_seconds=300):
         for field in ('model_sha256', 'normalizer_sha256'):
             if not isinstance(record.get(field), str) or not re.fullmatch('[0-9a-f]{64}', record[field]):
                 reasons.append(field + '_missing_or_invalid')
-        for field in ('model_version', 'boot_id', 'continuity_epoch', 'source_mode'):
+        for field in ('model_version', 'boot_id', 'continuity_epoch', 'source_mode', 'state_token'):
             if record.get(field) is None or record.get(field) == '':
                 reasons.append(field + '_missing')
         try:

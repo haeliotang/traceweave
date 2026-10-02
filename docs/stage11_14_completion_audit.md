@@ -46,3 +46,20 @@ The earlier 960 MiB SDK admission failures remain failures. The current fixed
 circuit uses an explicitly derived 929 MiB initial estimate (measured standalone
 peak plus 20% headroom and 192 MiB reserve), not a certified worst-case bound.
 The single SDK success does not close remaining protocol, privacy or science gates.
+
+## Empirical continuous holdout entry
+
+`scripts/validate_continuous_holdout.py` rejects incomplete or mixed coordinate
+bindings, nonchronological partitions and temporal overlap before fitting.
+The model is fitted only on training records; holdout increments supply
+drift-vs-persistence errors and exposure-weighted full residual covariance
+compared with predicted noise covariance (2D convention). Cross-coordinate
+terms are retained. These are finite-lag diagnostics, not identified true drift,
+fractional memory, conservative-potential validity or causal-effect acceptance.
+The archived 26D state sequence remains ineligible; no empirical 128D fit has
+been performed using this tool.
+
+All 33 affected continuous-model tests pass (9.149s), including deterministic
+increment baseline checks, temporal-leakage rejection and an independent
+correlated two-coordinate covariance example. These controlled tests validate
+the reporting path and do not supply the missing empirical records.
