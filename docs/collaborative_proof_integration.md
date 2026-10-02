@@ -15,9 +15,30 @@ The [co-snarks repository](https://github.com/TaceoLabs/co-snarks) exposes
 collaborative witness-generation and Groth16 tooling for Circom. It states that
 the software is experimental and unaudited, and notes different licenses for
 some components. Its [official quick start](https://docs.taceo.io/docs/getting-started/quick-start-co-circom/)
-uses three parties for witness extension and a BN254 example. This is not
-confirmation of compatibility with Traceform's two-owner, BLS12-381 Arkworks
-relation or Android deployment. Those compatibility checks remain unperformed.
+uses three parties for witness extension and a BN254 example. The official
+[generate-proof reference](https://docs.taceo.io/docs/co-circom/cli/generate-proof/)
+explicitly lists both BN254 and BLS12-381, with REP3 and SHAMIR protocols.
+BLS12-381 support is therefore documented; it is not an established curve
+incompatibility. Compatibility with Traceform's exact Arkworks relation, keys,
+witness layout and Android deployment remains unverified.
+
+The implementation's
+[protocol description](https://core.taceo.io/articles/honest-majority-mpc-for-cosnarks/)
+identifies its replicated/Shamir protocols as honest-majority, and describes
+REP3 as three computing parties. This does not establish privacy for two
+computing owners with one dishonest participant. Setting a CLI threshold or
+running three processes controlled by two owners does not supply independent
+honest parties. A local three-process experiment would remain synthetic and
+would not satisfy the unchanged two-owner requirement.
+
+| Compatibility gate | Verified fact | Remaining evidence |
+| --- | --- | --- |
+| Curve | CLI documents BLS12-381 | Exact serialization, keys and public statement compatibility |
+| Circuit/witness | Circom MPC witness generation and snarkjs artifacts documented | Preserve every packed-v2 constraint and seven public fields; independently establish relation equivalence |
+| Parties/privacy | REP3/Shamir honest-majority model documented | Compatible two-owner security model and private witness generation |
+| Runtime | Rust libraries and CLI are available | Pinned dependencies, Android build, resource and abort tests |
+
+These are documentary facts, not a build, protocol run or dependency acceptance.
 
 The [original collaborative-zksnark implementation](https://github.com/alex-ozdemir/collaborative-zksnark)
 explicitly describes itself as insecure and intended for benchmarking. It is a
