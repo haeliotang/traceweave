@@ -9,7 +9,8 @@ import json
 import time
 from typing import Any, Dict, Optional, Tuple
 
-from pixel_physical import audio_features, config, connectivity, device_state
+from pixel_physical import audio_features, config, connectivity
+from traceform.streaming import physical_device_state_v2 as device_state
 from traceform.streaming import physical_sensors_v2 as sensors
 from traceform.streaming import physical_location_v2 as location
 
@@ -78,6 +79,7 @@ def acquire_observation_frame(
     # 4. Device Relation (Battery, Audio Route)
     t_start = time.perf_counter()
     dev_dict, dev_avail = device_state.sample_device_state()
+    sensor_fields['device_relation'] = dev_dict.pop('_field_provenance', {})
     latencies["device_relation"] = round((time.perf_counter() - t_start) * 1000, 2)
     availability["device_relation"] = dev_avail
 
@@ -123,7 +125,7 @@ def acquire_observation_frame(
              ['location_request_and_age_are_recorded_in_place_when_available']),
             ('connectivity', 'pixel_physical.connectivity.sample_connectivity',
              ['group_availability_does_not_establish_each_field']),
-            ('device_relation', 'pixel_physical.device_state.sample_device_state',
+            ('device_relation', 'traceform.streaming.physical_device_state_v2.sample_device_state',
              ['audio_route_defaults_may_be_present', 'group_availability_does_not_establish_each_field']),
             ('audio_context', 'pixel_physical.audio_features.sample_audio_context',
              ['derived_audio_summaries']),
