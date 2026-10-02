@@ -7,6 +7,7 @@ import json
 import math
 from pathlib import Path
 import re
+import sqlite3
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -64,15 +65,49 @@ def audit(records, dimension=128, max_gap_seconds=300):
             'scope': 'input_readiness_only_not_empirical_accuracy_memory_identification_or_scientific_acceptance'}
 
 
+def audit_sqlite(path):
+    """Read hot frames in one snapshot, without reading the raw column."""
+    digest = hashlib.sha256()
+    count = 0
+    connection = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
+    try:
+        connection.execute('PRAGMA query_only=ON')
+        connection.execute('BEGIN')
+
+        def records():
+            nonlocal count
+            for (payload,) in connection.execute('SELECT frame FROM hot ORDER BY ts, id'):
+                encoded = payload.encode('utf-8')
+                digest.update(len(encoded).to_bytes(8, 'big'))
+                digest.update(encoded)
+                count += 1
+                record = json.loads(payload)
+                if not isinstance(record, dict):
+                    raise ValueError('hot frame must be a JSON object')
+                yield record
+
+        result = audit(records())
+        result.update(record_count=count, ordered_frame_sha256=digest.hexdigest(),
+                      source_scope='sqlite_hot_read_transaction_length_prefixed_utf8_frames_not_database_file')
+        return result
+    finally:
+        connection.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--records-file', type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--records-file', type=Path)
+    source.add_argument('--sqlite-file', type=Path)
     parser.add_argument('--output-file', type=Path, required=True)
     args = parser.parse_args()
-    payload = args.records_file.read_bytes()
-    records = [json.loads(line) for line in payload.splitlines() if line.strip()]
-    result = audit(records)
-    result.update(record_count=len(records), source_sha256=hashlib.sha256(payload).hexdigest())
+    if args.sqlite_file:
+        result = audit_sqlite(args.sqlite_file)
+    else:
+        payload = args.records_file.read_bytes()
+        records = [json.loads(line) for line in payload.splitlines() if line.strip()]
+        result = audit(records)
+        result.update(record_count=len(records), source_sha256=hashlib.sha256(payload).hexdigest())
     args.output_file.parent.mkdir(parents=True, exist_ok=True)
     args.output_file.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result))

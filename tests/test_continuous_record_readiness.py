@@ -1,8 +1,39 @@
 import unittest
-from scripts.audit_continuous_records import audit
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import tempfile
+from scripts.audit_continuous_records import audit, audit_sqlite
 
 
 class TestContinuousRecordReadiness(unittest.TestCase):
+    def test_sqlite_reads_ordered_frames_without_mutating_or_exporting_raw(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'edge.sqlite'
+            rows = self.records()
+            with sqlite3.connect(path) as connection:
+                connection.execute('CREATE TABLE hot (id TEXT PRIMARY KEY, ts REAL, raw TEXT, frame TEXT)')
+                for i in reversed(range(3)):
+                    connection.execute('INSERT INTO hot VALUES (?,?,?,?)',
+                                       (str(i), i, 'private raw sentinel', json.dumps(rows[i])))
+            before = path.read_bytes()
+            result = audit_sqlite(path)
+            self.assertEqual(result['eligible_adjacent_pairs'], 2)
+            self.assertTrue(result['ready_for_fit'])
+            self.assertEqual(path.read_bytes(), before)
+            self.assertNotIn('private raw sentinel', json.dumps(result))
+            digest = hashlib.sha256()
+            for row in rows:
+                payload = json.dumps(row).encode()
+                digest.update(len(payload).to_bytes(8, 'big'))
+                digest.update(payload)
+            self.assertEqual(result['ordered_frame_sha256'], digest.hexdigest())
+            missing = Path(directory) / 'missing.sqlite'
+            with self.assertRaises(sqlite3.OperationalError):
+                audit_sqlite(missing)
+            self.assertFalse(missing.exists())
+
     def records(self):
         return [{'timestamp_utc': f'2026-10-02T00:00:0{i}Z', 'continuous_vector': [float(i)] * 128,
                  'model_version': 'v1', 'model_sha256': '1' * 64, 'normalizer_sha256': '2' * 64,
