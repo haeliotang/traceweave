@@ -228,9 +228,13 @@ class NormalizationParams:
     iqrs: Dict[str, float]
     fitted_observation_count: int
     fit_window_description: str
+    feature_extraction_version: int = 1
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        if self.feature_extraction_version == 1:
+            del result['feature_extraction_version']
+        return result
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "NormalizationParams":
@@ -240,6 +244,7 @@ class NormalizationParams:
             iqrs=d["iqrs"],
             fitted_observation_count=d["fitted_observation_count"],
             fit_window_description=d["fit_window_description"],
+            feature_extraction_version=d.get('feature_extraction_version', 1),
         )
 
 
@@ -257,6 +262,9 @@ def safe_float(val: Any, default: float) -> float:
 class MultimodalNormalizer:
     def __init__(self, params: Optional[NormalizationParams] = None):
         self.params = params
+        self.feature_extraction_version = params.feature_extraction_version if params else 2
+        if type(self.feature_extraction_version) is not int or self.feature_extraction_version not in (1, 2):
+            raise ValueError('unsupported feature extraction version')
         self._geo_window: deque[Tuple[float, float]] = deque(maxlen=60)
         self._last_pressure: Optional[float] = None
         self._last_temp: Optional[float] = None
@@ -1588,7 +1596,7 @@ class MultimodalNormalizer:
 
         # 71. GNSS Visible Satellite Density (89)
         gnss_sat_direct = plc.get("visible_satellites")
-        if gnss_sat_direct is None:
+        if gnss_sat_direct is None or (self.feature_extraction_version == 1 and not gnss_sat_direct):
             gnss_sat_direct = plc.get("gnss_sat_count")
         if gnss_sat_direct is not None:
             visible_sats = round(
@@ -1599,7 +1607,7 @@ class MultimodalNormalizer:
 
         # 72. GNSS Mean Carrier-to-Noise Ratio (C/N0) in dB-Hz (90)
         cn0_direct = plc.get("mean_carrier_to_noise_ratio")
-        if cn0_direct is None:
+        if cn0_direct is None or (self.feature_extraction_version == 1 and not cn0_direct):
             cn0_direct = plc.get("gnss_cn0_dbhz")
         if cn0_direct is not None:
             mean_cn0 = round(max(0.0, min(50.0, safe_float(cn0_direct, 32.0))), 1)
@@ -1608,7 +1616,7 @@ class MultimodalNormalizer:
 
         # 73. Position Dilution of Precision (PDOP) (91)
         pdop_direct = plc.get("position_dilution_of_precision")
-        if pdop_direct is None:
+        if pdop_direct is None or (self.feature_extraction_version == 1 and not pdop_direct):
             pdop_direct = plc.get("pdop")
         if pdop_direct is not None:
             pdop_val = round(max(0.5, min(20.0, safe_float(pdop_direct, 1.8))), 2)
@@ -1617,7 +1625,7 @@ class MultimodalNormalizer:
 
         # 74. GNSS Doppler Carrier Drift Velocity in m/s (92)
         doppler_drift_direct = plc.get("doppler_velocity_drift")
-        if doppler_drift_direct is None:
+        if doppler_drift_direct is None or (self.feature_extraction_version == 1 and not doppler_drift_direct):
             doppler_drift_direct = plc.get("gnss_speed_mps")
         if doppler_drift_direct is not None:
             doppler_speed = round(
@@ -2246,6 +2254,7 @@ class MultimodalNormalizer:
             iqrs=iqrs,
             fitted_observation_count=len(observations),
             fit_window_description=description,
+            feature_extraction_version=self.feature_extraction_version,
         )
         return self.params
 

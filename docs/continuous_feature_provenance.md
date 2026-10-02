@@ -35,3 +35,9 @@ This corrects an `or` lookup that could replace an explicit zero with an alias
 or proxy. The source inventory binds the corrected implementation. This is a
 normalization semantic change for affected inputs: prior empirical reports and
 installed models are not automatically revalidated by the code correction.
+
+New parameter packages explicitly bind `feature_extraction_version=2`, which
+preserves reported GNSS zero values. Legacy packages without this field retain
+version 1 extraction and their original serialized digest. Loading old parameters
+does not silently activate corrected semantics. Unsupported versions are rejected;
+activation of a newly fitted version-2 package requires its own model acceptance.

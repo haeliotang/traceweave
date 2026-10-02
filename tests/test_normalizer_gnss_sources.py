@@ -4,6 +4,25 @@ from traceform.representation.normalizer import MultimodalNormalizer
 
 
 class TestNormalizerGnssSources(unittest.TestCase):
+    def test_legacy_and_corrected_semantics_have_distinct_bindings(self):
+        from traceform.representation.provenance import content_digest
+        normalizer = MultimodalNormalizer()
+        normalizer.fit_discovery_window([{'place': {'latitude': 1}}])
+        current = normalizer.to_dict()
+        self.assertEqual(current['feature_extraction_version'], 2)
+        legacy = dict(current)
+        del legacy['feature_extraction_version']
+        restored = MultimodalNormalizer.from_dict(legacy)
+        self.assertEqual(restored.to_dict(), legacy)
+        observation = {'place': {'latitude': 1, 'visible_satellites': 0, 'gnss_sat_count': 12}}
+        self.assertEqual(restored.extract_raw_features(observation)[0]['gnss_visible_satellite_density'], 12)
+        self.assertEqual(MultimodalNormalizer.from_dict(current).extract_raw_features(observation)[0]
+                         ['gnss_visible_satellite_density'], 0)
+        self.assertNotEqual(content_digest(current), content_digest(legacy))
+        current['feature_extraction_version'] = 3
+        with self.assertRaisesRegex(ValueError, 'extraction version'):
+            MultimodalNormalizer.from_dict(current)
+
     def test_reported_zero_precedes_alias_and_proxy(self):
         observation = {'place': {'latitude': 1, 'visible_satellites': 0, 'gnss_sat_count': 12,
                                 'mean_carrier_to_noise_ratio': 0, 'gnss_cn0_dbhz': 32,
