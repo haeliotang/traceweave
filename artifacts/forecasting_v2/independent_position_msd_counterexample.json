@@ -1,0 +1,28 @@
+{
+  "scope": "controlled_independent_position_counterexample_not_empirical_memory_identification",
+  "generator": "8192 iid 2D uniform[-1,1] positions; Python random.Random(426)",
+  "population_expected_msd_all_positive_lags": 1.3333333333333333,
+  "diagnostic": {
+    "hurst_exponent": 0.0,
+    "r_squared": 0.2837,
+    "regime_type": "SUB_DIFFUSIVE",
+    "interpretation": "Finite-lag sub-diffusive MSD slope (H=0.000 < 0.5); physical driver and confinement mechanism not identified.",
+    "msd_by_lag": {
+      "1": 1.3528,
+      "2": 1.3501,
+      "4": 1.3333,
+      "8": 1.3436,
+      "16": 1.3384,
+      "32": 1.33,
+      "64": 1.3409,
+      "128": 1.3403,
+      "256": 1.3385
+    }
+  },
+  "conclusion": "Low finite-lag MSD slope also occurs without temporal dependence; it cannot alone establish fractional memory or a physical potential-well mechanism.",
+  "passed": true,
+  "source_sha256": {
+    "traceform/dynamics/multiscale.py": "67eb3dbd22897a5b3427bbb4a66286f5f37188776d9085b049bd6ccb81b5e340",
+    "tests/test_multiscale.py": "fa138cdc18b6951567aff055834fd442d94d7c0a4a7c327666e77caea1b6c759"
+  }
+}

@@ -62,6 +62,18 @@ class TestMultiscaleDiffusion(unittest.TestCase):
             self.assertIn('not identified', regime.interpretation)
             self.assertNotIn('strongly confined', regime.interpretation)
 
+    def test_independent_bounded_positions_have_low_msd_slope_without_memory(self):
+        rng = random.Random(426)
+        coords = [(rng.uniform(-1, 1), rng.uniform(-1, 1)) for _ in range(8192)]
+        msd = self.auditor.compute_msd(coords, lags=[1, 2, 4, 8, 16, 32, 64, 128, 256])
+        # Independent uniform coordinates: E[||X(t+lag)-X(t)||^2] = 4/3
+        # at every positive lag, despite having no temporal memory.
+        for value in msd.values():
+            self.assertAlmostEqual(value, 4 / 3, delta=0.06)
+        diagnostic = self.auditor.estimate_hurst_exponent(msd)
+        self.assertLess(diagnostic.hurst_exponent, 0.05)
+        self.assertIn('not identified', diagnostic.interpretation)
+
     def test_audit_multiscale_dynamics(self):
         # Mock records
         rng = random.Random(42)

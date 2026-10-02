@@ -47,6 +47,13 @@ circuit uses an explicitly derived 929 MiB initial estimate (measured standalone
 peak plus 20% headroom and 192 MiB reserve), not a certified worst-case bound.
 The single SDK success does not close remaining protocol, privacy or science gates.
 
+`independent_position_msd_counterexample.json` records a controlled sequence of
+8,192 independent uniform 2D positions. Its population MSD is 4/3 at every
+positive lag; the measured curve yields a near-zero MSD slope without temporal
+dependence. This counterexample prevents treating low fitted H alone as evidence
+of fractional memory or a physical confinement mechanism. It supplies no
+empirical identification or acceptance of the intended continuous model.
+
 Before dispatching an isolated unknown-score synthetic fixture, run
 `python3 scripts/preflight_private_computation_fixture.py --fixture FIXTURE_DIR
 --circuit APPROVED_CIRCUIT.txt`. It checks the pinned guarded circuit, canonical
