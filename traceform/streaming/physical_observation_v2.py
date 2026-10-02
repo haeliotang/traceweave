@@ -9,7 +9,8 @@ import json
 import time
 from typing import Any, Dict, Optional, Tuple
 
-from pixel_physical import audio_features, config
+from pixel_physical import config
+from traceform.streaming import physical_audio_v2 as audio_features
 from traceform.streaming import physical_connectivity_v2 as connectivity
 from traceform.streaming import physical_device_state_v2 as device_state
 from traceform.streaming import physical_sensors_v2 as sensors
@@ -89,6 +90,7 @@ def acquire_observation_frame(
     if include_audio:
         t_start = time.perf_counter()
         audio_dict, audio_avail = audio_features.sample_audio_context()
+        sensor_fields['audio_context'] = audio_dict.pop('_field_provenance', {})
         latencies["audio_context"] = round((time.perf_counter() - t_start) * 1000, 2)
         availability["audio_context"] = audio_avail
     else:
@@ -129,7 +131,7 @@ def acquire_observation_frame(
              ['group_availability_does_not_establish_each_field']),
             ('device_relation', 'traceform.streaming.physical_device_state_v2.sample_device_state',
              ['audio_route_defaults_may_be_present', 'group_availability_does_not_establish_each_field']),
-            ('audio_context', 'pixel_physical.audio_features.sample_audio_context',
+            ('audio_context', 'traceform.streaming.physical_audio_v2.sample_audio_context',
              ['derived_audio_summaries']),
         )},
     )
