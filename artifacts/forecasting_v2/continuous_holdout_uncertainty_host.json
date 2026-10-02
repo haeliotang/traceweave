@@ -1,0 +1,110 @@
+{
+  "scope": "controlled_host_holdout_reporting_not_empirical_128d_acceptance",
+  "source_sha256": {
+    "scripts/validate_continuous_holdout.py": "bd14369dd6ed73f2756ed4b9cecf9d4b67dae3346402e9dbbc0a5f4efa239247",
+    "tests/test_continuous_holdout_validation.py": "1a02a9c515631684277d91c7175e2eaf973069e37c4aad6702c68cbde74cf719"
+  },
+  "known_deterioration_control": {
+    "dimension": 1,
+    "training_pair_count": 3,
+    "holdout_pair_count": 6,
+    "holdout_exposure_seconds": 6.0,
+    "drift_increment_mse": 16.0,
+    "persistence_increment_mse": 4.0,
+    "paired_mse_reduction_over_persistence": -12.0,
+    "holdout_utc_day_count": 2,
+    "paired_day_bootstrap_95_interval": [
+      -12.0,
+      -12.0
+    ],
+    "day_bootstrap_scope": "descriptive_UTC_day_blocks_not_proven_independent_days_or_model_selection",
+    "sampling_interval_seconds": {
+      "min": 1.0,
+      "median": 1.0,
+      "p95": 1.0,
+      "max": 1.0
+    },
+    "interval_strata": {
+      "up_to_1s": {
+        "pair_count": 6,
+        "drift_increment_mse": 16.0,
+        "persistence_increment_mse": 4.0
+      }
+    },
+    "residual_covariance_rate": [
+      [
+        16.0
+      ]
+    ],
+    "predicted_covariance_rate": [
+      [
+        0.0
+      ]
+    ],
+    "covariance_frobenius_error": 16.0,
+    "relative_covariance_error": null,
+    "scientific_acceptance": "not_assessed",
+    "limitations": [
+      "finite_lag_conditional_moment_diagnostics_not_true_drift_identification",
+      "overlapping_adjacent_pairs_not_independent_samples",
+      "day_bootstrap_unavailable_below_two_days_and_not_proof_of_day_independence",
+      "no_fractional_memory_or_conservative_potential_acceptance",
+      "no_independent_subject_generalization_or_causal_effect"
+    ],
+    "coordinate_bindings": {
+      "model_version": "v1",
+      "model_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "normalizer_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  },
+  "single_day_control": {
+    "dimension": 1,
+    "training_pair_count": 3,
+    "holdout_pair_count": 3,
+    "holdout_exposure_seconds": 3.0,
+    "drift_increment_mse": 3.2869204384208823e-32,
+    "persistence_increment_mse": 4.0,
+    "paired_mse_reduction_over_persistence": 4.0,
+    "holdout_utc_day_count": 1,
+    "paired_day_bootstrap_95_interval": null,
+    "day_bootstrap_scope": "descriptive_UTC_day_blocks_not_proven_independent_days_or_model_selection",
+    "sampling_interval_seconds": {
+      "min": 1.0,
+      "median": 1.0,
+      "p95": 1.0,
+      "max": 1.0
+    },
+    "interval_strata": {
+      "up_to_1s": {
+        "pair_count": 3,
+        "drift_increment_mse": 3.2869204384208823e-32,
+        "persistence_increment_mse": 4.0
+      }
+    },
+    "residual_covariance_rate": [
+      [
+        3.2869204384208823e-32
+      ]
+    ],
+    "predicted_covariance_rate": [
+      [
+        0.0
+      ]
+    ],
+    "covariance_frobenius_error": 3.2869204384208823e-32,
+    "relative_covariance_error": null,
+    "scientific_acceptance": "not_assessed",
+    "limitations": [
+      "finite_lag_conditional_moment_diagnostics_not_true_drift_identification",
+      "overlapping_adjacent_pairs_not_independent_samples",
+      "day_bootstrap_unavailable_below_two_days_and_not_proof_of_day_independence",
+      "no_fractional_memory_or_conservative_potential_acceptance",
+      "no_independent_subject_generalization_or_causal_effect"
+    ],
+    "coordinate_bindings": {
+      "model_version": "v1",
+      "model_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "normalizer_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  }
+}

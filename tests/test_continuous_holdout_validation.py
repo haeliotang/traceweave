@@ -45,6 +45,25 @@ class TestContinuousHoldoutValidation(unittest.TestCase):
         self.assertEqual(result['persistence_increment_mse'], 4)
         self.assertEqual(result['relative_covariance_error'], None)
         self.assertEqual(result['scientific_acceptance'], 'not_assessed')
+        self.assertEqual(result['holdout_utc_day_count'], 1)
+        self.assertIsNone(result['paired_day_bootstrap_95_interval'])
+        self.assertEqual(result['sampling_interval_seconds'], {'min': 1, 'median': 1, 'p95': 1, 'max': 1})
+
+    def test_paired_days_preserve_deterioration_without_tuning_model(self):
+        holdout = self.rows(4) + self.rows(8)
+        for index, row in enumerate(holdout):
+            if index >= 4:
+                row['timestamp_utc'] = row['timestamp_utc'].replace('2026-10-02', '2026-10-03')
+            row['continuous_vector'] = [-row['continuous_vector'][0]]
+        result = validate(self.rows(0), holdout, dimension=1)
+        self.assertEqual(result['holdout_pair_count'], 6)
+        self.assertEqual(result['holdout_utc_day_count'], 2)
+        self.assertAlmostEqual(result['paired_mse_reduction_over_persistence'], -12)
+        for endpoint in result['paired_day_bootstrap_95_interval']:
+            self.assertAlmostEqual(endpoint, -12)
+        self.assertEqual(result['interval_strata']['up_to_1s']['pair_count'], 6)
+        self.assertAlmostEqual(result['interval_strata']['up_to_1s']['drift_increment_mse'], 16)
+        self.assertEqual(result['scientific_acceptance'], 'not_assessed')
 
     def test_leakage_coordinate_changes_and_missing_frames_rejected(self):
         with self.assertRaisesRegex(ValueError, 'strictly later'):
@@ -58,6 +77,24 @@ class TestContinuousHoldoutValidation(unittest.TestCase):
         del holdout[1]['continuous_vector']
         with self.assertRaisesRegex(ValueError, 'complete dimension'):
             validate(self.rows(0), holdout, dimension=1)
+
+    def test_actual_interval_strata_boundaries(self):
+        base = datetime.datetime(2026, 10, 2, 0, 1, tzinfo=datetime.timezone.utc)
+        holdout = []
+        elapsed = 0
+        for step in (0, 1, 5, 30, 60):
+            elapsed += step
+            row = self.rows(0)[0]
+            row['timestamp_utc'] = (base + datetime.timedelta(seconds=elapsed)).isoformat()
+            row['continuous_vector'] = [2.0 * (60 + elapsed)]
+            holdout.append(row)
+        result = validate(self.rows(0), holdout, dimension=1)
+        self.assertEqual(result['sampling_interval_seconds'], {'min': 1, 'median': 17.5, 'p95': 60, 'max': 60})
+        self.assertEqual(result['holdout_exposure_seconds'], 96)
+        self.assertEqual(set(result['interval_strata']), {'up_to_1s', '1_to_5s', '5_to_30s', 'over_30s'})
+        for group in result['interval_strata'].values():
+            self.assertEqual(group['pair_count'], 1)
+            self.assertAlmostEqual(group['drift_increment_mse'], 0)
 
     def test_full_covariance_keeps_cross_coordinate_residuals(self):
         train, holdout = self.rows(0), self.rows(4)

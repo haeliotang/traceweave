@@ -5,7 +5,9 @@ import datetime
 import hashlib
 import json
 import math
+import random
 import sqlite3
+import statistics
 from pathlib import Path
 import sys
 
@@ -33,13 +35,24 @@ def validate(train, holdout, bandwidth=1, dimension=128):
     predicted = [[0.0] * dimension for _ in range(dimension)]
     squared = baseline = exposure = 0.0
     count = 0
+    daily, intervals, strata = {}, [], {}
     for first, second, _ in adjacent_examples(holdout, 300):
         dt = (timestamp(second) - timestamp(first)).total_seconds()
         drift, covariance = model.coefficients(first['continuous_vector'])
         delta = [b - a for a, b in zip(first['continuous_vector'], second['continuous_vector'])]
         errors = [value - slope * dt for value, slope in zip(delta, drift)]
-        squared += sum(v * v for v in errors)
-        baseline += sum(v * v for v in delta)
+        pair_error = sum(v * v for v in errors)
+        pair_baseline = sum(v * v for v in delta)
+        squared += pair_error
+        baseline += pair_baseline
+        day = timestamp(second).astimezone(datetime.timezone.utc).date().isoformat()
+        group = daily.setdefault(day, [0.0, 0])
+        group[0] += (pair_baseline - pair_error) / dimension
+        group[1] += 1
+        intervals.append(dt)
+        name = 'up_to_1s' if dt <= 1 else '1_to_5s' if dt <= 5 else '5_to_30s' if dt <= 30 else 'over_30s'
+        group = strata.setdefault(name, [0.0, 0.0, 0])
+        group[0] += pair_error; group[1] += pair_baseline; group[2] += 1
         exposure += dt
         count += 1
         for row in range(dimension):
@@ -47,7 +60,16 @@ def validate(train, holdout, bandwidth=1, dimension=128):
                 residual[row][column] += errors[row] * errors[column]
                 predicted[row][column] += covariance[row][column] * dt
     if count < 2:
-        raise ValueError('at least two independent holdout pairs required')
+        raise ValueError('at least two eligible holdout pairs required')
+    samples = []
+    days = sorted(daily)
+    if len(days) >= 2:
+        rng = random.Random(42)
+        for _ in range(1000):
+            selected = [daily[rng.choice(days)] for _ in days]
+            samples.append(sum(group[0] for group in selected) / sum(group[1] for group in selected))
+        samples.sort()
+    intervals.sort()
     observed = [[v / exposure for v in row] for row in residual]
     expected = [[v / exposure for v in row] for row in predicted]
     difference = math.sqrt(sum((a - b) ** 2 for left, right in zip(observed, expected) for a, b in zip(left, right)))
@@ -55,10 +77,22 @@ def validate(train, holdout, bandwidth=1, dimension=128):
     return {'dimension': dimension, 'training_pair_count': model.fit_pair_count, 'holdout_pair_count': count,
             'holdout_exposure_seconds': exposure, 'drift_increment_mse': squared / (count * dimension),
             'persistence_increment_mse': baseline / (count * dimension),
+            'paired_mse_reduction_over_persistence': (baseline - squared) / (count * dimension),
+            'holdout_utc_day_count': len(days),
+            'paired_day_bootstrap_95_interval': [samples[25], samples[974]] if samples else None,
+            'day_bootstrap_scope': 'descriptive_UTC_day_blocks_not_proven_independent_days_or_model_selection',
+            'sampling_interval_seconds': {'min': intervals[0], 'median': statistics.median(intervals),
+                                         'p95': intervals[math.ceil(0.95 * len(intervals)) - 1], 'max': intervals[-1]},
+            'interval_strata': {name: {'pair_count': values[2],
+                                      'drift_increment_mse': values[0] / (values[2] * dimension),
+                                      'persistence_increment_mse': values[1] / (values[2] * dimension)}
+                                for name, values in sorted(strata.items())},
             'residual_covariance_rate': observed, 'predicted_covariance_rate': expected,
             'covariance_frobenius_error': difference, 'relative_covariance_error': difference / norm if norm else None,
             'scientific_acceptance': 'not_assessed',
             'limitations': ['finite_lag_conditional_moment_diagnostics_not_true_drift_identification',
+                            'overlapping_adjacent_pairs_not_independent_samples',
+                            'day_bootstrap_unavailable_below_two_days_and_not_proof_of_day_independence',
                             'no_fractional_memory_or_conservative_potential_acceptance',
                             'no_independent_subject_generalization_or_causal_effect'],
             'coordinate_bindings': {field: train[0][field] for field in fields}}
