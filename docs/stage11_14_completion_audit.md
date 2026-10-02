@@ -29,7 +29,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Build and install final production sources; current primary app is older |
 | Complete native 128-feature acquisition | Native feature provenance exists; some dimensions unavailable/imputed | Account for each intended observed feature; dimensions are not evidence of independent observability |
 | Final USB deployment | Independent probes have been installed and removed | Install the final production build with the existing signer and verify the requested operational behavior |
-| Repository publication | Local changes; origin is `https://github.com/haeliotang/traceform.git` | Review final diff/artifact inventory, commit and push; neither happened yet |
+| Repository publication | User requested a progress snapshot before full acceptance; implementation, README and bounded evidence committed locally | Verify push to `https://github.com/haeliotang/traceform.git` and matching remote commit; publication does not close remaining scientific or deployment gates |
 
 ## Next execution order
 
