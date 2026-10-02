@@ -76,7 +76,11 @@ class EdgeManifoldDaemon:
         boot_epoch_file: Optional[Path | str] = None,
         max_inter_frame_gap_seconds: float = 300.0,
         source_mode: str = "unspecified",
+        csd_input_space: str = "grid",
     ) -> None:
+        if csd_input_space not in ("grid", "continuous"):
+            raise ValueError("CSD input space must be grid or continuous")
+        self.csd_input_space = csd_input_space
         self.normalizer = normalizer
         self.manifold = manifold
         self.buffer_size = ring_buffer_size
@@ -90,8 +94,8 @@ class EdgeManifoldDaemon:
         self.model_version = content_digest({"manifold": self.model_digest, "normalizer": self.normalizer_digest})
         self.continuity_epoch = 0
 
-        # Ring buffer storing recent (u, v, proj_dist)
-        self.coord_buffer: Deque[Tuple[float, float, float]] = deque(
+        # Ring buffer stores diagnostic coordinates followed by their radial projection.
+        self.coord_buffer: Deque[Tuple[float, ...]] = deque(
             maxlen=ring_buffer_size
         )
         self.timestamps: Deque[str] = deque(maxlen=ring_buffer_size)
@@ -205,7 +209,19 @@ class EdgeManifoldDaemon:
         u, v = float(coord[0]), float(coord[1])
         proj = math.sqrt(u * u + v * v)
 
-        self.coord_buffer.append((u, v, proj))
+        point = (u, v, proj)
+        if self.csd_input_space == "continuous":
+            vector = self.manifold.last_obs_vector or []
+            valid = 1 <= len(vector) <= 128 and all(math.isfinite(value) and abs(value) <= 10 for value in vector)
+            if valid:
+                point = tuple(vector) + (math.sqrt(sum(value * value for value in vector) / len(vector)),)
+                if self.coord_buffer and len(point) != len(self.coord_buffer[-1]):
+                    self.coord_buffer.clear(); self.var_history.clear(); self.ar1_history.clear()
+            else:
+                point = None
+                self.coord_buffer.clear(); self.var_history.clear(); self.ar1_history.clear()
+        if point is not None:
+            self.coord_buffer.append(point)
         self.timestamps.append(ts)
 
         # 1. Update Dwell Tracking
@@ -231,9 +247,8 @@ class EdgeManifoldDaemon:
 
         # 2. Online CSD Tipping Evaluation with Linear Detrending (Fixing Non-stationarity)
         if len(self.coord_buffer) >= 20:
-            u_vals = [pt[0] for pt in self.coord_buffer]
-            v_vals = [pt[1] for pt in self.coord_buffer]
-            proj_vals = [pt[2] for pt in self.coord_buffer]
+            dimension = len(self.coord_buffer[0]) - 1
+            proj_vals = [pt[-1] for pt in self.coord_buffer]
 
             n_pts = len(self.coord_buffer)
             x_vals = list(range(n_pts))
@@ -249,13 +264,11 @@ class EdgeManifoldDaemon:
                 intercept = mean_y - slope * mean_x
                 return [y - (slope * x + intercept) for x, y in zip(x_vals, y_vals)]
 
-            detrended_u = get_residuals(u_vals)
-            detrended_v = get_residuals(v_vals)
             detrended_proj = get_residuals(proj_vals)
-
-            var_u = sum(x**2 for x in detrended_u) / n_pts if n_pts > 1 else 0.0
-            var_v = sum(x**2 for x in detrended_v) / n_pts if n_pts > 1 else 0.0
-            tot_var = var_u + var_v
+            tot_var = sum(sum(value * value for value in get_residuals([pt[axis] for pt in self.coord_buffer]))
+                          / n_pts for axis in range(dimension))
+            if self.csd_input_space == "continuous":
+                tot_var /= dimension
 
             # Lag-1 Autocorrelation AR(1) on detrended residuals
             # Since residuals have mean ~ 0, we can just use dot products
@@ -308,8 +321,9 @@ class EdgeManifoldDaemon:
                                 "lag1_ar": ar1,
                                 "spatial_variance": tot_var,
                                 "composite_score": composite,
+                                "input_dimension": float(dimension),
                             },
-                            message=f"Critical Slowing Down tipping alert ({level}): AR(1)={ar1:.3f}, Var={tot_var:.2f}, Composite={composite:.2f}σ.",
+                            message=f"Critical Slowing Down diagnostic ({self.csd_input_space}, {level}): AR(1)={ar1:.3f}, Var={tot_var:.2f}, Composite={composite:.2f}σ.",
                         )
                     )
 
@@ -321,6 +335,7 @@ class EdgeManifoldDaemon:
             "model_sha256": self.model_digest,
             "normalizer_sha256": self.normalizer_digest,
             "source_mode": self.source_mode,
+            "csd_input_space": self.csd_input_space,
             "boot_id": self.current_boot_id,
             "continuity_epoch": self.continuity_epoch,
             "continuous_from_previous": continuous,

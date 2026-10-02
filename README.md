@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
-[![Tests](https://img.shields.io/badge/Tests-389%2F389%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-393%2F393%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,7 +26,7 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最新完整 Python 测试为 **389 项通过**，耗时 44.039s；
+最新完整 Python 测试为 **393 项通过**，耗时 46.165s；
 最新完整 Rust 证明后端测试为 **17 项通过**。测试覆盖主机实现和受控夹具，
 不能替代科学验收、完整隐私协议或最终主应用部署。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
@@ -46,7 +46,9 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 
 公开源码进展：未知分数结果已提供规范的 224 字节声明编码接口，合成批准材料
 可在 USB 分发前校验电路、双方输入绑定与签名；合成证明生成器在生成前检查
-见证约束是否满足。完整分布式私密证明仍未集成。原生 Wi-Fi 来源已接入，
+见证约束是否满足。完整分布式私密证明仍未集成。连续 CSD 诊断路径已加入，
+修复 60 帧网格窗口与 60 步同 Token 滞留无法同时预警的问题；
+受控测试证明触发可达，真实效果仍待验证。原生 Wi-Fi 来源已接入，
 生产服务与隔离能力检查共用读取路径；128 个原生特征名称的源码索引已建立，
 其中 39 项定位到直接赋值或已审查的变量分发路径，89 项仍未解析。
 这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
@@ -55,7 +57,7 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 尚未安装到主应用，不能作为最终部署验收依据。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **389 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **393 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -424,7 +426,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 389 host tests; device receipts have separate scope
+└── tests/                                 # 393 host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -457,7 +459,7 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (389/389 Host Tests Passing)
+### A. Run Unit Tests (393/393 Host Tests Passing)
 ```bash
 # Run the full host suite locally:
 python3 -m unittest discover tests

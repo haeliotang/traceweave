@@ -117,3 +117,29 @@ TACEO documentation supports BLS12-381, but its documented honest-majority
 protocols do not resolve Traceform's two-owner security requirement. See
 [the compatibility gates](collaborative_proof_integration.md). Full completion
 and final primary-app deployment are not claimed.
+
+## Within-token CSD diagnostic
+
+The legacy grid-coordinate diagnostic cannot warn during a dwell as long as its
+entire window: every coordinate is then identical. In the field configuration,
+both the window and dwell threshold are 60 frames. Controlled regression
+reproduces this obstruction even when the normalized input changes within one
+Token. It is an implementation limitation, not evidence of absence of physical
+critical slowing.
+
+`phone_edge_manifold_daemon.py --csd-input-space continuous` explicitly selects
+normalized continuous inputs instead. It uses the mean detrended variance
+across input coordinates and lag-one autocorrelation of their RMS radial
+projection. Each frame records `csd_input_space`, and alert metrics record the
+input dimension. The same 2.5 threshold and 60-step gate are retained. The
+default remains `grid` to preserve archived diagnostic semantics; the CLI
+selection survives model activation. Invalid, missing or dimension-changing
+inputs reset diagnostic history.
+
+A controlled constant-Token example warns after the dwell threshold when
+continuous variation changes, while the legacy grid path and flat continuous
+control do not. This validates reachability, not calibration of biological CSD
+or intervention efficacy. Normalized inputs may include proxies and imputation;
+a 128-dimensional vector does not certify 128 measured quantities. Previous
+records retain their original diagnostic space and are not retroactively
+reinterpreted. Device activation and real follow-up need separate verification.

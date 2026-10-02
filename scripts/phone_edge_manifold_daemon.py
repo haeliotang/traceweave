@@ -83,6 +83,7 @@ def main():
     parser.add_argument("--simulate", action="store_true", help="Replay historical ledger rather than waiting")
     parser.add_argument("--follow", action="store_true", help="Tail file continuously in real time")
     parser.add_argument("--max-frames", type=int, default=100, help="Maximum frames to process in simulation mode")
+    parser.add_argument("--csd-input-space", choices=["grid", "continuous"], default="grid", help="Continuous mode retains within-token normalized feature variation; not empirical CSD identification")
     parser.add_argument("--buffer-size", type=int, default=60, help="Ring buffer size for CSD estimation")
     parser.add_argument("--dwell-steps", type=int, default=60, help="Dwell alert threshold steps")
     parser.add_argument("--disable-haptics", action="store_true", help="Disable haptic vibration and notification feedback")
@@ -143,6 +144,7 @@ def main():
         ring_buffer_size=args.buffer_size,
         dwell_threshold_steps=args.dwell_steps,
         csd_threshold_sigma=2.5,
+        csd_input_space=args.csd_input_space,
         boot_epoch_file=args.output_stream.parent / "boot_epoch.json",
         source_mode="historical_replay" if args.simulate else "live_follow",
     )
@@ -242,7 +244,8 @@ def main():
                         normalizer = MultimodalNormalizer.from_dict(updated["normalizer"])
                         daemon = EdgeManifoldDaemon(normalizer, manifold, ring_buffer_size=args.buffer_size,
                                                     dwell_threshold_steps=args.dwell_steps,
-                                                    source_mode="historical_replay" if args.simulate else "live_follow")
+                                                    source_mode="historical_replay" if args.simulate else "live_follow",
+                                                    csd_input_space=args.csd_input_space)
                         daemon.continuity_epoch = int(time.time_ns())
                         active_bundle = updated
                         active_registry_version = updated["version"]

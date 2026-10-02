@@ -33,6 +33,52 @@ class TestEdgeManifoldDaemon(unittest.TestCase):
         self.assertEqual(payload['input_inventory']['measurement_status'],
                          'unverified_unless_upstream_provenance_supplied')
 
+    def test_continuous_csd_can_warn_inside_a_constant_token(self):
+        import datetime
+        import math
+        import random
+        from unittest.mock import patch
+
+        def run(space, varying):
+            daemon = EdgeManifoldDaemon(self.normalizer, self.manifold,
+                                        ring_buffer_size=60, dwell_threshold_steps=60,
+                                        csd_input_space=space)
+            rng = random.Random(42)
+            alerts = []
+            start = datetime.datetime(2026, 10, 1, tzinfo=datetime.timezone.utc)
+            for index in range(140):
+                value = 0.5 + (rng.uniform(-0.001, 0.001) if index < 100 else 0.3 * math.sin((index - 100) / 4)) if varying else 0.5
+                def quantize(*args, **kwargs):
+                    self.manifold.last_obs_vector = [value] * 128
+                    return "M01", (1, 1), 0.1
+                with patch.object(self.manifold, "quantize", side_effect=quantize):
+                    frame, events = daemon.process_observation({"timestamp_utc": (start + datetime.timedelta(seconds=30 * index)).isoformat()})
+                alerts.extend(event for event in events if event.event_type == "CSD_TIPPING" and frame["dwell_steps"] >= 60)
+            return alerts
+        self.assertTrue(run("continuous", True), "continuous variation is erased by the constant token coordinates")
+        self.assertFalse(run("grid", True), "legacy grid diagnostics should remain unchanged")
+        self.assertFalse(run("continuous", False), "constant continuous input must not cause an alert")
+
+    def test_continuous_csd_invalid_input_requires_new_history(self):
+        import datetime
+        from unittest.mock import patch
+
+        daemon = EdgeManifoldDaemon(self.normalizer, self.manifold, csd_input_space="continuous")
+        start = datetime.datetime(2026, 10, 1, tzinfo=datetime.timezone.utc)
+        with patch.object(self.manifold, "quantize", return_value=("M01", (1, 1), 0.1)):
+            for index in range(30):
+                self.manifold.last_obs_vector = [0.5] * 128
+                daemon.process_observation({"timestamp_utc": (start + datetime.timedelta(seconds=30 * index)).isoformat()})
+            for index, vector in enumerate(([float("nan")] * 128, [], [11.0] * 128, [0.5] * 129, [0.5] * 128), 30):
+                self.manifold.last_obs_vector = vector
+                _, events = daemon.process_observation({"timestamp_utc": (start + datetime.timedelta(seconds=30 * index)).isoformat()})
+                self.assertFalse(any(event.event_type == "CSD_TIPPING" for event in events))
+            self.assertEqual(len(daemon.coord_buffer), 1)
+        daemon.reset_continuity()
+        self.assertEqual(len(daemon.coord_buffer), 0)
+        with self.assertRaises(ValueError):
+            EdgeManifoldDaemon(self.normalizer, self.manifold, csd_input_space="unknown")
+
     def test_quantizer_receives_actual_frame_interval(self):
         from unittest.mock import patch
 
