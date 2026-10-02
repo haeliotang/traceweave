@@ -4,13 +4,13 @@
 > **"To determine whether persistent latent structure can be discovered from continuous natural human trajectories without predefined behavioral semantics."**  
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
-[![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
+[![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
 [![Tests](https://img.shields.io/badge/Tests-364%2F364%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
 [![Code Health](https://img.shields.io/badge/Audit-100%25%20Verified%20(15%20Bugs%20Fixed)-teal)]()
-[![Hardware](https://img.shields.io/badge/Pixel%206a-On--Device%20Deployed-indigo)]()
+[![Hardware](https://img.shields.io/badge/Pixel%206a-Final%20Primary%20Update%20Pending-yellow)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
 [![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.054)-teal)]()
 [![Macroscope 2.0](https://img.shields.io/badge/Macroscope%202.0-Interactive%20Canvas-pink)]()
@@ -26,7 +26,8 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最近记录的验证结果为 **364 项 Python 测试、16 项 Rust 测试通过**；
+最新完整 Python 测试为 **364 项通过**；此前完整 Rust 测试为 **16 项通过**，
+最新重建公开验证器的相关 Rust 测试为 **4 项通过**；
 最新完整 Python 测试耗时 42.935s；实际绑定探针已完成真机验证。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
@@ -34,10 +35,12 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 后者覆盖错误签名、无效证明、有效证明及应用进程重启后的重放拒绝。
 这些计数来自不同范围的验证，不能合并为完整协议验收。
 
-两节点已知分数的实际 MPC 输出与签名证明绑定已通过真机验证（4.641s）；
+最新源码重建组合的两节点已知分数 MPC 输出与签名证明绑定已通过真机验证
+（4.708s），应用进程重启后的计算入口重放拒绝为 102.299ms，账本保持不变；
 这不覆盖十六节点未知分数流程。接下来仍需完成十六节点带批准防护的正常
-未知分数流程及其应用重启重放验证、双方私有证明生成，以及当前源码的
-主应用构建、USB 安装和集成检查。真实干预因果效果、实测连续动力学及
+未知分数流程及其应用重启重放验证、双方私有证明生成，以及最终主应用的
+USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参与端和公开
+验证器并通过签名检查。真实干预因果效果、实测连续动力学及
 长期生产调度仍需各自的验证证据。Pixel6a 主应用仍是旧版本；独立测试
 应用已清理，默认运行策略保持 shadow/silent。
 
@@ -73,9 +76,10 @@ wrong-owner rejection and replay after an app-process restart. See the
 Actual separate-party two-node MPC output also matches the signed packed-v2
 statement inside the application SDK; the Mac independently matches the same
 849-bit result. See the [MPC/proof binding receipt](artifacts/alignment_v1/zk_packed_uniform_v2_mpc_binding_android.json).
-The latest probe also rejects replay through the computation entry after an
-actual app-process restart (87.202ms), with the session ledger unchanged and
-no peer connection available. See the [MPC restart receipt](artifacts/alignment_v1/zk_packed_uniform_v2_mpc_restart_android.json).
+The latest freshly rebuilt native combination also rejects replay through the
+computation entry after an actual app-process restart (102.299ms), with the
+session ledger unchanged and no peer connection available. See the
+[current native MPC restart receipt](artifacts/alignment_v1/all_native_source_mpc_restart_android.json).
 This is a known-statement synthetic case. The synthetic prover knows both models;
 distributed private proving, unknown-score proof integration and real-owner
 enrollment remain open.
