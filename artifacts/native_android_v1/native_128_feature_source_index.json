@@ -1,0 +1,1085 @@
+{
+  "scope": "static_literal_native_feature_index_not_transitive_dataflow_runtime_capability_or_observability_proof",
+  "normalizer_file": "artifacts/representation_v1/normalizer_v1.json",
+  "normalizer_file_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
+  "source_sha256": {
+    "android/src/org/traceform/edge/FeatureReadings.java": "2aca4687076b9558d1b5fc39cdc88a40956d28c79e79eab2b6c64b9872faf5c5",
+    "android/src/org/traceform/edge/EdgeService.java": "b600e1e531fa98476606ebae78789b4ad87519ad80a278546f19f1e9baa3a6d2"
+  },
+  "limitations": [
+    "Variable-name dispatch and helper call chains are unresolved by this literal index.",
+    "Assignments can emit missing, imputed, derived or proxy values; finding them does not establish independent measurement.",
+    "No physical device observations were read."
+  ],
+  "status_counts": {
+    "literal_assignment_found": 33,
+    "name_reference_only": 5,
+    "unresolved_in_indexed_sources": 90
+  },
+  "features": [
+    {
+      "index": 0,
+      "feature": "motion_accel_magnitude",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 79,
+          "expression": "Reading acceleration = get(\"motion_accel_magnitude\", nanos);",
+          "literal_put_assignment": false
+        },
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 180,
+          "expression": "put(\"motion_accel_magnitude\", Math.rint(accelMagnitude * 10000) / 10000, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "feature": "motion_accel_rms",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 181,
+          "expression": "put(\"motion_accel_rms\", Math.rint(accelMagnitude / Math.sqrt(3) * 10000) / 10000, \"derived\", \"accelerometer_spatial_rms_not_temporal_window\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "feature": "motion_energy",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 192,
+          "expression": "put(\"motion_energy\", energy, \"derived\", \"accelerometer_and_gyroscope_snapshot\", oldest, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "feature": "motion_stationary_likelihood",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 193,
+          "expression": "put(\"motion_stationary_likelihood\", stationary, \"proxy\", \"heuristic_stationarity_score\", oldest, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "feature": "env_log_lux",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 40,
+          "expression": "put(\"env_log_lux\", rawLight == null ? Double.NaN : Math.log1p(lux), \"derived\", \"light_sensor\", nanos, 300000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "feature": "env_pressure_hpa",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 73,
+          "expression": "Reading pressure = get(\"env_pressure_hpa\", nanos);",
+          "literal_put_assignment": false
+        },
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 221,
+          "expression": "put(\"env_pressure_hpa\", Double.NaN, \"observed\", \"pressure_sensor\", timestampNanos, 300000000000L);",
+          "literal_put_assignment": true
+        },
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 225,
+          "expression": "put(\"env_pressure_hpa\", hpa, \"observed\", \"pressure_sensor\", timestampNanos, 300000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "feature": "env_device_temp_c",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 7,
+      "feature": "device_battery_fraction",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 243,
+          "expression": "observed.put(\"device_battery_fraction\", level >= 0 && scale > 0 ? level / (double) scale : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "feature": "device_is_plugged",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 244,
+          "expression": "observed.put(\"device_is_plugged\", battery.hasExtra(BatteryManager.EXTRA_PLUGGED) ? (battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0 ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "feature": "device_is_charging",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 245,
+          "expression": "observed.put(\"device_is_charging\", battery.hasExtra(BatteryManager.EXTRA_STATUS) ? (battery.getIntExtra(BatteryManager.EXTRA_STATUS, 0) == BatteryManager.BATTERY_STATUS_CHARGING ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "feature": "audio_silence_likelihood",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 11,
+      "feature": "audio_rms_loudness",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 12,
+      "feature": "audio_spectral_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 13,
+      "feature": "conn_wifi_connected",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 238,
+          "expression": "observed.put(\"conn_wifi_connected\", wifi ? 1 : 0, \"observed\",",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "feature": "conn_wifi_rssi_norm",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 15,
+      "feature": "screen_on_ratio",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 221,
+          "expression": "observed.put(\"screen_on_ratio\", power.isInteractive() ? 1 : 0,",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "feature": "app_switch_rate",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 17,
+      "feature": "unlock_burst_count",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 18,
+      "feature": "audio_immersion_state",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 230,
+          "expression": "observed.put(\"audio_immersion_state\", headset ? 1 : 0, \"proxy\",",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "feature": "circadian_sin_phase",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 199,
+          "expression": "put(\"circadian_sin_phase\", Math.sin(2 * Math.PI * fraction), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "feature": "circadian_cos_phase",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 200,
+          "expression": "put(\"circadian_cos_phase\", Math.cos(2 * Math.PI * fraction), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "feature": "infradian_weekly_phase",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 201,
+          "expression": "put(\"infradian_weekly_phase\", Math.sin(2 * Math.PI * weekly), \"derived\", \"system_clock_utc\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "feature": "battery_current_ua",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/EdgeService.java",
+          "line": 218,
+          "expression": "observed.put(\"battery_current_ua\", batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "feature": "spatial_radius_of_gyration",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 24,
+      "feature": "touch_interaction_velocity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 25,
+      "feature": "ambient_social_ble_density",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 26,
+      "feature": "physio_ballisto_tremor_energy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 27,
+      "feature": "thermal_conduction_rate_dt",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 28,
+      "feature": "device_zenith_tilt_angle",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 178,
+          "expression": "put(\"device_zenith_tilt_angle\", tilt, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "feature": "geomagnetic_flux_divergence",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 214,
+          "expression": "put(\"geomagnetic_flux_divergence\", anomaly, \"proxy\", \"magnetic_norm_minus_45uT_not_spatial_divergence\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 30,
+      "feature": "barometric_vertical_velocity",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 136,
+          "expression": "Reading velocity = get(\"barometric_vertical_velocity\", nanos);",
+          "literal_put_assignment": false
+        },
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 222,
+          "expression": "put(\"barometric_vertical_velocity\", Double.NaN, \"derived\", \"pressure_derivative\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        },
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 229,
+          "expression": "put(\"barometric_vertical_velocity\", velocity, \"derived\", \"pressure_5s_or_longer_derivative\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "feature": "ambient_rf_shannon_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 32,
+      "feature": "cellular_tower_churn_rate",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 33,
+      "feature": "touch_interval_jitter",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 34,
+      "feature": "attention_fragmentation_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 35,
+      "feature": "compute_power_dissipation_watts",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 36,
+      "feature": "battery_internal_impedance_miliohm",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 251,
+          "expression": "put(\"battery_internal_impedance_miliohm\", impedance, \"proxy\", \"absolute_voltage_over_current_change_not_identified_internal_resistance\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "feature": "rotational_kinetic_energy",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 162,
+          "expression": "put(\"rotational_kinetic_energy\", energy, \"derived\", \"gyroscope\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 38,
+      "feature": "kinematic_jerk_metric",
+      "static_status": "name_reference_only",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 165,
+          "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);",
+          "literal_put_assignment": false
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "feature": "rf_spectral_penetration_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 40,
+      "feature": "ble_rssi_spatial_variance",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 41,
+      "feature": "acoustic_spectral_centroid_khz",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 42,
+      "feature": "acoustic_crest_factor",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 43,
+      "feature": "state_residence_persistence_hours",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 44,
+      "feature": "neuromotor_tremor_spectral_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 45,
+      "feature": "device_screen_gravity_alignment",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 179,
+          "expression": "put(\"device_screen_gravity_alignment\", alignment, \"derived\", \"accelerometer_including_gravity\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 46,
+      "feature": "rotational_angular_jerk",
+      "static_status": "name_reference_only",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 154,
+          "expression": "derivative(gyroDerivative, \"rotational_angular_jerk\", values, timestampNanos, 25);",
+          "literal_put_assignment": false
+        }
+      ]
+    },
+    {
+      "index": 47,
+      "feature": "acoustic_spectral_rolloff_khz",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 48,
+      "feature": "acoustic_zero_crossing_rate",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 49,
+      "feature": "thermal_flux_acceleration_dt2",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 50,
+      "feature": "wifi_spatial_shannon_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 51,
+      "feature": "touch_engagement_decay_factor",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 52,
+      "feature": "phase_space_recurrence_density",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 53,
+      "feature": "geomagnetic_field_dip_angle_deg",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 216,
+          "expression": "put(\"geomagnetic_field_dip_angle_deg\", dip, \"derived\", \"magnetic_vector_device_coordinate_inclination\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 54,
+      "feature": "kinematic_trajectory_curvature",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 55,
+      "feature": "barometric_turbulence_variance",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 135,
+          "expression": "put(\"barometric_turbulence_variance\", turbulence, \"derived\", \"latest_6_sample_frames_pressure_population_variance_not_fluid_turbulence\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 56,
+      "feature": "photometric_contrast_ratio",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 133,
+          "expression": "put(\"photometric_contrast_ratio\", contrast, \"derived\", \"latest_10_sample_frames_light_contrast_not_optical_flicker\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 57,
+      "feature": "acoustic_spectral_bandwidth_khz",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 58,
+      "feature": "wifi_rssi_distribution_skewness",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 59,
+      "feature": "thermodynamic_joule_heat_loss_watts",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 252,
+          "expression": "put(\"thermodynamic_joule_heat_loss_watts\", heat, \"proxy\", \"current_squared_times_delta_estimated_resistance_not_measured_heat\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 60,
+      "feature": "phase_space_kinetic_velocity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 61,
+      "feature": "neuromotor_tap_recoil_intensity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 62,
+      "feature": "kinematic_trajectory_torsion",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 63,
+      "feature": "phase_space_correlation_dimension",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 64,
+      "feature": "photometric_flicker_kurtosis",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 134,
+          "expression": "put(\"photometric_flicker_kurtosis\", kurtosis, \"derived\", \"latest_10_sample_frames_lux_excess_kurtosis_not_frequency_resolved_flicker\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 65,
+      "feature": "acoustic_spectral_flatness",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 66,
+      "feature": "wifi_rssi_distribution_kurtosis",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 67,
+      "feature": "geomagnetic_total_field_flux",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 215,
+          "expression": "put(\"geomagnetic_total_field_flux\", totalFlux, \"proxy\", \"magnetic_norm_minus_50uT_reference_anomaly\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 68,
+      "feature": "thermodynamic_dissipation_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 69,
+      "feature": "neuromotor_microslip_angular_velocity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 70,
+      "feature": "circadian_phase_disruption_index",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 71,
+      "feature": "kinematic_snap_metric",
+      "static_status": "name_reference_only",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 32,
+          "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
+          "literal_put_assignment": false
+        }
+      ]
+    },
+    {
+      "index": 72,
+      "feature": "acoustic_harmonic_to_noise_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 73,
+      "feature": "photometric_spectral_warmth_index",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 74,
+      "feature": "barometric_buoyancy_energy_flux",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 139,
+          "expression": "put(\"barometric_buoyancy_energy_flux\", buoyancy, \"proxy\", \"pressure_velocity_times_window_deviation_not_measured_buoyancy_energy\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 75,
+      "feature": "geomagnetic_quadrupole_anisotropy_ratio",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 213,
+          "expression": "put(\"geomagnetic_quadrupole_anisotropy_ratio\", anisotropy, \"derived\", \"device_coordinate_horizontal_over_vertical_field_with_0.5uT_floor\", timestampNanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 76,
+      "feature": "wifi_channel_dispersion_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 77,
+      "feature": "thermodynamic_battery_stress_index",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 78,
+      "feature": "neuromotor_tremor_lyapunov_exponent",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 79,
+      "feature": "phase_space_information_flow_rate",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 80,
+      "feature": "kinematic_crackle_metric",
+      "static_status": "name_reference_only",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 32,
+          "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
+          "literal_put_assignment": false
+        }
+      ]
+    },
+    {
+      "index": 81,
+      "feature": "kinematic_pop_metric",
+      "static_status": "name_reference_only",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 32,
+          "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
+          "literal_put_assignment": false
+        }
+      ]
+    },
+    {
+      "index": 82,
+      "feature": "imu_temporal_autocorrelation_decay",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 132,
+          "expression": "put(\"imu_temporal_autocorrelation_decay\", decay, \"derived\", \"latest_25_fresh_accelerometer_sample_frames_abs_lag1_acf_decay_not_seconds_or_physiological_memory\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 83,
+      "feature": "device_structural_resonance_energy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 84,
+      "feature": "acoustic_dual_mic_cross_correlation",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 85,
+      "feature": "acoustic_spatial_coherence_phase",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 86,
+      "feature": "acoustic_spectral_flux",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 87,
+      "feature": "ultrasonic_proximity_micro_doppler",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 88,
+      "feature": "gnss_visible_satellite_density",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 89,
+      "feature": "gnss_mean_carrier_to_noise_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 90,
+      "feature": "gnss_position_dilution_of_precision",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 91,
+      "feature": "gnss_doppler_velocity_drift",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 92,
+      "feature": "thermal_soc_to_skin_gradient",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 93,
+      "feature": "thermal_modem_to_battery_gradient",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 94,
+      "feature": "thermal_relaxation_time_constant",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 95,
+      "feature": "thermal_entropy_production_rate",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 96,
+      "feature": "cellular_reference_signal_quality",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 97,
+      "feature": "cellular_signal_to_interference_noise",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 98,
+      "feature": "ble_advertising_channel_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 99,
+      "feature": "wifi_link_speed_variation_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 100,
+      "feature": "rf_ambient_backscatter_intensity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 101,
+      "feature": "cellular_timing_advance_distance",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 102,
+      "feature": "touch_contact_ellipse_eccentricity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 103,
+      "feature": "touch_downforce_pressure_derivative",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 104,
+      "feature": "neuromotor_fitts_law_throughput",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 105,
+      "feature": "touch_biomotor_cadence_decay_slope",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 106,
+      "feature": "touch_contact_area_normalized",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 107,
+      "feature": "touch_path_tortuosity_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 108,
+      "feature": "cpu_frequency_scaling_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 109,
+      "feature": "kernel_context_switch_velocity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 110,
+      "feature": "memory_pressure_stall_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 111,
+      "feature": "display_frame_pacing_jank_variance",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 112,
+      "feature": "io_wait_latency_proxy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 113,
+      "feature": "cpu_user_system_mode_ratio",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 114,
+      "feature": "fractal_hurst_exponent",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 115,
+      "feature": "permutation_entropy_complexity",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 131,
+          "expression": "put(\"permutation_entropy_complexity\", permutationEntropy, \"derived\", \"latest_25_fresh_accelerometer_frames_order3_delay1_normalized_ordinal_entropy_ties_excluded_min8_patterns\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 116,
+      "feature": "rqa_recurrence_determinism_det",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 117,
+      "feature": "rqa_laminarity_vertical_trapping",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 118,
+      "feature": "lempel_ziv_algorithmic_complexity",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 119,
+      "feature": "fisher_information_measure",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 120,
+      "feature": "phase_space_trapping_time_seconds",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 121,
+      "feature": "multiscale_approximate_entropy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 122,
+      "feature": "bifurcation_stability_margin",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 123,
+      "feature": "non_linear_energy_operator_teager",
+      "static_status": "literal_assignment_found",
+      "source_points": [
+        {
+          "path": "android/src/org/traceform/edge/FeatureReadings.java",
+          "line": 110,
+          "expression": "put(\"non_linear_energy_operator_teager\", teager, \"derived\", \"last3_fresh_accelerometer_magnitudes_middle_frame_discrete_teager_positive_clipped_0_10_includes_gravity_not_joules\", nanos, 5000000000L);",
+          "literal_put_assignment": true
+        }
+      ]
+    },
+    {
+      "index": 124,
+      "feature": "phase_space_angular_momentum",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 125,
+      "feature": "topological_betti_number_proxy",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 126,
+      "feature": "dissipative_lyapunov_dimension_ky",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    },
+    {
+      "index": 127,
+      "feature": "holo_cosmic_coherence_index",
+      "static_status": "unresolved_in_indexed_sources",
+      "source_points": []
+    }
+  ]
+}

@@ -11,6 +11,15 @@ the model/normalizer asset pair. The generated `traceform-sdk.jar` requires the
 matching `libtraceform.so` and assets in its host app. Input arrays must follow
 the normalizer's feature ordering and use its canonical raw-feature units.
 
+`artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
+128 asset feature names against `EdgeService.java` and `FeatureReadings.java`,
+with source hashes and exact line expressions. It locates 33 literal `put`
+assignments and five other name references; 90 names remain unresolved by this
+literal index. Variable dispatch and helper chains require further inspection.
+These counts describe source text, not device capability: even a located
+assignment can produce missing, imputed, derived or proxy values. The index
+does not establish complete native acquisition or independent observability.
+
 The exported Binder descriptor is `org.traceform.edge.Canonical`. Transaction 1
 takes two double arrays: canonical raw features and normalized phase velocity.
 It returns a JSON quantization result after `writeNoException`. Access requires
