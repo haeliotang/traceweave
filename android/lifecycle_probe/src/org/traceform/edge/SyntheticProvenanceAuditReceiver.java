@@ -45,7 +45,22 @@ public final class SyntheticProvenanceAuditReceiver extends BroadcastReceiver {
                     if (supplied.getLong("native_observed_coordinates") != 1 || supplied.getLong("native_imputed_coordinates") != 127)
                         throw new IllegalStateException("observed inventory lost");
                     changed = new JSONObject(frame.toString()); changed.getJSONObject("feature_provenance").getJSONObject(model.names[0]).put("source_age_ms", 6); expect(db, changed, 1);
-                    report.put("passed", true).put("cases", 6).put("collection_started", false).put("actuator_calls", 0)
+                    JSONObject empty = new JSONObject(frame.toString());
+                    empty.getJSONArray("supplied_features").remove(0); empty.getJSONArray("missing_features").put(model.names[0]);
+                    empty.getJSONObject("feature_provenance").put(model.names[0], new JSONObject().put("kind", "missing").put("policy", "median_imputation"));
+                    expectPair(db, empty, frame, true, 1, 0);
+                    expectPair(db, empty, frame, false, 0, 0);
+                    expectPair(db, frame, frame, true, 0, 1);
+                    changed = new JSONObject(frame.toString()); changed.getJSONObject("feature_provenance").getJSONObject(model.names[0]).put("source", "different_synthetic_source");
+                    expectPair(db, frame, changed, true, 1, 0);
+                    changed = new JSONObject(frame.toString()); changed.getJSONObject("feature_provenance").getJSONObject(model.names[0]).put("kind", "proxy");
+                    expectPair(db, frame, changed, true, 1, 0);
+                    JSONObject two = new JSONObject(frame.toString());
+                    two.getJSONArray("missing_features").remove(0); two.getJSONArray("supplied_features").put(model.names[1]);
+                    two.getJSONObject("feature_provenance").put(model.names[1], new JSONObject(two.getJSONObject("feature_provenance").getJSONObject(model.names[0]).toString()));
+                    changed = new JSONObject(two.toString()).put("supplied_features", new JSONArray(new String[]{model.names[1], model.names[0]}));
+                    expectPair(db, two, changed, true, 0, 1);
+                    report.put("passed", true).put("cases", 12).put("collection_started", false).put("actuator_calls", 0)
                         .put("scope", "synthetic_native_frame_provenance_audit_not_sensor_or_scientific_validation");
                 }
             } catch (Exception error) {
@@ -56,6 +71,18 @@ public final class SyntheticProvenanceAuditReceiver extends BroadcastReceiver {
                 pending.finish();
             }
         }, "synthetic-source-audit").start();
+    }
+    private static void expectPair(SQLiteDatabase db, JSONObject before, JSONObject after, boolean continuous, int invalid, int pairs) throws Exception {
+        JSONObject first = new JSONObject(before.toString()).put("timestamp_epoch_ms", 1000).put("elapsed_realtime_nanos", 1000000000L).put("continuous_from_previous", false);
+        JSONObject second = new JSONObject(after.toString()).put("timestamp_epoch_ms", 2000).put("elapsed_realtime_nanos", 2000000000L).put("continuous_from_previous", continuous);
+        db.execSQL("DELETE FROM frames");
+        db.execSQL("INSERT INTO frames VALUES (?,?)", new Object[]{1000, first.toString()});
+        db.execSQL("INSERT INTO frames VALUES (?,?)", new Object[]{2000, second.toString()});
+        JSONObject audit = NativeWeeklyAudit.run(db);
+        if (audit.getLong("invalid_records") != invalid || audit.getLong("continuous_pairs") != pairs)
+            throw new IllegalStateException("source continuity expected invalid=" + invalid + " pairs=" + pairs
+                + " got invalid=" + audit.getLong("invalid_records") + " pairs=" + audit.getLong("continuous_pairs"));
+        if (android.database.DatabaseUtils.queryNumEntries(db, "frames") != 2) throw new IllegalStateException("pair audit mutated source");
     }
     private static JSONObject expect(SQLiteDatabase db, JSONObject frame, int invalid) throws Exception {
         db.execSQL("DELETE FROM frames"); db.execSQL("INSERT INTO frames VALUES (?,?)", new Object[]{1000, frame.toString()});

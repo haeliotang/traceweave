@@ -90,6 +90,19 @@ final class NativeWeeklyAudit {
                         if (continuous) {
                             for (String field : new String[]{"model_version", "model_sha256", "normalizer_sha256", "session_id", "source_mode"})
                                 continuous &= frame.getString(field).equals(previous.getString(field));
+                            if (continuous && kinds != null) {
+                                JSONObject currentSources = frame.getJSONObject("feature_provenance");
+                                JSONObject previousSources = previous.getJSONObject("feature_provenance");
+                                JSONArray names = model.getJSONArray("feature_names");
+                                for (int index = 0; index < names.length(); index++) {
+                                    String name = names.getString(index);
+                                    JSONObject currentReading = currentSources.getJSONObject(name), priorReading = previousSources.getJSONObject(name);
+                                    String kind = currentReading.getString("kind");
+                                    if (!kind.equals(priorReading.getString("kind"))
+                                            || (!kind.equals("missing") && !currentReading.getString("source").equals(priorReading.getString("source"))))
+                                        throw new IllegalArgumentException("continuous native frame changed feature coverage, kind or source");
+                                }
+                            }
                             long gap = instant - previous.getLong("timestamp_epoch_ms");
                             double elapsedGap = (frame.getLong("elapsed_realtime_nanos") - (double) previous.getLong("elapsed_realtime_nanos")) / 1e6;
                             continuous &= gap > 0 && gap <= 300000 && elapsedGap > 0 && Math.abs(gap - elapsedGap) <= 1000;

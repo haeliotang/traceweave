@@ -1504,3 +1504,12 @@ separate observed, derived, proxy and imputed coordinates, only for validated
 native records. Synthetic fixtures retain their distinct source mode. These
 checks establish schema consistency, not independent measurement or scientific
 validity of a fitted model.
+
+A native frame declaring continuity must also retain each coordinate's source
+kind and provider identity from the preceding valid frame in the same model
+and collection session. A supplied/missing transition, kind change or provider
+change with a continuous declaration invalidates that record and breaks audit
+history. Explicit noncontinuous boundaries remain valid. Inventory order is
+irrelevant: comparison uses model feature names and provenance, not array order.
+This prevents an inconsistent declaration from entering automatic calibration;
+it does not establish the truth of the declared source.
