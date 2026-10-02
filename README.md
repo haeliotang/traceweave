@@ -50,8 +50,9 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 生产服务与隔离能力检查共用读取路径；128 个原生特征名称的源码索引已建立，
 其中 39 项定位到直接赋值或已审查的变量分发路径，89 项仍未解析。
 这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
-[候选包记录](artifacts/alignment_v1/proof_preflight_native_candidate_build.json)，
-该记录绑定其构建时源码，早于后续 Wi-Fi 改动，不能作为最终部署依据。
+[最新候选包记录](artifacts/alignment_v1/current_wifi_native_candidate_build.json)，
+该候选包已包含共享 Wi-Fi 来源，源码摘要、包内资产与签名验证通过；
+尚未安装到主应用，不能作为最终部署验收依据。
 
 The next-stage engineering implementation is substantially in place. The full
 host suite passes **389 tests**. Stage 11–14 is **not yet fully accepted**;
