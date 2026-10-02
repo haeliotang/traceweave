@@ -81,12 +81,12 @@ public final class CsdTest {
         rng = random.Random(42)
         samples, expected = [], []
         alerts = 0
-        for index in range(180):
+        for index in range(1500):
             value = 0.5 + (rng.uniform(-0.001, 0.001) if index < 100 else 0.3 * math.sin((index - 100) / 4))
             def quantize(*args, **kwargs):
                 manifold.last_obs_vector = [value + 0.01 * math.sin(axis + index) for axis in range(128)]
                 return 'M01', (1, 1), 0
-            instant = datetime(2026, 10, 1, tzinfo=timezone.utc) + timedelta(seconds=index)
+            instant = datetime(2026, 10, 1, tzinfo=timezone.utc) + timedelta(seconds=index + (300 if index >= 750 else 0))
             with patch.object(manifold, 'quantize', side_effect=quantize):
                 frame, events = daemon.process_observation({'timestamp_utc': instant.isoformat()})
             tipping = any(event.event_type == 'CSD_TIPPING' for event in events)
@@ -94,7 +94,7 @@ public final class CsdTest {
             expected.append((frame['dwell_steps'], tipping,
                              daemon.var_history[-1] if daemon.var_history else 0,
                              daemon.ar1_history[-1] if daemon.ar1_history else 0))
-            samples.append(f'{index} {value!r} {str(index > 0).lower()}')
+            samples.append(f'{index} {value!r} {str(index > 0 and index != 750).lower()}')
         self.assertGreater(alerts, 0)
         harness = '''package org.traceform.edge;
 public final class ContinuousCsdTest {
@@ -110,7 +110,7 @@ public final class ContinuousCsdTest {
         CriticalSlowingDetector.Result changed=detector.updateContinuous("M01",new double[]{0.5,0.5},true);
         if(changed.ready || changed.dwellSteps!=1)throw new AssertionError("dimension change warmup");
         detector.reset();
-        for(int i=0;i<100;i++) {
+        for(int i=0;i<350;i++) {
             double[] vector=new double[128];java.util.Arrays.fill(vector,0.5);
             if(detector.updateContinuous("M01",vector,i>0).tipping)throw new AssertionError("constant vector alert");
         }

@@ -462,7 +462,7 @@ traceform/
 
 ### A. Run Unit Tests (394/394 Host Tests Passing)
 
-The native continuous CSD detector reuses two bounded residual buffers and computes the shared time-axis denominator once per frame. The host suite passes all 394 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
+The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The latest [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) remains uninstalled in the primary app. The host suite passes all 394 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
 
 ```bash
 # Run the full host suite locally:
