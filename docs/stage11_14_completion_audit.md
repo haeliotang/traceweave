@@ -6,7 +6,7 @@ It is not a release approval or a claim that the four stages are complete.
 
 | Original requirement | Current evidence and boundary | Completion evidence still required |
 | --- | --- | --- |
-| Continuous 128D drift and diffusion | `traceform/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; controlled moments alone are insufficient |
+| Continuous 128D drift and diffusion | `traceform/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; current archived sequence has 5961 legacy 26D rows and zero eligible 128D pairs (`empirical_128d_input_readiness.json`), so controlled moments remain insufficient |
 | Euler–Maruyama simulation | `additive_sde_refinement_host.json`: known 1D OU convergence | Validation of the intended empirical 128D model and appropriate time steps |
 | Long-range/fractional memory | Additive fractional driver and residual profile diagnostics exist; source explicitly disclaims empirical identification | Source-bound identification, uncertainty and comparison with Brownian/null alternatives; reported H=0.054 is not automatically an accepted driver |
 | Conservative potential inversion | Smoothed graph potential/curvature diagnostics exist | Evidence that a conservative potential describes the empirical drift, or explicit qualification of the nonconservative component |

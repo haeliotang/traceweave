@@ -1,0 +1,23 @@
+{
+  "required_dimension": 128,
+  "eligible_records": 0,
+  "eligible_adjacent_pairs": 0,
+  "rejection_counts": {
+    "continuous_vector_missing": 5961,
+    "model_sha256_missing_or_invalid": 5961,
+    "normalizer_sha256_missing_or_invalid": 5961,
+    "model_version_missing": 5961,
+    "boot_id_missing": 5961,
+    "continuity_epoch_missing": 5961,
+    "source_mode_missing": 5961
+  },
+  "continuous_dimension_counts": {},
+  "legacy_normalized_dimension_counts": {
+    "26": 5961
+  },
+  "coordinate_binding_count": 0,
+  "ready_for_fit": false,
+  "scope": "input_readiness_only_not_empirical_accuracy_memory_identification_or_scientific_acceptance",
+  "record_count": 5961,
+  "source_sha256": "a7c572d2074c8ec15bc1f7a47e02a9034ac0503c304f63e2c55593c14ac2dc30"
+}

@@ -96,6 +96,12 @@ pass on Pixel while waiting for a synthetic TLS peer: live children are observed
 reaped and their snapshots removed. See the [lifecycle receipt](artifacts/alignment_v1/private_participant_lifecycle_android.json).
 This does not cover sixteen-node computation or actual system low-memory withdrawal.
 
+The archived 14-day state sequence is not eligible for empirical 128D fitting:
+all 5,961 records contain legacy 26D normalized features and lack the required
+continuous-vector coordinate bindings. The input audit finds zero eligible pairs;
+see [empirical input readiness](artifacts/forecasting_v2/empirical_128d_input_readiness.json).
+This does not invalidate the original 26D analyses or establish 128D dynamics.
+
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes
 implementation and bounded test evidence; it does not establish causal efficacy,
