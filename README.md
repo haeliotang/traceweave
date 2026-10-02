@@ -123,6 +123,11 @@ with this native combination. See the [verifier build](artifacts/alignment_v1/cu
 [signed proof cases](artifacts/alignment_v1/all_native_source_signed_proof_android.json)
 and [MPC restart receipt](artifacts/alignment_v1/all_native_source_mpc_restart_android.json).
 
+Collaborative proof generation remains a separate integration requirement;
+reviewed external prototypes are not production replacements. The
+[protocol integration decision](docs/collaborative_proof_integration.md) records
+party-count, witness privacy, statement compatibility and acceptance invariants.
+
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes
 implementation and bounded test evidence; it does not establish causal efficacy,
