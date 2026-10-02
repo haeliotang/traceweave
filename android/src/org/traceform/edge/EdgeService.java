@@ -260,6 +260,9 @@ public final class EdgeService extends Service implements SensorEventListener {
                 double voltageMv = battery != null && battery.hasExtra(BatteryManager.EXTRA_VOLTAGE)
                     ? battery.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) : Double.NaN;
                 observed.electrical(voltageMv, batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent, nanos);
+                FeatureReadings.Reading fraction = observed.get("device_battery_fraction", nanos);
+                observed.batteryStress(voltageMv, batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,
+                    fraction == null || battery == null ? Double.NaN : fraction.value, nanos);
                 double[] raw = engine.medians.clone();
                 boolean[] coverage = new boolean[raw.length];
                 JSONArray supplied = new JSONArray(), missing = new JSONArray();

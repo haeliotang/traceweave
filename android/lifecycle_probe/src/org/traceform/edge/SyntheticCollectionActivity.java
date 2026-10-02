@@ -35,7 +35,7 @@ public final class SyntheticCollectionActivity extends Activity {
         }, durationMillis);
     }
     private void summarize(String nonce) throws Exception {
-        int frames = 0, temperature = 0, continuous = 0, dimension = 0;
+        int frames = 0, temperature = 0, batteryProxy = 0, continuous = 0, dimension = 0;
         int readyFrames = 0, consecutive = 0, longestContinuous = 0, lastBreakFrame = 0;
         int coverageBreaks = 0, clockBreaks = 0, intervalBreaks = 0, unexplainedBreaks = 0;
         JSONObject coverageChanges = new JSONObject();
@@ -47,6 +47,8 @@ public final class SyntheticCollectionActivity extends Activity {
                 JSONObject row = new JSONObject(cursor.getString(0)); frames++;
                 JSONObject source = row.getJSONObject("feature_provenance").getJSONObject("env_device_temp_c");
                 if (source.optString("kind").equals("observed")) temperature++;
+                JSONObject stress = row.getJSONObject("feature_provenance").getJSONObject("thermodynamic_battery_stress_index");
+                if (stress.optString("kind").equals("proxy")) batteryProxy++;
                 if (row.getJSONObject("csd").optBoolean("ready")) readyFrames++;
                 if (row.optBoolean("continuous_from_previous")) {
                     consecutive++; longestContinuous = Math.max(longestContinuous, consecutive);
@@ -79,6 +81,7 @@ public final class SyntheticCollectionActivity extends Activity {
         JSONObject report = new JSONObject().put("nonce", nonce).put("frames", frames)
             .put("csd_ready_frames", readyFrames).put("longest_continuous_pairs", longestContinuous)
             .put("final_continuous_pairs", consecutive).put("last_break_frame", lastBreakFrame)
+            .put("battery_stress_proxy_frames", batteryProxy)
             .put("temperature_observed_frames", temperature).put("continuous_pairs", continuous)
             .put("coverage_breaks", coverageBreaks).put("coverage_change_counts", coverageChanges)
             .put("clock_breaks", clockBreaks).put("interval_breaks", intervalBreaks)

@@ -14,13 +14,13 @@ the normalizer's feature ordering and use its canonical raw-feature units.
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
 128 asset feature names against `EdgeService.java`, `FeatureReadings.java`,
 `NativeWifiSource.java`, `NativeMemoryPressure.java` and `NativeUsageSource.java`,
-with source hashes and exact line expressions. It locates 38 literal `put`
-assignments and five other name references; 85 names remain unresolved by this
+with source hashes and exact line expressions. It locates 39 literal `put`
+assignments and five other name references; 84 names remain unresolved by this
 literal index. The five referenced features now have manually traced production
 paths: accelerometer/gyroscope vector jerk and the three higher accelerometer
 derivatives. Sensor callbacks pass through `derivative` to `put(name, ...)` or
 the `HIGHER_ACCEL_NAMES` loop. Invalid vectors, inadequate history and time gaps
-can still leave these coordinates missing. Together, 43 names have located
+can still leave these coordinates missing. Together, 44 names have located
 literal or reviewed variable-dispatch paths; this is source coverage only.
 The memory-pressure path reads kernel-wide PSI `some avg10` as a fraction;
 procfs access denial or malformed input remains missing. This does not infer
@@ -1477,3 +1477,11 @@ per-output-directory development-key behavior remains. Verify the signed APK
 certificate against the installed package before upgrading; never uninstall the
 primary app to work around a certificate mismatch. This is local development
 signing and does not establish release-key management or final deployment.
+
+`thermodynamic_battery_stress_index` retains the existing Python voltage ×
+absolute-current heuristic with battery fraction and IMU-temperature modifiers,
+clipped to [0, 5]. It is explicitly a proxy, not measured electrochemical stress.
+All four inputs must be available and valid; absent temperature is not replaced
+with a nominal value. Output freshness is at most five seconds and cannot extend
+beyond the upstream temperature expiry. Collection reset removes this input
+history. The added source path does not establish independent observability.

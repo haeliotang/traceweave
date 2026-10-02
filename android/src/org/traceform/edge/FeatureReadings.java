@@ -287,6 +287,20 @@ final class FeatureReadings {
         put("battery_internal_impedance_miliohm", impedance, "proxy", "absolute_voltage_over_current_change_not_identified_internal_resistance", nanos, 5000000000L);
         put("thermodynamic_joule_heat_loss_watts", heat, "proxy", "current_squared_times_delta_estimated_resistance_not_measured_heat", nanos, 5000000000L);
     }
+    void batteryStress(double voltageMv, double currentUa, double fraction, long nanos) {
+        Reading temperature = get("env_device_temp_c", nanos);
+        double stress = Double.NaN;
+        long maxAge = 5000000000L;
+        if (temperature != null && Double.isFinite(voltageMv) && voltageMv > 0
+                && Double.isFinite(currentUa) && Double.isFinite(fraction) && fraction >= 0 && fraction <= 1) {
+            double power = voltageMv * 1e-3 * Math.abs(currentUa) * 1e-6;
+            double raw = power * (1 + 0.1 * Math.max(0, temperature.value - 25)) * (1 + (1 - fraction) * 0.5);
+            if (Double.isFinite(raw)) stress = Math.rint(Math.max(0, Math.min(5, raw)) * 10000) / 10000;
+            maxAge = Math.min(maxAge, temperature.maxAgeNanos - (nanos - temperature.timestampNanos));
+        }
+        put("thermodynamic_battery_stress_index", stress, "proxy",
+            "voltage_current_fraction_and_IMU_temperature_heuristic_not_measured_electrochemical_stress", nanos, maxAge);
+    }
     private void derivative(Derivative state, String name, float[] vector, long nanos, double cap) {
         if (!finiteVector(vector)) {
             state.reference = null;

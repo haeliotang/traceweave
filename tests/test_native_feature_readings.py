@@ -319,3 +319,41 @@ public final class PressureRefreshTest {
             subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.PressureRefreshTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
+
+    def test_battery_stress_proxy_requires_all_valid_fresh_inputs(self):
+        if not shutil.which("javac") or not shutil.which("java"):
+            self.skipTest("Java compiler/runtime unavailable")
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            harness = Path(directory) / "BatteryStressTest.java"
+            harness.write_text('''package org.traceform.edge;
+public final class BatteryStressTest {
+    public static void main(String[] args) {
+        FeatureReadings r = new FeatureReadings();
+        String name="thermodynamic_battery_stress_index";
+        r.batteryStress(4000,-500000,0.5,1000000000L);
+        if(r.get(name,1000000000L)!=null) throw new AssertionError("no temperature fallback");
+        r.deviceTemperature(30,1000000000L);
+        r.batteryStress(4000,-500000,0.5,1000000000L);
+        if(r.get(name,1000000000L).value!=3.75 || !r.get(name,1000000000L).kind.equals("proxy"))
+            throw new AssertionError("existing formula and evidence kind");
+        r.batteryStress(4000,500000,0.5,1000000000L);
+        if(r.get(name,1000000000L).value!=3.75) throw new AssertionError("absolute current");
+        r.batteryStress(4000,9000000,0.5,1000000000L);
+        if(r.get(name,1000000000L).value!=5) throw new AssertionError("cap");
+        for(double[] inputs:new double[][]{{0,1,0.5},{4000,Double.NaN,0.5},{4000,1,-0.1},{4000,1,1.1}}) {
+            r.batteryStress(inputs[0],inputs[1],inputs[2],1000000000L);
+            if(r.get(name,1000000000L)!=null) throw new AssertionError("invalid input retained output");
+        }
+        r.batteryStress(4000,1,0.5,299000000000L);
+        if(r.get(name,301000000000L)==null) throw new AssertionError("temperature expiry equality");
+        if(r.get(name,301000000001L)!=null) throw new AssertionError("output outlives upstream temperature");
+        r.batteryStress(4000,1,0.5,302000000000L);
+        if(r.get(name,302000000000L)!=null) throw new AssertionError("stale upstream source");
+        r.reset(); r.batteryStress(4000,1,0.5,303000000000L);
+        if(r.get(name,303000000000L)!=null) throw new AssertionError("restart reuse");
+    }
+}''')
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.BatteryStressTest"], capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
