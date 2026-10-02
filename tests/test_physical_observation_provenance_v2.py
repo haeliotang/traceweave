@@ -15,7 +15,7 @@ class TestPhysicalObservationProvenanceV2(unittest.TestCase):
     def test_adapter_evidence_survives_rolling_roundtrip_without_claiming_measurement(self):
         with patch('traceform.streaming.physical_sensors_v2.sample_hardware_sensors', return_value=(
                 {'gyro_raw': [0, 0, 0]}, {}, 'AVAILABLE', 'UNAVAILABLE')), \
-             patch('pixel_physical.connectivity.sample_connectivity', return_value=({}, 'UNAVAILABLE')), \
+             patch('traceform.streaming.physical_connectivity_v2.sample_connectivity', return_value=({}, 'UNAVAILABLE')), \
              patch('traceform.streaming.physical_device_state_v2.sample_device_state', return_value=(
                  {'wired_headset': False}, 'AVAILABLE')):
             frame = acquire_observation_frame(include_audio=False, include_location=False)

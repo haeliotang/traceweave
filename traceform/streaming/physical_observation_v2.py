@@ -9,7 +9,8 @@ import json
 import time
 from typing import Any, Dict, Optional, Tuple
 
-from pixel_physical import audio_features, config, connectivity
+from pixel_physical import audio_features, config
+from traceform.streaming import physical_connectivity_v2 as connectivity
 from traceform.streaming import physical_device_state_v2 as device_state
 from traceform.streaming import physical_sensors_v2 as sensors
 from traceform.streaming import physical_location_v2 as location
@@ -73,6 +74,7 @@ def acquire_observation_frame(
     # 3. Connectivity (Wi-Fi, Cellular)
     t_start = time.perf_counter()
     conn_dict, conn_avail = connectivity.sample_connectivity()
+    sensor_fields['connectivity'] = conn_dict.pop('_field_provenance', {})
     latencies["connectivity"] = round((time.perf_counter() - t_start) * 1000, 2)
     availability["connectivity"] = conn_avail
 
@@ -123,7 +125,7 @@ def acquire_observation_frame(
              ['group_availability_does_not_establish_each_sensor']),
             ('place', 'traceform.streaming.physical_location_v2.sample_location',
              ['location_request_and_age_are_recorded_in_place_when_available']),
-            ('connectivity', 'pixel_physical.connectivity.sample_connectivity',
+            ('connectivity', 'traceform.streaming.physical_connectivity_v2.sample_connectivity',
              ['group_availability_does_not_establish_each_field']),
             ('device_relation', 'traceform.streaming.physical_device_state_v2.sample_device_state',
              ['audio_route_defaults_may_be_present', 'group_availability_does_not_establish_each_field']),

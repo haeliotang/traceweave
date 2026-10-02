@@ -12,7 +12,7 @@ class TestPhysicalLocationV2(unittest.TestCase):
              patch('pixel_physical.location.subprocess.run', return_value=SimpleNamespace(
                  returncode=0, stdout=json.dumps({'latitude': 1, 'longitude': 2, 'elapsedMs': 100, 'provider': 'gps'}))) as run, \
              patch('traceform.streaming.physical_sensors_v2.sample_hardware_sensors', return_value=({}, {}, 'UNAVAILABLE', 'UNAVAILABLE')), \
-             patch('pixel_physical.connectivity.sample_connectivity', return_value=({}, 'UNAVAILABLE')), \
+             patch('traceform.streaming.physical_connectivity_v2.sample_connectivity', return_value=({}, 'UNAVAILABLE')), \
              patch('traceform.streaming.physical_device_state_v2.sample_device_state', return_value=({}, 'UNAVAILABLE')):
             frame = acquire_observation_frame(include_audio=False)
             self.assertEqual(run.call_args.args[0][-2:], ['-r', 'updates'])
