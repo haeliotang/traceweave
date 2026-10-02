@@ -41,3 +41,11 @@ preserves reported GNSS zero values. Legacy packages without this field retain
 version 1 extraction and their original serialized digest. Loading old parameters
 does not silently activate corrected semantics. Unsupported versions are rejected;
 activation of a newly fitted version-2 package requires its own model acceptance.
+
+The [version-bound native candidate build](../artifacts/alignment_v1/version_bound_native_candidate_build.json)
+rebuilds the native core and packages the existing version-1 normalization assets,
+private participant and public verifier. APK signature schemes v2/v3 pass. The
+Python source digest in that receipt identifies build-time parameter binding;
+Python extraction is not packaged inside the APK. This candidate does not activate
+a version-2 model or establish complete sensorium parity, and the primary device
+application has not been updated by this build.
