@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
-[![Tests](https://img.shields.io/badge/Tests-386%2F386%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-389%2F389%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,7 +26,7 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最新完整 Python 测试为 **386 项通过**，耗时 44.026s；
+最新完整 Python 测试为 **389 项通过**，耗时 44.039s；
 最新完整 Rust 证明后端测试为 **17 项通过**。测试覆盖主机实现和受控夹具，
 不能替代科学验收、完整隐私协议或最终主应用部署。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
@@ -54,7 +54,7 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 该记录绑定其构建时源码，早于后续 Wi-Fi 改动，不能作为最终部署依据。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **386 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **389 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -76,7 +76,7 @@ and [device receipt](artifacts/alignment_v1/approved_binding_guard_android_succe
 Earlier memory-admission, scheduling and expired synthetic-certificate failures
 remain recorded separately. The test APK and USB forward have been removed.
 
-The packed-v2 Rust proof relation also passes 16 Rust tests. A nonzero two-node
+The latest complete Rust proof-backend suite passes 17 tests. A nonzero two-node
 public proof package passes 6 independent Pixel verifier cases, including field
 tampering and process-restart replay. See [packed-v2 proof evidence](artifacts/alignment_v1/zk_packed_uniform_v2_android.json).
 Four signed SDK cases also pass inside application-private storage, including
@@ -96,8 +96,9 @@ enrollment remain open.
 The current-source development candidate builds and passes signature validation.
 Its SDK now exports the unknown-score computation entry; external-client compilation
 and dependency closure pass. See the [candidate build receipt](artifacts/alignment_v1/current_source_sdk_export_candidate.json).
-The latest device memory observation is below the unchanged sixteen-node admission
-threshold; no additional unknown-score device computation was started.
+Device resource availability changes over time. Local device checks and retests
+are tracked separately; only published source-bound receipts support the public
+coverage described here.
 
 Approved unknown-score requests now check durable replay state before resource
 admission or circuit snapshots, under the same query lease. Host regression
@@ -114,6 +115,12 @@ all 5,961 records contain legacy 26D normalized features and lack the required
 continuous-vector coordinate bindings. The input audit finds zero eligible pairs;
 see [empirical input readiness](artifacts/forecasting_v2/empirical_128d_input_readiness.json).
 This does not invalidate the original 26D analyses or establish 128D dynamics.
+Irregular-memory profiling now supports optional Brownian Monte Carlo calibration
+on the same observation grid, with reproducible draws and a profiled noise scale.
+It conditions on fitted drift and one coordinate; drift uncertainty, multiple
+comparisons and empirical memory acceptance remain open. A controlled independent
+position example also demonstrates that a low MSD slope alone does not identify
+temporal memory. See [the completion audit](docs/stage11_14_completion_audit.md).
 `python3 scripts/validate_continuous_holdout.py --train-file TRAIN.jsonl
 --holdout-file HOLDOUT.jsonl --output-file REPORT.json` evaluates only strictly
 later, matching-coordinate 128D records. It reports increment prediction errors
@@ -416,7 +423,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 356 host tests; device receipts have separate scope
+└── tests/                                 # 389 host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -449,7 +456,7 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (356/356 Host Tests Passing)
+### A. Run Unit Tests (389/389 Host Tests Passing)
 ```bash
 # Run the full host suite locally:
 python3 -m unittest discover tests
@@ -468,7 +475,7 @@ adb push traceform tests scripts /data/local/tmp/tf_sync/
 adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; cp -r /data/local/tmp/tf_sync/* ~/traceform/"'
 adb shell "rm -rf /data/local/tmp/tf_sync"
 
-# Execute 139-test suite natively on Pixel 6a:
+# Execute tests available in the on-device checkout (host count is separate):
 adb shell 'run-as com.termux /data/data/com.termux/files/usr/bin/bash -c "export HOME=/data/data/com.termux/files/home; export PATH=/data/data/com.termux/files/usr/bin:\$PATH; cd ~/traceform && python3 -m unittest discover tests"'
 ```
 

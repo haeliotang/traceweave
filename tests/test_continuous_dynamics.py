@@ -213,6 +213,37 @@ class TestContinuousDynamics(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.estimate_memory_irregular(records)
 
+    def test_brownian_null_calibration_uses_time_grid_and_profiles_scale(self):
+        model = ContinuousDynamics()
+        model.dimension = 1
+        model.model_version = "v1"
+        model.anchors = [{"center": [0], "drift": [0], "noise_covariance": [[1]]}]
+        rng = random.Random(71)
+        start = datetime.datetime(2026, 10, 1, tzinfo=datetime.timezone.utc)
+        records, time, value = [], 0.0, 0.0
+        for index in range(33):
+            if index:
+                dt = [0.5, 1, 1.5][index % 3]
+                time += dt
+                value += rng.gauss(0, math.sqrt(dt))
+            records.append({"timestamp_utc": (start + datetime.timedelta(seconds=time)).isoformat(),
+                            "continuous_vector": [value], "model_version": "v1"})
+        original = model.estimate_memory_irregular(records)
+        calibrated = model.estimate_memory_irregular(records, brownian_bootstrap_draws=19, seed=12)
+        self.assertEqual(original["profile"], calibrated["profile"])
+        null = calibrated["brownian_null_calibration"]
+        self.assertEqual(len(null["null_likelihood_gains"]), 19)
+        self.assertEqual(null["monte_carlo_p_value"], (1 + null["exceedance_count"]) / 20)
+        self.assertGreaterEqual(null["monte_carlo_p_value"], 0.05)
+        self.assertEqual(calibrated, model.estimate_memory_irregular(records, brownian_bootstrap_draws=19, seed=12))
+        scaled = [dict(record, continuous_vector=[record["continuous_vector"][0] * 7]) for record in records]
+        rescaled = model.estimate_memory_irregular(scaled, brownian_bootstrap_draws=19, seed=12)
+        self.assertAlmostEqual(calibrated["log_likelihood_gain_over_brownian"], rescaled["log_likelihood_gain_over_brownian"])
+        self.assertEqual(null["monte_carlo_p_value"], rescaled["brownian_null_calibration"]["monte_carlo_p_value"])
+        for invalid in (-1, 1000, True, 1.5):
+            with self.assertRaises(ValueError):
+                model.estimate_memory_irregular(records, brownian_bootstrap_draws=invalid)
+
     def test_memory_estimation_uses_drift_residuals_and_rejects_gaps(self):
         model = ContinuousDynamics()
         model.dimension = 1

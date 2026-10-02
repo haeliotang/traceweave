@@ -345,13 +345,18 @@ class ContinuousDynamics:
                 "coordinate_provenance": dict(self.coordinate_provenance),
                 "evidence_scope": "regular_segment_residual_scaling_diagnostic_not_proof_of_fractional_memory"}
 
-    def estimate_memory_irregular(self, records, coordinate=0):
+    def estimate_memory_irregular(self, records, coordinate=0, brownian_bootstrap_draws=0, seed=0):
         """Profile Gaussian likelihood on the actual grid for one coordinate.
 
         Drift is supplied by this fitted model. Noise scale is profiled out;
         no interpolation, pooled independent-coordinate assumption or jitter
         is introduced. Dense factorization is bounded to 128 increments.
+        Optional Brownian calibration conditions on the fitted drift and actual
+        time grid; it does not account for drift-estimation uncertainty.
         """
+        if (type(brownian_bootstrap_draws) is not int or not 0 <= brownian_bootstrap_draws <= 999
+                or type(seed) is not int):
+            raise ValueError("0 to 999 bootstrap draws and an integer seed required")
         if self.model_version is None or not 33 <= len(records) <= 129:
             raise ValueError("versioned model and 32 to 128 consecutive increments required")
         if not isinstance(coordinate, int) or not 0 <= coordinate < self.dimension:
@@ -376,10 +381,47 @@ class ContinuousDynamics:
         count = len(residuals)
         unit = times[-1] / count
         normalized_times = [value / unit for value in times]
-        profile = []
+        factors = []
         for index in range(1, 20):
             hurst = index / 20
             lower = cholesky_psd(self.fractional_increment_covariance(normalized_times, hurst))
+            factors.append((hurst, lower))
+        profile = self._memory_profile(residuals, factors)
+        best = min(profile, key=lambda row: row["negative_log_likelihood_up_to_constant"])
+        brownian = next(row for row in profile if row["hurst"] == 0.5)
+        gain = brownian["negative_log_likelihood_up_to_constant"] - best["negative_log_likelihood_up_to_constant"]
+        result = {"protocol": "traceform.irregular-memory.v1", "hurst": best["hurst"],
+                "log_likelihood_gain_over_brownian": gain,
+                "comparison_scope": "in_sample_profile_contrast_not_calibrated_significance_or_predictive_gain",
+                "profile_scale_variance": best["profile_scale_variance"], "coordinate": coordinate,
+                "increment_count": count, "time_unit_seconds": unit, "profile": profile,
+                "grid_boundary_optimum": best["hurst"] in (0.05, 0.95),
+                "model_version": self.model_version,
+                "coordinate_provenance": dict(self.coordinate_provenance),
+                "evidence_scope": "single_coordinate_fractional_gaussian_profile_not_empirical_memory_proof"}
+        if brownian_bootstrap_draws:
+            rng = random.Random(seed)
+            gains = []
+            for _ in range(brownian_bootstrap_draws):
+                null_residuals = [rng.gauss(0, math.sqrt(normalized_times[i + 1] - normalized_times[i]))
+                                  for i in range(count)]
+                null_profile = self._memory_profile(null_residuals, factors)
+                null_brownian = next(row for row in null_profile if row["hurst"] == 0.5)
+                gains.append(null_brownian["negative_log_likelihood_up_to_constant"]
+                             - min(row["negative_log_likelihood_up_to_constant"] for row in null_profile))
+            result["brownian_null_calibration"] = {
+                "draws": brownian_bootstrap_draws, "seed": seed,
+                "exceedance_count": sum(value >= gain for value in gains),
+                "monte_carlo_p_value": (1 + sum(value >= gain for value in gains)) / (1 + len(gains)),
+                "null_likelihood_gains": gains,
+                "scope": "conditional_fixed_drift_single_coordinate_gaussian_null_not_drift_uncertainty_multiple_testing_or_memory_acceptance"}
+        return result
+
+    @staticmethod
+    def _memory_profile(residuals, factors):
+        count = len(residuals)
+        profile = []
+        for hurst, lower in factors:
             whitened = []
             for row in range(count):
                 whitened.append((residuals[row] - sum(lower[row][column] * whitened[column]
@@ -390,18 +432,7 @@ class ContinuousDynamics:
             score = 0.5 * (count * math.log(scale) + 2 * sum(math.log(lower[row][row]) for row in range(count)))
             profile.append({"hurst": hurst, "profile_scale_variance": scale,
                             "negative_log_likelihood_up_to_constant": score})
-        best = min(profile, key=lambda row: row["negative_log_likelihood_up_to_constant"])
-        brownian = next(row for row in profile if row["hurst"] == 0.5)
-        return {"protocol": "traceform.irregular-memory.v1", "hurst": best["hurst"],
-                "log_likelihood_gain_over_brownian": brownian["negative_log_likelihood_up_to_constant"]
-                    - best["negative_log_likelihood_up_to_constant"],
-                "comparison_scope": "in_sample_profile_contrast_not_calibrated_significance_or_predictive_gain",
-                "profile_scale_variance": best["profile_scale_variance"], "coordinate": coordinate,
-                "increment_count": count, "time_unit_seconds": unit, "profile": profile,
-                "grid_boundary_optimum": best["hurst"] in (0.05, 0.95),
-                "model_version": self.model_version,
-                "coordinate_provenance": dict(self.coordinate_provenance),
-                "evidence_scope": "single_coordinate_fractional_gaussian_profile_not_empirical_memory_proof"}
+        return profile
 
     @staticmethod
     def fractional_increment_covariance(times, hurst):

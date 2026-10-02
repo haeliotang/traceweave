@@ -89,3 +89,15 @@ All 33 affected continuous-model tests pass (9.149s), including deterministic
 increment baseline checks, temporal-leakage rejection and an independent
 correlated two-coordinate covariance example. These controlled tests validate
 the reporting path and do not supply the missing empirical records.
+
+## Conditional Brownian calibration
+
+`ContinuousDynamics.estimate_memory_irregular(records, coordinate=0,
+brownian_bootstrap_draws=99, seed=0)` optionally calibrates the maximum
+fractional-Gaussian profile gain against independent Brownian residuals on the
+same observed time grid. The 19-point H grid and profiled noise scale are reused
+for each draw; the Monte Carlo p-value is `(1 + exceedances)/(1 + draws)`.
+The default remains zero draws, preserving the original diagnostic. Calibration
+is conditional on the fitted drift and a single coordinate: it excludes drift
+estimation uncertainty and multiple-coordinate selection, and does not establish
+empirical memory or scientific acceptance. Draws are bounded to 999.
