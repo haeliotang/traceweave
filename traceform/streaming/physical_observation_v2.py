@@ -9,7 +9,8 @@ import json
 import time
 from typing import Any, Dict, Optional, Tuple
 
-from pixel_physical import audio_features, config, connectivity, device_state, sensors
+from pixel_physical import audio_features, config, connectivity, device_state
+from traceform.streaming import physical_sensors_v2 as sensors
 from traceform.streaming import physical_location_v2 as location
 
 
@@ -49,6 +50,8 @@ def acquire_observation_frame(
     # 1. Hardware Sensors (Motion & Environment)
     t_start = time.perf_counter()
     motion_dict, env_dict, motion_avail, env_avail = sensors.sample_hardware_sensors()
+    sensor_fields = {'motion': motion_dict.pop('_field_provenance', {}),
+                     'environment': env_dict.pop('_field_provenance', {})}
     lat_hw = round((time.perf_counter() - t_start) * 1000, 2)
     latencies["motion"] = lat_hw
     latencies["environment"] = lat_hw
@@ -110,10 +113,11 @@ def acquire_observation_frame(
             'status': availability[name],
             'measurement_scope': 'adapter_return_not_per_field_direct_measurement',
             'limitations': limitations,
+            'fields': sensor_fields.get(name, {}),
         } for name, adapter, limitations in (
-            ('motion', 'pixel_physical.sensors.sample_hardware_sensors',
+            ('motion', 'traceform.streaming.physical_sensors_v2.sample_hardware_sensors',
              ['derived_motion_summaries', 'missing_gyroscope_may_be_zero_filled']),
-            ('environment', 'pixel_physical.sensors.sample_hardware_sensors',
+            ('environment', 'traceform.streaming.physical_sensors_v2.sample_hardware_sensors',
              ['group_availability_does_not_establish_each_sensor']),
             ('place', 'traceform.streaming.physical_location_v2.sample_location',
              ['location_request_and_age_are_recorded_in_place_when_available']),

@@ -13,7 +13,7 @@ class TestPhysicalObservationProvenanceV2(unittest.TestCase):
         self.assertEqual(frame.feature_provenance, {})
 
     def test_adapter_evidence_survives_rolling_roundtrip_without_claiming_measurement(self):
-        with patch('pixel_physical.sensors.sample_hardware_sensors', return_value=(
+        with patch('traceform.streaming.physical_sensors_v2.sample_hardware_sensors', return_value=(
                 {'gyro_raw': [0, 0, 0]}, {}, 'AVAILABLE', 'UNAVAILABLE')), \
              patch('pixel_physical.connectivity.sample_connectivity', return_value=({}, 'UNAVAILABLE')), \
              patch('pixel_physical.device_state.sample_device_state', return_value=(
