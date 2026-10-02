@@ -60,7 +60,7 @@ public final class SyntheticCollectionActivity extends Activity {
         int sessionBreaks = 0, invalidSessionStarts = 0;
         java.util.Set<String> sessions = new java.util.HashSet<>();
         JSONObject coverageChanges = new JSONObject();
-        JSONObject previous = null;
+        JSONObject previous = null, sourceAudit = null;
         double sum = 0, min = Double.POSITIVE_INFINITY, max = 0;
         try (SQLiteDatabase db = SQLiteDatabase.openDatabase(getDatabasePath("edge.sqlite").getPath(), null, SQLiteDatabase.OPEN_READONLY);
                 Cursor cursor = db.rawQuery("SELECT payload FROM frames ORDER BY ts", null)) {
@@ -102,8 +102,11 @@ public final class SyntheticCollectionActivity extends Activity {
                 previous = row;
                 dimension = row.getJSONObject("csd").getInt("input_dimension");
             }
+            sourceAudit = NativeWeeklyAudit.run(db);
         }
         JSONObject report = new JSONObject().put("nonce", nonce).put("frames", frames)
+            .put("retained_source_invalid_records", sourceAudit.getLong("invalid_records"))
+            .put("retained_native_provenance_records", sourceAudit.getLong("native_provenance_records"))
             .put("two_sessions_requested", twoSessions).put("binding_established", bindingConnected)
             .put("collection_sessions", sessions.size()).put("session_breaks", sessionBreaks)
             .put("invalid_session_starts", invalidSessionStarts)

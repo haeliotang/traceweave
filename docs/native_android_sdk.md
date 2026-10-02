@@ -1493,3 +1493,14 @@ holds a binding across an explicit stop and restart, requires two session
 identities and rejects a continuous first frame in either session. First-frame
 zero intervals represent an intentional session boundary; they are not evidence
 of a device clock failure. Raw session IDs remain in app-private storage.
+
+Weekly audit validates the declared native subset provenance before calibration:
+supplied and missing names form a complete, disjoint model-feature inventory;
+each source kind agrees with that inventory, source ages are finite and within
+expiry, and missing coordinates contain median-normalized zero with zero
+velocity. Contradictory native records are invalid and the existing candidate
+calibration gate declines them without modifying retained frames. Audit totals
+separate observed, derived, proxy and imputed coordinates, only for validated
+native records. Synthetic fixtures retain their distinct source mode. These
+checks establish schema consistency, not independent measurement or scientific
+validity of a fitted model.
