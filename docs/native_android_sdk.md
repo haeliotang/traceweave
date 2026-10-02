@@ -1412,3 +1412,10 @@ The production service and isolated read-only Wi-Fi probe share
 invalid RSSI, selection of the strongest available Wi-Fi transport, disconnects
 and the API 26 guard. A capability probe does not establish production service
 retention, continuous sampling or overall acquisition acceptance.
+
+Collection restart resets cached feature values, sensor timestamps, derivative
+references and rolling windows before listeners and sampling begin. A quick
+stop/start therefore requires fresh readings and normal history warm-up; it
+cannot derive features across the stopped interval. The controlled Java
+regression covers removed readings and motion, pressure, electrical, optical
+and ordinal-history warm-up. It does not replace device lifecycle validation.

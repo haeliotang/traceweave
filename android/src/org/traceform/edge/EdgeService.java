@@ -136,6 +136,7 @@ public final class EdgeService extends Service implements SensorEventListener {
     private void beginCollection() {
         if (destroyed || engine == null) return;
         if (thread != null) { if (stopped) restartAfterStop = true; return; }
+        observed.reset();
         stopped = false;
         NotificationManager notifications = getSystemService(NotificationManager.class);
         notifications.createNotificationChannel(new NotificationChannel("trajectory", "本机轨迹采集", NotificationManager.IMPORTANCE_LOW));

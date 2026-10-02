@@ -35,6 +35,16 @@ final class FeatureReadings {
     private long windowNanos, historyAccelNanos;
     private final ArrayDeque<Double> accelWindow = new ArrayDeque<>();
     private final ArrayDeque<Double> lightWindow = new ArrayDeque<>(), pressureWindow = new ArrayDeque<>();
+    void reset() {
+        values.clear();
+        accelMagnitude = gyroMagnitude = referencePressure = referenceVoltage = referenceCurrent = Double.NaN;
+        accelNanos = gyroNanos = pressureNanos = electricalNanos = windowNanos = historyAccelNanos = 0;
+        accelDerivative.reference = gyroDerivative.reference = null;
+        accelDerivative.higher = new double[3][]; gyroDerivative.higher = new double[3][];
+        accelDerivative.nanos = gyroDerivative.nanos = 0;
+        rawLight = null;
+        accelWindow.clear(); lightWindow.clear(); pressureWindow.clear();
+    }
     void light(double lux, long nanos) {
         rawLight = Double.isFinite(lux) && lux >= 0 ? new Reading(lux, "observed", "light_sensor", nanos, 300000000000L) : null;
         put("env_log_lux", rawLight == null ? Double.NaN : Math.log1p(lux), "derived", "light_sensor", nanos, 300000000000L);

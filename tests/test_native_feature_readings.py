@@ -235,3 +235,43 @@ public final class ReadingsTest {
 }''')
             subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
             subprocess.run(["java", "-cp", directory, "org.traceform.edge.ReadingsTest"], check=True, capture_output=True)
+
+    def test_collection_reset_discards_values_and_derivative_history(self):
+        if not shutil.which("javac") or not shutil.which("java"):
+            self.skipTest("Java compiler/runtime unavailable")
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            harness = Path(directory) / "ResetReadingsTest.java"
+            harness.write_text('''package org.traceform.edge;
+public final class ResetReadingsTest {
+    public static void main(String[] args) {
+        FeatureReadings r = new FeatureReadings();
+        for (int i=0; i<10; i++) {
+            long t=(1+i)*1000000000L;
+            r.accelerometer(new float[]{i*i,0,0},t);
+            r.gyroscope(new float[]{i,0,0},t);
+            r.light(100+i,t); r.pressure(1000+i,t);
+            r.electrical(4000+i*10,-100000-i*100000,t);
+            r.windows(t);
+        }
+        r.wifiRssi(-65,10000000000L);
+        if(r.get("kinematic_jerk_metric",10000000000L)==null) throw new AssertionError("fixture warmup");
+        r.reset();
+        for(String name:new String[]{"motion_accel_magnitude","kinematic_jerk_metric","conn_wifi_rssi_norm",
+            "env_log_lux","env_pressure_hpa","battery_internal_impedance_miliohm"})
+            if(r.get(name,11000000000L)!=null) throw new AssertionError("previous collection value: "+name);
+        r.motion(11000000000L); r.windows(11000000000L);
+        if(r.get("motion_energy",11000000000L)!=null) throw new AssertionError("motion cache retained");
+        r.accelerometer(new float[]{100,0,0},11000000000L);
+        r.gyroscope(new float[]{100,0,0},11000000000L);
+        r.light(200,11000000000L); r.pressure(1010,11000000000L);
+        r.electrical(4100,-1100000,11000000000L); r.windows(11000000000L);
+        for(String name:new String[]{"kinematic_jerk_metric","rotational_angular_jerk","kinematic_snap_metric",
+            "photometric_contrast_ratio","barometric_vertical_velocity","barometric_turbulence_variance",
+            "battery_internal_impedance_miliohm","permutation_entropy_complexity"})
+            if(r.get(name,11000000000L)!=null) throw new AssertionError("cross-collection history: "+name);
+    }
+}''')
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.ResetReadingsTest"], capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
