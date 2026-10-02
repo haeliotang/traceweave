@@ -46,7 +46,7 @@ public final class EdgeService extends Service implements SensorEventListener {
     private final ShadowComparisonWorker shadowComparisons = new ShadowComparisonWorker();
     private final NativeDeliveryWorker deliveries = new NativeDeliveryWorker();
     private String shadowToken;
-    private final String sessionId = java.util.UUID.randomUUID().toString();
+    private String sessionId;
     private long frames;
     private SampleClock sampleClock;
     private WarmBucket previousWarm;
@@ -137,6 +137,7 @@ public final class EdgeService extends Service implements SensorEventListener {
     private void beginCollection() {
         if (destroyed || engine == null) return;
         if (thread != null) { if (stopped) restartAfterStop = true; return; }
+        sessionId = java.util.UUID.randomUUID().toString();
         observed.reset();
         usageSource.reset();
         stopped = false;

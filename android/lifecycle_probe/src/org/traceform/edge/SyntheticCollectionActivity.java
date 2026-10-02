@@ -13,20 +13,34 @@ import java.io.File;
 /** Bounded real-service acquisition check; only aggregate diagnostics leave the sandbox. */
 public final class SyntheticCollectionActivity extends Activity {
     private final Handler handler = new Handler();
-    private boolean started;
+    private boolean started, bound, bindingConnected, twoSessions;
+    private final android.content.ServiceConnection connection = new android.content.ServiceConnection() {
+        @Override public void onServiceConnected(android.content.ComponentName name, android.os.IBinder binder) { bindingConnected = true; }
+        @Override public void onServiceDisconnected(android.content.ComponentName name) { bindingConnected = false; }
+    };
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         String nonce = getIntent().getStringExtra("nonce");
         try { java.util.UUID.fromString(nonce); }
         catch (RuntimeException invalid) { finish(); return; }
+        twoSessions = getIntent().getBooleanExtra("two_sessions", false);
         final boolean fullWindow = getIntent().getBooleanExtra("full_window", false);
+        if (twoSessions && fullWindow) { finish(); return; }
         final int durationMillis = fullWindow ? 360000 : 45000;
         android.widget.TextView message = new android.widget.TextView(this);
         message.setText(fullWindow ? "正在验证连续采样\n6 分钟后自动停止" : "正在验证连续采样\n45 秒后自动停止"); setContentView(message);
         getSharedPreferences("interventions", MODE_PRIVATE).edit().putBoolean("enabled", false).commit();
+        if (twoSessions) bound = bindService(new Intent(this, EdgeService.class), connection, BIND_AUTO_CREATE);
         startForegroundService(new Intent(this, EdgeService.class)); started = true;
+        if (twoSessions) {
+            handler.postDelayed(this::stopAcquisition, 20000);
+            handler.postDelayed(() -> {
+                if (!bindingConnected) { finish(); return; }
+                startForegroundService(new Intent(this, EdgeService.class)); started = true;
+            }, 23000);
+        }
         handler.postDelayed(() -> {
-            stopService(new Intent(this, EdgeService.class)); started = false;
+            stopAcquisition();
             handler.postDelayed(() -> {
                 try { summarize(nonce); }
                 catch (Exception error) { android.util.Log.e("Traceform", "collection probe failed", error); }
@@ -34,10 +48,17 @@ public final class SyntheticCollectionActivity extends Activity {
             }, 3000);
         }, durationMillis);
     }
+    private void stopAcquisition() {
+        if (bound) startService(new Intent(this, EdgeService.class).setAction(EdgeService.STOP_COLLECTION));
+        else stopService(new Intent(this, EdgeService.class));
+        started = false;
+    }
     private void summarize(String nonce) throws Exception {
         int frames = 0, temperature = 0, batteryProxy = 0, continuous = 0, dimension = 0;
         int readyFrames = 0, consecutive = 0, longestContinuous = 0, lastBreakFrame = 0;
         int coverageBreaks = 0, clockBreaks = 0, intervalBreaks = 0, unexplainedBreaks = 0;
+        int sessionBreaks = 0, invalidSessionStarts = 0;
+        java.util.Set<String> sessions = new java.util.HashSet<>();
         JSONObject coverageChanges = new JSONObject();
         JSONObject previous = null;
         double sum = 0, min = Double.POSITIVE_INFINITY, max = 0;
@@ -45,6 +66,8 @@ public final class SyntheticCollectionActivity extends Activity {
                 Cursor cursor = db.rawQuery("SELECT payload FROM frames ORDER BY ts", null)) {
             while (cursor.moveToNext()) {
                 JSONObject row = new JSONObject(cursor.getString(0)); frames++;
+                String session = row.getString("session_id");
+                if (sessions.add(session) && row.optBoolean("continuous_from_previous")) invalidSessionStarts++;
                 JSONObject source = row.getJSONObject("feature_provenance").getJSONObject("env_device_temp_c");
                 if (source.optString("kind").equals("observed")) temperature++;
                 JSONObject stress = row.getJSONObject("feature_provenance").getJSONObject("thermodynamic_battery_stress_index");
@@ -58,6 +81,8 @@ public final class SyntheticCollectionActivity extends Activity {
                 if (previous != null && !row.optBoolean("continuous_from_previous")) {
                     consecutive = 0; lastBreakFrame = frames;
                     java.util.Set<String> before = features(previous), after = features(row);
+                    boolean sessionChanged = !row.getString("session_id").equals(previous.getString("session_id"));
+                    if (sessionChanged) sessionBreaks++;
                     boolean coverageChanged = !before.equals(after);
                     if (coverageChanged) {
                         coverageBreaks++;
@@ -72,13 +97,17 @@ public final class SyntheticCollectionActivity extends Activity {
                     double wallDt = (row.getLong("timestamp_epoch_ms") - previous.getLong("timestamp_epoch_ms")) / 1000.0;
                     boolean clockInvalid = wallDt <= 0 || Math.abs(wallDt - dt) > 1;
                     if (clockInvalid) clockBreaks++;
-                    if (!coverageChanged && !intervalInvalid && !clockInvalid) unexplainedBreaks++;
+                    if (!sessionChanged && !coverageChanged && !intervalInvalid && !clockInvalid) unexplainedBreaks++;
                 }
                 previous = row;
                 dimension = row.getJSONObject("csd").getInt("input_dimension");
             }
         }
         JSONObject report = new JSONObject().put("nonce", nonce).put("frames", frames)
+            .put("two_sessions_requested", twoSessions).put("binding_established", bindingConnected)
+            .put("collection_sessions", sessions.size()).put("session_breaks", sessionBreaks)
+            .put("invalid_session_starts", invalidSessionStarts)
+            .put("session_identity_valid", !twoSessions || (bindingConnected && sessions.size() == 2 && sessionBreaks == 1 && invalidSessionStarts == 0))
             .put("csd_ready_frames", readyFrames).put("longest_continuous_pairs", longestContinuous)
             .put("final_continuous_pairs", consecutive).put("last_break_frame", lastBreakFrame)
             .put("battery_stress_proxy_frames", batteryProxy)
@@ -102,6 +131,7 @@ public final class SyntheticCollectionActivity extends Activity {
     @Override public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         if (started) stopService(new Intent(this, EdgeService.class));
+        if (bound) { unbindService(connection); bound = false; }
         getSystemService(JobScheduler.class).cancel(WeeklyMaintenanceJob.JOB_ID);
         super.onDestroy();
     }

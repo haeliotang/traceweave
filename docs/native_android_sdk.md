@@ -1485,3 +1485,11 @@ All four inputs must be available and valid; absent temperature is not replaced
 with a nominal value. Output freshness is at most five seconds and cannot extend
 beyond the upstream temperature expiry. Collection reset removes this input
 history. The added source path does not establish independent observability.
+
+Every actual collection start assigns a new session UUID, including a stop/start
+while a Binder client retains the service object. Repeated starts of an already
+running collection retain its current session. The isolated `two_sessions` probe
+holds a binding across an explicit stop and restart, requires two session
+identities and rejects a continuous first frame in either session. First-frame
+zero intervals represent an intentional session boundary; they are not evidence
+of a device clock failure. Raw session IDs remain in app-private storage.
