@@ -166,5 +166,7 @@
     "scope": "public_only_verifier_build_not_private_prover_owner_enrollment_or_device_acceptance"
   },
   "primary_app_updated": false,
-  "acceptance": "candidate_build_only_not_final_deployment_or_sensorium_parity"
+  "acceptance": "candidate_build_only_not_final_deployment_or_sensorium_parity",
+  "packaged_normalizer_asset_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
+  "packaged_normalizer_binding_verified": true
 }
