@@ -208,3 +208,23 @@ optimality or the exact search algorithm. Its synthetic prover knows both models
 Owner-approved SDK verification, distributed private proving and production
 setup/key trust remain open. Existing v1 interfaces retain their commitment
 encoding and relation; no v1 certificate is substituted for v2 commitments.
+
+## Signed packed-v2 public proof in application-private storage
+
+`zk_packed_uniform_v2_signed_sdk_android.json` records four cases through the
+actual `ProofVerifier.verify` API in an independent Android application UID.
+Two distinct provisioned synthetic owner keys approve the packed-v2 verifying
+key pin, full public statement and proof. A wrong owner signature is rejected
+in Java with no session consumption; an invalid statement approved by both
+synthetic keys is rejected by the native proof verifier with no consumption.
+The valid nonzero proof creates one 32-byte record. After force-stopping the
+application and confirming the process is absent, a new PID rejects the same
+session, retaining exactly 32 bytes. Each fresh dispatch nonce matches a terminal
+job receipt, and temporary snapshots are absent. The installed APK SHA matches
+its source-bound build report. The test app is removed and twelve frozen checks
+pass. The affected verifier cancellation/reaping host test passes as well.
+
+This is approved public-proof verification using synthetic keys and a temporary
+local setup. It is not real owner enrollment, distributed proof generation,
+MPC-result-to-proof integration, or app-restart replay for the separate
+unknown-objective computation ledger. The main app is not updated.

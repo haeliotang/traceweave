@@ -111,3 +111,12 @@ loss. It does not prove optimality or the exact private search algorithm. The
 synthetic prover knows both models. MPC-based distributed proof generation,
 production setup/key enrollment and end-to-end owner-approved Android integration
 remain open; a v1 proof/key must not silently be used for packed-v2 commitments.
+
+The packed-v2 public proof also passes four actual signed Android SDK cases:
+wrong owner signature, doubly approved invalid statement, valid nonzero proof
+and replay after terminating and restarting the app process. The private proof
+ledger has no consumed session records for rejected inputs and has one 32-byte record after valid
+verification and replay. `zk_packed_uniform_v2_signed_sdk_android.json` binds the
+APK, source hashes, four fresh nonces and changed application PIDs. This covers
+synthetic owner-approved public verification; MPC-result/proof integration,
+private distributed proving and real enrollment remain open.
