@@ -8,7 +8,7 @@
     "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b"
   },
   "limitations": [
-    "Variable-name dispatch and helper call chains are unresolved by this literal index.",
+    "Five variable dispatch paths are manually traced; this index remains incomplete for other helper chains and runtime conditions.",
     "Assignments can emit missing, imputed, derived or proxy values; finding them does not establish independent measurement.",
     "No physical device observations were read."
   ],
@@ -441,7 +441,34 @@
           "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);",
           "literal_put_assignment": false
         }
-      ]
+      ],
+      "reviewed_variable_dispatch": {
+        "kind": "derived",
+        "scope": "manually_traced_source_path_not_runtime_measurement",
+        "producer_path": [
+          {
+            "path": "android/src/org/traceform/edge/EdgeService.java",
+            "line": 412,
+            "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 170,
+            "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 259,
+            "expression": "private void derivative(Derivative state, String name, float[] vector, long nanos, double cap) {"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 281,
+            "expression": "put(name, value, \"derived\", \"sensor_vector_2s_or_longer_derivative\", nanos, 5000000000L);"
+          }
+        ],
+        "missing_conditions": "invalid sensor vector, insufficient derivative history, nonpositive time or reset gap; source age also bounded by FeatureReadings.get"
+      }
     },
     {
       "index": 39,
@@ -503,7 +530,34 @@
           "expression": "derivative(gyroDerivative, \"rotational_angular_jerk\", values, timestampNanos, 25);",
           "literal_put_assignment": false
         }
-      ]
+      ],
+      "reviewed_variable_dispatch": {
+        "kind": "derived",
+        "scope": "manually_traced_source_path_not_runtime_measurement",
+        "producer_path": [
+          {
+            "path": "android/src/org/traceform/edge/EdgeService.java",
+            "line": 411,
+            "expression": "if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) observed.gyroscope(event.values, event.timestamp);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 159,
+            "expression": "derivative(gyroDerivative, \"rotational_angular_jerk\", values, timestampNanos, 25);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 259,
+            "expression": "private void derivative(Derivative state, String name, float[] vector, long nanos, double cap) {"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 281,
+            "expression": "put(name, value, \"derived\", \"sensor_vector_2s_or_longer_derivative\", nanos, 5000000000L);"
+          }
+        ],
+        "missing_conditions": "invalid sensor vector, insufficient derivative history, nonpositive time or reset gap; source age also bounded by FeatureReadings.get"
+      }
     },
     {
       "index": 47,
@@ -702,7 +756,34 @@
           "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
           "literal_put_assignment": false
         }
-      ]
+      ],
+      "reviewed_variable_dispatch": {
+        "kind": "derived",
+        "scope": "manually_traced_source_path_not_runtime_measurement",
+        "producer_path": [
+          {
+            "path": "android/src/org/traceform/edge/EdgeService.java",
+            "line": 412,
+            "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 170,
+            "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 32,
+            "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 299,
+            "expression": "put(HIGHER_ACCEL_NAMES[level], metric, \"derived\", \"successive_accelerometer_2s_or_longer_finite_differences\", nanos, 5000000000L);"
+          }
+        ],
+        "missing_conditions": "invalid sensor vector, insufficient derivative history, nonpositive time or reset gap; source age also bounded by FeatureReadings.get"
+      }
     },
     {
       "index": 72,
@@ -777,7 +858,34 @@
           "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
           "literal_put_assignment": false
         }
-      ]
+      ],
+      "reviewed_variable_dispatch": {
+        "kind": "derived",
+        "scope": "manually_traced_source_path_not_runtime_measurement",
+        "producer_path": [
+          {
+            "path": "android/src/org/traceform/edge/EdgeService.java",
+            "line": 412,
+            "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 170,
+            "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 32,
+            "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 299,
+            "expression": "put(HIGHER_ACCEL_NAMES[level], metric, \"derived\", \"successive_accelerometer_2s_or_longer_finite_differences\", nanos, 5000000000L);"
+          }
+        ],
+        "missing_conditions": "invalid sensor vector, insufficient derivative history, nonpositive time or reset gap; source age also bounded by FeatureReadings.get"
+      }
     },
     {
       "index": 81,
@@ -790,7 +898,34 @@
           "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};",
           "literal_put_assignment": false
         }
-      ]
+      ],
+      "reviewed_variable_dispatch": {
+        "kind": "derived",
+        "scope": "manually_traced_source_path_not_runtime_measurement",
+        "producer_path": [
+          {
+            "path": "android/src/org/traceform/edge/EdgeService.java",
+            "line": 412,
+            "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 170,
+            "expression": "derivative(accelDerivative, \"kinematic_jerk_metric\", values, timestampNanos, 20);"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 32,
+            "expression": "private static final String[] HIGHER_ACCEL_NAMES = {\"kinematic_snap_metric\", \"kinematic_crackle_metric\", \"kinematic_pop_metric\"};"
+          },
+          {
+            "path": "android/src/org/traceform/edge/FeatureReadings.java",
+            "line": 299,
+            "expression": "put(HIGHER_ACCEL_NAMES[level], metric, \"derived\", \"successive_accelerometer_2s_or_longer_finite_differences\", nanos, 5000000000L);"
+          }
+        ],
+        "missing_conditions": "invalid sensor vector, insufficient derivative history, nonpositive time or reset gap; source age also bounded by FeatureReadings.get"
+      }
     },
     {
       "index": 82,
@@ -1089,5 +1224,7 @@
       "static_status": "unresolved_in_indexed_sources",
       "source_points": []
     }
-  ]
+  ],
+  "reviewed_variable_dispatch_count": 5,
+  "located_literal_or_reviewed_dispatch_feature_count": 39
 }

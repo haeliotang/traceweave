@@ -16,7 +16,12 @@ the normalizer's feature ordering and use its canonical raw-feature units.
 `NativeWifiSource.java`,
 with source hashes and exact line expressions. It locates 34 literal `put`
 assignments and five other name references; 89 names remain unresolved by this
-literal index. Variable dispatch and helper chains require further inspection.
+literal index. The five referenced features now have manually traced production
+paths: accelerometer/gyroscope vector jerk and the three higher accelerometer
+derivatives. Sensor callbacks pass through `derivative` to `put(name, ...)` or
+the `HIGHER_ACCEL_NAMES` loop. Invalid vectors, inadequate history and time gaps
+can still leave these coordinates missing. Together, 39 names have located
+literal or reviewed variable-dispatch paths; this is source coverage only.
 These counts describe source text, not device capability: even a located
 assignment can produce missing, imputed, derived or proxy values. The index
 does not establish complete native acquisition or independent observability.
