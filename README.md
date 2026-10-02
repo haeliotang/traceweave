@@ -21,6 +21,25 @@
 
 ## Stage 11–14 progress (2026-10-02)
 
+**总进度：Stage 1–10 的既有研究与工程管线已形成；Stage 11–14
+主要工程模块已落地，但整体验收和最终主应用部署尚未完成。**
+目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
+分别记录，不能互相替代。
+
+最近记录的验证结果为 **356 项 Python 测试、16 项 Rust 测试通过**；
+本次为文档进度更新，未重新执行测试或新增真机实验。
+隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
+独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
+packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
+后者覆盖错误签名、无效证明、有效证明及应用进程重启后的重放拒绝。
+这些计数来自不同范围的验证，不能合并为完整协议验收。
+
+接下来仍需完成 MPC 实际输出与签名证明绑定、十六节点带批准防护的正常
+未知分数流程及其应用重启重放验证、双方私有证明生成，以及当前源码的
+主应用构建、USB 安装和集成检查。真实干预因果效果、实测连续动力学及
+长期生产调度仍需各自的验证证据。Pixel6a 主应用仍是旧版本；独立测试
+应用已清理，默认运行策略保持 shadow/silent。
+
 The next-stage engineering implementation is substantially in place. The full
 host suite passes **356 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
