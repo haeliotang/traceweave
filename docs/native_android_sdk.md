@@ -12,7 +12,8 @@ matching `libtraceform.so` and assets in its host app. Input arrays must follow
 the normalizer's feature ordering and use its canonical raw-feature units.
 
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
-128 asset feature names against `EdgeService.java` and `FeatureReadings.java`,
+128 asset feature names against `EdgeService.java`, `FeatureReadings.java` and
+`NativeWifiSource.java`,
 with source hashes and exact line expressions. It locates 34 literal `put`
 assignments and five other name references; 89 names remain unresolved by this
 literal index. Variable dispatch and helper chains require further inspection.
@@ -1400,3 +1401,9 @@ Python coordinate; absent transport info and invalid RSSI remain missing.
 With multiple available Wi-Fi transports, it uses the strongest reported RSSI.
 No SSID, BSSID, scan result or location identifier is retained by this path.
 Hardware availability and current-source device acceptance remain unverified.
+
+The production service and isolated read-only Wi-Fi probe share
+`NativeWifiSource.read`. Host fixtures cover absent/redacted transport info,
+invalid RSSI, selection of the strongest available Wi-Fi transport, disconnects
+and the API 26 guard. A capability probe does not establish production service
+retention, continuous sampling or overall acquisition acceptance.

@@ -4,7 +4,8 @@
   "normalizer_file_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
   "source_sha256": {
     "android/src/org/traceform/edge/FeatureReadings.java": "0c19802049aa93bb343cb7c58c968536968095f439a4095288a75d8ef24b45eb",
-    "android/src/org/traceform/edge/EdgeService.java": "c350810a049f648e05d43ee2dd7c63d51fab8b82b2e7f35125d35eda6810f6fd"
+    "android/src/org/traceform/edge/EdgeService.java": "d38cd71ed3030463718603e6f9aee4a25a8cb98c1e061a638e2a0f604b1164bf",
+    "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b"
   },
   "limitations": [
     "Variable-name dispatch and helper call chains are unresolved by this literal index.",
@@ -126,7 +127,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 251,
+          "line": 238,
           "expression": "observed.put(\"device_battery_fraction\", level >= 0 && scale > 0 ? level / (double) scale : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -139,7 +140,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 252,
+          "line": 239,
           "expression": "observed.put(\"device_is_plugged\", battery.hasExtra(BatteryManager.EXTRA_PLUGGED) ? (battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0 ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -152,7 +153,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 253,
+          "line": 240,
           "expression": "observed.put(\"device_is_charging\", battery.hasExtra(BatteryManager.EXTRA_STATUS) ? (battery.getIntExtra(BatteryManager.EXTRA_STATUS, 0) == BatteryManager.BATTERY_STATUS_CHARGING ? 1.0 : 0.0) : Double.NaN, \"derived\", \"battery_broadcast\", nanos, 5000000000L);",
           "literal_put_assignment": true
         }
@@ -183,8 +184,8 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 246,
-          "expression": "observed.put(\"conn_wifi_connected\", wifi ? 1 : 0, \"observed\",",
+          "line": 233,
+          "expression": "observed.put(\"conn_wifi_connected\", wifi.transportPresent ? 1 : 0, \"observed\",",
           "literal_put_assignment": true
         }
       ]
@@ -209,7 +210,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 221,
+          "line": 219,
           "expression": "observed.put(\"screen_on_ratio\", power.isInteractive() ? 1 : 0,",
           "literal_put_assignment": true
         }
@@ -234,7 +235,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 230,
+          "line": 228,
           "expression": "observed.put(\"audio_immersion_state\", headset ? 1 : 0, \"proxy\",",
           "literal_put_assignment": true
         }
@@ -286,7 +287,7 @@
       "source_points": [
         {
           "path": "android/src/org/traceform/edge/EdgeService.java",
-          "line": 218,
+          "line": 216,
           "expression": "observed.put(\"battery_current_ua\", batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,",
           "literal_put_assignment": true
         }
