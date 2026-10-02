@@ -107,6 +107,14 @@ later, matching-coordinate 128D records. It reports increment prediction errors
 against persistence and full residual/predicted covariance rates; it does not
 automatically assign scientific acceptance.
 
+The private participant now has a reproducible explicit-path Android build entry
+(`scripts/build_private_participant_android.py`) with source/library/header digests
+and a loopback-listener gate. A freshly rebuilt participant passes actual
+two-node MPC/proof binding, app-restart replay and waiting-for-peer lifecycle
+checks on Pixel. See the [native build receipt](artifacts/alignment_v1/current_private_participant_android_build.json),
+[MPC receipt](artifacts/alignment_v1/rebuilt_participant_mpc_restart_android.json) and
+[lifecycle receipt](artifacts/alignment_v1/rebuilt_participant_lifecycle_android.json).
+
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes
 implementation and bounded test evidence; it does not establish causal efficacy,
