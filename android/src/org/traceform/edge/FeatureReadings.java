@@ -39,6 +39,11 @@ final class FeatureReadings {
         rawLight = Double.isFinite(lux) && lux >= 0 ? new Reading(lux, "observed", "light_sensor", nanos, 300000000000L) : null;
         put("env_log_lux", rawLight == null ? Double.NaN : Math.log1p(lux), "derived", "light_sensor", nanos, 300000000000L);
     }
+    void wifiRssi(double dbm, long nanos) {
+        double normalized = Double.isFinite(dbm) && dbm >= -126 && dbm <= 0
+            ? Math.max(0, Math.min(1, (dbm + 100) / 70)) : Double.NaN;
+        put("conn_wifi_rssi_norm", normalized, "derived", "strongest_available_wifi_transport_rssi_dbm_clipped_minus100_to_minus30", nanos, 5000000000L);
+    }
     private void push(ArrayDeque<Double> window, double value, int limit) {
         window.addLast(value);
         if (window.size() > limit) window.removeFirst();

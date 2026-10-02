@@ -13,8 +13,8 @@ the normalizer's feature ordering and use its canonical raw-feature units.
 
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
 128 asset feature names against `EdgeService.java` and `FeatureReadings.java`,
-with source hashes and exact line expressions. It locates 33 literal `put`
-assignments and five other name references; 90 names remain unresolved by this
+with source hashes and exact line expressions. It locates 34 literal `put`
+assignments and five other name references; 89 names remain unresolved by this
 literal index. Variable dispatch and helper chains require further inspection.
 These counts describe source text, not device capability: even a located
 assignment can produce missing, imputed, derived or proxy values. The index
@@ -1393,3 +1393,10 @@ still consumes no session. Full host tests pass (357, 42.346s), followed by the
 final expanded resource regression (2, 3.358s). The development candidate was
 rebuilt and its signature verified. This does not establish normal unknown-score
 or app-restart replay acceptance on Android; the primary app remains unchanged.
+
+The native subset now derives `conn_wifi_rssi_norm` from available Wi-Fi
+transport RSSI on API 29+. It uses clipped `(dBm + 100) / 70`, matching the
+Python coordinate; absent transport info and invalid RSSI remain missing.
+With multiple available Wi-Fi transports, it uses the strongest reported RSSI.
+No SSID, BSSID, scan result or location identifier is retained by this path.
+Hardware availability and current-source device acceptance remain unverified.

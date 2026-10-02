@@ -231,10 +231,18 @@ public final class EdgeService extends Service implements SensorEventListener {
                     "connected_wired_or_a2dp_output_not_playback_or_attention", nanos, 5000000000L);
                 ConnectivityManager connectivity = getSystemService(ConnectivityManager.class);
                 boolean wifi = false;
+                double wifiRssi = Double.NaN;
                 for (Network network : connectivity.getAllNetworks()) {
                     NetworkCapabilities capabilities = connectivity.getNetworkCapabilities(network);
-                    if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) wifi = true;
+                    if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        wifi = true;
+                        if (android.os.Build.VERSION.SDK_INT >= 29 && capabilities.getTransportInfo() instanceof android.net.wifi.WifiInfo) {
+                            int rssi = ((android.net.wifi.WifiInfo) capabilities.getTransportInfo()).getRssi();
+                            if (rssi >= -126 && rssi <= 0) wifiRssi = Double.isNaN(wifiRssi) ? rssi : Math.max(wifiRssi, rssi);
+                        }
+                    }
                 }
+                observed.wifiRssi(wifiRssi, nanos);
                 observed.put("conn_wifi_connected", wifi ? 1 : 0, "observed",
                     "available_wifi_transport_network_not_internet_validation", nanos, 5000000000L);
                 Intent battery = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
