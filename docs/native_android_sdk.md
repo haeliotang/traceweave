@@ -1439,3 +1439,14 @@ source. Provenance labels it as IMU chip temperature, rather than battery,
 ambient or whole-device temperature. Other sensor identities and invalid values
 remain missing. Foreground-service callback delivery and fresh readings are
 required; a sensor list entry alone does not establish production availability.
+
+The isolated `SyntheticCollectionActivity` explicitly starts the real collection
+service with interventions disabled, stops it after 45 seconds, and exports only
+aggregate diagnostics before its weekly job is cancelled. Its continuity report
+compares adjacent supplied-feature sets and checks positive, bounded monotonic
+intervals and wall-clock agreement. Cause counts may overlap; an unexplained
+break is counted only when none of these conditions explains the reset. Sensor
+and derived-window warm-up can change coverage without a dropped sample. The
+production continuity gate remains unchanged: coverage transitions must not be
+interpreted as measured velocity or uninterrupted CSD history. This bounded
+probe does not establish long-term stability or scientific acceptance.
