@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
-[![Tests](https://img.shields.io/badge/Tests-393%2F393%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-394%2F394%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,7 +26,7 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最新完整 Python 测试为 **393 项通过**，耗时 46.165s；
+最新完整 Python 测试为 **394 项通过**，耗时 47.915s；
 最新完整 Rust 证明后端测试为 **17 项通过**。测试覆盖主机实现和受控夹具，
 不能替代科学验收、完整隐私协议或最终主应用部署。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
@@ -52,12 +52,13 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 生产服务与隔离能力检查共用读取路径；128 个原生特征名称的源码索引已建立，
 其中 39 项定位到直接赋值或已审查的变量分发路径，89 项仍未解析。
 这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
-[最新候选包记录](artifacts/alignment_v1/current_wifi_native_candidate_build.json)，
-该候选包已包含共享 Wi-Fi 来源，源码摘要、包内资产与签名验证通过；
+[最新候选包记录](artifacts/alignment_v1/continuous_csd_native_candidate_build.json)，
+该候选包已包含共享 Wi-Fi 来源和原生连续 CSD 诊断，
+源码摘要、包内资产与签名验证通过；
 尚未安装到主应用，不能作为最终部署验收依据。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **393 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **394 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -426,7 +427,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 393 host tests; device receipts have separate scope
+└── tests/                                 # 394 host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -459,7 +460,7 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (393/393 Host Tests Passing)
+### A. Run Unit Tests (394/394 Host Tests Passing)
 ```bash
 # Run the full host suite locally:
 python3 -m unittest discover tests

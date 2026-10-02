@@ -1,6 +1,6 @@
 package org.traceform.edge;
 
-/** Bounded topology-coordinate diagnostic; a warning does not authorize actuation. */
+/** Bounded grid or normalized-vector diagnostic; a warning does not authorize actuation. */
 final class CriticalSlowingDetector {
     static final class Result {
         final int dwellSteps;
@@ -11,23 +11,43 @@ final class CriticalSlowingDetector {
             this.lag1 = lag1; this.score = score; this.tipping = ready && score >= 2.5;
         }
     }
-    private final double[][] coordinates = new double[3][300];
+    private double[][] coordinates = new double[3][300];
+    private boolean continuousInput;
     private final double[] variances = new double[300], correlations = new double[300];
     private int size, next, baselineSize, baselineNext, dwell;
     private String token;
 
+    Result updateContinuous(String current, double[] vector, boolean continuous) {
+        return updateDiagnostic(current, vector, continuous, true);
+    }
     Result update(String current, double u, double v, boolean continuous) {
-        double projection = Math.sqrt(u * u + v * v);
-        if (current == null || current.isEmpty() || !Double.isFinite(u) || !Double.isFinite(v)
-                || !Double.isFinite(projection)) throw new IllegalArgumentException("finite coordinates and token required");
-        if (!continuous) reset();
+        return updateDiagnostic(current, new double[]{u, v}, continuous, false);
+    }
+    private Result updateDiagnostic(String current, double[] vector, boolean continuous, boolean normalized) {
+        if (current == null || current.isEmpty() || vector == null || vector.length < 1 || vector.length > 128)
+            throw new IllegalArgumentException("bounded coordinates and token required");
+        double square = 0;
+        for (double value : vector) {
+            if (!Double.isFinite(value) || (normalized && Math.abs(value) > 10))
+                throw new IllegalArgumentException("finite bounded normalized coordinates required");
+            square += value * value;
+        }
+        double projection = Math.sqrt(square / (normalized ? vector.length : 1));
+        if (!Double.isFinite(projection)) throw new IllegalArgumentException("finite projection required");
+        boolean changed = coordinates.length != vector.length + 1 || continuousInput != normalized;
+        if (changed) coordinates = new double[vector.length + 1][300];
+        if (!continuous || changed) reset();
+        continuousInput = normalized;
         dwell = current.equals(token) ? Math.min(Integer.MAX_VALUE - 1, dwell) + 1 : 1;
         token = current;
-        coordinates[0][next] = u; coordinates[1][next] = v; coordinates[2][next] = projection;
+        for (int axis = 0; axis < vector.length; axis++) coordinates[axis][next] = vector[axis];
+        coordinates[vector.length][next] = projection;
         next = (next + 1) % 300; size = Math.min(300, size + 1);
         if (size < 20) return new Result(dwell, false, 0, 0, 0);
-        double[] du = residuals(coordinates[0]), dv = residuals(coordinates[1]), dp = residuals(coordinates[2]);
-        double variance = squareMean(du) + squareMean(dv), covariance = 0;
+        double[] dp = residuals(coordinates[vector.length]);
+        double variance = 0, covariance = 0;
+        for (int axis = 0; axis < vector.length; axis++) variance += squareMean(residuals(coordinates[axis]));
+        if (normalized) variance /= vector.length;
         for (int index = 0; index < size - 1; index++) covariance += dp[index] * dp[index + 1];
         double lag1 = Math.max(-1, Math.min(1, covariance / (size - 1) / Math.max(1e-6, squareMean(dp))));
         variances[baselineNext] = variance; correlations[baselineNext] = lag1;

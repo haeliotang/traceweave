@@ -143,3 +143,13 @@ or intervention efficacy. Normalized inputs may include proxies and imputation;
 a 128-dimensional vector does not certify 128 measured quantities. Previous
 records retain their original diagnostic space and are not retroactively
 reinterpreted. Device activation and real follow-up need separate verification.
+
+Native Android production now uses the normalized-vector diagnostic as well.
+Its existing 300-frame window and 30-step gate differ from the Termux 60/60
+configuration; the old native configuration was not subject to that exact
+60/60 obstruction. The legacy grid method remains available for archived
+fixtures. A 128-dimensional, constant-Token controlled sequence checks Java
+against Python variance, lag-one correlation and tipping decisions; flat
+input, dimension changes and invalid normalized vectors have separate checks.
+Native frame metadata identifies the new diagnostic space. Host parity and a
+candidate build do not establish current primary-app deployment or efficacy.

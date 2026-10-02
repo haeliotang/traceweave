@@ -277,14 +277,15 @@ public final class EdgeService extends Service implements SensorEventListener {
                     .put("source_mode", "native_sensor_subset").put("supplied_features", supplied).put("missing_features", missing)
                     .put("feature_provenance", provenance)
                     .put("missing_policy", "median_imputation_not_measurement").put("eligible_for_intervention", false);
-                JSONArray coordinate = payload.getJSONArray("grid_coord");
-                CriticalSlowingDetector.Result signal = slowing.update(payload.getString("state_token"),
-                    coordinate.getDouble(0), coordinate.getDouble(1), motion.continuous);
+                CriticalSlowingDetector.Result signal = slowing.updateContinuous(payload.getString("state_token"),
+                    normalized, motion.continuous);
+                payload.put("csd_input_space", "continuous");
                 payload.put("dwell_steps", signal.dwellSteps).put("csd_dwell_gate", signal.tipping && signal.dwellSteps > 30)
                     .put("csd", new JSONObject().put("ready", signal.ready).put("tipping", signal.tipping)
                         .put("spatial_variance", signal.variance).put("lag1_ar", signal.lag1)
                         .put("composite_score", signal.score)
-                        .put("evidence_scope", "topology_CSD_diagnostic_not_human_risk_or_actuation_authority"));
+                        .put("input_dimension", normalized.length)
+                        .put("evidence_scope", "normalized_continuous_CSD_diagnostic_not_biological_identification_or_actuation_authority"));
                 database.beginTransaction();
                 WarmBucket warm = WarmBucket.next(now, motion.continuous, previousWarm);
                 try {

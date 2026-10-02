@@ -4,7 +4,7 @@
   "normalizer_file_sha256": "95a455650306e852a8c52f7b5b80d02e8bec8ed97d7a563faf9e6be9dcb379a5",
   "source_sha256": {
     "android/src/org/traceform/edge/FeatureReadings.java": "6452f6566fbb29fdbc17ca959931ae86efab93ad5a2a00ac7f09da7a9415ddb6",
-    "android/src/org/traceform/edge/EdgeService.java": "77dcd2b6428c1e30293a391396e06360cd8d7a35192f8df6b6c9c638c510a602",
+    "android/src/org/traceform/edge/EdgeService.java": "b3cda3981c0304fc6d93dc96e2fb221aaa8aac60a5af16fb353f2f33575a8d0e",
     "android/src/org/traceform/edge/NativeWifiSource.java": "6fea4e0ac4514e546d8d6005b55b1459efaef4a06ea3e629305e6844ae8be97b"
   },
   "limitations": [
@@ -448,7 +448,7 @@
         "producer_path": [
           {
             "path": "android/src/org/traceform/edge/EdgeService.java",
-            "line": 413,
+            "line": 414,
             "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
           },
           {
@@ -537,7 +537,7 @@
         "producer_path": [
           {
             "path": "android/src/org/traceform/edge/EdgeService.java",
-            "line": 412,
+            "line": 413,
             "expression": "if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) observed.gyroscope(event.values, event.timestamp);"
           },
           {
@@ -763,7 +763,7 @@
         "producer_path": [
           {
             "path": "android/src/org/traceform/edge/EdgeService.java",
-            "line": 413,
+            "line": 414,
             "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
           },
           {
@@ -865,7 +865,7 @@
         "producer_path": [
           {
             "path": "android/src/org/traceform/edge/EdgeService.java",
-            "line": 413,
+            "line": 414,
             "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
           },
           {
@@ -905,7 +905,7 @@
         "producer_path": [
           {
             "path": "android/src/org/traceform/edge/EdgeService.java",
-            "line": 413,
+            "line": 414,
             "expression": "else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) observed.accelerometer(event.values, event.timestamp);"
           },
           {
