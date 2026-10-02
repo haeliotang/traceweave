@@ -1359,3 +1359,18 @@ encoding, high objective bits, altered fields and invalid-witness transport
 session handling. The primary app was unchanged. Unknown-score approvals,
 packed-v2 public proof/owner integration and final production publication remain
 open; synthetic test identities do not establish real enrollment or security.
+
+## Current-source SDK candidate (2026-10-02)
+
+The generated SDK now exports `UniformPrivateAlignment` and its recursive
+package dependencies. A regression first reproduced an external client's
+failure to import the unknown-score entry, then passed after the export fix.
+The regression compiles current Android sources, builds the SDK, compiles an
+external consumer and checks the package dependency closure.
+
+A current-source development candidate APK builds and verifies its signature;
+see `artifacts/alignment_v1/current_source_sdk_export_candidate.json`. Core JNI
+is rebuilt; the public verifier and private participant reuse the existing
+candidate's native executables. This candidate has not replaced the primary
+app. The current device memory observation is below the unchanged sixteen-node
+admission threshold, so no new unknown-score device run was started.

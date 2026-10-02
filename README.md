@@ -5,7 +5,7 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-10%2F10%20Stages%20Complete-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-356%2F356%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-357%2F357%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
@@ -26,9 +26,8 @@
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最近记录的验证结果为 **356 项 Python 测试、16 项 Rust 测试通过**；
-完整测试套件未因后续探针更新而重跑；最新绑定探针已完成真机验证，
-相关验证器进程测试另行通过（1 项）。
+最近记录的验证结果为 **357 项 Python 测试、16 项 Rust 测试通过**；
+最新完整 Python 测试耗时 44.399s；实际绑定探针已完成真机验证。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
 packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
@@ -43,7 +42,7 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 应用已清理，默认运行策略保持 shadow/silent。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **356 tests**. Stage 11–14 is **not yet fully accepted**;
+host suite passes **357 tests**. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
@@ -77,6 +76,12 @@ statement inside the application SDK; the Mac independently matches the same
 This is a known-statement synthetic case. The synthetic prover knows both models;
 distributed private proving, unknown-score proof integration and real-owner
 enrollment remain open.
+
+The current-source development candidate builds and passes signature validation.
+Its SDK now exports the unknown-score computation entry; external-client compilation
+and dependency closure pass. See the [candidate build receipt](artifacts/alignment_v1/current_source_sdk_export_candidate.json).
+The latest device memory observation is below the unchanged sixteen-node admission
+threshold; no additional unknown-score device computation was started.
 
 The primary app currently installed on Pixel6a is an older build. Final deployment
 and full scientific acceptance remain open. This repository snapshot publishes

@@ -17,7 +17,7 @@ import zipfile
 def build_sdk_jar(classes, destination, android_jar):
     exports = ('NativeCore', 'ModelEngine', 'CanonicalClient', 'ProofVerifier',
                'OwnerAuthentication', 'PrivateAlignmentOutput', 'PrivateParticipant',
-               'ApprovedPrivateAlignment', 'AlignmentQueryLease',
+               'ApprovedPrivateAlignment', 'UniformPrivateAlignment', 'AlignmentQueryLease',
                'PeriodicTransitionKernel', 'FittedPeriodicSpectrum')
     analysis = subprocess.run(['jdeps', '-verbose:class', '-filter:none', '--class-path',
                                str(android_jar), str(classes)], check=True, capture_output=True, text=True)
