@@ -16,11 +16,10 @@ echo " Starting Traceform Field Tester Service (Pixel 6a)"
 echo " Repository: git@github.com:haeliotang/traceform.git"
 echo "============================================================================"
 
-# Ensure silent haptics mode is permanently enforced across power cycles
-touch "$DIR/data/.silent"
-
 # Ensure edge daemon is running in silent mode
 if ! pgrep -f "phone_edge_manifold_daemon.py" > /dev/null; then
+    # A new unattended launch defaults to silent; preserve an existing runtime.
+    touch "$DIR/data/.silent"
     echo "[*] Launching phone_edge_manifold_daemon.py (Silent Mode) in background..."
     nohup python3 -u "$DIR/scripts/phone_edge_manifold_daemon.py" \
         --follow \
