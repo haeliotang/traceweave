@@ -241,7 +241,7 @@ public final class ReadingsTest {
         if (higher.get("kinematic_pop_metric", 10000000000L) != null) throw new AssertionError("higher derivative invalid reset");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
             subprocess.run(["java", "-cp", directory, "org.traceform.edge.ReadingsTest"], check=True, capture_output=True)
 
     def test_collection_reset_discards_values_and_derivative_history(self):
@@ -280,7 +280,7 @@ public final class ResetReadingsTest {
             if(r.get(name,11000000000L)!=null) throw new AssertionError("cross-collection history: "+name);
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.ResetReadingsTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
@@ -316,7 +316,7 @@ public final class PressureRefreshTest {
         if(r.get("barometric_vertical_velocity",701000000000L)!=null) throw new AssertionError("collection reset clears anchors");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.PressureRefreshTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
@@ -354,6 +354,6 @@ public final class BatteryStressTest {
         if(r.get(name,303000000000L)!=null) throw new AssertionError("restart reuse");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.BatteryStressTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

@@ -4,16 +4,34 @@ import android.app.AppOpsManager;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Aggregate event counts only; package names and individual events are not retained. */
 final class NativeUsageSource {
+    static final String[] SCREEN_STATES = {"ON", "DOZING", "OFF", "UNKNOWN"};
     static final class Counts {
         final double resumes, interactiveChecks;
         final long timestampNanos;
+        /** digital_context per screen state, computed once from the event window; no package names kept. */
+        private final Map<String, Map<String, Object>> digital;
         Counts(double resumes, double interactiveChecks) { this(resumes, interactiveChecks, 0); }
         Counts(double resumes, double interactiveChecks, long timestampNanos) {
-            this.resumes = resumes; this.interactiveChecks = interactiveChecks; this.timestampNanos = timestampNanos;
+            this(resumes, interactiveChecks, timestampNanos, null);
         }
+        Counts(double resumes, double interactiveChecks, long timestampNanos, Map<String, Map<String, Object>> digital) {
+            this.resumes = resumes; this.interactiveChecks = interactiveChecks; this.timestampNanos = timestampNanos;
+            this.digital = digital;
+        }
+        /** The Python probe's digital_context for the given screen state, or null when usage stats are unavailable. */
+        Map<String, Object> digital(String screenState) {
+            return digital == null ? null : digital.get(digital.containsKey(screenState) ? screenState : "UNKNOWN");
+        }
+        Counts at(long nanos) { return new Counts(resumes, interactiveChecks, nanos, digital); }
     }
     private Counts cached;
     private long cachedWallMillis;
@@ -27,7 +45,7 @@ final class NativeUsageSource {
                 && Math.abs((wallMillis - cachedWallMillis) / 1000.0 - (nanos - cached.timestampNanos) / 1e9) <= 1
                 && nanos - cached.timestampNanos < 60000000000L) return cached;
         Counts result = read(context, wallMillis);
-        cached = new Counts(result.resumes, result.interactiveChecks, nanos); cachedWallMillis = wallMillis;
+        cached = result.at(nanos); cachedWallMillis = wallMillis;
         return cached;
     }
     private static boolean allowed(Context context) {
@@ -39,7 +57,14 @@ final class NativeUsageSource {
     }
     static final class Window {
         private final int[] types = new int[120];
+        private final ArrayDeque<String[]> recent = new ArrayDeque<>();
         private int next, size, resumes, checks;
+        /** Adds an event; the package name is only held for the digital_context entropy and dropped with the window. */
+        void add(int type, String packageName) {
+            recent.addLast(new String[]{eventName(type), packageName == null || packageName.trim().isEmpty() ? null : packageName});
+            if (recent.size() > 120) recent.removeFirst();
+            add(type);
+        }
         void add(int type) {
             if (size == types.length) subtract(types[next]); else size++;
             types[next] = type; next = (next + 1) % types.length;
@@ -51,6 +76,21 @@ final class NativeUsageSource {
             if (type == UsageEvents.Event.SCREEN_INTERACTIVE || type == UsageEvents.Event.KEYGUARD_HIDDEN) checks--;
         }
         Counts counts() { return new Counts(Math.min(50, resumes), Math.min(20, checks)); }
+        /** Counts plus digital_context for every screen state, derived from the retained 120 events. */
+        Counts countsWithDigital() {
+            List<String[]> events = new ArrayList<>(recent);
+            Map<String, Map<String, Object>> byScreen = new HashMap<>();
+            for (String state : SCREEN_STATES) {
+                byScreen.put(state, Collections.unmodifiableMap(ReferenceDigitalProbe.synthesize(state, events, 0, false, 0.0)));
+            }
+            return new Counts(Math.min(50, resumes), Math.min(20, checks), 0, Collections.unmodifiableMap(byScreen));
+        }
+        private static String eventName(int type) {
+            if (type == UsageEvents.Event.ACTIVITY_RESUMED) return "ACTIVITY_RESUMED";
+            if (type == UsageEvents.Event.SCREEN_INTERACTIVE) return "SCREEN_INTERACTIVE";
+            if (type == UsageEvents.Event.KEYGUARD_HIDDEN) return "KEYGUARD_HIDDEN";
+            return "OTHER";
+        }
     }
     static Counts read(Context context, long nowMillis) {
         Counts missing = new Counts(Double.NaN, Double.NaN);
@@ -70,9 +110,9 @@ final class NativeUsageSource {
                 long timestamp = event.getTimeStamp();
                 if (timestamp < previous || timestamp < begin || timestamp >= nowMillis) return missing;
                 previous = timestamp;
-                window.add(event.getEventType());
+                window.add(event.getEventType(), event.getPackageName());
             }
-            return window.counts();
+            return window.countsWithDigital();
         } catch (SecurityException unavailable) { return missing; }
     }
 }

@@ -40,6 +40,7 @@ public final class EdgeService extends Service implements SensorEventListener {
     private SQLiteDatabase database;
     private final FeatureReadings observed = new FeatureReadings();
     private final NativeUsageSource usageSource = new NativeUsageSource();
+    private final ReferenceFeatureSupplier referenceFeatures = new ReferenceFeatureSupplier();
     private int observedFeatureCount, derivedFeatureCount, proxyFeatureCount, missingFeatureCount;
     private final KinematicState kinematics = new KinematicState();
     private final CriticalSlowingDetector slowing = new CriticalSlowingDetector();
@@ -140,6 +141,7 @@ public final class EdgeService extends Service implements SensorEventListener {
         sessionId = java.util.UUID.randomUUID().toString();
         observed.reset();
         usageSource.reset();
+        referenceFeatures.reset();
         stopped = false;
         NotificationManager notifications = getSystemService(NotificationManager.class);
         notifications.createNotificationChannel(new NotificationChannel("trajectory", "本机轨迹采集", NotificationManager.IMPORTANCE_LOW));
@@ -264,6 +266,15 @@ public final class EdgeService extends Service implements SensorEventListener {
                 FeatureReadings.Reading fraction = observed.get("device_battery_fraction", nanos);
                 observed.batteryStress(voltageMv, batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,
                     fraction == null || battery == null ? Double.NaN : fraction.value, nanos);
+                // Parity-tested formulas over the inputs gathered above; recorded as derived or proxy readings.
+                ReferenceObservation.Inputs reference = new ReferenceObservation.Inputs();
+                reference.wallMillis = now; reference.nanos = nanos;
+                reference.screenState = power.isInteractive() ? "ON" : "OFF";
+                reference.usage = usage;
+                reference.voltageMv = voltageMv;
+                reference.wifiRssiDbm = wifi.rssiDbm;
+                reference.headsetConnected = headset;
+                referenceFeatures.supply(observed, reference);
                 double[] raw = engine.medians.clone();
                 boolean[] coverage = new boolean[raw.length];
                 JSONArray supplied = new JSONArray(), missing = new JSONArray();
@@ -274,7 +285,8 @@ public final class EdgeService extends Service implements SensorEventListener {
                     FeatureReadings.Reading reading = observed.get(name, nanos);
                     if (reading == null) {
                         missing.put(name);
-                        provenance.put(name, new JSONObject().put("kind", "missing").put("policy", "median_imputation"));
+                        provenance.put(name, new JSONObject().put("kind", "missing").put("policy", "median_imputation")
+                            .put("reason", StaticallyUnobservableFeatures.missingReason(name)));
                     } else {
                         raw[index] = reading.value; supplied.put(name);
                         coverage[index] = true;

@@ -1,0 +1,61 @@
+{
+  "data": "synthetic fixture only; no device observations used or exported",
+  "dependency_apk_sha256": "e8567fa966ada61e936332f6f16d09d79ab3a3c67a0aae8a9f7a383f6b6d989b",
+  "isolated_package": "org.traceform.edge.synthetic installed for the run and then uninstalled",
+  "limits": [
+    "parity of formulas given identical inputs on the device runtime",
+    "does not exercise sensors, usage stats, Wi-Fi or the foreground service",
+    "primary application not updated"
+  ],
+  "primary_app_unchanged": "APK sha256 075fa5e2... and install timestamps identical before and after",
+  "probe_apk_sha256": "b10f63134257bf281244b74b2d501554c9a186d2fe26b90a17dece5ec1f2ba4f",
+  "probe_source_sha256": {
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticReferenceParityReceiver.java": "185c85170d861262524d3f4ae79a93f4ba317a29c8651736cad9f3e594d9e7e8",
+    "android/src/org/traceform/edge/EdgeService.java": "af94e7dfd7cf34900efec0b58d9e4f7e4adfd3ea72d3dbb8eb0867f2f146eb1c",
+    "android/src/org/traceform/edge/FeatureReadings.java": "81fb81c7553f1982ae977e1c21cdb7a7a2d040b6dc07c3eb1b562ed04d01c3a9",
+    "android/src/org/traceform/edge/NativeUsageSource.java": "29bf12862574925284e677173f522f00717da64f636fc86df8a739ea7f04e314",
+    "android/src/org/traceform/edge/PyRuntime.java": "64d8df80869552c6355f635f8aff4860d3975b6177556632456c49a815fae4c8",
+    "android/src/org/traceform/edge/ReferenceDigitalProbe.java": "34c98fea86bc8e2de470f8a0dbdb239f25ccb4cf9d0f645737a6ef346efb9d27",
+    "android/src/org/traceform/edge/ReferenceDynamicsFeatures.java": "570c17325c2617bbb72dffcf0fb4e7438d98bd41b893298c061c211cd25d061b",
+    "android/src/org/traceform/edge/ReferenceFeatureEngine.java": "458f416b6c6fdf9f0c71d89aa12515ea6a9f37232c2a5cf0790f34a828635f29",
+    "android/src/org/traceform/edge/ReferenceFeatureKinds.java": "4f82829408ee0cf1cf4b110217c773911f97fb09c44a2a102bf7e9c22dc104d0",
+    "android/src/org/traceform/edge/ReferenceFeatureSupplier.java": "7b2029fcef21448a8d64b65922ff24f9e964cdb0d5473a365cf6d8e3b59b4263",
+    "android/src/org/traceform/edge/ReferenceObservation.java": "46d2331f08a2b004f2f2f7f6cccacb6525fe42ea17675d061e5353349b2131c4",
+    "android/src/org/traceform/edge/ReferenceSignalFeatures.java": "5f3ffba70872890ae5d9564929a2c4199ff8258f0ba566d78c69e51dd161e83a",
+    "android/src/org/traceform/edge/ReferenceUsageFeatures.java": "19a27b25cb332121826e79cd992b9f769c0deed02835dd051bc98fa04724d8f2",
+    "android/src/org/traceform/edge/StaticallyUnobservableFeatures.java": "87d2c22bf9c65b13aa6dd74516dbe180e0c6bb81d66b353aeb369df157e5b5fe"
+  },
+  "receipt": {
+    "actuator_calls": 0,
+    "api_level": 37,
+    "collection_started": false,
+    "device_model": "Pixel 6a",
+    "elapsed_ms": 8291.884484,
+    "engine_vs_python": {
+      "compared": 36720,
+      "exact": 36720,
+      "examples": [],
+      "frames": 720,
+      "max_mismatch_deviation": 0,
+      "mismatches": 0,
+      "rounding_flips": 0
+    },
+    "fixture_sha256": "7c25271e0fef2c50560db6cdb93619578dcd58a4e6f9c3dba83947de7ee30735",
+    "nonce": "30d0de66-fea2-45de-8de4-a5681b944603",
+    "passed": true,
+    "physical_api_calls": 0,
+    "process_id": 8795,
+    "runtime": "Dalvik 2.1.0",
+    "scope": "isolated_fixture_parity_of_ported_formulas_on_device_runtime_not_sensor_or_behavioral_validation",
+    "supplier_vs_host_jvm": {
+      "compared": 15300,
+      "exact": 15300,
+      "examples": [],
+      "frames": 300,
+      "max_mismatch_deviation": 0,
+      "mismatches": 0,
+      "rounding_flips": 0
+    }
+  },
+  "signing": "local_development_certificate_same_as_installed_primary_app"
+}

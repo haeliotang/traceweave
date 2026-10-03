@@ -76,7 +76,7 @@ public final class WifiReadingsTest {
         }
     }
 }''')
-            compiled = subprocess.run(['javac', '-d', directory, str(source), str(harness)], capture_output=True)
+            compiled = subprocess.run(['javac', '-d', directory, str(source), str(source.with_name('PyRuntime.java')), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
             result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.WifiReadingsTest'], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

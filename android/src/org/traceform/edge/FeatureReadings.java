@@ -19,6 +19,7 @@ final class FeatureReadings {
     }
     private final Map<String, Reading> values = new HashMap<>();
     private double accelMagnitude = Double.NaN, gyroMagnitude = Double.NaN;
+    private double[] accelRawVector, gyroRawVector;
     private long accelNanos, gyroNanos;
     private double referencePressure = Double.NaN;
     private long pressureNanos, previousPressureNanos, lastPressureNanos;
@@ -40,6 +41,7 @@ final class FeatureReadings {
         values.clear();
         previousPressure = Double.NaN; previousPressureNanos = lastPressureNanos = 0;
         accelMagnitude = gyroMagnitude = referencePressure = referenceVoltage = referenceCurrent = Double.NaN;
+        accelRawVector = gyroRawVector = null;
         accelNanos = gyroNanos = pressureNanos = electricalNanos = windowNanos = historyAccelNanos = 0;
         accelDerivative.reference = gyroDerivative.reference = null;
         accelDerivative.higher = new double[3][]; gyroDerivative.higher = new double[3][];
@@ -174,10 +176,26 @@ final class FeatureReadings {
     private boolean finiteVector(float[] values) {
         return values.length >= 3 && Float.isFinite(values[0]) && Float.isFinite(values[1]) && Float.isFinite(values[2]);
     }
+    /** Latest accelerometer vector (m/s^2, gravity included) if it is no older than five seconds, else null. */
+    double[] accelRaw(long nowNanos) {
+        return accelRawVector != null && nowNanos >= accelNanos && nowNanos - accelNanos <= 5000000000L
+            ? accelRawVector.clone() : null;
+    }
+    /** Latest gyroscope vector (rad/s) if it is no older than five seconds, else null. */
+    double[] gyroRaw(long nowNanos) {
+        return gyroRawVector != null && nowNanos >= gyroNanos && nowNanos - gyroNanos <= 5000000000L
+            ? gyroRawVector.clone() : null;
+    }
+    /** Latest raw light level in lux when fresh (the log1p feature is derived from it), else NaN. */
+    double lightLux(long nowNanos) {
+        return rawLight != null && nowNanos >= rawLight.timestampNanos && nowNanos - rawLight.timestampNanos <= 5000000000L
+            ? rawLight.value : Double.NaN;
+    }
     void gyroscope(float[] values, long timestampNanos) {
         derivative(gyroDerivative, "rotational_angular_jerk", values, timestampNanos, 25);
         double energy = Double.NaN;
         gyroMagnitude = Double.NaN; gyroNanos = timestampNanos;
+        gyroRawVector = finiteVector(values) ? new double[]{values[0], values[1], values[2]} : null;
         if (finiteVector(values)) {
             double x = values[0], y = values[1], z = values[2];
             gyroMagnitude = Math.sqrt(x * x + y * y + z * z);
@@ -189,6 +207,7 @@ final class FeatureReadings {
         derivative(accelDerivative, "kinematic_jerk_metric", values, timestampNanos, 20);
         double tilt = Double.NaN, alignment = Double.NaN;
         accelMagnitude = Double.NaN; accelNanos = timestampNanos;
+        accelRawVector = finiteVector(values) ? new double[]{values[0], values[1], values[2]} : null;
         if (finiteVector(values)) {
             double x = values[0], y = values[1], z = values[2];
             double norm = Math.sqrt(x * x + y * y + z * z);
@@ -210,8 +229,10 @@ final class FeatureReadings {
         if (Double.isFinite(accelMagnitude) && Double.isFinite(gyroMagnitude)
                 && nowNanos >= Math.max(accelNanos, gyroNanos) && nowNanos - oldest <= 5000000000L
                 && Math.abs(accelNanos - gyroNanos) <= 1000000000L) {
-            energy = Math.rint((Math.abs(accelMagnitude - 9.80665) + gyroMagnitude) * 10000) / 10000;
-            stationary = Math.rint(Math.max(0, Math.min(1, 1 - energy / 2)) * 1000) / 1000;
+            energy = PyRuntime.round(Math.abs(accelMagnitude - 9.80665) + gyroMagnitude, 4);
+            // energy has four decimals, so energy / 2 sits exactly on a three-decimal tie for odd last
+            // digits; Math.rint(x * 1000) and Python's round() break that tie differently.
+            stationary = PyRuntime.round(Math.max(0, Math.min(1, 1 - energy / 2)), 3);
         }
         put("motion_energy", energy, "derived", "accelerometer_and_gyroscope_snapshot", oldest, 5000000000L);
         put("motion_stationary_likelihood", stationary, "proxy", "heuristic_stationarity_score", oldest, 5000000000L);
