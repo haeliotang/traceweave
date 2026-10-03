@@ -3,14 +3,14 @@
 from collections import Counter
 import datetime
 import math
-from zoneinfo import ZoneInfo
+from traceform.timezones import resolve_zone
 from traceform.forecasting.continuity import same_stream_segment
 
 
 class PeriodicTransitionKernel:
     def __init__(self, timezone_name="UTC", prior_strength=5.0):
         self.timezone_name = timezone_name
-        self.timezone = ZoneInfo(timezone_name)
+        self.timezone = resolve_zone(timezone_name)
         if prior_strength <= 0:
             raise ValueError("prior_strength must be positive")
         self.prior_strength = prior_strength

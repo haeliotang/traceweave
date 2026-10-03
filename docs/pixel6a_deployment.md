@@ -52,3 +52,62 @@ after leaving its activity. Keep this session/service running while using
 the Python acquisition chain. Startup checks now reject empty hardware events
 even when battery IPC replies succeed. Reboot/session restoration and the
 independent native feature port still require validation.
+
+## 2026-10-03: recurring `.silent` and acquisition code refresh
+
+Termux JobScheduler job 7703 runs `scripts/start_field_tester_service.sh` about
+every 15 minutes. The script decided whether the edge daemon was alive with
+`pgrep`, and touched `data/.silent` before launching a replacement when none was
+found. A daemon or acquisition process started through `adb run-as` carries the
+`runas_app` SELinux domain, while Termux jobs run as `untrusted_app_27`; the
+job's `pgrep` could not see the `runas_app` processes. Every tick therefore
+recreated `.silent`, started a duplicate daemon that exited on the lock, and
+ran the telemetry commit. Observed with a 1 s process-tree capture (parent of
+the script was the Termux app) and a `Job started for ".../start_field_tester_service.sh"`
+logcat record. The Android app has no code path that writes `.silent`.
+
+The script now asks `scripts/daemon_lock_probe.py` whether the daemon holds its
+`edge_manifold_daemon.lock` flock, which is visible across domains and is the
+same single-instance guard the daemon uses. A probe error aborts the tick
+without muting or launching. After deployment the tick at 00:41:59 left
+`.silent` absent and produced no spurious daemon launch. Processes that must
+survive restarts should be launched by the supervisor job, not `adb run-as`.
+
+The device acquisition code was still at commit 07bce98. The seven-file import
+closure of `scripts/physical_acquisition_v2.py` (three changed, four new
+modules) was deployed with matching SHA-256 values; the on-device Debian runtime
+imported it before the old owner received SIGTERM, and supervision job 11402
+launched the new process in the Termux job domain. The device's older
+normalizer yields an identical 128D vector for new frames, which only add
+`feature_provenance`. The daemon and normalizer were not changed. The gap in
+acquisition was about three minutes. Rollback archive:
+`~/traceform-runtime-rollback-20261003-acq.tar` (files absent before:
+`physical_audio_v2.py`, `physical_connectivity_v2.py`,
+`physical_device_state_v2.py`, `physical_sensors_v2.py`, `daemon_lock_probe.py`).
+This establishes the throttle code is loaded, not long-run sensing health.
+
+## 2026-10-03: active runtime failure and relaunch policy
+
+The active daemon started through `adb run-as` exited when its first sandbox call built a
+`ZoneInfo('Asia/Kathmandu')`: that process had no `PYTHONTZPATH` and Termux has no system zoneinfo.
+Every earlier sandbox timeout in the event ledger belongs to the same environment gap. The 15-minute
+job then relaunched a silent default daemon. Fixes: `traceform/timezones.py` also looks in the
+Termux zoneinfo directory; unattended relaunch now goes through `scripts/edge_runtime.sh`
+(time-zone path, tiered storage, arguments) and `scripts/runtime_launch_mode.py` chooses active only
+when the authorization record carries `restart_policy: relaunch_active_after_runtime_failure` and
+no `.silent` exists. A damaged or unknown record means silent. The stop switch is an empty file
+named `.silent` in the data directory. Rollback archive:
+`~/traceform-runtime-rollback-20261003-launch.tar`.
+
+## 2026-10-03: daily local snapshot of the edge store
+
+The hot tier keeps 48 hours of raw frames, so multi-day evaluations need copies. The hourly
+maintenance job (`scripts/edge_maintenance_job.sh`, job 11401) now passes `--snapshot-dir
+~/traceform_archive`, and `traceform/streaming/daily_snapshot.py` takes one SQLite online backup of
+the whole store per local day, before compaction, retaining 14 days. Each copy is written to a temporary
+file as a single self-contained file (rollback-journal mode), checked with `quick_check` and its hot row
+count, then renamed and listed in `MANIFEST.jsonl` with its SHA-256. A snapshot is skipped, not
+forced, when the hot tier is empty or free space is below 2.5 times the store size; the newest snapshot
+is never pruned. Snapshots hold raw device observations: they stay on the device and are never
+exported. Rollback archive: `~/traceform-runtime-rollback-20261003-snapshot.tar`. The first scheduled
+snapshot happens at the first hourly run after local midnight.

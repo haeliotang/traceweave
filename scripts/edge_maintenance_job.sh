@@ -9,4 +9,5 @@ exec python3 "$TASK_ROOT/scripts/maintain_edge_runtime.py" \
     --database "$TASK_ROOT/data/edge_storage.sqlite" \
     --registry "$TASK_ROOT/data/model_registry" \
     --physical-ledger-dir /data/data/com.termux/files/home/.pixel_sensorium \
+    --snapshot-dir /data/data/com.termux/files/home/traceform_archive \
     --timezone "${TRACEFORM_TIMEZONE:-${DEVICE_TIMEZONE:-UTC}}"

@@ -9,13 +9,14 @@ import json
 import sqlite3
 from pathlib import Path
 import sys
-from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from traceform.timezones import resolve_zone
 from traceform.evolution.guarded_calibration import calibrate_candidate, audit_observations
 from traceform.evolution.potential_maintenance import persist_latest_potential
 from traceform.evolution.model_registry import ModelRegistry, atomic_json
 from traceform.intervention.closed_loop import compact_trial_rows
+from traceform.streaming.daily_snapshot import snapshot_if_due
 from traceform.streaming.tiered_storage import TieredStorage
 from traceform.streaming.rolling_ledger import RollingLedger
 
@@ -27,6 +28,8 @@ def main():
     parser.add_argument("--timezone", default="UTC")
     parser.add_argument("--events-file", type=Path)
     parser.add_argument("--physical-ledger-dir", type=Path)
+    parser.add_argument("--snapshot-dir", type=Path, help="keep one verified local snapshot of the store per local day")
+    parser.add_argument("--snapshot-keep-days", type=int, default=14)
     parser.add_argument("--force-calibration", action="store_true")
     parser.add_argument("--rollback", action="store_true")
     args = parser.parse_args()
@@ -41,11 +44,17 @@ def main():
             print(json.dumps({"rolled_back_version": registry.rollback()}))
             return
         now = datetime.datetime.now(datetime.timezone.utc)
-        local = now.astimezone(ZoneInfo(args.timezone))
+        local = now.astimezone(resolve_zone(args.timezone))
         week = f"{local.isocalendar().year}-{local.isocalendar().week}"
         receipt_path = args.registry / "maintenance.json"
         previous = json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
         report = {"timestamp_utc": now.isoformat(), "last_calibration_week": previous.get("last_calibration_week")}
+        if args.snapshot_dir is not None:  # before compaction, so the day's raw frames are captured first
+            try:
+                report["daily_snapshot"] = snapshot_if_due(args.database, args.snapshot_dir, now, resolve_zone(args.timezone),
+                                                           args.snapshot_keep_days)
+            except Exception as error:
+                report["daily_snapshot"] = {"status": "failed", "error": type(error).__name__, "reason": str(error)}
         store = TieredStorage(args.database)
         try:
             report["compaction"] = store.compact(now)
