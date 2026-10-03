@@ -20,8 +20,11 @@ class TestEdgeManifoldDaemon(unittest.TestCase):
 
         evidence = {'motion': {'adapter': 'synthetic_fixture', 'status': 'AVAILABLE',
                               'measurement_scope': 'adapter_return_not_per_field_direct_measurement'}}
+        import datetime
+        # The rolling ledger drops records older than its 48 h retention, so the fixture must be recent.
+        stamp = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
         observation = PhysicalObservation.from_dict({
-            'timestamp_utc': '2026-10-01T02:00:00Z', 'observation_id': 'synthetic',
+            'timestamp_utc': stamp, 'observation_id': 'synthetic',
             'motion': {'motion_energy': 0.1}, 'feature_provenance': evidence})
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'observations.jsonl'

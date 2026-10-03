@@ -8,13 +8,17 @@ from traceform.streaming.physical_acquisition_v2 import RollingPhysicalAcquisiti
 from traceform.streaming.physical_ledger_v2 import read_recent_observations
 from traceform.streaming.rolling_ledger import RollingLedger
 
+import datetime as _datetime
+# The rolling ledger discards records older than its 48 h retention, so fixtures use the current time.
+RECENT = _datetime.datetime.now(_datetime.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
+
 
 class TestPhysicalAcquisitionV2(unittest.TestCase):
     def test_unavailable_location_attempts_obey_monotonic_cooldown(self):
         with tempfile.TemporaryDirectory() as directory:
             engine = RollingPhysicalAcquisitionEngine(Path(directory))
             observation = PhysicalObservation.from_dict({
-                'observation_id': 'unavailable-place', 'timestamp_utc': '2026-10-01T00:00:00Z',
+                'observation_id': 'unavailable-place', 'timestamp_utc': RECENT,
                 'motion': {'stationary_likelihood': 1.0},
                 'availability': {'place': 'TEMPORARILY_UNAVAILABLE'}})
             with patch('traceform.streaming.physical_acquisition_v2.acquire_observation_frame', return_value=observation) as acquire, \
@@ -28,7 +32,7 @@ class TestPhysicalAcquisitionV2(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             observation = PhysicalObservation.from_dict({
-                'observation_id': 'first', 'timestamp_utc': '2026-10-01T00:00:00Z',
+                'observation_id': 'first', 'timestamp_utc': RECENT,
                 'motion': {'stationary_likelihood': 1.0}})
             engine = RollingPhysicalAcquisitionEngine(root)
             with patch('traceform.streaming.physical_acquisition_v2.acquire_observation_frame', return_value=observation):
@@ -42,7 +46,7 @@ class TestPhysicalAcquisitionV2(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             engine = RollingPhysicalAcquisitionEngine(Path(directory))
             observation = PhysicalObservation.from_dict({
-                'observation_id': 'moving', 'timestamp_utc': '2026-10-01T00:00:00Z',
+                'observation_id': 'moving', 'timestamp_utc': RECENT,
                 'motion': {'stationary_likelihood': 0.0}})
             with patch('traceform.streaming.physical_acquisition_v2.acquire_observation_frame',
                        side_effect=[RuntimeError('API failure'), observation, observation, observation]) as acquire, \
