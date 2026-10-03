@@ -220,6 +220,9 @@ CONTINUOUS_FEATURE_NAMES = [
     "holo_cosmic_coherence_index",
 ]
 
+# Clock-derived phases: analytic, so a short fit window cannot estimate their scale.
+PHASE_FEATURES = frozenset({"circadian_sin_phase", "circadian_cos_phase", "infradian_weekly_phase"})
+
 
 @dataclass
 class NormalizationParams:
@@ -2258,6 +2261,70 @@ class MultimodalNormalizer:
         )
         return self.params
 
+    def fit_robust_window(
+        self,
+        observations: List[Dict[str, Any]],
+        description: str = "robust_range_v2 window",
+    ) -> NormalizationParams:
+        """
+        Median/scale fit that is not fooled by a deceptively narrow interquartile range.
+
+        The scale is max(IQR, (q95 - q05) / 2.44): for normal data the two agree (IQR is
+        1.349 sigma, q95 - q05 is 3.29 sigma), but a channel that is steady for a while and
+        then drifts has a tiny IQR, which pins every later value at the +/-10 bound. The
+        result never falls below the legacy IQR-based scale. Daily and weekly phases are
+        analytic functions of the clock, so a short window cannot estimate them: they get
+        the fixed scale of a uniformly distributed phase (median 0, IQR sqrt(2)).
+        """
+        if not observations:
+            raise ValueError("Cannot fit normalizer on empty observation list.")
+
+        self.reset_state()
+        raw_maps = [self.extract_raw_features(obs)[0] for obs in observations]
+        return self.fit_robust_raw(raw_maps, description)
+
+    def fit_robust_raw(
+        self,
+        raw_maps: List[Dict[str, float]],
+        description: str = "robust_range_v2 window",
+    ) -> NormalizationParams:
+        """fit_robust_window on already extracted raw feature maps (same policy)."""
+        if not raw_maps:
+            raise ValueError("Cannot fit normalizer on empty observation list.")
+
+        feature_values: Dict[str, List[float]] = {name: [] for name in CONTINUOUS_FEATURE_NAMES}
+        for c_map in raw_maps:
+            for k, v in c_map.items():
+                feature_values[k].append(v)
+
+        medians: Dict[str, float] = {}
+        iqrs: Dict[str, float] = {}
+        for k in CONTINUOUS_FEATURE_NAMES:
+            vals = sorted(feature_values[k])
+            n = len(vals)
+            if k in PHASE_FEATURES:
+                medians[k] = 0.0
+                iqrs[k] = round(math.sqrt(2.0), 6)
+                continue
+            med = statistics.median(vals)
+            iqr = vals[int(n * 0.75)] - vals[int(n * 0.25)]
+            if iqr < 1e-6:
+                diff = vals[-1] - vals[0]
+                iqr = diff if diff > 1e-6 else 1.0
+            spread = (vals[min(n - 1, int(n * 0.95))] - vals[int(n * 0.05)]) / 2.44
+            medians[k] = round(float(med), 6)
+            iqrs[k] = round(float(max(iqr, spread)), 6)
+
+        self.params = NormalizationParams(
+            feature_names=CONTINUOUS_FEATURE_NAMES,
+            medians=medians,
+            iqrs=iqrs,
+            fitted_observation_count=len(raw_maps),
+            fit_window_description=f"robust_range_v2: {description}",
+            feature_extraction_version=self.feature_extraction_version,
+        )
+        return self.params
+
     def transform(self, obs: Dict[str, Any]) -> Tuple[List[float], Dict[str, str]]:
         """
         Transforms a single observation into a standardized continuous feature vector
@@ -2269,12 +2336,21 @@ class MultimodalNormalizer:
             )
 
         c_map, topo_map = self.extract_raw_features(obs)
+        return self.scale_raw(c_map), topo_map
+
+    def scale_raw(
+        self,
+        c_map: Dict[str, float],
+        params: Optional[NormalizationParams] = None,
+    ) -> List[float]:
+        """Scale one frame of raw continuous features with the given (or own) parameters."""
+        params = params or self.params
         vector: List[float] = []
 
-        for k in self.params.feature_names:
+        for k in params.feature_names:
             raw_val = c_map.get(k, 0.0)
-            med = self.params.medians.get(k, 0.0)
-            iqr = self.params.iqrs.get(k, 1.0)
+            med = params.medians.get(k, 0.0)
+            iqr = params.iqrs.get(k, 1.0)
             if iqr < 1e-6:
                 iqr = 1.0
             # Robust scaling: (x - median) / IQR
@@ -2283,4 +2359,4 @@ class MultimodalNormalizer:
             bounded = max(-10.0, min(10.0, scaled))
             vector.append(round(bounded, 5))
 
-        return vector, topo_map
+        return vector

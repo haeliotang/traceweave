@@ -1,0 +1,3731 @@
+{
+  "class_counts": {
+    "condition_selected": 4,
+    "history_derived": 37,
+    "observation_derived": 82,
+    "time_only": 5
+  },
+  "feature_count": 128,
+  "features": [
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "motion_accel_magnitude",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 0,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.accel_magnitude"
+      ],
+      "output_expression": "accel_mag",
+      "output_line": 2065,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "motion_accel_rms",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 1,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.accel_rms"
+      ],
+      "output_expression": "accel_rms",
+      "output_line": 2066,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "motion_energy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 2,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.motion_energy"
+      ],
+      "output_expression": "mot_energy",
+      "output_line": 2067,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "motion_stationary_likelihood",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 3,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "stat_like",
+      "output_line": 2068,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "env_log_lux",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 4,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment"
+      ],
+      "observation_inputs": [
+        "environment.ambient_light_lux"
+      ],
+      "output_expression": "log_lux",
+      "output_line": 2069,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "env_pressure_hpa",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 5,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment"
+      ],
+      "observation_inputs": [
+        "environment.pressure_hpa"
+      ],
+      "output_expression": "pressure",
+      "output_line": 2070,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "env_device_temp_c",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 6,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment"
+      ],
+      "observation_inputs": [
+        "environment.device_temp_c"
+      ],
+      "output_expression": "dev_temp",
+      "output_line": 2071,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "device_battery_fraction",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 7,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation"
+      ],
+      "observation_inputs": [
+        "device_relation.battery_percentage"
+      ],
+      "output_expression": "battery_frac",
+      "output_line": 2072,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.plugged"
+      ],
+      "feature": "device_is_plugged",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 8,
+      "input_class": "condition_selected",
+      "modalities": [],
+      "observation_inputs": [],
+      "output_expression": "is_plugged",
+      "output_line": 2073,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.status"
+      ],
+      "feature": "device_is_charging",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 9,
+      "input_class": "condition_selected",
+      "modalities": [],
+      "observation_inputs": [],
+      "output_expression": "is_charging",
+      "output_line": 2074,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "audio_silence_likelihood",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 10,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.silence_likelihood"
+      ],
+      "output_expression": "silence_like",
+      "output_line": 2075,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "audio_rms_loudness",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 11,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.rms_loudness"
+      ],
+      "output_expression": "rms_loudness",
+      "output_line": 2076,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "audio_spectral_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 12,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.spectral_entropy"
+      ],
+      "output_expression": "spectral_entropy",
+      "output_line": 2077,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected"
+      ],
+      "feature": "conn_wifi_connected",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 13,
+      "input_class": "condition_selected",
+      "modalities": [],
+      "observation_inputs": [],
+      "output_expression": "wifi_conn",
+      "output_line": 2078,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "conn_wifi_rssi_norm",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 14,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_rssi"
+      ],
+      "output_expression": "wifi_rssi_norm",
+      "output_line": 2079,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context"
+      ],
+      "feature": "screen_on_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 15,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.screen_on_ratio"
+      ],
+      "output_expression": "screen_ratio",
+      "output_line": 2080,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "app_switch_rate",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 16,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate"
+      ],
+      "output_expression": "app_switch_rate",
+      "output_line": 2081,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "unlock_burst_count",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 17,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "unlock_burst_count",
+      "output_line": 2082,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.wired_headset"
+      ],
+      "feature": "audio_immersion_state",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 18,
+      "input_class": "condition_selected",
+      "modalities": [],
+      "observation_inputs": [],
+      "output_expression": "is_immersed",
+      "output_line": 2083,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "circadian_sin_phase",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 19,
+      "input_class": "time_only",
+      "modalities": [
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "sin_phase",
+      "output_line": 2084,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "circadian_cos_phase",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 20,
+      "input_class": "time_only",
+      "modalities": [
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "cos_phase",
+      "output_line": 2085,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "infradian_weekly_phase",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 21,
+      "input_class": "time_only",
+      "modalities": [
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "weekly_phase",
+      "output_line": 2086,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "battery_current_ua",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 22,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation"
+      ],
+      "observation_inputs": [
+        "device_relation.current_ua"
+      ],
+      "output_expression": "battery_current_ua",
+      "output_line": 2087,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "spatial_radius_of_gyration",
+      "history_observation_inputs": [
+        "place.latitude",
+        "place.longitude"
+      ],
+      "history_state": [
+        "_geo_window"
+      ],
+      "index": 23,
+      "input_class": "history_derived",
+      "modalities": [
+        "place"
+      ],
+      "observation_inputs": [
+        "place.radius_of_gyration"
+      ],
+      "output_expression": "radius_of_gyration",
+      "output_line": 2088,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "touch_interaction_velocity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 24,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "touch_velocity",
+      "output_line": 2089,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "ambient_social_ble_density",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 25,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density"
+      ],
+      "output_expression": "ambient_ble",
+      "output_line": 2090,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "physio_ballisto_tremor_energy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 26,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "physio_tremor",
+      "output_line": 2091,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.screen_state",
+        "device_relation.status",
+        "digital_context",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "thermal_conduction_rate_dt",
+      "history_observation_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_temp",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 27,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ],
+      "output_expression": "conduction_rate",
+      "output_line": 2092,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "device_zenith_tilt_angle",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 28,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw"
+      ],
+      "output_expression": "tilt_angle",
+      "output_line": 2093,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_anisotropy_ratio",
+        "environment.mag_flux_anomaly",
+        "motion.geomagnetic_dip_angle_deg"
+      ],
+      "feature": "geomagnetic_flux_divergence",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 29,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output_expression": "mag_divergence",
+      "output_line": 2094,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "barometric_vertical_velocity",
+      "history_observation_inputs": [
+        "environment.pressure_hpa",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_pressure",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 30,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.pressure_hpa",
+        "timestamp_utc"
+      ],
+      "output_expression": "vertical_velocity",
+      "output_line": 2095,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "ambient_rf_shannon_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 31,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy"
+      ],
+      "output_expression": "ambient_rf_entropy",
+      "output_line": 2096,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.correlation_dimension",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.phase_space_correlation_dimension",
+        "motion.stationary_likelihood"
+      ],
+      "feature": "cellular_tower_churn_rate",
+      "history_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_cell_history"
+      ],
+      "index": 32,
+      "input_class": "history_derived",
+      "modalities": [
+        "connectivity",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "cellular_churn",
+      "output_line": 2097,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "touch_interval_jitter",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 33,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.touch_interval_jitter",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "touch_interval_jitter",
+      "output_line": 2098,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "attention_fragmentation_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 34,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy"
+      ],
+      "output_expression": "attention_frag_entropy",
+      "output_line": 2099,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.wired_headset",
+        "digital_context"
+      ],
+      "feature": "compute_power_dissipation_watts",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 35,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio"
+      ],
+      "output_expression": "compute_power_w",
+      "output_line": 2100,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "battery_internal_impedance_miliohm",
+      "history_observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv"
+      ],
+      "history_state": [
+        "_last_current_ua",
+        "_last_voltage_mv"
+      ],
+      "index": 36,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment"
+      ],
+      "observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.internal_resistance_miliohm",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ],
+      "output_expression": "battery_impedance",
+      "output_line": 2101,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.neuromotor_microslip_angular_velocity",
+        "motion.microslip_ang_vel"
+      ],
+      "feature": "rotational_kinetic_energy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 37,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.gyro_energy",
+        "motion.gyro_raw"
+      ],
+      "output_expression": "rot_energy",
+      "output_line": 2102,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_jerk_metric",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 38,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "output_expression": "jerk_metric",
+      "output_line": 2103,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected",
+        "connectivity.wifi_frequency_mhz"
+      ],
+      "feature": "rf_spectral_penetration_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 39,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_rssi"
+      ],
+      "output_expression": "rf_penetration",
+      "output_line": 2104,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "ble_rssi_spatial_variance",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 40,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density",
+        "digital_context.ble_rssi_spatial_variance"
+      ],
+      "output_expression": "ble_variance",
+      "output_line": 2105,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spectral_centroid_khz",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 41,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy"
+      ],
+      "output_expression": "acoustic_centroid_khz",
+      "output_line": 2106,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.status"
+      ],
+      "feature": "acoustic_crest_factor",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 42,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.peak_level",
+        "audio_context.rms_loudness"
+      ],
+      "output_expression": "acoustic_crest",
+      "output_line": 2107,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "motion.stationary_likelihood"
+      ],
+      "feature": "state_residence_persistence_hours",
+      "history_observation_inputs": [
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_residence_start_ts"
+      ],
+      "index": 43,
+      "input_class": "time_only",
+      "modalities": [
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "residence_persistence_hours",
+      "output_line": 2108,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "neuromotor_tremor_spectral_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 44,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context",
+        "motion"
+      ],
+      "observation_inputs": [
+        "digital_context.neuromotor_tremor_spectral_ratio",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.neuromotor_tremor_spectral_ratio",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "neuromotor_ratio",
+      "output_line": 2109,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "device_screen_gravity_alignment",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 45,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw"
+      ],
+      "output_expression": "screen_alignment",
+      "output_line": 2110,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "rotational_angular_jerk",
+      "history_observation_inputs": [
+        "motion.gyro_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_gyro_raw",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 46,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.gyro_raw",
+        "timestamp_utc"
+      ],
+      "output_expression": "rot_jerk",
+      "output_line": 2111,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spectral_rolloff_khz",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 47,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.rolloff_khz",
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy",
+        "audio_context.spectral_rolloff_hz"
+      ],
+      "output_expression": "rolloff_khz",
+      "output_line": 2112,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.status"
+      ],
+      "feature": "acoustic_zero_crossing_rate",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 48,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy",
+        "audio_context.zcr",
+        "audio_context.zero_crossing_rate"
+      ],
+      "output_expression": "acoustic_zcr",
+      "output_line": 2113,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.screen_state",
+        "device_relation.status",
+        "digital_context",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "thermal_flux_acceleration_dt2",
+      "history_observation_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_conduction_rate",
+        "_last_temp",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 49,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ],
+      "output_expression": "thermal_accel_dt2",
+      "output_line": 2114,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected",
+        "digital_context",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "wifi_spatial_shannon_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 50,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.ambient_rf_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ],
+      "output_expression": "wifi_shannon_entropy",
+      "output_line": 2115,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ],
+      "feature": "touch_engagement_decay_factor",
+      "history_observation_inputs": [
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_touch_ts"
+      ],
+      "index": 51,
+      "input_class": "time_only",
+      "modalities": [
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "timestamp_utc"
+      ],
+      "output_expression": "touch_engagement",
+      "output_line": 2116,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "phase_space_recurrence_density",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 52,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [],
+      "output_expression": "recurrence_density",
+      "output_line": 2117,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_anisotropy_ratio",
+        "environment.mag_flux_anomaly"
+      ],
+      "feature": "geomagnetic_field_dip_angle_deg",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 53,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.magnetic_field_ut",
+        "motion.geomagnetic_dip_angle_deg",
+        "motion.mag_raw"
+      ],
+      "output_expression": "geomag_dip_angle",
+      "output_line": 2118,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_trajectory_curvature",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 54,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "output_expression": "trajectory_curvature",
+      "output_line": 2119,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis"
+      ],
+      "feature": "barometric_turbulence_variance",
+      "history_observation_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude"
+      ],
+      "history_state": [
+        "_accel_history",
+        "_lux_window",
+        "_pressure_window"
+      ],
+      "index": 55,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [],
+      "output_expression": "baro_turbulence",
+      "output_line": 2120,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "photometric_contrast_ratio",
+      "history_observation_inputs": [
+        "environment.ambient_light_lux"
+      ],
+      "history_state": [
+        "_lux_window"
+      ],
+      "index": 56,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment"
+      ],
+      "observation_inputs": [
+        "environment.ambient_light_lux"
+      ],
+      "output_expression": "photo_contrast",
+      "output_line": 2121,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spectral_bandwidth_khz",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 57,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.bandwidth_khz",
+        "audio_context.spectral_bandwidth_hz",
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy"
+      ],
+      "output_expression": "spectral_bandwidth_khz",
+      "output_line": 2122,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected"
+      ],
+      "feature": "wifi_rssi_distribution_skewness",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 58,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_rssi",
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ],
+      "output_expression": "wifi_skewness",
+      "output_line": 2123,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "thermodynamic_joule_heat_loss_watts",
+      "history_observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv"
+      ],
+      "history_state": [
+        "_last_current_ua",
+        "_last_voltage_mv"
+      ],
+      "index": 59,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment"
+      ],
+      "observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.internal_resistance_miliohm",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ],
+      "output_expression": "joule_heat_w",
+      "output_line": 2124,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "phase_space_kinetic_velocity",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_ts_seconds",
+        "_last_vec_summary",
+        "_last_vec_ts",
+        "_recent_coords"
+      ],
+      "index": 60,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "output_expression": "phase_velocity",
+      "output_line": 2125,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "neuromotor_tap_recoil_intensity",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 61,
+      "input_class": "history_derived",
+      "modalities": [
+        "digital_context",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "output_expression": "tap_recoil",
+      "output_line": 2126,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_trajectory_torsion",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_jerk_raw",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 62,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "motion.kinematic_trajectory_torsion",
+        "motion.trajectory_torsion",
+        "timestamp_utc"
+      ],
+      "output_expression": "trajectory_torsion",
+      "output_line": 2127,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent",
+        "timestamp_utc"
+      ],
+      "feature": "phase_space_correlation_dimension",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 63,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context",
+        "motion"
+      ],
+      "observation_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "output_expression": "corr_dimension",
+      "output_line": 2128,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "photometric_flicker_kurtosis",
+      "history_observation_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude"
+      ],
+      "history_state": [
+        "_accel_history",
+        "_lux_window",
+        "_pressure_window"
+      ],
+      "index": 64,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis"
+      ],
+      "output_expression": "flicker_kurtosis",
+      "output_line": 2129,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spectral_flatness",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 65,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy",
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ],
+      "output_expression": "spectral_flatness",
+      "output_line": 2130,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected"
+      ],
+      "feature": "wifi_rssi_distribution_kurtosis",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 66,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_kurtosis",
+        "connectivity.wifi_rssi",
+        "connectivity.wifi_rssi_distribution_kurtosis",
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ],
+      "output_expression": "wifi_kurtosis",
+      "output_line": 2131,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.mag_anisotropy_ratio",
+        "motion.geomagnetic_dip_angle_deg"
+      ],
+      "feature": "geomagnetic_total_field_flux",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 67,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_flux_anomaly",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output_expression": "mag_total_flux",
+      "output_line": 2132,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.status",
+        "device_relation.wired_headset",
+        "digital_context",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "thermodynamic_dissipation_ratio",
+      "history_observation_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_temp",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 68,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context",
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio",
+        "digital_context.thermodynamic_dissipation_ratio",
+        "environment.device_temp_c",
+        "environment.dissipation_ratio",
+        "timestamp_utc"
+      ],
+      "output_expression": "thermo_dissipation_ratio",
+      "output_line": 2133,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "neuromotor_microslip_angular_velocity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 69,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context",
+        "motion"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.neuromotor_microslip_angular_velocity",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.gyro_raw",
+        "motion.microslip_ang_vel"
+      ],
+      "output_expression": "microslip_vel",
+      "output_line": 2134,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "timestamp_utc"
+      ],
+      "feature": "circadian_phase_disruption_index",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 70,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context",
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "circadian_disruption",
+      "output_line": 2135,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_snap_metric",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_jerk_raw",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 71,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "motion.kinematic_snap_metric",
+        "motion.snap_metric",
+        "timestamp_utc"
+      ],
+      "output_expression": "snap_metric",
+      "output_line": 2136,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.status"
+      ],
+      "feature": "acoustic_harmonic_to_noise_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 72,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.harmonic_to_noise_ratio",
+        "audio_context.hnr_db",
+        "audio_context.peak_level",
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy",
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ],
+      "output_expression": "hnr_db",
+      "output_line": 2137,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "photometric_spectral_warmth_index",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 73,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.ambient_light_lux",
+        "environment.cct_k",
+        "environment.color_temperature",
+        "environment.color_temperature_warmth",
+        "environment.photometric_spectral_warmth_index",
+        "timestamp_utc"
+      ],
+      "output_expression": "warmth_index",
+      "output_line": 2138,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "barometric_buoyancy_energy_flux",
+      "history_observation_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_accel_history",
+        "_last_pressure",
+        "_last_ts_seconds",
+        "_last_vec_ts",
+        "_lux_window",
+        "_pressure_window"
+      ],
+      "index": 74,
+      "input_class": "history_derived",
+      "modalities": [
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.barometric_buoyancy_energy_flux",
+        "environment.buoyancy_flux",
+        "environment.pressure_hpa",
+        "timestamp_utc"
+      ],
+      "output_expression": "buoyancy_flux",
+      "output_line": 2139,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_flux_anomaly",
+        "motion.geomagnetic_dip_angle_deg"
+      ],
+      "feature": "geomagnetic_quadrupole_anisotropy_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 75,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "environment",
+        "motion"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.mag_anisotropy_ratio",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output_expression": "quadrupole_aniso",
+      "output_line": 2140,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected",
+        "digital_context",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "wifi_channel_dispersion_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 76,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "connectivity.wifi_channel_dispersion_entropy",
+        "connectivity.wifi_channel_entropy",
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.ambient_rf_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ],
+      "output_expression": "channel_entropy",
+      "output_line": 2141,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "thermodynamic_battery_stress_index",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 77,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context",
+        "environment"
+      ],
+      "observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "digital_context.thermodynamic_battery_stress_index",
+        "environment.battery_stress_index",
+        "environment.device_temp_c"
+      ],
+      "output_expression": "battery_stress",
+      "output_line": 2142,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.gyro_raw"
+      ],
+      "feature": "neuromotor_tremor_lyapunov_exponent",
+      "history_observation_inputs": [
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_tremor_energy",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 78,
+      "input_class": "history_derived",
+      "modalities": [
+        "digital_context",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent",
+        "timestamp_utc"
+      ],
+      "output_expression": "tremor_lyapunov",
+      "output_line": 2143,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "device_relation.status",
+        "digital_context",
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "digital_context.screen_on_ratio",
+        "environment.pressure_hpa",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "phase_space_information_flow_rate",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_temp",
+        "_last_ts_seconds",
+        "_last_vec_summary",
+        "_last_vec_ts",
+        "_recent_coords"
+      ],
+      "index": 79,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.information_flow_rate",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.phase_space_information_flow_rate",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "output_expression": "information_flow",
+      "output_line": 2144,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_crackle_metric",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_jerk_raw",
+        "_last_snap_raw",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 80,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "motion.crackle_metric",
+        "motion.kinematic_crackle_metric",
+        "timestamp_utc"
+      ],
+      "output_expression": "crackle_metric",
+      "output_line": 2145,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "kinematic_pop_metric",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_crackle_raw",
+        "_last_jerk_raw",
+        "_last_snap_raw",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 81,
+      "input_class": "history_derived",
+      "modalities": [
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.accel_raw",
+        "motion.kinematic_pop_metric",
+        "motion.pop_metric",
+        "timestamp_utc"
+      ],
+      "output_expression": "pop_metric",
+      "output_line": 2146,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "imu_temporal_autocorrelation_decay",
+      "history_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_accel_history",
+        "_cell_history",
+        "_lux_window",
+        "_pressure_window",
+        "_recent_coords"
+      ],
+      "index": 82,
+      "input_class": "history_derived",
+      "modalities": [
+        "connectivity",
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [],
+      "output_expression": "autocorr_decay",
+      "output_line": 2147,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "device_structural_resonance_energy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 83,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.ballisto_energy",
+        "motion.device_structural_resonance_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "resonance_energy",
+      "output_line": 2148,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.status"
+      ],
+      "feature": "acoustic_dual_mic_cross_correlation",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 84,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.dual_mic_cross_correlation",
+        "audio_context.mic_tdoa_corr",
+        "audio_context.spectral_entropy"
+      ],
+      "output_expression": "mic_cross_corr",
+      "output_line": 2149,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spatial_coherence_phase",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 85,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.spatial_coherence_phase",
+        "audio_context.spectral_entropy"
+      ],
+      "output_expression": "spatial_coherence",
+      "output_line": 2150,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status"
+      ],
+      "feature": "acoustic_spectral_flux",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 86,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context"
+      ],
+      "observation_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy",
+        "audio_context.spectral_flux"
+      ],
+      "output_expression": "spectral_flux",
+      "output_line": 2151,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status",
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "ultrasonic_proximity_micro_doppler",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 87,
+      "input_class": "observation_derived",
+      "modalities": [
+        "audio_context",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "audio_context.micro_doppler",
+        "audio_context.silence_likelihood",
+        "audio_context.ultrasonic_proximity_micro_doppler",
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "micro_doppler",
+      "output_line": 2152,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "place.latitude"
+      ],
+      "feature": "gnss_visible_satellite_density",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 88,
+      "input_class": "observation_derived",
+      "modalities": [
+        "place"
+      ],
+      "observation_inputs": [
+        "place.gnss_sat_count",
+        "place.visible_satellites"
+      ],
+      "output_expression": "visible_sats",
+      "output_line": 2153,
+      "parameters": [
+        "feature_extraction_version"
+      ],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "place.latitude"
+      ],
+      "feature": "gnss_mean_carrier_to_noise_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 89,
+      "input_class": "observation_derived",
+      "modalities": [
+        "place"
+      ],
+      "observation_inputs": [
+        "place.gnss_cn0_dbhz",
+        "place.mean_carrier_to_noise_ratio"
+      ],
+      "output_expression": "mean_cn0",
+      "output_line": 2154,
+      "parameters": [
+        "feature_extraction_version"
+      ],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "place.latitude"
+      ],
+      "feature": "gnss_position_dilution_of_precision",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 90,
+      "input_class": "observation_derived",
+      "modalities": [
+        "place"
+      ],
+      "observation_inputs": [
+        "place.pdop",
+        "place.position_dilution_of_precision"
+      ],
+      "output_expression": "pdop_val",
+      "output_line": 2155,
+      "parameters": [
+        "feature_extraction_version"
+      ],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "gnss_doppler_velocity_drift",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 91,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion",
+        "place"
+      ],
+      "observation_inputs": [
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "place.doppler_velocity_drift",
+        "place.gnss_speed_mps"
+      ],
+      "output_expression": "doppler_speed",
+      "output_line": 2156,
+      "parameters": [
+        "feature_extraction_version"
+      ],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.wired_headset",
+        "digital_context"
+      ],
+      "feature": "thermal_soc_to_skin_gradient",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 92,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context",
+        "environment"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio",
+        "environment.device_temp_c",
+        "environment.soc_skin_gradient",
+        "environment.thermal_soc_to_skin_gradient"
+      ],
+      "output_expression": "soc_skin_grad",
+      "output_line": 2157,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected",
+        "device_relation.battery_percentage",
+        "digital_context.correlation_dimension",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.phase_space_correlation_dimension",
+        "motion.stationary_likelihood"
+      ],
+      "feature": "thermal_modem_to_battery_gradient",
+      "history_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_cell_history"
+      ],
+      "index": 93,
+      "input_class": "history_derived",
+      "modalities": [
+        "connectivity",
+        "environment",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "environment.thermal_modem_to_battery_gradient",
+        "timestamp_utc"
+      ],
+      "output_expression": "modem_bat_grad",
+      "output_line": 2158,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.plugged"
+      ],
+      "feature": "thermal_relaxation_time_constant",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 94,
+      "input_class": "observation_derived",
+      "modalities": [
+        "environment"
+      ],
+      "observation_inputs": [
+        "environment.thermal_relaxation_time_constant"
+      ],
+      "output_expression": "thermal_relax_time",
+      "output_line": 2159,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "thermal_entropy_production_rate",
+      "history_observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv"
+      ],
+      "history_state": [
+        "_last_current_ua",
+        "_last_voltage_mv"
+      ],
+      "index": 95,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment"
+      ],
+      "observation_inputs": [
+        "device_relation.current_ua",
+        "device_relation.internal_resistance_miliohm",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c",
+        "environment.thermal_entropy_production_rate"
+      ],
+      "output_expression": "entropy_prod_rate",
+      "output_line": 2160,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint"
+      ],
+      "feature": "cellular_reference_signal_quality",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 96,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.cellular_rsrq",
+        "connectivity.rsrq_db"
+      ],
+      "output_expression": "cellular_rsrq",
+      "output_line": 2161,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint"
+      ],
+      "feature": "cellular_signal_to_interference_noise",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 97,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.cellular_sinr",
+        "connectivity.sinr_db"
+      ],
+      "output_expression": "cellular_sinr",
+      "output_line": 2162,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context",
+        "digital_context.ambient_rf_shannon_entropy",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "ble_advertising_channel_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 98,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density",
+        "digital_context.ble_advertising_channel_entropy"
+      ],
+      "output_expression": "ble_adv_entropy",
+      "output_line": 2163,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "connectivity.wifi_connected"
+      ],
+      "feature": "wifi_link_speed_variation_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 99,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.wifi_link_speed_variation_ratio"
+      ],
+      "output_expression": "wifi_speed_jitter",
+      "output_line": 2164,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "feature": "rf_ambient_backscatter_intensity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 100,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "connectivity.rf_ambient_backscatter_intensity",
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy",
+        "digital_context.ambient_social_ble_density",
+        "digital_context.ble_rssi_spatial_variance"
+      ],
+      "output_expression": "rf_backscatter",
+      "output_line": 2165,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "cellular_timing_advance_distance",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 101,
+      "input_class": "observation_derived",
+      "modalities": [
+        "connectivity"
+      ],
+      "observation_inputs": [
+        "connectivity.cellular_timing_advance_distance",
+        "connectivity.timing_advance_km"
+      ],
+      "output_expression": "ta_dist_km",
+      "output_line": 2166,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "touch_contact_ellipse_eccentricity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 102,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_contact_ellipse_eccentricity",
+        "digital_context.touch_eccentricity",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "touch_eccentricity",
+      "output_line": 2167,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "touch_downforce_pressure_derivative",
+      "history_observation_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_accel_raw",
+        "_last_az",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 103,
+      "input_class": "history_derived",
+      "modalities": [
+        "digital_context",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_downforce_pressure_derivative",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.accel_raw",
+        "timestamp_utc"
+      ],
+      "output_expression": "touch_downforce_deriv",
+      "output_line": 2168,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "neuromotor_fitts_law_throughput",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 104,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.fitts_throughput",
+        "digital_context.neuromotor_fitts_law_throughput",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.touch_interval_jitter",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "fitts_throughput",
+      "output_line": 2169,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "touch_biomotor_cadence_decay_slope",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 105,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_biomotor_cadence_decay_slope"
+      ],
+      "output_expression": "cadence_decay_slope",
+      "output_line": 2170,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "touch_contact_area_normalized",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 106,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.touch_area",
+        "digital_context.touch_contact_area_normalized"
+      ],
+      "output_expression": "touch_contact_area",
+      "output_line": 2171,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.screen_on_ratio"
+      ],
+      "feature": "touch_path_tortuosity_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 107,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.touch_path_tortuosity_ratio",
+        "digital_context.unlock_burst_count"
+      ],
+      "output_expression": "touch_tortuosity",
+      "output_line": 2172,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.wired_headset",
+        "digital_context"
+      ],
+      "feature": "cpu_frequency_scaling_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 108,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.app_switch_rate",
+        "digital_context.cpu_frequency_scaling_entropy",
+        "digital_context.screen_on_ratio"
+      ],
+      "output_expression": "cpu_freq_entropy",
+      "output_line": 2173,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.wired_headset",
+        "digital_context"
+      ],
+      "feature": "kernel_context_switch_velocity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 109,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.app_switch_rate",
+        "digital_context.kernel_context_switch_velocity",
+        "digital_context.screen_on_ratio"
+      ],
+      "output_expression": "context_switch_vel",
+      "output_line": 2174,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "memory_pressure_stall_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 110,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy",
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi"
+      ],
+      "output_expression": "memory_psi",
+      "output_line": 2175,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "display_frame_pacing_jank_variance",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 111,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.display_frame_pacing_jank_variance",
+        "digital_context.frame_jank_variance"
+      ],
+      "output_expression": "jank_variance",
+      "output_line": 2176,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.screen_state",
+        "device_relation.wired_headset",
+        "digital_context"
+      ],
+      "feature": "io_wait_latency_proxy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 112,
+      "input_class": "observation_derived",
+      "modalities": [
+        "device_relation",
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.app_switch_rate",
+        "digital_context.io_wait_latency_proxy",
+        "digital_context.screen_on_ratio"
+      ],
+      "output_expression": "iowait_pressure",
+      "output_line": 2177,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [],
+      "feature": "cpu_user_system_mode_ratio",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 113,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context"
+      ],
+      "observation_inputs": [
+        "digital_context.cpu_user_system_mode_ratio"
+      ],
+      "output_expression": "cpu_usr_sys_ratio",
+      "output_line": 2178,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "motion.stationary_likelihood"
+      ],
+      "feature": "fractal_hurst_exponent",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 114,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.fractal_hurst_exponent",
+        "motion.motion_energy"
+      ],
+      "output_expression": "hurst_exp",
+      "output_line": 2179,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "motion.stationary_likelihood"
+      ],
+      "feature": "permutation_entropy_complexity",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 115,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.motion_energy",
+        "motion.permutation_entropy_complexity"
+      ],
+      "output_expression": "permutation_entropy",
+      "output_line": 2180,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "rqa_recurrence_determinism_det",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 116,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output_expression": "rqa_determinism",
+      "output_line": 2181,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "rqa_laminarity_vertical_trapping",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 117,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.rqa_laminarity_vertical_trapping",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "rqa_laminarity",
+      "output_line": 2182,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "lempel_ziv_algorithmic_complexity",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 118,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.lempel_ziv_algorithmic_complexity",
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output_expression": "lz_complexity",
+      "output_line": 2183,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "fisher_information_measure",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 119,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.fisher_information_measure",
+        "motion.motion_energy",
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output_expression": "fisher_info",
+      "output_line": 2184,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "phase_space_trapping_time_seconds",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords",
+        "_residence_start_ts"
+      ],
+      "index": 120,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "motion.phase_space_trapping_time_seconds",
+        "motion.rqa_laminarity_vertical_trapping",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "output_expression": "trapping_time_s",
+      "output_line": 2185,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "motion.stationary_likelihood"
+      ],
+      "feature": "multiscale_approximate_entropy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 121,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.motion_energy",
+        "motion.multiscale_approximate_entropy",
+        "motion.permutation_entropy_complexity"
+      ],
+      "output_expression": "approximate_entropy",
+      "output_line": 2186,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.gyro_raw"
+      ],
+      "feature": "bifurcation_stability_margin",
+      "history_observation_inputs": [
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_tremor_energy",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 122,
+      "input_class": "history_derived",
+      "modalities": [
+        "digital_context",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.bifurcation_stability_margin",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent",
+        "timestamp_utc"
+      ],
+      "output_expression": "bifurcation_margin",
+      "output_line": 2187,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "digital_context.neuromotor_microslip_angular_velocity",
+        "motion.microslip_ang_vel"
+      ],
+      "feature": "non_linear_energy_operator_teager",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 123,
+      "input_class": "observation_derived",
+      "modalities": [
+        "motion"
+      ],
+      "observation_inputs": [
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy",
+        "motion.non_linear_energy_operator_teager"
+      ],
+      "output_expression": "teager_energy",
+      "output_line": 2188,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": true,
+      "control_observation_inputs": [
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "feature": "phase_space_angular_momentum",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.gyro_raw",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_gyro_raw",
+        "_last_ts_seconds",
+        "_last_vec_summary",
+        "_last_vec_ts",
+        "_recent_coords"
+      ],
+      "index": 124,
+      "input_class": "history_derived",
+      "modalities": [
+        "device_relation",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.gyro_raw",
+        "motion.phase_space_angular_momentum",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "output_expression": "orbital_angular_momentum",
+      "output_line": 2189,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "device_relation.battery_percentage",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent",
+        "timestamp_utc"
+      ],
+      "feature": "topological_betti_number_proxy",
+      "history_observation_inputs": [],
+      "history_state": [],
+      "index": 125,
+      "input_class": "observation_derived",
+      "modalities": [
+        "digital_context",
+        "motion"
+      ],
+      "observation_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension",
+        "motion.topological_betti_number_proxy"
+      ],
+      "output_expression": "betti_proxy",
+      "output_line": 2190,
+      "parameters": [],
+      "uses_history": false
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.gyro_raw"
+      ],
+      "feature": "dissipative_lyapunov_dimension_ky",
+      "history_observation_inputs": [
+        "motion.ballisto_energy",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_last_tremor_energy",
+        "_last_ts_seconds",
+        "_last_vec_ts"
+      ],
+      "index": 126,
+      "input_class": "history_derived",
+      "modalities": [
+        "digital_context",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.dissipative_lyapunov_dimension_ky",
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.phase_space_correlation_dimension",
+        "motion.stationary_likelihood",
+        "motion.tremor_lyapunov_exponent",
+        "timestamp_utc"
+      ],
+      "output_expression": "kaplan_yorke_dim",
+      "output_line": 2191,
+      "parameters": [],
+      "uses_history": true
+    },
+    {
+      "condition_field_named_in_output": false,
+      "control_observation_inputs": [
+        "audio_context.status",
+        "device_relation.screen_state",
+        "digital_context",
+        "digital_context.correlation_dimension",
+        "environment.pressure_hpa",
+        "motion.accel_raw",
+        "motion.gyro_raw",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "feature": "holo_cosmic_coherence_index",
+      "history_observation_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ],
+      "history_state": [
+        "_recent_coords"
+      ],
+      "index": 127,
+      "input_class": "history_derived",
+      "modalities": [
+        "audio_context",
+        "device_relation",
+        "digital_context",
+        "environment",
+        "motion",
+        "timestamp_utc"
+      ],
+      "observation_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.spatial_coherence_phase",
+        "audio_context.spectral_entropy",
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy",
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index",
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "motion.holo_cosmic_coherence_index",
+        "motion.motion_energy",
+        "motion.rqa_recurrence_determinism_det",
+        "motion.stationary_likelihood"
+      ],
+      "output_expression": "holo_coherence",
+      "output_line": 2192,
+      "parameters": [],
+      "uses_history": true
+    }
+  ],
+  "function": "extract_raw_features",
+  "limitations": [
+    "dependencies are a may-over-approximation: a listed field does not mean it affected a given frame",
+    "a field being present in an observation does not establish that it was measured rather than defaulted",
+    "history state is analyzed by name; warm-up length and eviction are not modeled",
+    "condition_selected outputs take values chosen by tests alone; whether the tested field is the quantity itself or a stand-in for another quantity is only hinted by condition_field_named_in_output"
+  ],
+  "normalizer_file": "traceform/representation/normalizer.py",
+  "scope": "static_may_dependence_over_approximation_not_runtime_branch_or_measurement_evidence",
+  "source_sha256": "400e4fab508e39838901865f4c68107e3a51bc7cc4673edc167017fe04e16407"
+}
