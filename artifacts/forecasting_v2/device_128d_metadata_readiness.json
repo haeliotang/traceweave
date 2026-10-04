@@ -1,0 +1,28 @@
+{
+  "scope": "read_only_device_metadata_inventory_not_complete_input_eligibility_or_empirical_validation",
+  "source": "Termux Traceform data/edge_storage.sqlite",
+  "snapshot_method": "SQLite mode=ro explicit read transaction; ordered frame digests; no raw records exported",
+  "hot": {
+    "record_count": 3674,
+    "continuous_dimension_counts": {"128": 3674},
+    "coordinate_binding_count": 1,
+    "source_mode_counts": {"live_follow": 3674},
+    "timestamp_field": "timestamp_utc",
+    "ordered_frame_sha256": "6ef0ed34a7d844e586d8edbb6bd92705f04c06cb1f8fa99779af07207c21f1e1"
+  },
+  "warm_trajectory": {
+    "record_count": 3674,
+    "continuous_vectors_present": false,
+    "coordinate_binding_count": 1,
+    "source_mode_counts": {"live_follow": 3674},
+    "ordered_frame_sha256": "54831f8e6046bf76847b88a8caf07731a8d5d174be1ab299a6d671387616f0c9"
+  },
+  "frozen_verification": {"before_pass_count": 12, "after_pass_count": 12},
+  "remaining_checks": [
+    "finite numeric vectors and valid coordinate hashes",
+    "timestamp validity and continuity-qualified adjacent pairs",
+    "feature observation provenance and imputation scope",
+    "chronological held-out empirical diagnostics"
+  ],
+  "scientific_acceptance": "not_assessed"
+}

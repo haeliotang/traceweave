@@ -1,0 +1,1420 @@
+{
+  "dataflow_source_sha256": "400e4fab508e39838901865f4c68107e3a51bc7cc4673edc167017fe04e16407",
+  "features": [
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001335,
+      "feature": "motion_accel_magnitude",
+      "index": 0,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001335,
+      "feature": "motion_accel_rms",
+      "index": 1,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001558,
+      "feature": "motion_energy",
+      "index": 2,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "motion_stationary_likelihood",
+      "index": 3,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "env_log_lux",
+      "index": 4,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 1.0,
+      "feature": "env_pressure_hpa",
+      "index": 5,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "env_device_temp_c",
+      "index": 6,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "device_battery_fraction",
+      "index": 7,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "device_is_plugged",
+      "index": 8,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "device_is_charging",
+      "index": 9,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "audio_silence_likelihood",
+      "index": 10,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "audio_rms_loudness",
+      "index": 11,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "audio_spectral_entropy",
+      "index": 12,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "conn_wifi_connected",
+      "index": 13,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "conn_wifi_rssi_norm",
+      "index": 14,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "screen_on_ratio",
+      "index": 15,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.673565,
+      "feature": "app_switch_rate",
+      "index": 16,
+      "normalization_saturated": true,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.006676,
+      "feature": "unlock_burst_count",
+      "index": 17,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "audio_immersion_state",
+      "index": 18,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "circadian_sin_phase",
+      "index": 19,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "circadian_cos_phase",
+      "index": 20,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 1.0,
+      "feature": "infradian_weekly_phase",
+      "index": 21,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 1.0,
+      "feature": "battery_current_ua",
+      "index": 22,
+      "normalization_saturated": true,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.026035,
+      "feature": "spatial_radius_of_gyration",
+      "index": 23,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "place.radius_of_gyration"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.00445,
+      "feature": "touch_interaction_velocity",
+      "index": 24,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.070984,
+      "feature": "ambient_social_ble_density",
+      "index": 25,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "physio_ballisto_tremor_energy",
+      "index": 26,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.ballisto_energy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "thermal_conduction_rate_dt",
+      "index": 27,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.03449,
+      "feature": "device_zenith_tilt_angle",
+      "index": 28,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.006008,
+      "feature": "geomagnetic_flux_divergence",
+      "index": 29,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000445,
+      "feature": "barometric_vertical_velocity",
+      "index": 30,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "ambient_rf_shannon_entropy",
+      "index": 31,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "cellular_tower_churn_rate",
+      "index": 32,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "touch_interval_jitter",
+      "index": 33,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "attention_fragmentation_entropy",
+      "index": 34,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "compute_power_dissipation_watts",
+      "index": 35,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.302626,
+      "feature": "battery_internal_impedance_miliohm",
+      "index": 36,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.internal_resistance_miliohm"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "rotational_kinetic_energy",
+      "index": 37,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.004228,
+      "feature": "kinematic_jerk_metric",
+      "index": 38,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "rf_spectral_penetration_ratio",
+      "index": 39,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.076992,
+      "feature": "ble_rssi_spatial_variance",
+      "index": 40,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spectral_centroid_khz",
+      "index": 41,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_crest_factor",
+      "index": 42,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "state_residence_persistence_hours",
+      "index": 43,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "neuromotor_tremor_spectral_ratio",
+      "index": 44,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.neuromotor_tremor_spectral_ratio",
+        "motion.ballisto_energy",
+        "motion.neuromotor_tremor_spectral_ratio"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "device_screen_gravity_alignment",
+      "index": 45,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "rotational_angular_jerk",
+      "index": 46,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spectral_rolloff_khz",
+      "index": 47,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.rolloff_khz",
+        "audio_context.spectral_rolloff_hz"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_zero_crossing_rate",
+      "index": 48,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.zcr"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000223,
+      "feature": "thermal_flux_acceleration_dt2",
+      "index": 49,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "wifi_spatial_shannon_entropy",
+      "index": 50,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "touch_engagement_decay_factor",
+      "index": 51,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "phase_space_recurrence_density",
+      "index": 52,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.0,
+      "feature": "geomagnetic_field_dip_angle_deg",
+      "index": 53,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.magnetic_field_ut",
+        "motion.geomagnetic_dip_angle_deg",
+        "motion.mag_raw"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "kinematic_trajectory_curvature",
+      "index": 54,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.003783,
+      "feature": "barometric_turbulence_variance",
+      "index": 55,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001113,
+      "feature": "photometric_contrast_ratio",
+      "index": 56,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spectral_bandwidth_khz",
+      "index": 57,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.bandwidth_khz"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "wifi_rssi_distribution_skewness",
+      "index": 58,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "thermodynamic_joule_heat_loss_watts",
+      "index": 59,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.internal_resistance_miliohm"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000668,
+      "feature": "phase_space_kinetic_velocity",
+      "index": 60,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.002893,
+      "feature": "neuromotor_tap_recoil_intensity",
+      "index": 61,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000223,
+      "feature": "kinematic_trajectory_torsion",
+      "index": 62,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.kinematic_trajectory_torsion",
+        "motion.trajectory_torsion"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "phase_space_correlation_dimension",
+      "index": 63,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.phase_space_correlation_dimension"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.064753,
+      "feature": "photometric_flicker_kurtosis",
+      "index": 64,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spectral_flatness",
+      "index": 65,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "wifi_rssi_distribution_kurtosis",
+      "index": 66,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "connectivity.wifi_kurtosis",
+        "connectivity.wifi_rssi_distribution_kurtosis",
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.006008,
+      "feature": "geomagnetic_total_field_flux",
+      "index": 67,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_flux_anomaly",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.242323,
+      "feature": "thermodynamic_dissipation_ratio",
+      "index": 68,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.thermodynamic_dissipation_ratio",
+        "environment.dissipation_ratio"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "neuromotor_microslip_angular_velocity",
+      "index": 69,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.neuromotor_microslip_angular_velocity",
+        "motion.microslip_ang_vel"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "circadian_phase_disruption_index",
+      "index": 70,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.006008,
+      "feature": "kinematic_snap_metric",
+      "index": 71,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.kinematic_snap_metric",
+        "motion.snap_metric"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_harmonic_to_noise_ratio",
+      "index": 72,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.harmonic_to_noise_ratio",
+        "audio_context.hnr_db",
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "photometric_spectral_warmth_index",
+      "index": 73,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.cct_k",
+        "environment.color_temperature",
+        "environment.color_temperature_warmth",
+        "environment.photometric_spectral_warmth_index"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001113,
+      "feature": "barometric_buoyancy_energy_flux",
+      "index": 74,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.barometric_buoyancy_energy_flux",
+        "environment.buoyancy_flux"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "geomagnetic_quadrupole_anisotropy_ratio",
+      "index": 75,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.mag_anisotropy_ratio",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "wifi_channel_dispersion_entropy",
+      "index": 76,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "connectivity.wifi_channel_dispersion_entropy",
+        "connectivity.wifi_channel_entropy",
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "thermodynamic_battery_stress_index",
+      "index": 77,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.thermodynamic_battery_stress_index",
+        "environment.battery_stress_index"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.045839,
+      "feature": "neuromotor_tremor_lyapunov_exponent",
+      "index": 78,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.tremor_lyapunov_exponent"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.64575,
+      "feature": "phase_space_information_flow_rate",
+      "index": 79,
+      "normalization_saturated": true,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.information_flow_rate",
+        "motion.phase_space_information_flow_rate"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "kinematic_crackle_metric",
+      "index": 80,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.crackle_metric",
+        "motion.kinematic_crackle_metric"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "kinematic_pop_metric",
+      "index": 81,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.kinematic_pop_metric",
+        "motion.pop_metric"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.046061,
+      "feature": "imu_temporal_autocorrelation_decay",
+      "index": 82,
+      "normalization_saturated": false,
+      "status": "observed_inputs",
+      "unproduced_inputs": []
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000668,
+      "feature": "device_structural_resonance_energy",
+      "index": 83,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.ballisto_energy",
+        "motion.device_structural_resonance_energy"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_dual_mic_cross_correlation",
+      "index": 84,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.dual_mic_cross_correlation",
+        "audio_context.mic_tdoa_corr"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spatial_coherence_phase",
+      "index": 85,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.spatial_coherence_phase"
+      ]
+    },
+    {
+      "basis": "runtime_absent_or_constant_device_window",
+      "clip_fraction": 0.0,
+      "feature": "acoustic_spectral_flux",
+      "index": 86,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "audio_context.spectral_flux"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "ultrasonic_proximity_micro_doppler",
+      "index": 87,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "audio_context.micro_doppler",
+        "audio_context.ultrasonic_proximity_micro_doppler"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.751001,
+      "feature": "gnss_visible_satellite_density",
+      "index": 88,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "place.gnss_sat_count",
+        "place.visible_satellites"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.751001,
+      "feature": "gnss_mean_carrier_to_noise_ratio",
+      "index": 89,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "place.gnss_cn0_dbhz",
+        "place.mean_carrier_to_noise_ratio"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.751001,
+      "feature": "gnss_position_dilution_of_precision",
+      "index": 90,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "place.pdop",
+        "place.position_dilution_of_precision"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.011571,
+      "feature": "gnss_doppler_velocity_drift",
+      "index": 91,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "place.doppler_velocity_drift",
+        "place.gnss_speed_mps"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.100356,
+      "feature": "thermal_soc_to_skin_gradient",
+      "index": 92,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w",
+        "environment.soc_skin_gradient",
+        "environment.thermal_soc_to_skin_gradient"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "thermal_modem_to_battery_gradient",
+      "index": 93,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "environment.thermal_modem_to_battery_gradient"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 1.0,
+      "feature": "thermal_relaxation_time_constant",
+      "index": 94,
+      "normalization_saturated": true,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "environment.thermal_relaxation_time_constant"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.992657,
+      "feature": "thermal_entropy_production_rate",
+      "index": 95,
+      "normalization_saturated": true,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.internal_resistance_miliohm",
+        "environment.thermal_entropy_production_rate"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.006008,
+      "feature": "cellular_reference_signal_quality",
+      "index": 96,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "connectivity.cellular_rsrq",
+        "connectivity.rsrq_db"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.006008,
+      "feature": "cellular_signal_to_interference_noise",
+      "index": 97,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "connectivity.cellular_sinr",
+        "connectivity.sinr_db"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "ble_advertising_channel_entropy",
+      "index": 98,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.ble_advertising_channel_entropy"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.0,
+      "feature": "wifi_link_speed_variation_ratio",
+      "index": 99,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "connectivity.wifi_link_speed_variation_ratio"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.006008,
+      "feature": "rf_ambient_backscatter_intensity",
+      "index": 100,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "connectivity.rf_ambient_backscatter_intensity"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.0,
+      "feature": "cellular_timing_advance_distance",
+      "index": 101,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "connectivity.cellular_timing_advance_distance",
+        "connectivity.timing_advance_km"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "touch_contact_ellipse_eccentricity",
+      "index": 102,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.touch_contact_ellipse_eccentricity",
+        "digital_context.touch_eccentricity"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.002893,
+      "feature": "touch_downforce_pressure_derivative",
+      "index": 103,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.touch_downforce_pressure_derivative"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "neuromotor_fitts_law_throughput",
+      "index": 104,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.fitts_throughput",
+        "digital_context.neuromotor_fitts_law_throughput"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "touch_biomotor_cadence_decay_slope",
+      "index": 105,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.touch_biomotor_cadence_decay_slope"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.0,
+      "feature": "touch_contact_area_normalized",
+      "index": 106,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "digital_context.touch_area",
+        "digital_context.touch_contact_area_normalized"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "touch_path_tortuosity_ratio",
+      "index": 107,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.touch_path_tortuosity_ratio"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "cpu_frequency_scaling_entropy",
+      "index": 108,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.cpu_frequency_scaling_entropy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.900757,
+      "feature": "kernel_context_switch_velocity",
+      "index": 109,
+      "normalization_saturated": true,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.kernel_context_switch_velocity"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "memory_pressure_stall_ratio",
+      "index": 110,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "display_frame_pacing_jank_variance",
+      "index": 111,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.display_frame_pacing_jank_variance",
+        "digital_context.frame_jank_variance"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "io_wait_latency_proxy",
+      "index": 112,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.io_wait_latency_proxy"
+      ]
+    },
+    {
+      "basis": "static_no_producer",
+      "clip_fraction": 0.0,
+      "feature": "cpu_user_system_mode_ratio",
+      "index": 113,
+      "normalization_saturated": false,
+      "status": "unobservable_in_current_acquisition",
+      "unproduced_inputs": [
+        "digital_context.cpu_user_system_mode_ratio"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "fractal_hurst_exponent",
+      "index": 114,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.fractal_hurst_exponent"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "permutation_entropy_complexity",
+      "index": 115,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.permutation_entropy_complexity"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "rqa_recurrence_determinism_det",
+      "index": 116,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.rqa_recurrence_determinism_det"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "rqa_laminarity_vertical_trapping",
+      "index": 117,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.rqa_laminarity_vertical_trapping"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "lempel_ziv_algorithmic_complexity",
+      "index": 118,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.lempel_ziv_algorithmic_complexity",
+        "motion.rqa_recurrence_determinism_det"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.170004,
+      "feature": "fisher_information_measure",
+      "index": 119,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.fisher_information_measure",
+        "motion.rqa_recurrence_determinism_det"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "phase_space_trapping_time_seconds",
+      "index": 120,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.phase_space_trapping_time_seconds",
+        "motion.rqa_laminarity_vertical_trapping"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "multiscale_approximate_entropy",
+      "index": 121,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.multiscale_approximate_entropy",
+        "motion.permutation_entropy_complexity"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.045839,
+      "feature": "bifurcation_stability_margin",
+      "index": 122,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.bifurcation_stability_margin",
+        "motion.tremor_lyapunov_exponent"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.001558,
+      "feature": "non_linear_energy_operator_teager",
+      "index": 123,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.non_linear_energy_operator_teager"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.000668,
+      "feature": "phase_space_angular_momentum",
+      "index": 124,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "motion.phase_space_angular_momentum"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "topological_betti_number_proxy",
+      "index": 125,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.phase_space_correlation_dimension",
+        "motion.topological_betti_number_proxy"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "dissipative_lyapunov_dimension_ky",
+      "index": 126,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.dissipative_lyapunov_dimension_ky",
+        "motion.phase_space_correlation_dimension",
+        "motion.tremor_lyapunov_exponent"
+      ]
+    },
+    {
+      "basis": "runtime_input_evidence",
+      "clip_fraction": 0.0,
+      "feature": "holo_cosmic_coherence_index",
+      "index": 127,
+      "normalization_saturated": false,
+      "status": "proxy_from_observed_inputs",
+      "unproduced_inputs": [
+        "audio_context.spatial_coherence_phase",
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index",
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi",
+        "motion.holo_cosmic_coherence_index",
+        "motion.rqa_recurrence_determinism_det"
+      ]
+    }
+  ],
+  "producer_roots": [
+    "pixel_physical",
+    "traceform/streaming",
+    "traceform/probes"
+  ],
+  "publication": "local_only_pending_explicit_device_derived_data_publication_authorization",
+  "runtime_evidence": true,
+  "scope": "input_evidence_for_current_acquisition_not_measurement_validation",
+  "status_meanings": {
+    "not_assessed_at_runtime": "static view only; runtime behaviour not judged",
+    "observed_inputs": "every listed input was supplied and varied; the quantity itself is not validated",
+    "proxy_from_observed_inputs": "direct inputs never appeared; the value comes from a formula over the supplied inputs",
+    "unobservable_in_current_acquisition": "no usable input: either no producer exists (static) or it was absent/constant in the window"
+  },
+  "summary": {
+    "normalization_saturated_count": 11,
+    "statically_unobservable_count": 11,
+    "status_counts": {
+      "observed_inputs": 40,
+      "proxy_from_observed_inputs": 59,
+      "unobservable_in_current_acquisition": 29
+    }
+  }
+}

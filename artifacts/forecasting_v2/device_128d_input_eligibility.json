@@ -1,0 +1,22 @@
+{
+  "required_dimension": 128,
+  "eligible_records": 3679,
+  "eligible_adjacent_pairs": 3664,
+  "rejection_counts": {},
+  "continuous_dimension_counts": {
+    "128": 3679
+  },
+  "legacy_normalized_dimension_counts": {},
+  "coordinate_binding_count": 1,
+  "ready_for_fit": true,
+  "scope": "input_readiness_only_not_empirical_accuracy_memory_identification_or_scientific_acceptance",
+  "record_count": 3679,
+  "ordered_frame_sha256": "3d176ad0f93c41c933de84117e7db0b7bb67898f1c4a77d412f34c27a077cbd3",
+  "source_scope": "sqlite_hot_read_transaction_length_prefixed_utf8_frames_not_database_file",
+  "audit_script_sha256": "438dc72f88b68722fb8108ad19e974fae369d81a2d621ad6dfb5213350ec06c0",
+  "frozen_verification": {
+    "before_pass_count": 12,
+    "after_pass_count": 12
+  },
+  "publication": "local_only_pending_explicit_device_derived_data_publication_authorization"
+}

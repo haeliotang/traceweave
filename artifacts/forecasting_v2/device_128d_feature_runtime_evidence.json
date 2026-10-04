@@ -1,0 +1,4981 @@
+{
+  "dataflow_source_sha256": "61afde5fc418bd2d8eb454478a25edd21331622f92bdec4af12736364f740208",
+  "effective_dimension": {
+    "constant_dimension_count": 20,
+    "dimension_count": 128,
+    "dimensions_for_variance": {
+      "0.9": 25,
+      "0.95": 32,
+      "0.99": 44
+    },
+    "leading_eigenvalue_fractions": [
+      0.1712,
+      0.1204,
+      0.078,
+      0.0591,
+      0.0568,
+      0.0489,
+      0.0419,
+      0.0362,
+      0.0342,
+      0.0304
+    ],
+    "numerical_rank": 81,
+    "participation_ratio": 14.5897,
+    "sample_count": 4494,
+    "scope": "descriptive_spectrum_of_stored_vectors_adjacent_frames_are_autocorrelated_not_independent_samples",
+    "varying_dimension_count": 108
+  },
+  "features": [
+    {
+      "constant_present_inputs": [],
+      "feature": "motion_accel_magnitude",
+      "index": 0,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.accel_magnitude": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.001335,
+        "distinct_count": 344,
+        "max": 10.0,
+        "mean": -6.820966,
+        "min": -10.0,
+        "modal_fraction": 0.030263,
+        "std": 0.823797
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_magnitude"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "motion_accel_rms",
+      "index": 1,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.accel_rms": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.001335,
+        "distinct_count": 249,
+        "max": 10.0,
+        "mean": -6.845763,
+        "min": -10.0,
+        "modal_fraction": 0.038496,
+        "std": 0.604357
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_rms"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "motion_energy",
+      "index": 2,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.motion_energy": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.001558,
+        "distinct_count": 459,
+        "max": 10.0,
+        "mean": 4.297482,
+        "min": -4.15287,
+        "modal_fraction": 0.009568,
+        "std": 0.979905
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "motion_stationary_likelihood",
+      "index": 3,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.stationary_likelihood": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 51,
+        "max": 0.05,
+        "mean": -0.016799,
+        "min": -0.95,
+        "modal_fraction": 0.126613,
+        "std": 0.018046
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "env_log_lux",
+      "index": 4,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 447,
+        "max": 9.11279,
+        "mean": 3.539803,
+        "min": -5.27611,
+        "modal_fraction": 0.046284,
+        "std": 3.159377
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "env_pressure_hpa",
+      "index": 5,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.pressure_hpa": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 1.0,
+        "distinct_count": 1,
+        "max": 10.0,
+        "mean": 10.0,
+        "min": 10.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "constant_output",
+      "varying_present_inputs": [
+        "environment.pressure_hpa"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "env_device_temp_c",
+      "index": 6,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.device_temp_c": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 990,
+        "max": 7.16667,
+        "mean": 0.123639,
+        "min": -5.10417,
+        "modal_fraction": 0.008456,
+        "std": 2.78569
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_battery_fraction",
+      "index": 7,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 22,
+        "max": 1.26316,
+        "mean": 0.522173,
+        "min": -1.36842,
+        "modal_fraction": 0.662884,
+        "std": 0.492786
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_is_plugged",
+      "index": 8,
+      "input_class": "condition_selected",
+      "inputs": {
+        "device_relation.plugged": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 1.0,
+        "mean": 1.0,
+        "min": 1.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "constant_output",
+      "varying_present_inputs": [
+        "device_relation.plugged"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_is_charging",
+      "index": 9,
+      "input_class": "condition_selected",
+      "inputs": {
+        "device_relation.status": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "constant_output",
+      "varying_present_inputs": [
+        "device_relation.status"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.silence_likelihood"
+      ],
+      "feature": "audio_silence_likelihood",
+      "index": 10,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.silence_likelihood": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.02,
+        "mean": 0.02,
+        "min": 0.02,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.rms_loudness"
+      ],
+      "feature": "audio_rms_loudness",
+      "index": 11,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.rms_loudness": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": -0.001,
+        "mean": -0.001,
+        "min": -0.001,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "audio_spectral_entropy",
+      "index": 12,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.spectral_entropy": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": -0.35,
+        "mean": -0.35,
+        "min": -0.35,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "conn_wifi_connected",
+      "index": 13,
+      "input_class": "condition_selected",
+      "inputs": {
+        "connectivity.wifi_connected": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -0.006008,
+        "min": -1.0,
+        "modal_fraction": 0.993992,
+        "std": 0.077278
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_connected"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "conn_wifi_rssi_norm",
+      "index": 14,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_rssi": 0.993992
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 17,
+        "max": 0.21429,
+        "mean": 0.111041,
+        "min": -0.78571,
+        "modal_fraction": 0.323765,
+        "std": 0.086341
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_rssi"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "screen_on_ratio",
+      "index": 15,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.screen_on_ratio": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": 1.0,
+        "mean": 0.229729,
+        "min": 0.2,
+        "modal_fraction": 0.962839,
+        "std": 0.151324
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.screen_on_ratio"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "app_switch_rate",
+      "index": 16,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.673565,
+        "distinct_count": 11,
+        "max": 10.0,
+        "mean": 7.800623,
+        "min": 0.0,
+        "modal_fraction": 0.673565,
+        "std": 3.524388
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "unlock_burst_count",
+      "index": 17,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.006676,
+        "distinct_count": 11,
+        "max": 10.0,
+        "mean": 1.940142,
+        "min": 0.0,
+        "modal_fraction": 0.388963,
+        "std": 2.328253
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "device_relation.bluetooth_a2dp",
+        "device_relation.wired_headset"
+      ],
+      "feature": "audio_immersion_state",
+      "index": 18,
+      "input_class": "condition_selected",
+      "inputs": {
+        "device_relation.bluetooth_a2dp": 1.0,
+        "device_relation.wired_headset": 1.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "circadian_sin_phase",
+      "index": 19,
+      "input_class": "time_only",
+      "inputs": {
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4372,
+        "max": 0.4751,
+        "mean": -0.446698,
+        "min": -1.42171,
+        "modal_fraction": 0.001335,
+        "std": 0.694298
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "circadian_cos_phase",
+      "index": 20,
+      "input_class": "time_only",
+      "inputs": {
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4469,
+        "max": 0.36755,
+        "mean": -1.691084,
+        "min": -3.1897,
+        "modal_fraction": 0.001113,
+        "std": 1.177794
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "infradian_weekly_phase",
+      "index": 21,
+      "input_class": "time_only",
+      "inputs": {
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 1.0,
+        "distinct_count": 1,
+        "max": -10.0,
+        "mean": -10.0,
+        "min": -10.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "constant_output",
+      "varying_present_inputs": [
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "battery_current_ua",
+      "index": 22,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.current_ua": 0.993992
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 1.0,
+        "distinct_count": 2,
+        "max": 10.0,
+        "mean": 7.098353,
+        "min": -10.0,
+        "modal_fraction": 0.854918,
+        "std": 7.043677
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "device_relation.current_ua"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "spatial_radius_of_gyration",
+      "index": 23,
+      "input_class": "history_derived",
+      "inputs": {
+        "place.latitude": 0.248999,
+        "place.longitude": 0.248999,
+        "place.radius_of_gyration": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "place.radius_of_gyration"
+      ],
+      "output": {
+        "clip_fraction": 0.026035,
+        "distinct_count": 52,
+        "max": 10.0,
+        "mean": 1.907061,
+        "min": -10.0,
+        "modal_fraction": 0.076324,
+        "std": 3.025292
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "place.latitude",
+        "place.longitude"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_interaction_velocity",
+      "index": 24,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.00445,
+        "distinct_count": 13,
+        "max": 10.0,
+        "mean": 0.25158,
+        "min": 0.0,
+        "modal_fraction": 0.962839,
+        "std": 1.313223
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "ambient_social_ble_density",
+      "index": 25,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "digital_context.ambient_social_ble_density": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.070984,
+        "distinct_count": 4,
+        "max": 10.0,
+        "mean": 1.421097,
+        "min": -9.33,
+        "modal_fraction": 0.688251,
+        "std": 2.634371
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "physio_ballisto_tremor_energy",
+      "index": 26,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.ballisto_energy": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.ballisto_energy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 407,
+        "max": 7.5906,
+        "mean": 4.126967,
+        "min": -4.15436,
+        "modal_fraction": 0.013796,
+        "std": 0.968079
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_conduction_rate_dt",
+      "index": 27,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.device_temp_c": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 950,
+        "max": 8.33333,
+        "mean": -1.238879,
+        "min": -8.33333,
+        "modal_fraction": 0.356698,
+        "std": 7.127892
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_zenith_tilt_angle",
+      "index": 28,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.03449,
+        "distinct_count": 99,
+        "max": 10.0,
+        "mean": 0.472698,
+        "min": -1.84615,
+        "modal_fraction": 0.080774,
+        "std": 3.359578
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_raw"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "geomagnetic_flux_divergence",
+      "index": 29,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "environment.magnetic_field_ut": 0.0,
+        "motion.mag_raw": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 5,
+        "max": 7.71,
+        "mean": 0.954172,
+        "min": -10.0,
+        "modal_fraction": 0.688251,
+        "std": 2.105879
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "barometric_vertical_velocity",
+      "index": 30,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.pressure_hpa": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.000445,
+        "distinct_count": 43,
+        "max": 10.0,
+        "mean": 0.005236,
+        "min": -4.58824,
+        "modal_fraction": 0.263462,
+        "std": 0.272438
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.pressure_hpa",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "ambient_rf_shannon_entropy",
+      "index": 31,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "digital_context.ambient_rf_shannon_entropy": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 0.871,
+        "mean": 0.126028,
+        "min": -4.129,
+        "modal_fraction": 0.688251,
+        "std": 0.399466
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cellular_tower_churn_rate",
+      "index": 32,
+      "input_class": "history_derived",
+      "inputs": {
+        "connectivity.cellular_cell_fingerprint": 0.993992,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 2.27,
+        "mean": 0.042018,
+        "min": 0.0,
+        "modal_fraction": 0.981308,
+        "std": 0.304913
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_interval_jitter",
+      "index": 33,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.touch_interval_jitter": 1.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 13,
+        "max": 2.0,
+        "mean": 0.05717,
+        "min": 0.0,
+        "modal_fraction": 0.962839,
+        "std": 0.294655
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.touch_interval_jitter",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "attention_fragmentation_entropy",
+      "index": 34,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.attention_fragmentation_entropy": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 116,
+        "max": 2.171,
+        "mean": 0.980821,
+        "min": 0.0,
+        "modal_fraction": 0.177793,
+        "std": 0.494909
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "compute_power_dissipation_watts",
+      "index": 35,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.screen_on_ratio": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 14,
+        "max": 1.05,
+        "mean": 0.356351,
+        "min": 0.17,
+        "modal_fraction": 0.665109,
+        "std": 0.151271
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "battery_internal_impedance_miliohm",
+      "index": 36,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.current_ua": 0.993992,
+        "device_relation.internal_resistance_miliohm": 0.0,
+        "device_relation.voltage_mv": 0.993992,
+        "environment.device_temp_c": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.internal_resistance_miliohm"
+      ],
+      "output": {
+        "clip_fraction": 0.302626,
+        "distinct_count": 62,
+        "max": 10.0,
+        "mean": -2.781175,
+        "min": -10.0,
+        "modal_fraction": 0.656876,
+        "std": 4.797117
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rotational_kinetic_energy",
+      "index": 37,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.gyro_energy": 0.991989,
+        "motion.gyro_raw": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 25,
+        "max": 1.12339,
+        "mean": 0.000316,
+        "min": 0.0,
+        "modal_fraction": 0.992212,
+        "std": 0.016931
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.gyro_raw"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_jerk_metric",
+      "index": 38,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.004228,
+        "distinct_count": 40,
+        "max": 10.0,
+        "mean": -1.211263,
+        "min": -1.5,
+        "modal_fraction": 0.330218,
+        "std": 0.804946
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rf_spectral_penetration_ratio",
+      "index": 39,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_rssi": 0.993992
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 17,
+        "max": 0.571,
+        "mean": 0.492119,
+        "min": -1.229,
+        "modal_fraction": 0.323765,
+        "std": 0.138477
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_rssi"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "ble_rssi_spatial_variance",
+      "index": 40,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "digital_context.ambient_social_ble_density": 1.0,
+        "digital_context.ble_rssi_spatial_variance": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.076992,
+        "distinct_count": 4,
+        "max": 10.0,
+        "mean": 1.873769,
+        "min": -10.0,
+        "modal_fraction": 0.688251,
+        "std": 2.757504
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density",
+        "digital_context.ble_rssi_spatial_variance"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spectral_centroid_khz",
+      "index": 41,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.spectral_centroid_hz": 0.166222,
+        "audio_context.spectral_entropy": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": -0.1,
+        "mean": -0.149866,
+        "min": -0.4,
+        "modal_fraction": 0.833778,
+        "std": 0.111684
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.peak_level",
+        "audio_context.rms_loudness"
+      ],
+      "feature": "acoustic_crest_factor",
+      "index": 42,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.peak_level": 0.166222,
+        "audio_context.rms_loudness": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "state_residence_persistence_hours",
+      "index": 43,
+      "input_class": "time_only",
+      "inputs": {
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 3452,
+        "max": 3.8008,
+        "mean": 1.118731,
+        "min": -0.9992,
+        "modal_fraction": 0.129951,
+        "std": 1.766221
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "neuromotor_tremor_spectral_ratio",
+      "index": 44,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.neuromotor_tremor_spectral_ratio": 0.0,
+        "motion.ballisto_energy": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.neuromotor_tremor_spectral_ratio": 0.0,
+        "motion.stationary_likelihood": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.neuromotor_tremor_spectral_ratio",
+        "motion.ballisto_energy",
+        "motion.neuromotor_tremor_spectral_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 164,
+        "max": 2.87943,
+        "mean": 2.383173,
+        "min": -9.52482,
+        "modal_fraction": 0.050734,
+        "std": 1.189076
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_screen_gravity_alignment",
+      "index": 45,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 17,
+        "max": 0.0,
+        "mean": -0.008712,
+        "min": -1.0,
+        "modal_fraction": 0.957721,
+        "std": 0.089243
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_raw"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rotational_angular_jerk",
+      "index": 46,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.gyro_raw": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 29,
+        "max": 0.0537,
+        "mean": 7.3e-05,
+        "min": 0.0,
+        "modal_fraction": 0.923008,
+        "std": 0.001419
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.gyro_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spectral_rolloff_khz",
+      "index": 47,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.rolloff_khz": 0.0,
+        "audio_context.spectral_centroid_hz": 0.166222,
+        "audio_context.spectral_entropy": 0.166222,
+        "audio_context.spectral_rolloff_hz": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.rolloff_khz",
+        "audio_context.spectral_rolloff_hz"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": -0.232,
+        "mean": -0.258595,
+        "min": -0.392,
+        "modal_fraction": 0.833778,
+        "std": 0.059565
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy",
+        "audio_context.zero_crossing_rate"
+      ],
+      "feature": "acoustic_zero_crossing_rate",
+      "index": 48,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.rms_loudness": 0.166222,
+        "audio_context.spectral_centroid_hz": 0.166222,
+        "audio_context.spectral_entropy": 0.166222,
+        "audio_context.zcr": 0.0,
+        "audio_context.zero_crossing_rate": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.zcr"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": -0.01,
+        "mean": -0.01,
+        "min": -0.01,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_flux_acceleration_dt2",
+      "index": 49,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.device_temp_c": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.000223,
+        "distinct_count": 3264,
+        "max": 10.0,
+        "mean": 0.042688,
+        "min": -8.55662,
+        "modal_fraction": 0.194259,
+        "std": 5.114613
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "wifi_spatial_shannon_entropy",
+      "index": 50,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "connectivity.wifi_spatial_shannon_entropy": 0.0,
+        "digital_context.ambient_rf_shannon_entropy": 1.0,
+        "digital_context.wifi_spatial_shannon_entropy": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 0.817,
+        "mean": 0.123012,
+        "min": -4.183,
+        "modal_fraction": 0.688251,
+        "std": 0.396273
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_engagement_decay_factor",
+      "index": 51,
+      "input_class": "time_only",
+      "inputs": {
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 94,
+        "max": 1.0,
+        "mean": 0.915702,
+        "min": 0.0,
+        "modal_fraction": 0.91166,
+        "std": 0.274081
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_recurrence_density",
+      "index": 52,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 29,
+        "max": 0.0,
+        "mean": -0.07463,
+        "min": -0.95,
+        "modal_fraction": 0.806186,
+        "std": 0.191312
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "geomagnetic_field_dip_angle_deg",
+      "index": 53,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.geomagnetic_dip_angle_deg": 0.0,
+        "environment.magnetic_field_ut": 0.0,
+        "motion.geomagnetic_dip_angle_deg": 0.0,
+        "motion.mag_raw": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "environment.geomagnetic_dip_angle_deg",
+        "environment.magnetic_field_ut",
+        "motion.geomagnetic_dip_angle_deg",
+        "motion.mag_raw"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_trajectory_curvature",
+      "index": 54,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 15,
+        "max": 0.0024,
+        "mean": 5e-06,
+        "min": 0.0,
+        "modal_fraction": 0.99466,
+        "std": 8.7e-05
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "barometric_turbulence_variance",
+      "index": 55,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989,
+        "environment.pressure_hpa": 0.991989,
+        "motion.accel_magnitude": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.003783,
+        "distinct_count": 48,
+        "max": 10.0,
+        "mean": -1.272772,
+        "min": -1.47368,
+        "modal_fraction": 0.334446,
+        "std": 0.819159
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "photometric_contrast_ratio",
+      "index": 56,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.001113,
+        "distinct_count": 416,
+        "max": 10.0,
+        "mean": -0.715439,
+        "min": -1.10078,
+        "modal_fraction": 0.59279,
+        "std": 0.924429
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.spectral_bandwidth_hz",
+        "audio_context.spectral_centroid_hz",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spectral_bandwidth_khz",
+      "index": 57,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.bandwidth_khz": 0.0,
+        "audio_context.spectral_bandwidth_hz": 0.166222,
+        "audio_context.spectral_centroid_hz": 0.166222,
+        "audio_context.spectral_entropy": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.bandwidth_khz"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": -0.68,
+        "mean": -0.683324,
+        "min": -0.7,
+        "modal_fraction": 0.833778,
+        "std": 0.007446
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "wifi_rssi_distribution_skewness",
+      "index": 58,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_rssi": 0.993992,
+        "connectivity.wifi_rssi_distribution_skewness": 0.0,
+        "digital_context.wifi_rssi_distribution_skewness": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 17,
+        "max": 0.857,
+        "mean": -0.342119,
+        "min": -0.643,
+        "modal_fraction": 0.323765,
+        "std": 0.179055
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_rssi"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermodynamic_joule_heat_loss_watts",
+      "index": 59,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.current_ua": 0.993992,
+        "device_relation.internal_resistance_miliohm": 0.0,
+        "device_relation.voltage_mv": 0.993992,
+        "environment.device_temp_c": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.internal_resistance_miliohm"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 381,
+        "max": 0.58784,
+        "mean": -0.00855,
+        "min": -0.01638,
+        "modal_fraction": 0.536271,
+        "std": 0.032838
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_kinetic_velocity",
+      "index": 60,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.000668,
+        "distinct_count": 356,
+        "max": 10.0,
+        "mean": -0.08934,
+        "min": -0.84337,
+        "modal_fraction": 0.040721,
+        "std": 0.983418
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "neuromotor_tap_recoil_intensity",
+      "index": 61,
+      "input_class": "history_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0,
+        "motion.accel_raw": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.002893,
+        "distinct_count": 43,
+        "max": 10.0,
+        "mean": -0.441715,
+        "min": -0.8,
+        "modal_fraction": 0.178683,
+        "std": 0.671441
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_trajectory_torsion",
+      "index": 62,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "motion.kinematic_trajectory_torsion": 0.0,
+        "motion.trajectory_torsion": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.kinematic_trajectory_torsion",
+        "motion.trajectory_torsion"
+      ],
+      "output": {
+        "clip_fraction": 0.000223,
+        "distinct_count": 15,
+        "max": 4.53846,
+        "mean": 0.000171,
+        "min": -10.0,
+        "modal_fraction": 0.995327,
+        "std": 0.174663
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_correlation_dimension",
+      "index": 63,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.correlation_dimension": 0.0,
+        "motion.motion_energy": 0.991989,
+        "motion.phase_space_correlation_dimension": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.phase_space_correlation_dimension"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 455,
+        "max": 2.153,
+        "mean": 0.04468,
+        "min": -0.145,
+        "modal_fraction": 0.512684,
+        "std": 0.180013
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "photometric_flicker_kurtosis",
+      "index": 64,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989,
+        "environment.lux_kurtosis": 0.0,
+        "environment.photometric_flicker_kurtosis": 0.0,
+        "environment.pressure_hpa": 0.991989,
+        "motion.accel_magnitude": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.lux_kurtosis",
+        "environment.photometric_flicker_kurtosis"
+      ],
+      "output": {
+        "clip_fraction": 0.064753,
+        "distinct_count": 726,
+        "max": 10.0,
+        "mean": 2.154975,
+        "min": -1.46902,
+        "modal_fraction": 0.59101,
+        "std": 2.561979
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spectral_flatness",
+      "index": 65,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.rms_loudness": 0.166222,
+        "audio_context.spectral_entropy": 0.166222,
+        "audio_context.spectral_flatness": 0.0,
+        "audio_context.wiener_entropy": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "wifi_rssi_distribution_kurtosis",
+      "index": 66,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_kurtosis": 0.0,
+        "connectivity.wifi_rssi": 0.993992,
+        "connectivity.wifi_rssi_distribution_kurtosis": 0.0,
+        "connectivity.wifi_rssi_distribution_skewness": 0.0,
+        "digital_context.wifi_rssi_distribution_skewness": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "connectivity.wifi_kurtosis",
+        "connectivity.wifi_rssi_distribution_kurtosis",
+        "connectivity.wifi_rssi_distribution_skewness",
+        "digital_context.wifi_rssi_distribution_skewness"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 17,
+        "max": 1.516,
+        "mean": 0.743142,
+        "min": -0.203,
+        "modal_fraction": 0.323765,
+        "std": 0.380495
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_rssi"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "geomagnetic_total_field_flux",
+      "index": 67,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "environment.geomagnetic_total_field_flux": 0.0,
+        "environment.mag_flux_anomaly": 0.0,
+        "environment.magnetic_field_ut": 0.0,
+        "motion.mag_raw": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.geomagnetic_total_field_flux",
+        "environment.mag_flux_anomaly",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -0.06008,
+        "min": -10.0,
+        "modal_fraction": 0.993992,
+        "std": 0.772782
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermodynamic_dissipation_ratio",
+      "index": 68,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "device_relation.current_ua": 0.993992,
+        "device_relation.voltage_mv": 0.993992,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.screen_on_ratio": 1.0,
+        "digital_context.thermodynamic_dissipation_ratio": 0.0,
+        "environment.device_temp_c": 0.991989,
+        "environment.dissipation_ratio": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.thermodynamic_dissipation_ratio",
+        "environment.dissipation_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.242323,
+        "distinct_count": 408,
+        "max": 10.0,
+        "mean": 3.193667,
+        "min": 0.0,
+        "modal_fraction": 0.593235,
+        "std": 4.349357
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio",
+        "environment.device_temp_c",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "neuromotor_microslip_angular_velocity",
+      "index": 69,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.neuromotor_microslip_angular_velocity": 0.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0,
+        "motion.gyro_raw": 0.991989,
+        "motion.microslip_ang_vel": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.neuromotor_microslip_angular_velocity",
+        "motion.microslip_ang_vel"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 25,
+        "max": 0.6,
+        "mean": 0.000657,
+        "min": 0.0,
+        "modal_fraction": 0.938362,
+        "std": 0.014536
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.gyro_raw"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "circadian_phase_disruption_index",
+      "index": 70,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.chrono_entropy": 0.0,
+        "digital_context.circadian_phase_disruption_index": 0.0,
+        "digital_context.screen_on_ratio": 1.0,
+        "environment.ambient_light_lux": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 88,
+        "max": 2.20652,
+        "mean": -0.557132,
+        "min": -0.84783,
+        "modal_fraction": 0.805964,
+        "std": 0.627455
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_snap_metric",
+      "index": 71,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "motion.kinematic_snap_metric": 0.0,
+        "motion.snap_metric": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.kinematic_snap_metric",
+        "motion.snap_metric"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 7,
+        "max": 10.0,
+        "mean": -0.414887,
+        "min": -0.5,
+        "modal_fraction": 0.957499,
+        "std": 0.829434
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.peak_level",
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_harmonic_to_noise_ratio",
+      "index": 72,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.harmonic_to_noise_ratio": 0.0,
+        "audio_context.hnr_db": 0.0,
+        "audio_context.peak_level": 0.166222,
+        "audio_context.rms_loudness": 0.166222,
+        "audio_context.spectral_entropy": 0.166222,
+        "audio_context.spectral_flatness": 0.0,
+        "audio_context.wiener_entropy": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.harmonic_to_noise_ratio",
+        "audio_context.hnr_db",
+        "audio_context.spectral_flatness",
+        "audio_context.wiener_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "photometric_spectral_warmth_index",
+      "index": 73,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989,
+        "environment.cct_k": 0.0,
+        "environment.color_temperature": 0.0,
+        "environment.color_temperature_warmth": 0.0,
+        "environment.photometric_spectral_warmth_index": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.cct_k",
+        "environment.color_temperature",
+        "environment.color_temperature_warmth",
+        "environment.photometric_spectral_warmth_index"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 924,
+        "max": 0.76854,
+        "mean": -1.288614,
+        "min": -1.92809,
+        "modal_fraction": 0.090343,
+        "std": 0.697168
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "barometric_buoyancy_energy_flux",
+      "index": 74,
+      "input_class": "history_derived",
+      "inputs": {
+        "environment.ambient_light_lux": 0.991989,
+        "environment.barometric_buoyancy_energy_flux": 0.0,
+        "environment.buoyancy_flux": 0.0,
+        "environment.pressure_hpa": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.barometric_buoyancy_energy_flux",
+        "environment.buoyancy_flux"
+      ],
+      "output": {
+        "clip_fraction": 0.001113,
+        "distinct_count": 21,
+        "max": 10.0,
+        "mean": -0.556585,
+        "min": -0.61538,
+        "modal_fraction": 0.602581,
+        "std": 0.416724
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "environment.ambient_light_lux",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "geomagnetic_quadrupole_anisotropy_ratio",
+      "index": 75,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "environment.geomagnetic_quadrupole_anisotropy_ratio": 0.0,
+        "environment.mag_anisotropy_ratio": 0.0,
+        "environment.magnetic_field_ut": 0.0,
+        "motion.mag_raw": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.geomagnetic_quadrupole_anisotropy_ratio",
+        "environment.mag_anisotropy_ratio",
+        "environment.magnetic_field_ut",
+        "motion.mag_raw"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 5,
+        "max": 1.542,
+        "mean": 0.176547,
+        "min": -4.378,
+        "modal_fraction": 0.688251,
+        "std": 0.523221
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "wifi_channel_dispersion_entropy",
+      "index": 76,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "connectivity.wifi_channel_dispersion_entropy": 0.0,
+        "connectivity.wifi_channel_entropy": 0.0,
+        "connectivity.wifi_spatial_shannon_entropy": 0.0,
+        "digital_context.ambient_rf_shannon_entropy": 1.0,
+        "digital_context.wifi_spatial_shannon_entropy": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "connectivity.wifi_channel_dispersion_entropy",
+        "connectivity.wifi_channel_entropy",
+        "connectivity.wifi_spatial_shannon_entropy",
+        "digital_context.wifi_spatial_shannon_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 0.66,
+        "mean": 0.115289,
+        "min": -3.84,
+        "modal_fraction": 0.688251,
+        "std": 0.355916
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermodynamic_battery_stress_index",
+      "index": 77,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "device_relation.current_ua": 0.993992,
+        "device_relation.voltage_mv": 0.993992,
+        "digital_context.thermodynamic_battery_stress_index": 0.0,
+        "environment.battery_stress_index": 0.0,
+        "environment.device_temp_c": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.thermodynamic_battery_stress_index",
+        "environment.battery_stress_index"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1314,
+        "max": 8.14327,
+        "mean": -5.808276,
+        "min": -8.97415,
+        "modal_fraction": 0.106364,
+        "std": 6.035641
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "neuromotor_tremor_lyapunov_exponent",
+      "index": 78,
+      "input_class": "history_derived",
+      "inputs": {
+        "digital_context.neuromotor_tremor_lyapunov_exponent": 0.0,
+        "motion.ballisto_energy": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "motion.tremor_lyapunov_exponent": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "output": {
+        "clip_fraction": 0.045839,
+        "distinct_count": 150,
+        "max": 10.0,
+        "mean": -0.431291,
+        "min": -10.0,
+        "modal_fraction": 0.044281,
+        "std": 2.10556
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_information_flow_rate",
+      "index": 79,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "digital_context.information_flow_rate": 0.0,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.accel_raw": 0.991989,
+        "motion.phase_space_information_flow_rate": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.information_flow_rate",
+        "motion.phase_space_information_flow_rate"
+      ],
+      "output": {
+        "clip_fraction": 0.64575,
+        "distinct_count": 296,
+        "max": 10.0,
+        "mean": 8.234838,
+        "min": -0.74138,
+        "modal_fraction": 0.64575,
+        "std": 3.022141
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.accel_raw",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_crackle_metric",
+      "index": 80,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "motion.crackle_metric": 0.0,
+        "motion.kinematic_crackle_metric": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.crackle_metric",
+        "motion.kinematic_crackle_metric"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 12,
+        "max": 0.0032,
+        "mean": 4e-06,
+        "min": 0.0,
+        "modal_fraction": 0.992212,
+        "std": 7.6e-05
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kinematic_pop_metric",
+      "index": 81,
+      "input_class": "history_derived",
+      "inputs": {
+        "motion.accel_raw": 0.991989,
+        "motion.kinematic_pop_metric": 0.0,
+        "motion.pop_metric": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.kinematic_pop_metric",
+        "motion.pop_metric"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 0.0003,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 0.998442,
+        "std": 8e-06
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "imu_temporal_autocorrelation_decay",
+      "index": 82,
+      "input_class": "history_derived",
+      "inputs": {
+        "connectivity.cellular_cell_fingerprint": 0.993992,
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "environment.pressure_hpa": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "present_varying",
+      "never_present_inputs": [],
+      "output": {
+        "clip_fraction": 0.046061,
+        "distinct_count": 1281,
+        "max": 10.0,
+        "mean": 1.37708,
+        "min": -0.93576,
+        "modal_fraction": 0.046061,
+        "std": 2.97317
+      },
+      "output_constant": false,
+      "runtime_class": "all_listed_inputs_present_and_varying",
+      "varying_present_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "environment.pressure_hpa",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "device_structural_resonance_energy",
+      "index": 83,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.ballisto_energy": 0.0,
+        "motion.device_structural_resonance_energy": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.ballisto_energy",
+        "motion.device_structural_resonance_energy"
+      ],
+      "output": {
+        "clip_fraction": 0.000668,
+        "distinct_count": 57,
+        "max": 10.0,
+        "mean": 4.074706,
+        "min": -4.0,
+        "modal_fraction": 0.097463,
+        "std": 0.916046
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_dual_mic_cross_correlation",
+      "index": 84,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.dual_mic_cross_correlation": 0.0,
+        "audio_context.mic_tdoa_corr": 0.0,
+        "audio_context.spectral_entropy": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.dual_mic_cross_correlation",
+        "audio_context.mic_tdoa_corr"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spatial_coherence_phase",
+      "index": 85,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.silence_likelihood": 0.166222,
+        "audio_context.spatial_coherence_phase": 0.0,
+        "audio_context.spectral_entropy": 0.166222
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.spatial_coherence_phase"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.144,
+        "mean": 0.144,
+        "min": 0.144,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.rms_loudness",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "acoustic_spectral_flux",
+      "index": 86,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.rms_loudness": 0.166222,
+        "audio_context.spectral_entropy": 0.166222,
+        "audio_context.spectral_flux": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "audio_context.spectral_flux"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.423,
+        "mean": 0.423,
+        "min": 0.423,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.silence_likelihood"
+      ],
+      "feature": "ultrasonic_proximity_micro_doppler",
+      "index": 87,
+      "input_class": "observation_derived",
+      "inputs": {
+        "audio_context.micro_doppler": 0.0,
+        "audio_context.silence_likelihood": 0.166222,
+        "audio_context.ultrasonic_proximity_micro_doppler": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "audio_context.micro_doppler",
+        "audio_context.ultrasonic_proximity_micro_doppler"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 10,
+        "max": 4.994,
+        "mean": 0.169834,
+        "min": -0.006,
+        "modal_fraction": 0.962839,
+        "std": 0.899675
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "gnss_visible_satellite_density",
+      "index": 88,
+      "input_class": "observation_derived",
+      "inputs": {
+        "place.gnss_sat_count": 0.0,
+        "place.visible_satellites": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "place.gnss_sat_count",
+        "place.visible_satellites"
+      ],
+      "output": {
+        "clip_fraction": 0.751001,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -7.510013,
+        "min": -10.0,
+        "modal_fraction": 0.751001,
+        "std": 4.32433
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "gnss_mean_carrier_to_noise_ratio",
+      "index": 89,
+      "input_class": "observation_derived",
+      "inputs": {
+        "place.gnss_cn0_dbhz": 0.0,
+        "place.mean_carrier_to_noise_ratio": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "place.gnss_cn0_dbhz",
+        "place.mean_carrier_to_noise_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.751001,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -7.510013,
+        "min": -10.0,
+        "modal_fraction": 0.751001,
+        "std": 4.32433
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "gnss_position_dilution_of_precision",
+      "index": 90,
+      "input_class": "observation_derived",
+      "inputs": {
+        "place.pdop": 0.0,
+        "place.position_dilution_of_precision": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "place.pdop",
+        "place.position_dilution_of_precision"
+      ],
+      "output": {
+        "clip_fraction": 0.751001,
+        "distinct_count": 2,
+        "max": 10.0,
+        "mean": 7.510013,
+        "min": 0.0,
+        "modal_fraction": 0.751001,
+        "std": 4.32433
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "gnss_doppler_velocity_drift",
+      "index": 91,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "place.doppler_velocity_drift": 0.0,
+        "place.gnss_speed_mps": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "place.doppler_velocity_drift",
+        "place.gnss_speed_mps"
+      ],
+      "output": {
+        "clip_fraction": 0.011571,
+        "distinct_count": 31,
+        "max": 10.0,
+        "mean": 6.240765,
+        "min": -10.0,
+        "modal_fraction": 0.176457,
+        "std": 1.840238
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy",
+        "motion.stationary_likelihood"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_soc_to_skin_gradient",
+      "index": 92,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.screen_on_ratio": 1.0,
+        "environment.device_temp_c": 0.991989,
+        "environment.soc_skin_gradient": 0.0,
+        "environment.thermal_soc_to_skin_gradient": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w",
+        "environment.soc_skin_gradient",
+        "environment.thermal_soc_to_skin_gradient"
+      ],
+      "output": {
+        "clip_fraction": 0.100356,
+        "distinct_count": 183,
+        "max": 10.0,
+        "mean": 5.116834,
+        "min": 0.31579,
+        "modal_fraction": 0.100356,
+        "std": 2.761971
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio",
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_modem_to_battery_gradient",
+      "index": 93,
+      "input_class": "history_derived",
+      "inputs": {
+        "connectivity.cellular_cell_fingerprint": 0.993992,
+        "environment.thermal_modem_to_battery_gradient": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "environment.thermal_modem_to_battery_gradient"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 1.5,
+        "mean": 0.017374,
+        "min": 0.0,
+        "modal_fraction": 0.9753,
+        "std": 0.130261
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.cellular_cell_fingerprint",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_relaxation_time_constant",
+      "index": 94,
+      "input_class": "observation_derived",
+      "inputs": {
+        "environment.thermal_relaxation_time_constant": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "environment.thermal_relaxation_time_constant"
+      ],
+      "output": {
+        "clip_fraction": 1.0,
+        "distinct_count": 1,
+        "max": 10.0,
+        "mean": 10.0,
+        "min": 10.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "thermal_entropy_production_rate",
+      "index": 95,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.current_ua": 0.993992,
+        "device_relation.internal_resistance_miliohm": 0.0,
+        "device_relation.voltage_mv": 0.993992,
+        "environment.device_temp_c": 0.991989,
+        "environment.thermal_entropy_production_rate": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.internal_resistance_miliohm",
+        "environment.thermal_entropy_production_rate"
+      ],
+      "output": {
+        "clip_fraction": 0.992657,
+        "distinct_count": 11,
+        "max": 10.0,
+        "mean": -7.082332,
+        "min": -10.0,
+        "modal_fraction": 0.85069,
+        "std": 7.019198
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.current_ua",
+        "device_relation.voltage_mv",
+        "environment.device_temp_c"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cellular_reference_signal_quality",
+      "index": 96,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.cellular_rsrq": 0.0,
+        "connectivity.rsrq_db": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "connectivity.cellular_rsrq",
+        "connectivity.rsrq_db"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -0.06008,
+        "min": -10.0,
+        "modal_fraction": 0.993992,
+        "std": 0.772782
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cellular_signal_to_interference_noise",
+      "index": 97,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.cellular_sinr": 0.0,
+        "connectivity.sinr_db": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "connectivity.cellular_sinr",
+        "connectivity.sinr_db"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -0.06008,
+        "min": -10.0,
+        "modal_fraction": 0.993992,
+        "std": 0.772782
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "ble_advertising_channel_entropy",
+      "index": 98,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_ap_count": 1.0,
+        "digital_context.ambient_social_ble_density": 1.0,
+        "digital_context.ble_advertising_channel_entropy": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.ble_advertising_channel_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 0.44,
+        "mean": 0.053242,
+        "min": -0.934,
+        "modal_fraction": 0.688251,
+        "std": 0.134015
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_social_ble_density"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "wifi_link_speed_variation_ratio",
+      "index": 99,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.wifi_link_speed_variation_ratio": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "connectivity.wifi_link_speed_variation_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 2,
+        "max": 0.0,
+        "mean": -0.000481,
+        "min": -0.08,
+        "modal_fraction": 0.993992,
+        "std": 0.006182
+      },
+      "output_constant": false,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rf_ambient_backscatter_intensity",
+      "index": 100,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.rf_ambient_backscatter_intensity": 0.0,
+        "connectivity.wifi_ap_count": 1.0,
+        "digital_context.ambient_rf_shannon_entropy": 1.0,
+        "digital_context.ambient_social_ble_density": 1.0,
+        "digital_context.ble_rssi_spatial_variance": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "connectivity.rf_ambient_backscatter_intensity"
+      ],
+      "output": {
+        "clip_fraction": 0.006008,
+        "distinct_count": 4,
+        "max": 4.94,
+        "mean": 0.97093,
+        "min": -10.0,
+        "modal_fraction": 0.688251,
+        "std": 1.572155
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "connectivity.wifi_ap_count",
+        "digital_context.ambient_rf_shannon_entropy",
+        "digital_context.ambient_social_ble_density",
+        "digital_context.ble_rssi_spatial_variance"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cellular_timing_advance_distance",
+      "index": 101,
+      "input_class": "observation_derived",
+      "inputs": {
+        "connectivity.cellular_timing_advance_distance": 0.0,
+        "connectivity.timing_advance_km": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "connectivity.cellular_timing_advance_distance",
+        "connectivity.timing_advance_km"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_contact_ellipse_eccentricity",
+      "index": 102,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_contact_ellipse_eccentricity": 0.0,
+        "digital_context.touch_eccentricity": 0.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.touch_contact_ellipse_eccentricity",
+        "digital_context.touch_eccentricity"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 3,
+        "max": 0.6,
+        "mean": 0.022279,
+        "min": 0.0,
+        "modal_fraction": 0.962839,
+        "std": 0.113409
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_downforce_pressure_derivative",
+      "index": 103,
+      "input_class": "history_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_downforce_pressure_derivative": 0.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.unlock_burst_count": 1.0,
+        "motion.accel_raw": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.touch_downforce_pressure_derivative"
+      ],
+      "output": {
+        "clip_fraction": 0.002893,
+        "distinct_count": 43,
+        "max": 10.0,
+        "mean": -0.422996,
+        "min": -0.77778,
+        "modal_fraction": 0.178683,
+        "std": 0.671965
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count",
+        "motion.accel_raw",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "neuromotor_fitts_law_throughput",
+      "index": 104,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.fitts_throughput": 0.0,
+        "digital_context.neuromotor_fitts_law_throughput": 0.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.touch_interval_jitter": 1.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.fitts_throughput",
+        "digital_context.neuromotor_fitts_law_throughput"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 4,
+        "max": 7.5,
+        "mean": 0.277706,
+        "min": 0.0,
+        "modal_fraction": 0.962839,
+        "std": 1.414804
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.touch_interval_jitter",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_biomotor_cadence_decay_slope",
+      "index": 105,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_biomotor_cadence_decay_slope": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.touch_biomotor_cadence_decay_slope"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 31,
+        "max": 0.0,
+        "mean": -0.888407,
+        "min": -1.5,
+        "modal_fraction": 0.358923,
+        "std": 0.589638
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_contact_area_normalized",
+      "index": 106,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.touch_area": 0.0,
+        "digital_context.touch_contact_area_normalized": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "digital_context.touch_area",
+        "digital_context.touch_contact_area_normalized"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.28,
+        "mean": 0.28,
+        "min": 0.28,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "touch_path_tortuosity_ratio",
+      "index": 107,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.touch_interaction_velocity": 1.0,
+        "digital_context.touch_path_tortuosity_ratio": 0.0,
+        "digital_context.unlock_burst_count": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.touch_path_tortuosity_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 13,
+        "max": 2.95,
+        "mean": 0.075251,
+        "min": 0.0,
+        "modal_fraction": 0.962839,
+        "std": 0.392326
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.touch_interaction_velocity",
+        "digital_context.unlock_burst_count"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cpu_frequency_scaling_entropy",
+      "index": 108,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.cpu_frequency_scaling_entropy": 0.0,
+        "digital_context.screen_on_ratio": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.cpu_frequency_scaling_entropy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 15,
+        "max": 1.56,
+        "mean": 1.244023,
+        "min": 0.068,
+        "modal_fraction": 0.676235,
+        "std": 0.518789
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "kernel_context_switch_velocity",
+      "index": 109,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.kernel_context_switch_velocity": 0.0,
+        "digital_context.screen_on_ratio": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.kernel_context_switch_velocity"
+      ],
+      "output": {
+        "clip_fraction": 0.900757,
+        "distinct_count": 4,
+        "max": 10.0,
+        "mean": 9.14081,
+        "min": 0.68,
+        "modal_fraction": 0.900757,
+        "std": 2.656248
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "memory_pressure_stall_ratio",
+      "index": 110,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.attention_fragmentation_entropy": 1.0,
+        "digital_context.memory_pressure_stall_ratio": 0.0,
+        "digital_context.memory_psi": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 108,
+        "max": 0.0868,
+        "mean": 0.039224,
+        "min": 0.0,
+        "modal_fraction": 0.177793,
+        "std": 0.019793
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "display_frame_pacing_jank_variance",
+      "index": 111,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.display_frame_pacing_jank_variance": 0.0,
+        "digital_context.frame_jank_variance": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.display_frame_pacing_jank_variance",
+        "digital_context.frame_jank_variance"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 14,
+        "max": 7.8,
+        "mean": 5.776368,
+        "min": 0.0,
+        "modal_fraction": 0.582555,
+        "std": 2.845286
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "io_wait_latency_proxy",
+      "index": 112,
+      "input_class": "observation_derived",
+      "inputs": {
+        "device_relation.compute_power_w": 0.0,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.io_wait_latency_proxy": 0.0,
+        "digital_context.screen_on_ratio": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "device_relation.compute_power_w",
+        "digital_context.io_wait_latency_proxy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 14,
+        "max": 0.053,
+        "mean": 0.01837,
+        "min": 0.009,
+        "modal_fraction": 0.665109,
+        "std": 0.007542
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "digital_context.app_switch_rate",
+        "digital_context.screen_on_ratio"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "cpu_user_system_mode_ratio",
+      "index": 113,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.cpu_user_system_mode_ratio": 0.0
+      },
+      "inputs_state": "absent_or_constant",
+      "never_present_inputs": [
+        "digital_context.cpu_user_system_mode_ratio"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 1,
+        "max": 0.0,
+        "mean": 0.0,
+        "min": 0.0,
+        "modal_fraction": 1.0,
+        "std": 0.0
+      },
+      "output_constant": true,
+      "runtime_class": "inputs_absent_or_constant",
+      "varying_present_inputs": []
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "fractal_hurst_exponent",
+      "index": 114,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.fractal_hurst_exponent": 0.0,
+        "motion.motion_energy": 0.991989
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.fractal_hurst_exponent"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 8,
+        "max": 0.13,
+        "mean": -9.3e-05,
+        "min": -0.14,
+        "modal_fraction": 0.998442,
+        "std": 0.004058
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "permutation_entropy_complexity",
+      "index": 115,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.motion_energy": 0.991989,
+        "motion.permutation_entropy_complexity": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.permutation_entropy_complexity"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 8,
+        "max": 0.83,
+        "mean": 0.000876,
+        "min": 0.0,
+        "modal_fraction": 0.998442,
+        "std": 0.022662
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rqa_recurrence_determinism_det",
+      "index": 116,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.rqa_recurrence_determinism_det": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 29,
+        "max": 0.0,
+        "mean": -0.059704,
+        "min": -0.76,
+        "modal_fraction": 0.806186,
+        "std": 0.15305
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "rqa_laminarity_vertical_trapping",
+      "index": 117,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.rqa_laminarity_vertical_trapping": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.rqa_laminarity_vertical_trapping"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 226,
+        "max": 0.035,
+        "mean": -0.030446,
+        "min": -0.865,
+        "modal_fraction": 0.229862,
+        "std": 0.048778
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "lempel_ziv_algorithmic_complexity",
+      "index": 118,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.lempel_ziv_algorithmic_complexity": 0.0,
+        "motion.rqa_recurrence_determinism_det": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.lempel_ziv_algorithmic_complexity",
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 29,
+        "max": 0.912,
+        "mean": 0.071644,
+        "min": 0.0,
+        "modal_fraction": 0.806186,
+        "std": 0.18366
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "fisher_information_measure",
+      "index": 119,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.fisher_information_measure": 0.0,
+        "motion.motion_energy": 0.991989,
+        "motion.rqa_recurrence_determinism_det": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.fisher_information_measure",
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output": {
+        "clip_fraction": 0.170004,
+        "distinct_count": 184,
+        "max": 4.075,
+        "mean": -5.395895,
+        "min": -10.0,
+        "modal_fraction": 0.170004,
+        "std": 2.27564
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_trapping_time_seconds",
+      "index": 120,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.phase_space_trapping_time_seconds": 0.0,
+        "motion.rqa_laminarity_vertical_trapping": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.phase_space_trapping_time_seconds",
+        "motion.rqa_laminarity_vertical_trapping"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 687,
+        "max": 0.0,
+        "mean": -0.108116,
+        "min": -1.02974,
+        "modal_fraction": 0.82777,
+        "std": 0.266787
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "multiscale_approximate_entropy",
+      "index": 121,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.motion_energy": 0.991989,
+        "motion.multiscale_approximate_entropy": 0.0,
+        "motion.permutation_entropy_complexity": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.multiscale_approximate_entropy",
+        "motion.permutation_entropy_complexity"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 8,
+        "max": 1.826,
+        "mean": 0.001926,
+        "min": 0.0,
+        "modal_fraction": 0.998442,
+        "std": 0.049857
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "bifurcation_stability_margin",
+      "index": 122,
+      "input_class": "history_derived",
+      "inputs": {
+        "digital_context.neuromotor_tremor_lyapunov_exponent": 0.0,
+        "motion.ballisto_energy": 0.0,
+        "motion.bifurcation_stability_margin": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.stationary_likelihood": 0.991989,
+        "motion.tremor_lyapunov_exponent": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.bifurcation_stability_margin",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "output": {
+        "clip_fraction": 0.045839,
+        "distinct_count": 14,
+        "max": 10.0,
+        "mean": 0.419597,
+        "min": -10.0,
+        "modal_fraction": 0.755229,
+        "std": 2.108889
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "non_linear_energy_operator_teager",
+      "index": 123,
+      "input_class": "observation_derived",
+      "inputs": {
+        "motion.gyro_energy": 0.991989,
+        "motion.gyro_raw": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.non_linear_energy_operator_teager": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.non_linear_energy_operator_teager"
+      ],
+      "output": {
+        "clip_fraction": 0.001558,
+        "distinct_count": 220,
+        "max": 10.0,
+        "mean": 4.350984,
+        "min": -4.04839,
+        "modal_fraction": 0.021584,
+        "std": 0.980397
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.gyro_raw",
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "phase_space_angular_momentum",
+      "index": 124,
+      "input_class": "history_derived",
+      "inputs": {
+        "device_relation.battery_percentage": 0.993992,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.gyro_raw": 0.991989,
+        "motion.phase_space_angular_momentum": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "motion.phase_space_angular_momentum"
+      ],
+      "output": {
+        "clip_fraction": 0.000668,
+        "distinct_count": 121,
+        "max": 10.0,
+        "mean": 0.135824,
+        "min": 0.0,
+        "modal_fraction": 0.911883,
+        "std": 0.690223
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.gyro_raw",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "topological_betti_number_proxy",
+      "index": 125,
+      "input_class": "observation_derived",
+      "inputs": {
+        "digital_context.correlation_dimension": 0.0,
+        "motion.motion_energy": 0.991989,
+        "motion.phase_space_correlation_dimension": 0.0,
+        "motion.topological_betti_number_proxy": 0.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.correlation_dimension",
+        "motion.phase_space_correlation_dimension",
+        "motion.topological_betti_number_proxy"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 75,
+        "max": 1.72,
+        "mean": 0.050076,
+        "min": -0.02,
+        "modal_fraction": 0.521807,
+        "std": 0.133527
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.motion_energy"
+      ]
+    },
+    {
+      "constant_present_inputs": [],
+      "feature": "dissipative_lyapunov_dimension_ky",
+      "index": 126,
+      "input_class": "history_derived",
+      "inputs": {
+        "digital_context.correlation_dimension": 0.0,
+        "digital_context.neuromotor_tremor_lyapunov_exponent": 0.0,
+        "motion.ballisto_energy": 0.0,
+        "motion.dissipative_lyapunov_dimension_ky": 0.0,
+        "motion.gyro_energy": 0.991989,
+        "motion.motion_energy": 0.991989,
+        "motion.phase_space_correlation_dimension": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "motion.tremor_lyapunov_exponent": 0.0,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "digital_context.correlation_dimension",
+        "digital_context.neuromotor_tremor_lyapunov_exponent",
+        "motion.ballisto_energy",
+        "motion.dissipative_lyapunov_dimension_ky",
+        "motion.phase_space_correlation_dimension",
+        "motion.tremor_lyapunov_exponent"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 410,
+        "max": 2.103,
+        "mean": 0.057747,
+        "min": 0.0,
+        "modal_fraction": 0.794393,
+        "std": 0.14932
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "motion.gyro_energy",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    },
+    {
+      "constant_present_inputs": [
+        "audio_context.silence_likelihood",
+        "audio_context.spectral_entropy"
+      ],
+      "feature": "holo_cosmic_coherence_index",
+      "index": 127,
+      "input_class": "history_derived",
+      "inputs": {
+        "audio_context.silence_likelihood": 0.166222,
+        "audio_context.spatial_coherence_phase": 0.0,
+        "audio_context.spectral_entropy": 0.166222,
+        "device_relation.battery_percentage": 0.993992,
+        "digital_context.app_switch_rate": 1.0,
+        "digital_context.attention_fragmentation_entropy": 1.0,
+        "digital_context.chrono_entropy": 0.0,
+        "digital_context.circadian_phase_disruption_index": 0.0,
+        "digital_context.memory_pressure_stall_ratio": 0.0,
+        "digital_context.memory_psi": 0.0,
+        "digital_context.screen_on_ratio": 1.0,
+        "environment.ambient_light_lux": 0.991989,
+        "environment.device_temp_c": 0.991989,
+        "motion.accel_magnitude": 0.991989,
+        "motion.holo_cosmic_coherence_index": 0.0,
+        "motion.motion_energy": 0.991989,
+        "motion.rqa_recurrence_determinism_det": 0.0,
+        "motion.stationary_likelihood": 0.991989,
+        "timestamp_utc": 1.0
+      },
+      "inputs_state": "partial",
+      "never_present_inputs": [
+        "audio_context.spatial_coherence_phase",
+        "digital_context.chrono_entropy",
+        "digital_context.circadian_phase_disruption_index",
+        "digital_context.memory_pressure_stall_ratio",
+        "digital_context.memory_psi",
+        "motion.holo_cosmic_coherence_index",
+        "motion.rqa_recurrence_determinism_det"
+      ],
+      "output": {
+        "clip_fraction": 0.0,
+        "distinct_count": 256,
+        "max": 1.19277,
+        "mean": 0.59358,
+        "min": -3.20482,
+        "modal_fraction": 0.270138,
+        "std": 0.875775
+      },
+      "output_constant": false,
+      "runtime_class": "partial_inputs",
+      "varying_present_inputs": [
+        "device_relation.battery_percentage",
+        "digital_context.app_switch_rate",
+        "digital_context.attention_fragmentation_entropy",
+        "digital_context.screen_on_ratio",
+        "environment.ambient_light_lux",
+        "environment.device_temp_c",
+        "motion.accel_magnitude",
+        "motion.motion_energy",
+        "motion.stationary_likelihood",
+        "timestamp_utc"
+      ]
+    }
+  ],
+  "frames": {
+    "analyzed": 4494,
+    "first_timestamp_utc": "2026-10-01T02:41:19.636853Z",
+    "last_timestamp_utc": "2026-10-02T19:23:18.030375Z",
+    "model_sha256_counts": {
+      "d83ba10a8248d4b9e79ffeb681e3a9834f7356d2f60da1fb1bcc0b7a17d3b68b": 4494
+    },
+    "normalizer_sha256_counts": {
+      "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5": 4494
+    },
+    "rejected": 0
+  },
+  "frozen_verification": {
+    "after_pass_count": 12,
+    "before_pass_count": 12,
+    "verifiers": "verify_*_frozen.sh executed in the on-device Debian runtime"
+  },
+  "limitations": [
+    "presence and variation of an input do not establish that it measured the quantity it is named for",
+    "a constant input is treated as a placeholder default; a varying input may still be a proxy",
+    "one hot-tier window is analyzed; other days, devices and subjects are not represented"
+  ],
+  "observation_paths": {
+    "audio_context.bandwidth_khz": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.dual_mic_cross_correlation": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.harmonic_to_noise_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.hnr_db": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.mic_tdoa_corr": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.micro_doppler": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.peak_level": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.rms_loudness": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.rolloff_khz": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.silence_likelihood": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.spatial_coherence_phase": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.spectral_bandwidth_hz": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.spectral_centroid_hz": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.spectral_entropy": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "audio_context.spectral_flatness": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.spectral_flux": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.spectral_rolloff_hz": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.status": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.828215,
+      "varies": false
+    },
+    "audio_context.ultrasonic_proximity_micro_doppler": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.wiener_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.zcr": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "audio_context.zero_crossing_rate": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.166222,
+      "varies": false
+    },
+    "connectivity.cellular_cell_fingerprint": {
+      "distinct_count": 2,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": true
+    },
+    "connectivity.cellular_rsrq": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.cellular_sinr": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.cellular_timing_advance_distance": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.rf_ambient_backscatter_intensity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.rsrq_db": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.sinr_db": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.timing_advance_km": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_ap_count": {
+      "distinct_count": 5,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "connectivity.wifi_channel_dispersion_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_channel_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_connected": {
+      "distinct_count": 2,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "connectivity.wifi_frequency_mhz": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": false
+    },
+    "connectivity.wifi_kurtosis": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_link_speed_variation_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_rssi": {
+      "distinct_count": 20,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": true
+    },
+    "connectivity.wifi_rssi_distribution_kurtosis": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_rssi_distribution_skewness": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "connectivity.wifi_spatial_shannon_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "device_relation.battery_percentage": {
+      "distinct_count": 21,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": true
+    },
+    "device_relation.bluetooth_a2dp": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": false
+    },
+    "device_relation.compute_power_w": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "device_relation.current_ua": {
+      "distinct_count": 385,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": true
+    },
+    "device_relation.internal_resistance_miliohm": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "device_relation.plugged": {
+      "distinct_count": 2,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "device_relation.screen_state": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": false
+    },
+    "device_relation.status": {
+      "distinct_count": 3,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "device_relation.voltage_mv": {
+      "distinct_count": 71,
+      "distinct_count_capped": false,
+      "present_fraction": 0.993992,
+      "varies": true
+    },
+    "device_relation.wired_headset": {
+      "distinct_count": 1,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": false
+    },
+    "digital_context": {
+      "distinct_count": 190,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.ambient_rf_shannon_entropy": {
+      "distinct_count": 4,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.ambient_social_ble_density": {
+      "distinct_count": 4,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.app_switch_rate": {
+      "distinct_count": 41,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.attention_fragmentation_entropy": {
+      "distinct_count": 116,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.ble_advertising_channel_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.ble_rssi_spatial_variance": {
+      "distinct_count": 4,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.chrono_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.circadian_phase_disruption_index": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.correlation_dimension": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.cpu_frequency_scaling_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.cpu_user_system_mode_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.display_frame_pacing_jank_variance": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.fitts_throughput": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.frame_jank_variance": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.information_flow_rate": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.io_wait_latency_proxy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.kernel_context_switch_velocity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.memory_pressure_stall_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.memory_psi": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.neuromotor_fitts_law_throughput": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.neuromotor_microslip_angular_velocity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.neuromotor_tremor_lyapunov_exponent": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.neuromotor_tremor_spectral_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.screen_on_ratio": {
+      "distinct_count": 2,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.thermodynamic_battery_stress_index": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.thermodynamic_dissipation_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_area": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_biomotor_cadence_decay_slope": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_contact_area_normalized": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_contact_ellipse_eccentricity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_downforce_pressure_derivative": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_eccentricity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.touch_interaction_velocity": {
+      "distinct_count": 13,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.touch_interval_jitter": {
+      "distinct_count": 13,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.touch_path_tortuosity_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.unlock_burst_count": {
+      "distinct_count": 11,
+      "distinct_count_capped": false,
+      "present_fraction": 1.0,
+      "varies": true
+    },
+    "digital_context.wifi_rssi_distribution_skewness": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "digital_context.wifi_spatial_shannon_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.ambient_light_lux": {
+      "distinct_count": 447,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "environment.barometric_buoyancy_energy_flux": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.battery_stress_index": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.buoyancy_flux": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.cct_k": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.color_temperature": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.color_temperature_warmth": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.device_temp_c": {
+      "distinct_count": 990,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "environment.dissipation_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.geomagnetic_dip_angle_deg": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.geomagnetic_quadrupole_anisotropy_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.geomagnetic_total_field_flux": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.lux_kurtosis": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.mag_anisotropy_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.mag_flux_anomaly": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.magnetic_field_ut": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.photometric_flicker_kurtosis": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.photometric_spectral_warmth_index": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.pressure_hpa": {
+      "distinct_count": 521,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "environment.soc_skin_gradient": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.thermal_entropy_production_rate": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.thermal_modem_to_battery_gradient": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.thermal_relaxation_time_constant": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "environment.thermal_soc_to_skin_gradient": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.accel_magnitude": {
+      "distinct_count": 347,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.accel_raw": {
+      "distinct_count": 2000,
+      "distinct_count_capped": true,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.accel_rms": {
+      "distinct_count": 253,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.ballisto_energy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.bifurcation_stability_margin": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.crackle_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.device_structural_resonance_energy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.dissipative_lyapunov_dimension_ky": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.fisher_information_measure": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.fractal_hurst_exponent": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.geomagnetic_dip_angle_deg": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.gyro_energy": {
+      "distinct_count": 43,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.gyro_raw": {
+      "distinct_count": 1331,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.holo_cosmic_coherence_index": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.kinematic_crackle_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.kinematic_pop_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.kinematic_snap_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.kinematic_trajectory_torsion": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.lempel_ziv_algorithmic_complexity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.mag_raw": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.microslip_ang_vel": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.motion_energy": {
+      "distinct_count": 464,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.multiscale_approximate_entropy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.neuromotor_tremor_spectral_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.non_linear_energy_operator_teager": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.permutation_entropy_complexity": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.phase_space_angular_momentum": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.phase_space_correlation_dimension": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.phase_space_information_flow_rate": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.phase_space_trapping_time_seconds": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.pop_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.rqa_laminarity_vertical_trapping": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.rqa_recurrence_determinism_det": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.snap_metric": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.stationary_likelihood": {
+      "distinct_count": 50,
+      "distinct_count_capped": false,
+      "present_fraction": 0.991989,
+      "varies": true
+    },
+    "motion.topological_betti_number_proxy": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.trajectory_torsion": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "motion.tremor_lyapunov_exponent": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.doppler_velocity_drift": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.gnss_cn0_dbhz": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.gnss_sat_count": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.gnss_speed_mps": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.latitude": {
+      "distinct_count": 174,
+      "distinct_count_capped": false,
+      "present_fraction": 0.248999,
+      "varies": true
+    },
+    "place.longitude": {
+      "distinct_count": 207,
+      "distinct_count_capped": false,
+      "present_fraction": 0.248999,
+      "varies": true
+    },
+    "place.mean_carrier_to_noise_ratio": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.pdop": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.position_dilution_of_precision": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.radius_of_gyration": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "place.visible_satellites": {
+      "distinct_count": 0,
+      "distinct_count_capped": false,
+      "present_fraction": 0.0,
+      "varies": false
+    },
+    "timestamp_utc": {
+      "distinct_count": 2000,
+      "distinct_count_capped": true,
+      "present_fraction": 1.0,
+      "varies": true
+    }
+  },
+  "publication": "local_only_pending_explicit_device_derived_data_publication_authorization",
+  "runtime_class_counts": {
+    "all_listed_inputs_present_and_varying": 40,
+    "constant_output": 4,
+    "inputs_absent_or_constant": 25,
+    "partial_inputs": 59
+  },
+  "scope": "aggregate_runtime_evidence_for_inputs_and_outputs_not_per_dimension_measurement_validation",
+  "source_scope": "sqlite_hot_single_read_transaction_aggregates_only_no_rows_or_values_exported"
+}

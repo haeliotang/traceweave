@@ -133,6 +133,11 @@ It conditions on fitted drift and one coordinate; drift uncertainty, multiple
 comparisons and empirical memory acceptance remain open. A controlled independent
 position example also demonstrates that a low MSD slope alone does not identify
 temporal memory. See [the completion audit](docs/stage11_14_completion_audit.md).
+Separately, a read-only device database inventory finds 3,674 live-follow hot
+frames with 128D vectors and a single coordinate binding. Raw records were not
+exported; all twelve frozen checks pass before and after inspection. This
+inventory does not yet establish continuity-qualified pairs, feature provenance
+or empirical accuracy. See [device metadata inventory](artifacts/forecasting_v2/device_128d_metadata_readiness.json).
 `python3 scripts/validate_continuous_holdout.py --train-file TRAIN.jsonl
 --holdout-file HOLDOUT.jsonl --output-file REPORT.json` evaluates only strictly
 later, matching-coordinate 128D records. It reports increment prediction errors

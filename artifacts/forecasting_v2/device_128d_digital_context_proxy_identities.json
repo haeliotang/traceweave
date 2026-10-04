@@ -1,0 +1,44 @@
+{
+  "formula_source": "traceform/probes/digital_sensorium.py",
+  "frames_with_digital_context": 4491,
+  "frozen_verification": {
+    "after_pass_count": 12,
+    "before_pass_count": 12,
+    "verifiers": "verify_*_frozen.sh executed in the on-device Debian runtime"
+  },
+  "identities": {
+    "ble_density_equals_wifi_ap_count_over_3": {
+      "checked": 4464,
+      "matches": 4464,
+      "max_abs_error": 0.0
+    },
+    "ble_variance_from_ble_density": {
+      "checked": 4491,
+      "matches": 4491,
+      "max_abs_error": 0.0
+    },
+    "rf_entropy_from_wifi_ap_count": {
+      "checked": 4491,
+      "matches": 4491,
+      "max_abs_error": 0.0
+    },
+    "touch_jitter_from_velocity_when_screen_on": {
+      "checked": 147,
+      "matches": 147,
+      "max_abs_error": 0.0
+    },
+    "touch_velocity_from_app_switch_and_unlock_when_screen_on": {
+      "checked": 147,
+      "matches": 147,
+      "max_abs_error": 0.0
+    },
+    "touch_zero_when_screen_not_on": {
+      "checked": 4324,
+      "matches": 4324,
+      "max_abs_error": 0.0
+    }
+  },
+  "publication": "local_only_pending_explicit_device_derived_data_publication_authorization",
+  "scope": "exact_formula_identities_in_stored_digital_context_not_measurement_validation",
+  "source_scope": "sqlite_hot_single_read_transaction_aggregates_only_no_rows_or_values_exported"
+}

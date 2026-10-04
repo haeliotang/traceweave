@@ -1,0 +1,30 @@
+{
+  "record_count": 3695,
+  "empty_provenance_count": 3695,
+  "provenance_field_counts": {},
+  "provenance_schema_counts": {},
+  "inventory_status_counts": {
+    "unverified_unless_upstream_provenance_supplied": 3695
+  },
+  "missing_input_path_counts": {
+    "connectivity.cellular_cell_fingerprint": 27,
+    "connectivity.cellular_dbm": 27,
+    "connectivity.cellular_network_type": 27,
+    "connectivity.wifi_environment_fingerprint": 27,
+    "connectivity.wifi_fingerprint": 27,
+    "connectivity.wifi_frequency_mhz": 27,
+    "connectivity.wifi_link_speed_mbps": 27,
+    "connectivity.wifi_rssi": 27,
+    "device_relation.battery_percentage": 27,
+    "device_relation.battery_temp_c": 27,
+    "device_relation.current_ua": 27,
+    "device_relation.voltage_mv": 27
+  },
+  "scope": "upstream_provenance_presence_and_missing_input_inventory_not_per_dimension_measurement_validation",
+  "publication": "local_only_pending_device_derived_data_publication_authorization",
+  "frozen_verification": {
+    "before_pass_count": 12,
+    "after_pass_count": 12
+  },
+  "audit_script_sha256": "817ca562b66818225e67e1147dd5ee2f894c585aba6b715d336e9543bd3da952"
+}
