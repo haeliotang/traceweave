@@ -117,6 +117,8 @@ class TestNativeReferenceSupply(unittest.TestCase):
                     normalizer.reset_state()
                     continue
                 record = json.loads(line.replace('NaN', 'null'))
+                if not record['ran']:
+                    continue  # values are held between runs; the run itself is what Python is compared with
                 mapping, _ = normalizer.extract_raw_features(record['obs'])
                 for name, value in record['values'].items():
                     total += 1
@@ -125,6 +127,35 @@ class TestNativeReferenceSupply(unittest.TestCase):
                         problems.append(f'{name}: python {want!r} java {value!r}')
         self.assertEqual(problems[:10], [])
         self.assertGreater(total, 8000)
+
+    @needs_java
+    def test_the_extractor_runs_at_the_thirty_second_frame_cadence_and_values_are_held_between_runs(self):
+        frames = [{'__reset': True}]
+        base = native_samples(5, count=1)[1]
+        for second in range(95):
+            sample = dict(base, wall=base['wall'] + second * 1000, nanos=base['nanos'] + second * 1_000_000_000)
+            frames.append(sample)
+        with tempfile.TemporaryDirectory() as directory:
+            lines = run_java(frames, directory)
+        records = [json.loads(l.replace('NaN', 'null')) for l in lines if not l.startswith('#')]
+        ran_at = [i for i, r in enumerate(records) if r['ran']]
+        self.assertEqual(ran_at, [0, 30, 60, 90])
+        for index, record in enumerate(records):
+            if not record['ran']:
+                previous = max(i for i in ran_at if i < index)
+                held = {k: v for k, v in record['values'].items() if k in records[previous]['values']}
+                self.assertEqual(held, {k: records[previous]['values'][k] for k in held}, index)
+        self.assertEqual(len(records[29]['values']), len(records[0]['values']))  # still readable just before the next run
+
+    @needs_java
+    def test_held_values_expire_if_the_service_stops_sampling(self):
+        frames = [{'__reset': True}] + [dict(native_samples(6, count=1)[1], wall=BASE_EPOCH_MS, nanos=10_000_000_000)]
+        later = dict(frames[1], wall=BASE_EPOCH_MS + 40_000, nanos=50_000_000_000)
+        frames.append(later)
+        with tempfile.TemporaryDirectory() as directory:
+            lines = run_java(frames, directory)
+        second = json.loads(lines[-1].replace('NaN', 'null'))
+        self.assertTrue(second['ran'])  # a 40 s gap is a new run, so nothing stale is served
 
     @needs_java
     def test_every_ported_output_is_supplied_on_ordinary_samples(self):
@@ -179,7 +210,10 @@ class TestNativeReferenceSupply(unittest.TestCase):
             for frame, line in zip(frames, lines):
                 if line.startswith('#') or not frame.get('accel') or not frame.get('gyro'):
                     continue
-                motion = json.loads(line.replace('NaN', 'null'))['obs'].get('motion', {})
+                record = json.loads(line.replace('NaN', 'null'))
+                if not record['ran']:
+                    continue  # the observation shown belongs to the previous run
+                motion = record['obs'].get('motion', {})
                 if 'motion_energy' not in motion:
                     continue
                 # sensors deliver float32: give the Python formulas the same values the service receives
@@ -195,7 +229,7 @@ class TestNativeReferenceSupply(unittest.TestCase):
                     checked += 1
                     if abs(motion[key] - value) > 1e-9:
                         mismatches += 1
-        self.assertGreater(checked, 1000)
+        self.assertGreater(checked, 400)
         self.assertEqual(mismatches, 0)
 
 

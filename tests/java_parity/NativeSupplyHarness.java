@@ -73,7 +73,7 @@ public final class NativeSupplyHarness {
                     inputs.usage = window.countsWithDigital().at(nanos);
                 }
                 supplier.supply(readings, inputs);
-                out.append("{\"obs\":");
+                out.append("{\"ran\":").append(supplier.lastRan()).append(",\"obs\":");
                 json(out, supplier.lastObservation());
                 out.append(",\"values\":{");
                 boolean first = true;

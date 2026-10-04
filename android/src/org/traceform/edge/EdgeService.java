@@ -41,6 +41,13 @@ public final class EdgeService extends Service implements SensorEventListener {
     private final FeatureReadings observed = new FeatureReadings();
     private final NativeUsageSource usageSource = new NativeUsageSource();
     private final ReferenceFeatureSupplier referenceFeatures = new ReferenceFeatureSupplier();
+    private final ServiceMetrics metrics = new ServiceMetrics();
+    private long phaseMark;
+    private void phase(int index) {
+        long now = System.nanoTime();
+        metrics.recordPhase(index, (now - phaseMark) / 1e6);
+        phaseMark = now;
+    }
     private int observedFeatureCount, derivedFeatureCount, proxyFeatureCount, missingFeatureCount;
     private final KinematicState kinematics = new KinematicState();
     private final CriticalSlowingDetector slowing = new CriticalSlowingDetector();
@@ -218,8 +225,11 @@ public final class EdgeService extends Service implements SensorEventListener {
     private final Runnable sample = new Runnable() {
         @Override public void run() {
             if (stopped) return;
+            long tickStartNanos = System.nanoTime();
+            phaseMark = tickStartNanos;
             try {
                 refreshModel();
+                phase(0);
                 long now = System.currentTimeMillis(), nanos = SystemClock.elapsedRealtimeNanos();
                 observed.clock(now, nanos);
                 observed.motion(nanos);
@@ -267,6 +277,7 @@ public final class EdgeService extends Service implements SensorEventListener {
                 observed.batteryStress(voltageMv, batteryCurrent == Integer.MIN_VALUE ? Double.NaN : batteryCurrent,
                     fraction == null || battery == null ? Double.NaN : fraction.value, nanos);
                 // Parity-tested formulas over the inputs gathered above; recorded as derived or proxy readings.
+                phase(1);
                 ReferenceObservation.Inputs reference = new ReferenceObservation.Inputs();
                 reference.wallMillis = now; reference.nanos = nanos;
                 reference.screenState = power.isInteractive() ? "ON" : "OFF";
@@ -275,6 +286,7 @@ public final class EdgeService extends Service implements SensorEventListener {
                 reference.wifiRssiDbm = wifi.rssiDbm;
                 reference.headsetConnected = headset;
                 referenceFeatures.supply(observed, reference);
+                phase(2);
                 double[] raw = engine.medians.clone();
                 boolean[] coverage = new boolean[raw.length];
                 JSONArray supplied = new JSONArray(), missing = new JSONArray();
@@ -318,6 +330,7 @@ public final class EdgeService extends Service implements SensorEventListener {
                         .put("composite_score", signal.score)
                         .put("input_dimension", normalized.length)
                         .put("evidence_scope", "normalized_continuous_CSD_diagnostic_not_biological_identification_or_actuation_authority"));
+                phase(3);
                 database.beginTransaction();
                 WarmBucket warm = WarmBucket.next(now, motion.continuous, previousWarm);
                 try {
@@ -335,6 +348,7 @@ public final class EdgeService extends Service implements SensorEventListener {
                     }
                     database.setTransactionSuccessful();
                 } finally { database.endTransaction(); }
+                phase(4);
                 previousWarm = warm;
                 previousCommitted = payload;
                 if (frames % 600 == 0) write("cold_receipt.json", ColdTrajectory.export(database, new File(getFilesDir(), "cold_statistics.json.gz")));
@@ -358,12 +372,56 @@ public final class EdgeService extends Service implements SensorEventListener {
                     .put("proxy_feature_count", proxyFeatureCount)
                     .put("supplied_feature_count", supplied.length()).put("missing_feature_count", missingFeatureCount).put("running", true));
             } catch (Exception error) { kinematics.reset(); slowing.reset(); shadowComparisons.invalidate(); android.util.Log.e("Traceform", "sampling failed", error); }
+            phase(5);
+            metrics.recordTick((System.nanoTime() - tickStartNanos) / 1e6);
+            recordServiceMetrics();
             if (!stopped) {
                 long now = SystemClock.elapsedRealtime();
                 handler.postDelayed(this, sampleClock.next(now) - now);
             }
         }
     };
+
+    /** Whole-service cost: sample duration histogram and process memory, refreshed on a slow cadence. */
+    private void recordServiceMetrics() {
+        long ticks = metrics.ticks();
+        if (ticks % 30 == 1) {
+            Runtime runtime = Runtime.getRuntime();
+            metrics.recordMemory(android.os.Debug.getPss(), (runtime.totalMemory() - runtime.freeMemory()) / 1024,
+                android.os.Debug.getNativeHeapAllocatedSize() / 1024);
+        }
+        if (ticks % 10 == 0) writeServiceMetrics(true);
+    }
+
+    private JSONObject phaseJson(boolean maximum) throws Exception {
+        JSONObject result = new JSONObject();
+        for (int i = 0; i < ServiceMetrics.PHASES.length; i++)
+            result.put(ServiceMetrics.PHASES[i], finite(maximum ? metrics.phaseMaxMillis(i) : metrics.phaseMeanMillis(i)));
+        return result;
+    }
+
+    private static Object finite(double value) { return Double.isFinite(value) ? (Object) value : JSONObject.NULL; }
+
+    private void writeServiceMetrics(boolean running) {
+        try {
+            JSONArray histogram = new JSONArray();
+            for (long count : metrics.histogram()) histogram.put(count);
+            JSONArray edges = new JSONArray();
+            for (double edge : ServiceMetrics.EDGES_MILLIS) edges.put(edge);
+            write("service_metrics.json", new JSONObject().put("running", running).put("process_id", android.os.Process.myPid())
+                .put("ticks", metrics.ticks()).put("ticks_over_period", metrics.ticksOverBudget())
+                .put("skipped_sample_ticks", sampleClock == null ? 0 : sampleClock.skipped)
+                .put("tick_ms_mean", finite(metrics.meanMillis())).put("tick_ms_p50_upper_bound", finite(metrics.percentileMillis(0.50)))
+                .put("tick_ms_p95_upper_bound", finite(metrics.percentileMillis(0.95))).put("tick_ms_p99_upper_bound", finite(metrics.percentileMillis(0.99)))
+                .put("tick_ms_max", finite(metrics.maxMillis())).put("tick_ms_bucket_edges", edges).put("tick_ms_histogram", histogram)
+                .put("phase_ms_mean", phaseJson(false)).put("phase_ms_max", phaseJson(true))
+                .put("memory_samples", metrics.memorySamples()).put("pss_kb_first", metrics.pssKbFirst())
+                .put("pss_kb_last", metrics.pssKbLast()).put("pss_kb_max", metrics.pssKbMax())
+                .put("java_heap_kb_last", metrics.javaHeapKbLast()).put("java_heap_kb_max", metrics.javaHeapKbMax())
+                .put("native_heap_kb_last", metrics.nativeHeapKbLast()).put("native_heap_kb_max", metrics.nativeHeapKbMax())
+                .put("scope", "whole_service_process_tick_cost_and_memory_not_core_compute_only"));
+        } catch (Exception error) { android.util.Log.e("Traceform", "service metrics failed", error); }
+    }
 
     private void scheduleShadowComparison(long instant, boolean continuous, String token, CriticalSlowingDetector.Result signal) {
         scheduleComparison(instant,continuous,token,signal,null);
@@ -478,6 +536,7 @@ public final class EdgeService extends Service implements SensorEventListener {
                 try { if (database != null && database.isOpen()) write("cold_receipt.json", ColdTrajectory.export(database, new File(getFilesDir(), "cold_statistics.json.gz"))); }
                 catch (Exception error) { android.util.Log.e("Traceform", "cold checkpoint failed", error); }
                 if (database != null) database.close();
+                writeServiceMetrics(false);
                 try { write("status.json", new JSONObject().put("running", false).put("frames", frames).put("last_frame_epoch_ms", lastFrameMillis)
                     .put("observed_feature_count", observedFeatureCount).put("derived_feature_count", derivedFeatureCount).put("proxy_feature_count", proxyFeatureCount).put("missing_feature_count", missingFeatureCount)); } catch (Exception ignored) {}
                 endingThread.quitSafely();

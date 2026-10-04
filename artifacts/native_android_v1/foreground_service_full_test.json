@@ -1,0 +1,308 @@
+{
+  "conclusion": {
+    "audit_hypothesis": "audit completes once memory is free, supporting memory pressure as the cause (not proven)",
+    "tick_cost": "dominated by database_transaction (~185 ms) independent of fsync policy; contents not yet profiled"
+  },
+  "device": "Pixel 6a",
+  "limits": [
+    "single ~12 minute bounded run, not long-term",
+    "measured under device memory pressure",
+    "reference supplier cadence corrected to 30 s during this item",
+    "tick cost is dominated by SQLite transaction (~184 ms mean), not native compute"
+  ],
+  "package": "org.traceform.edge.synthetic (isolated, uninstalled afterwards)",
+  "payload_to_string_timing": {
+    "chars": 26344,
+    "decision": "no code change; re-measure in a non-debuggable build before optimizing",
+    "first_call_ms_max": 100.9,
+    "first_call_ms_mean": 68.8,
+    "scope": "temporary instrumentation (reverted), isolated debuggable package, 230 frames, binding cache in place",
+    "second_call_same_payload_ms_mean": 34.7,
+    "share_of_tick": "about 69 of ~178 ms mean tick",
+    "unexplained": "second serialization of the same payload is half as fast to produce; JIT warm-up or allocation effects suspected, not tested"
+  },
+  "run_1_memory_starved": {
+    "condition": "MemFree~200MB, SwapFree 0",
+    "retained_source_audit": {
+      "note": "Audit stage did not finish on the final-code 719 frames; device had MemFree~200MB and SwapFree 0. Cause unproven (memory pressure suspected). An earlier build with lower memory pressure completed the audit (1854 records, 0 invalid).",
+      "status": "pending_never_finished"
+    },
+    "run": {
+      "clock_breaks": 0,
+      "coverage_breaks": 35,
+      "csd_dwell_gate_frames": 65,
+      "csd_ready_frames": 330,
+      "csd_tipping_frames": 114,
+      "dt_max_seconds": 1.022908122,
+      "dt_mean_seconds": 1.0000326382357234,
+      "dt_min_seconds": 0.980546876,
+      "frames": 719,
+      "interval_breaks": 0,
+      "interventions_enabled": false,
+      "longest_continuous_pairs": 145,
+      "stored_frame_span_seconds": 717.998,
+      "temperature_observed_frames": 718,
+      "unexplained_breaks": 0
+    },
+    "service_metrics": {
+      "java_heap_kb_last": 9433,
+      "java_heap_kb_max": 13498,
+      "memory_samples": 24,
+      "native_heap_kb_last": 6037,
+      "native_heap_kb_max": 6037,
+      "phase_ms_max": {
+        "database_transaction": 244.074219,
+        "engine_and_csd": 74.798746,
+        "native_sources": 52.605021,
+        "post_write_and_status": 200.610555,
+        "reference_supply": 79.067912,
+        "refresh_model": 37.466553
+      },
+      "phase_ms_mean": {
+        "database_transaction": 184.2885166620308,
+        "engine_and_csd": 40.52493869401948,
+        "native_sources": 26.6304626258693,
+        "post_write_and_status": 4.3006465563282354,
+        "reference_supply": 2.3283880848400553,
+        "refresh_model": 10.836309596662021
+      },
+      "process_id": 32146,
+      "pss_kb_first": 79296,
+      "pss_kb_last": 85297,
+      "pss_kb_max": 88668,
+      "running": false,
+      "scope": "whole_service_process_tick_cost_and_memory_not_core_compute_only",
+      "skipped_sample_ticks": 0,
+      "tick_ms_bucket_edges": [
+        5,
+        10,
+        20,
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "tick_ms_histogram": [
+        0,
+        0,
+        0,
+        0,
+        14,
+        218,
+        487,
+        0,
+        0
+      ],
+      "tick_ms_max": 371.55363,
+      "tick_ms_mean": 268.91391672322646,
+      "tick_ms_p50_upper_bound": 500,
+      "tick_ms_p95_upper_bound": 500,
+      "tick_ms_p99_upper_bound": 500,
+      "ticks": 719,
+      "ticks_over_period": 0
+    }
+  },
+  "run_2_after_memory_cleanup_with_synchronous_normal": {
+    "condition": "MemFree~1.1GB after force-stopping unrelated user apps; PRAGMA synchronous=NORMAL (experiment, reverted)",
+    "retained_source_audit": {
+      "invalid_records": 0,
+      "native_provenance_records": 714,
+      "status": "complete"
+    },
+    "run": {
+      "clock_breaks": 0,
+      "coverage_breaks": 30,
+      "csd_dwell_gate_frames": 34,
+      "csd_ready_frames": 314,
+      "csd_tipping_frames": 135,
+      "dt_max_seconds": 1.017874797,
+      "dt_mean_seconds": 0.9999815611434852,
+      "dt_min_seconds": 0.982736817,
+      "frames": 714,
+      "interval_breaks": 0,
+      "interventions_enabled": false,
+      "longest_continuous_pairs": 128,
+      "stored_frame_span_seconds": 714,
+      "temperature_observed_frames": 713,
+      "unexplained_breaks": 0
+    },
+    "service_metrics": {
+      "java_heap_kb_last": 9369,
+      "java_heap_kb_max": 16734,
+      "memory_samples": 24,
+      "native_heap_kb_last": 6036,
+      "native_heap_kb_max": 6037,
+      "phase_ms_max": {
+        "database_transaction": 612.454468,
+        "engine_and_csd": 73.920207,
+        "native_sources": 50.427572,
+        "post_write_and_status": 759.685059,
+        "reference_supply": 73.850423,
+        "refresh_model": 31.343303
+      },
+      "phase_ms_mean": {
+        "database_transaction": 185.67295860084042,
+        "engine_and_csd": 24.041391084033624,
+        "native_sources": 13.162778035014016,
+        "post_write_and_status": 5.00245393977591,
+        "reference_supply": 1.2283829103641462,
+        "refresh_model": 5.429439079831934
+      },
+      "process_id": 29758,
+      "pss_kb_first": 87973,
+      "pss_kb_last": 94341,
+      "pss_kb_max": 100983,
+      "running": false,
+      "scope": "whole_service_process_tick_cost_and_memory_not_core_compute_only",
+      "skipped_sample_ticks": 1,
+      "tick_ms_bucket_edges": [
+        5,
+        10,
+        20,
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "tick_ms_histogram": [
+        0,
+        0,
+        0,
+        0,
+        14,
+        541,
+        144,
+        14,
+        1
+      ],
+      "tick_ms_max": 1001.572958,
+      "tick_ms_mean": 234.54262321988793,
+      "tick_ms_p50_upper_bound": 250,
+      "tick_ms_p95_upper_bound": 500,
+      "tick_ms_p99_upper_bound": 1000,
+      "ticks": 714,
+      "ticks_over_period": 1
+    }
+  },
+  "run_3_with_binding_parse_cache": {
+    "comparison_database_transaction_mean_ms": {
+      "after_cache": 86.5,
+      "before_cache": 185.7
+    },
+    "comparison_tick_mean_ms": {
+      "after_cache": 177.9,
+      "before_cache": 234.5
+    },
+    "condition": "MemFree 0.2-0.4GB (not clean), 720 s, ModelBindingCache keyed by full bundle text",
+    "retained_source_audit": {
+      "invalid_records": 0,
+      "native_provenance_records": 719,
+      "note": "completed ~5 minutes after the frame stage",
+      "status": "complete"
+    },
+    "run": {
+      "clock_breaks": 0,
+      "coverage_breaks": 45,
+      "csd_dwell_gate_frames": 66,
+      "csd_ready_frames": 212,
+      "csd_tipping_frames": 84,
+      "dt_max_seconds": 1.020407024,
+      "dt_mean_seconds": 1.0000369807741454,
+      "dt_min_seconds": 0.980002564,
+      "frames": 719,
+      "interval_breaks": 0,
+      "interventions_enabled": false,
+      "temperature_observed_frames": 718,
+      "unexplained_breaks": 0
+    },
+    "service_metrics": {
+      "java_heap_kb_last": 5861,
+      "java_heap_kb_max": 12095,
+      "memory_samples": 24,
+      "native_heap_kb_last": 6037,
+      "native_heap_kb_max": 6037,
+      "phase_ms_max": {
+        "database_transaction": 212.212769,
+        "engine_and_csd": 83.218059,
+        "native_sources": 64.44694,
+        "post_write_and_status": 194.407511,
+        "reference_supply": 83.493408,
+        "refresh_model": 23.392904
+      },
+      "phase_ms_mean": {
+        "database_transaction": 86.54494984005574,
+        "engine_and_csd": 43.83365920166903,
+        "native_sources": 29.648115559109876,
+        "post_write_and_status": 3.8356835076495104,
+        "reference_supply": 2.4220129652294817,
+        "refresh_model": 11.639623553546585
+      },
+      "process_id": 17208,
+      "pss_kb_first": 76015,
+      "pss_kb_last": 78515,
+      "pss_kb_max": 83952,
+      "running": false,
+      "scope": "whole_service_process_tick_cost_and_memory_not_core_compute_only",
+      "skipped_sample_ticks": 0,
+      "tick_ms_bucket_edges": [
+        5,
+        10,
+        20,
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "tick_ms_histogram": [
+        0,
+        0,
+        0,
+        1,
+        142,
+        568,
+        8,
+        0,
+        0
+      ],
+      "tick_ms_max": 317.003378,
+      "tick_ms_mean": 177.92871595549394,
+      "tick_ms_p50_upper_bound": 250,
+      "tick_ms_p95_upper_bound": 250,
+      "tick_ms_p99_upper_bound": 500,
+      "ticks": 719,
+      "ticks_over_period": 0
+    },
+    "tests": "full suite 569 passed, 182 subtests (JDK17), includes tests/test_native_model_binding_cache.py"
+  },
+  "scope": "bounded_real_foreground_service_sampling_not_long_term_or_scientific_acceptance",
+  "synchronous_normal_experiment": {
+    "database_transaction_mean_ms": {
+      "FULL": 184.3,
+      "NORMAL": 185.7
+    },
+    "decision": "reverted; WAL was already enabled",
+    "pragma_effect_on_pooled_connections": "not verified",
+    "result": "no benefit"
+  },
+  "transaction_breakdown": {
+    "cold_append_hot_spot": "statement between gap check and edge insert: binding query plus new JSONObject(23KB cold_models.bundle) parsed every frame, ~103 ms (max 124 ms)",
+    "cold_append_ms": 104,
+    "commit_ms": 1.6,
+    "insert_frame_ms": 0.55,
+    "not_bottleneck": [
+      "fsync/commit",
+      "SQL inserts"
+    ],
+    "payload_to_string_ms": "~65-100 (inferred: transaction phase 178 ms minus instrumented parts ~110 ms; not timed directly)",
+    "scope": "temporary instrumentation (reverted), isolated package, 4-5 minute runs, MemFree ~1GB",
+    "summaries_ms": 0.32,
+    "unverified": [
+      "org.json CPU cost may be inflated by debuggable/unoptimized execution; `cmd package compile -m speed` left status=verify so this was not tested",
+      "one instrumented run had cold_pt sums (213 ms) inconsistent with cold_append (104 ms)"
+    ],
+    "warm_append_ms": 2.9
+  }
+}
