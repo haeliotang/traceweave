@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.zip.GZIPOutputStream;
 
 final class ColdTrajectory {
+    private static final ModelBindingCache BINDINGS = new ModelBindingCache();
     static void initialize(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS cold_models (namespace TEXT PRIMARY KEY, normalizer TEXT, bundle TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS cold_states (namespace TEXT, token TEXT, PRIMARY KEY(namespace,token), FOREIGN KEY(namespace) REFERENCES cold_models(namespace))");
@@ -59,7 +60,7 @@ final class ColdTrajectory {
         try (Cursor binding = db.rawQuery("SELECT normalizer,bundle FROM cold_models WHERE namespace=?", new String[]{frame.getString("model_version")})) {
             if (!binding.moveToFirst() || !frame.getString("normalizer_sha256").equals(binding.getString(0)))
                 throw new IllegalArgumentException("frame normalizer binding mismatch");
-            if (!frame.getString("model_sha256").equals(new JSONObject(binding.getString(1)).getString("model_sha256")))
+            if (!frame.getString("model_sha256").equals(BINDINGS.modelSha256(binding.getString(1))))
                 throw new IllegalArgumentException("frame model content binding mismatch");
         }
         Object[] keys = {frame.getString("model_version"), previous.getString("state_token"), frame.getString("state_token")};
