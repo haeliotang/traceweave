@@ -111,3 +111,15 @@ forced, when the hot tier is empty or free space is below 2.5 times the store si
 is never pruned. Snapshots hold raw device observations: they stay on the device and are never
 exported. Rollback archive: `~/traceform-runtime-rollback-20261003-snapshot.tar`. The first scheduled
 snapshot happens at the first hourly run after local midnight.
+
+## 2026-10-04 primary app upgrade
+
+The primary app `org.traceform.edge` was upgraded in place (`adb install -r`, same signer, data kept)
+from APK `075fa5e2…` to `6f441bce…`, built from commit 23c1065. The previous APK and a tar of the app's
+private data were saved on the host outside the repository before the upgrade. Rollback to the previous APK
+was rehearsed and the new APK installed again; the core verification passed after each step. The post-deploy
+health check ran eight non-actuator verification suites and one bounded real collection (about 135 s, mean
+tick 176.5 ms, SQLite integrity ok). Starting collection applied the 48 h hot-tier retention to the app's old
+frames, which are in the backup. The device was locked, so the app was stopped with `force-stop`. The Termux
+runtime and the twelve frozen verifiers were unchanged. Receipt:
+`artifacts/native_android_v1/primary_app_upgrade_20261004.json`.

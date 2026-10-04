@@ -1,0 +1,64 @@
+{
+  "apk_sha256": {
+    "after": "6f441bcee765711ba2ed4763d7e4e92202c001c046d47f66da38b2d45a3bdcab",
+    "before": "075fa5e2c09bf6207000a4bf3b7991c4550a843479f9c1c99d8fa46bececf993"
+  },
+  "backup": {
+    "contents": [
+      "primary_before.apk",
+      "primary_data_before.tar (databases, files, shared_prefs, 99 entries)",
+      "package_before.txt"
+    ],
+    "data_preserved_by_install_r": true,
+    "file_list_identical_before_after": true,
+    "location": "host ~/traceform_deploy_backup_20261004 (outside the repository, private)"
+  },
+  "final_state": "new version installed; primary service stopped (force-stop); not collecting",
+  "health_check": {
+    "bounded_real_collection": {
+      "database_transaction_ms_mean": 91.2,
+      "foreground_service": true,
+      "frames_total_in_db": 237,
+      "seconds_approx": 135,
+      "sqlite_integrity": "ok",
+      "tick_ms_mean": 176.5,
+      "ticks_over_period": 0
+    },
+    "executor_suites_skipped": "night display, color temperature, volume: they change real device settings",
+    "retention_effect": "the service deleted 1344 frames from 2026-10-01 older than the 48 h hot-tier retention on its first tick; they exist in the backup tar",
+    "verification_suites_passed": [
+      "core",
+      "cold_store",
+      "warm_migration",
+      "csd",
+      "features",
+      "bound_initialization",
+      "bound_lifecycle",
+      "periodic_kernel"
+    ]
+  },
+  "limits": [
+    "device was locked with a credential: the UI stop button could not be used, force-stop was the stop path (no graceful final checkpoint; per-tick commits and integrity_check ok)",
+    "primary app is debuggable and development-signed: not a release identity",
+    "weekly Sunday training in the primary app was not observed",
+    "rollback command: adb install -r ~/traceform_deploy_backup_20261004/primary_before.apk (same versionCode, same signer); data rollback: restore primary_data_before.tar only if data were damaged"
+  ],
+  "package": "org.traceform.edge",
+  "rollback_rehearsal": {
+    "files_kept": 64,
+    "then_reupgraded_to": "6f441bce...",
+    "to": "075fa5e2...",
+    "verifyCore_passed": true,
+    "verifyCore_passed_after": true
+  },
+  "runtime_unaffected": {
+    "frozen_verifiers": "12/12 before and after",
+    "silent_marker_absent": true,
+    "termux_edge_storage_wal_still_updating": true
+  },
+  "same_signer_before_and_after": true,
+  "scope": "primary_app_in_place_upgrade_rollback_rehearsal_and_post_deploy_health_check_Pixel6a",
+  "signer_certificate_sha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+  "source_commit": "23c1065 (plus uncommitted scripts/tests not part of the APK)",
+  "upgrade": "adb install -r (in place, data kept), versionCode 1 unchanged, lastUpdateTime 2026-10-04 19:10:05"
+}

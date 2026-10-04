@@ -1,0 +1,38 @@
+{
+  "build": "HEAD 23c1065 sources, probe APK /tmp/traceform_probe_build_20261004f",
+  "limits": [
+    "SIGKILL simulates lmkd but is not real system-wide memory pressure; real pressure was deliberately not induced because it could kill the production Termux runtime",
+    "sticky restart observed with the app in background only for a short interval (~90 s), not after hours or under Doze/app standby",
+    "tests used the isolated package with the same sources as HEAD, not the primary app (primary app is not yet upgraded)",
+    "invalid first attempts discarded: a pidof returned empty so no kill happened; a second run was delivered to an existing activity and no service started"
+  ],
+  "scope": "isolated_package_org.traceform.edge.synthetic_Pixel6a_not_primary_app_not_real_system_memory_pressure",
+  "sigkill_app_in_background_launcher_resumed": {
+    "foreground_service_start_not_allowed": false,
+    "new_process_id": true,
+    "restart_scheduled_by_system_ms": 1000,
+    "sampling_resumed": true
+  },
+  "sigkill_foreground_activity_visible": {
+    "cold_edges": 10,
+    "cold_models": 1,
+    "continuous_across_session_change": 0,
+    "csd_ready_after_restart": false,
+    "first_frame_continuous_from_previous": false,
+    "frames_before": 276,
+    "frames_total": 596,
+    "new_session_id": true,
+    "restart_gap_seconds": 3.555,
+    "sqlite_integrity_check": "ok"
+  },
+  "trim_memory_signals": {
+    "levels": [
+      "RUNNING_MODERATE",
+      "RUNNING_LOW",
+      "RUNNING_CRITICAL"
+    ],
+    "note": "EdgeService has no onTrimMemory/onLowMemory handler; signals were tolerated, not acted on",
+    "process_survived": true,
+    "sampling_continued": true
+  }
+}

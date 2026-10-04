@@ -37,7 +37,8 @@ def fail(message):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--sqlite-file', type=Path, required=True)
+    parser.add_argument('--sqlite-file', type=Path, required=True, action='append',
+                        help='the same hot-tier file(s), in the same order, that were evaluated')
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--evaluation-report', type=Path, required=True)
     parser.add_argument('--candidate-normalizer-file', type=Path, required=True)

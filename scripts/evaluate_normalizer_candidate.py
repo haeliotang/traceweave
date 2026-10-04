@@ -25,6 +25,7 @@ Only aggregates are written: no rows, observation fields or per-frame values.
 """
 import argparse
 import collections
+import datetime
 import json
 from pathlib import Path
 import sqlite3
@@ -43,24 +44,63 @@ WARMUP_FRAMES = 100
 LONG_MEMORY_DIMENSIONS = ('state_residence_persistence_hours', 'phase_space_trapping_time_seconds',
                           'spatial_radius_of_gyration')
 SATURATION_CEILING = 4
+# A UTC day counts as covered with at least this many frames (86400 s at one frame per 30 s is 2880; 80% of that).
+FULL_DAY_FRAMES = 2300
 
 
-def load_hot(path):
-    connection = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
-    rows = []
-    try:
-        connection.execute('PRAGMA query_only=ON')
-        connection.execute('BEGIN')
-        for raw, frame in connection.execute('SELECT raw, frame FROM hot ORDER BY ts, id'):
-            try:
-                observation, stored = json.loads(raw), json.loads(frame)
-                if isinstance(observation, dict) and isinstance(stored.get('continuous_vector'), list):
-                    rows.append((observation, stored))
-            except ValueError:
-                continue
-    finally:
-        connection.close()
-    return rows
+def load_hot_with_info(paths):
+    """Frames of one or more hot-tier files, ordered by time, one per stored id.
+
+    Daily snapshots of a 48 h hot tier overlap, so the same id may appear in several files; the copies
+    must be identical, otherwise the sources disagree and nothing can be evaluated.
+    """
+    if isinstance(paths, (str, Path)):
+        paths = [paths]
+    seen, entries, overlaps = {}, [], 0
+    for path in paths:
+        connection = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
+        try:
+            connection.execute('PRAGMA query_only=ON')
+            connection.execute('BEGIN')
+            for row_id, ts, raw, frame in connection.execute('SELECT id, ts, raw, frame FROM hot ORDER BY ts, id'):
+                if row_id in seen:
+                    if seen[row_id] != (raw, frame):
+                        raise SystemExit(f'conflicting copies of stored frame in {path}')
+                    overlaps += 1
+                    continue
+                seen[row_id] = (raw, frame)
+                try:
+                    observation, stored = json.loads(raw), json.loads(frame)
+                    if isinstance(observation, dict) and isinstance(stored.get('continuous_vector'), list):
+                        entries.append((ts, row_id, observation, stored))
+                except ValueError:
+                    continue
+        finally:
+            connection.close()
+    entries.sort(key=lambda entry: (entry[0], entry[1]))
+    days = collections.Counter(datetime.datetime.fromtimestamp(entry[0], datetime.timezone.utc).date().isoformat()
+                               for entry in entries)
+    return [(entry[2], entry[3]) for entry in entries], {
+        'source_files': len(paths), 'overlapping_rows_dropped': overlaps, 'frames_by_utc_day': dict(sorted(days.items())),
+        'timestamps': [entry[0] for entry in entries]}
+
+
+def load_hot(paths):
+    return load_hot_with_info(paths)[0]
+
+
+def holdout_days(timestamps, split, minimum_frames=FULL_DAY_FRAMES):
+    """UTC days lying entirely in the held-out part and that are well covered (not partial days).
+
+    A day counts when it starts after the last training frame, all its frames are held out, and it has at
+    least minimum_frames frames. The first and last day of a window are usually partial and are excluded
+    by the frame count.
+    """
+    if split >= len(timestamps):
+        return []
+    last_train = datetime.datetime.fromtimestamp(timestamps[split - 1], datetime.timezone.utc).date()
+    counts = collections.Counter(datetime.datetime.fromtimestamp(t, datetime.timezone.utc).date() for t in timestamps[split:])
+    return sorted(day.isoformat() for day, n in counts.items() if day > last_train and n >= minimum_frames)
 
 
 def params_digest(params):
@@ -87,16 +127,19 @@ def forecast(rows, vectors, params, split):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--sqlite-file', type=Path, required=True)
+    parser.add_argument('--sqlite-file', type=Path, required=True, action='append',
+                        help='hot-tier file; repeat for several daily snapshots (overlapping frames are merged)')
     parser.add_argument('--baseline-normalizer-file', type=Path, required=True)
     parser.add_argument('--output-file', type=Path, required=True)
     parser.add_argument('--candidate-normalizer-file', type=Path)
     parser.add_argument('--train-fraction', type=float, default=0.7)
+    parser.add_argument('--min-holdout-days', type=int, default=0,
+                        help='when > 0, require this many full independent UTC days in the holdout (adds a check)')
     args = parser.parse_args()
 
     document = json.loads(args.baseline_normalizer_file.read_text())
     baseline = NormalizationParams.from_dict(document.get('normalization_parameters', document))
-    rows = load_hot(args.sqlite_file)
+    rows, source = load_hot_with_info(args.sqlite_file)
     if len(rows) < 100:
         raise SystemExit('at least 100 stored frames are required')
     split = int(len(rows) * args.train_fraction)
@@ -152,6 +195,7 @@ def main():
     base_ratio = forecasts['baseline'].get('drift_mse_ratio_to_persistence')
     cand_ratio = forecasts['candidate'].get('drift_mse_ratio_to_persistence')
     base_constant = set(saturation['baseline']['constant_dimensions'])
+    covered_days = holdout_days(source['timestamps'], split)
     checks = {
         'replay_faithful': min(fidelity_after_restart, pre_restart_fidelity) >= REPLAY_FIDELITY_MINIMUM,
         'saturation_reduced': saturation['candidate']['saturated_count'] <= SATURATION_CEILING
@@ -159,9 +203,14 @@ def main():
         'no_new_constant_dimensions': set(saturation['candidate']['constant_dimensions']) <= base_constant,
         'forecast_not_worse': base_ratio is not None and cand_ratio is not None and cand_ratio <= base_ratio,
     }
+    if args.min_holdout_days > 0:
+        checks['independent_holdout_days'] = len(covered_days) >= args.min_holdout_days
     report = {
         'scope': 'offline_representation_candidate_evaluation_not_prediction_validation_or_activation',
         'split': {'train_records': split, 'holdout_records': len(rows) - split, 'policy': 'chronological_by_count'},
+        'source': {k: v for k, v in source.items() if k != 'timestamps'},
+        'independent_holdout_days': {'days': covered_days, 'count': len(covered_days), 'minimum_frames_per_day': FULL_DAY_FRAMES,
+                                     'required': args.min_holdout_days},
         'replay_fidelity': {'baseline_matches_stored_fraction': round(fidelity, 6), 'frames': len(rows),
                             'replay_variant': replay_variant,
                             'variant_fidelity': {k: round(v, 6) for k, v in variant_fidelity.items()},
@@ -186,7 +235,8 @@ def main():
             'replay_fidelity_minimum': REPLAY_FIDELITY_MINIMUM, 'warmup_frames': WARMUP_FRAMES,
             'saturation_ceiling': SATURATION_CEILING},
             'checks': checks, 'accepted': all(checks.values())},
-        'limitations': ['one hot-tier window of one device', 'holdout shares the window with training: not a new day',
+        'limitations': ['one device', 'holdout independent of training only for the days listed in independent_holdout_days'
+                        if covered_days else 'holdout shares the window with training: not a new day',
                         'forecast ratio is relative to persistence inside each normalization, not a common scale'],
     }
     args.output_file.parent.mkdir(parents=True, exist_ok=True)
