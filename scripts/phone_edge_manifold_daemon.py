@@ -39,7 +39,7 @@ from traceform.representation.normalizer import MultimodalNormalizer
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 from traceform.streaming.edge_manifold_daemon import EdgeManifoldDaemon, EdgeDaemonEvent
 
-from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActuator
+from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActuator, should_consider_intervention
 from traceform.forecasting.sandbox_simulator import SandboxSimulator, ScenarioIntervention
 from traceform.forecasting.continuity import same_stream_segment
 from traceform.evolution.model_registry import ModelRegistry
@@ -290,7 +290,7 @@ def main():
                                 events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED',
                                                    'reason': 'worker_start_failed', 'error_type': type(error).__name__})
 
-                        if inserted and ev.event_type == "CSD_TIPPING" and payload["dwell_steps"] >= args.dwell_steps and args.intervention_mode != "off":
+                        if inserted and should_consider_intervention(ev.event_type, payload["dwell_steps"], args.dwell_steps, args.intervention_mode):
                             recent = store.hot_records(limit=2048)
                             # Fit only the current uninterrupted representation segment.
                             start = len(recent) - 1

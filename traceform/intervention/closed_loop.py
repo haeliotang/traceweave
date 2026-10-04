@@ -95,6 +95,17 @@ class MicroActuator:
                 "evidence_scope": "temporary_music_volume_api_execution_not_human_response"}
 
 
+# Events at which the live daemon may consider an intervention. A tipping alert almost never coincides with a
+# long dwell (offline replay: 1 of 607 matched alerts), so a prolonged dwell is an event of its own: it fires
+# once, when the dwell count reaches the threshold.
+TRIGGER_EVENT_TYPES = ("CSD_TIPPING", "PROLONGED_DWELL")
+
+
+def should_consider_intervention(event_type, dwell_steps, dwell_threshold, mode):
+    """Whether this event, on a newly stored frame, goes on to the counterfactual check and the policy."""
+    return mode != "off" and event_type in TRIGGER_EVENT_TYPES and dwell_steps >= dwell_threshold
+
+
 class ClosedLoopIntervention:
     def __init__(self, path, actuator, mode="shadow", seed=None, actions=("pulse", "notification")):
         if mode not in ("off", "shadow", "active"):

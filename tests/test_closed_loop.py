@@ -202,3 +202,24 @@ class TestClosedLoop(unittest.TestCase):
             self.assertEqual(decision["context_cooldown_seconds"], 900)
             self.assertEqual(decision["consecutive_no_escape_outcomes"], 0)
             loop.close()
+
+
+class TestTriggerEvents(unittest.TestCase):
+    def test_tipping_and_prolonged_dwell_may_trigger_when_the_dwell_is_long_enough(self):
+        from traceform.intervention.closed_loop import should_consider_intervention as consider
+        self.assertTrue(consider("CSD_TIPPING", 60, 60, "active"))
+        self.assertTrue(consider("PROLONGED_DWELL", 60, 60, "active"))
+        self.assertTrue(consider("PROLONGED_DWELL", 61, 60, "shadow"))
+
+    def test_short_dwell_other_events_and_off_mode_never_trigger(self):
+        from traceform.intervention.closed_loop import should_consider_intervention as consider
+        self.assertFalse(consider("CSD_TIPPING", 59, 60, "active"))
+        self.assertFalse(consider("PROLONGED_DWELL", 59, 60, "active"))
+        self.assertFalse(consider("HIGH_VELOCITY_BURST", 90, 60, "active"))
+        self.assertFalse(consider("PROLONGED_DWELL", 90, 60, "off"))
+        self.assertFalse(consider("CSD_TIPPING", 90, 60, "off"))
+
+    def test_the_daemon_uses_this_decision_and_no_longer_hard_codes_tipping(self):
+        source = (Path(__file__).resolve().parents[1] / "scripts/phone_edge_manifold_daemon.py").read_text()
+        self.assertIn("should_consider_intervention(ev.event_type", source)
+        self.assertNotIn("ev.event_type == \"CSD_TIPPING\" and payload", source)
