@@ -1,0 +1,47 @@
+{
+  "basis": "offline replay of 5345 stored frames (device_intervention_gate_replay_20261004.json, local): 607 matched CSD_TIPPING events, 1 at dwell >= 60; sandbox recommended in 20 of 24 sampled frames at dwell >= 60",
+  "code": {
+    "scripts/phone_edge_manifold_daemon.py": "trigger uses should_consider_intervention instead of CSD_TIPPING only",
+    "traceform/intervention/closed_loop.py": "should_consider_intervention(event_type, dwell_steps, threshold, mode) and TRIGGER_EVENT_TYPES"
+  },
+  "decision": "user chose option B on 2026-10-04: a PROLONGED_DWELL event may also trigger the counterfactual check and policy, like CSD_TIPPING",
+  "device_files_matched_HEAD_before_change": true,
+  "device_sha256_prefix": {
+    "closed_loop.py": {
+      "after": "83e30820f45c2e96",
+      "before": "e07fd3316a493b30"
+    },
+    "phone_edge_manifold_daemon.py": {
+      "after": "296ed57e7ba6aacc",
+      "before": "ce88d541b43168c8"
+    }
+  },
+  "expected_effect": "a PROLONGED_DWELL event fires once per episode when the dwell count reaches 60; roughly 12 such episodes in 3 days in the stored window; few trials per day, so effect estimates will need weeks",
+  "limits": [
+    "no intervention has been delivered yet under the new trigger",
+    "single participant, observational policy: not causal or multi-owner acceptance",
+    "frozen verifiers 12/12 after the change"
+  ],
+  "restart": {
+    "acquisition_pid_unchanged": 12155,
+    "first_frame_processed": true,
+    "method": "kill -TERM from run-as, then cmd jobscheduler run -f com.termux.api 7703",
+    "mode": "active",
+    "new_daemon_pid": 29029,
+    "silent_marker": false
+  },
+  "rollback": "~/traceform-runtime-rollback-20261004-trigger.tar (device); restore the two files, SIGTERM the daemon, force-run job 7703",
+  "scope": "intervention_trigger_change_deployed_to_field_daemon_not_effect_validation",
+  "side_effects": [
+    "bandit policy contexts include event_type, so PROLONGED_DWELL trials learn separately from CSD_TIPPING ones",
+    "the restart is a continuity break (continuous_from_previous False frames), to be treated as a restart point in replay evaluations"
+  ],
+  "unchanged": [
+    "authorization record",
+    "actions pulse/notification/volume_duck",
+    "900 s global cooldown",
+    "no_action probability 0.25",
+    "dwell threshold 60",
+    "counterfactual definition"
+  ]
+}

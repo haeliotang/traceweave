@@ -123,3 +123,15 @@ tick 176.5 ms, SQLite integrity ok). Starting collection applied the 48 h hot-ti
 frames, which are in the backup. The device was locked, so the app was stopped with `force-stop`. The Termux
 runtime and the twelve frozen verifiers were unchanged. Receipt:
 `artifacts/native_android_v1/primary_app_upgrade_20261004.json`.
+
+## 2026-10-04 prolonged dwell can trigger interventions
+
+An offline replay of the stored hot tier showed that the daemon's gate (CSD_TIPPING at dwell >= 60) was
+met by 1 of 607 matched alerts, so the active daemon had recorded no intervention trials. By the user's
+choice a PROLONGED_DWELL event (fired once when the dwell count reaches the threshold) now also goes to the
+counterfactual check and the policy (`should_consider_intervention` in `traceform/intervention/closed_loop.py`).
+Authorization, actions, cooldown, no-action probability and the counterfactual are unchanged. The two changed
+files were deployed with their SHA-256 values checked, the daemon was restarted in active mode through job
+7703, and the twelve frozen verifiers still pass. Rollback archive:
+`~/traceform-runtime-rollback-20261004-trigger.tar`. No intervention has been delivered under the new
+trigger yet. Receipt: `artifacts/forecasting_v2/intervention_trigger_prolonged_dwell_20261004.json`.
