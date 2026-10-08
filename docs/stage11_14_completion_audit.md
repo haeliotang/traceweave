@@ -49,6 +49,45 @@ It is not a release approval or a claim that the four stages are complete.
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
 
+## October 9 one-hour state-switch source diagnosis
+
+A fixed device-private window, October 8 21:34:34–22:34:34 UTC, contains 114
+frames and 95 state switches. One late-visible row explains the earlier live
+query's 113-frame count. All 114 tokens and rounded energy distances exactly
+replay under the source-bound model/normalizer. Position-only quantization gives
+identical tokens: the kinetic term is not causing these token choices. Nine of
+95 switched frames have a <=1% runner-up margin; this arbitrary descriptive
+cutoff is not a scientific boundary-jitter classifier.
+
+None of the 114 frames supplies direct satellite-count, CN0 or PDOP input.
+Latitude is present in 32 frames and the other 82 have NOT_SAMPLED place status.
+The existing extractor substitutes three GNSS defaults according to latitude
+presence; their normalized values alternate between zero and clipped +/-10.
+All 62 latitude-presence flips match flips in those three coordinates, and 61
+coincide with token switches. Adaptive location omission therefore changes
+proxy coordinates without establishing actual movement or GNSS signal change.
+
+Temperature first/second derivatives contribute 18.69% of the squared continuous
+steps on switched pairs; the three GNSS coordinates contribute another 19.08%.
+The observed hardware-temperature absolute step has median 0.39 deg C. Such
+changes and derivative amplification do not establish behavioral-state changes.
+Holding these five coordinates to the immediately preceding frame returns 74
+of 95 switched frames to the old token. This is exploratory one-frame model
+sensitivity, not a causal percentage, temporal simulation or accepted replacement.
+Recorded physical inputs also vary; without independent user-action labels,
+the true behavioral fraction remains unknown.
+
+Device source hashes match four of five inspected files. The deployed normalizer
+is an earlier version lacking newer robust-fit helpers and the extraction-version
+flag. Its source was read directly; relevant GNSS defaults and thermal derivative
+formulas are verified. No normalizer deployment or frozen-source change is made.
+
+Model, policy, thresholds, frozen materials and collectors remain unchanged;
+all twelve final frozen checks pass. Any missingness-aware representation must
+be developed as a separate candidate and tested on independent annotated data,
+without retrospectively redefining this frozen forecast experiment. See
+`state_switch_source_diagnostic_20261009.json`; raw rows remain on the device.
+
 ## October 9 prospective readiness and natural gate audit
 
 A device-local read-only audit at October 8 22:15 UTC (October 9 local time)

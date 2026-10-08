@@ -89,6 +89,11 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
   执行器启用且未静音；保留的 10 月 7—8 日最大驻留仅 3 步。
   这些候选尚未进入反事实、历史或冷却判断，自然试验仍为零。
   见[本次就绪与门控审计](artifacts/forecasting_v2/prospective_readiness_and_natural_gate_audit_20261009.json)。
+- 一小时状态切换追查发现 GNSS 缺测代理与温度导数影响：114 帧精确重放，
+  95 次状态切换；三项 GNSS 没有直接测量，随定位存在性在默认值间跳变，
+  归一化后达到 0/±10。62 次定位存在性变化中 61 次伴随切换。
+  这不能解释为真实行为状态频繁变化；未修改模型或冻结方案。见
+  [输入来源与切换诊断](artifacts/forecasting_v2/state_switch_source_diagnostic_20261009.json)。
 - 前瞻预测训练快照和四个未来 UTC 日窗口已冻结，见
   [评估方案](docs/prospective_forecast_protocol.md)；窗口结束前不作科学验收结论。
 - 隔离 Android 应用在真实进程重启后拒绝重放已保留的未知分数请求，账本

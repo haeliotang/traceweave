@@ -1,0 +1,408 @@
+{
+  "scope": "exploratory_source_bound_state_switch_diagnostic_not_behavior_ground_truth",
+  "window_start_utc": "2026-10-08T21:34:34.225877+00:00",
+  "window_end_utc": "2026-10-08T22:34:34.225877+00:00",
+  "checked_timestamp_utc": "2026-10-08T22:37:12.816789+00:00",
+  "frames": 114,
+  "dimension": 128,
+  "eligible_adjacent_pairs": 113,
+  "switches": 95,
+  "model_sha256": "641dc8d1f4f8d26b21d20873e8b14306ddd12b7c52a61efef1932350218b804f",
+  "normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+  "bundle_version": "a411e0f650ddbb20ee9eae71a240e6dc478c5dd2dcaeabff06305b5059f37116",
+  "exact_token_replay_matches": 114,
+  "rounded_energy_replay_matches": 114,
+  "step_RMS_switched": {
+    "count": 95,
+    "min": 0.868537315285284,
+    "median": 2.657237092778124,
+    "p90": 3.5514552420226053,
+    "max": 4.763024250678426
+  },
+  "step_RMS_same_token": {
+    "count": 18,
+    "min": 0.502439967114387,
+    "median": 1.618662918983472,
+    "p90": 2.8600714086916823,
+    "max": 3.21424949903028
+  },
+  "runner_up_relative_energy_margin_switched": {
+    "count": 95,
+    "min": 0.0007505662784209491,
+    "median": 0.04604873795044702,
+    "p90": 0.13427935107455158,
+    "max": 0.4534990034556627
+  },
+  "near_tie_switched_at_descriptive_1pct": 9,
+  "near_tie_threshold_scope": "descriptive_arbitrary_1pct_not_scientific_acceptance",
+  "one_step_return_to_previous_previous_token": 18,
+  "return_opportunities": 94,
+  "position_only_token_disagreements": 0,
+  "position_only_switches": 95,
+  "positive_kinetic_advantage_switches": 84,
+  "kinetic_advantage": {
+    "count": 95,
+    "min": -0.15532879787622278,
+    "median": 0.06300915290361786,
+    "p90": 0.15374102992223015,
+    "max": 0.4698581048144206
+  },
+  "top_step_features": [
+    {
+      "feature": "thermal_conduction_rate_dt",
+      "squared_step_share": 0.11748614307733009,
+      "sum_position_advantage_for_new_token": 8481.3128495942,
+      "single_coordinate_hold_previous_prevents_switch": 10
+    },
+    {
+      "feature": "thermal_flux_acceleration_dt2",
+      "squared_step_share": 0.06941099634683832,
+      "sum_position_advantage_for_new_token": 5179.597390019902,
+      "single_coordinate_hold_previous_prevents_switch": 4
+    },
+    {
+      "feature": "gnss_visible_satellite_density",
+      "squared_step_share": 0.06358523348754377,
+      "sum_position_advantage_for_new_token": 4752.4864297712,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "gnss_mean_carrier_to_noise_ratio",
+      "squared_step_share": 0.06358523348754377,
+      "sum_position_advantage_for_new_token": 4752.4864297712,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "gnss_position_dilution_of_precision",
+      "squared_step_share": 0.06358523348754377,
+      "sum_position_advantage_for_new_token": 4752.4864297712,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "bifurcation_stability_margin",
+      "squared_step_share": 0.05627467234305755,
+      "sum_position_advantage_for_new_token": 36.701509388499915,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "neuromotor_tremor_lyapunov_exponent",
+      "squared_step_share": 0.056104388030118274,
+      "sum_position_advantage_for_new_token": 36.27298083850008,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "battery_current_ua",
+      "squared_step_share": 0.04169523507379919,
+      "sum_position_advantage_for_new_token": 3838.054,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "thermal_entropy_production_rate",
+      "squared_step_share": 0.04169523507379919,
+      "sum_position_advantage_for_new_token": 3832.0519371392,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "thermodynamic_dissipation_ratio",
+      "squared_step_share": 0.03925689934354958,
+      "sum_position_advantage_for_new_token": 3526.9715491055013,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "thermodynamic_battery_stress_index",
+      "squared_step_share": 0.03041979470090229,
+      "sum_position_advantage_for_new_token": 2426.679992738,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "gnss_doppler_velocity_drift",
+      "squared_step_share": 0.029575819870548817,
+      "sum_position_advantage_for_new_token": 89.61611152109994,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "neuromotor_tap_recoil_intensity",
+      "squared_step_share": 0.02829767548755866,
+      "sum_position_advantage_for_new_token": 3.48050322339993,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "touch_downforce_pressure_derivative",
+      "squared_step_share": 0.02817948259666411,
+      "sum_position_advantage_for_new_token": 3.5818195087999527,
+      "single_coordinate_hold_previous_prevents_switch": 0
+    },
+    {
+      "feature": "motion_accel_magnitude",
+      "squared_step_share": 0.022829286602928146,
+      "sum_position_advantage_for_new_token": 37.24163473709997,
+      "single_coordinate_hold_previous_prevents_switch": 1
+    }
+  ],
+  "single_feature_hold_switch_prevention_counts": {
+    "thermal_conduction_rate_dt": 10,
+    "thermal_flux_acceleration_dt2": 4,
+    "fisher_information_measure": 3,
+    "motion_accel_magnitude": 1,
+    "motion_accel_rms": 1
+  },
+  "top_feature_combined_holds": {
+    "1": {
+      "original_switches_returning_to_previous_token": 10,
+      "scope": "one_frame_coordinate_hold_not_temporal_replay_or_causal_intervention"
+    },
+    "3": {
+      "original_switches_returning_to_previous_token": 22,
+      "scope": "one_frame_coordinate_hold_not_temporal_replay_or_causal_intervention"
+    },
+    "5": {
+      "original_switches_returning_to_previous_token": 74,
+      "scope": "one_frame_coordinate_hold_not_temporal_replay_or_causal_intervention"
+    },
+    "10": {
+      "original_switches_returning_to_previous_token": 79,
+      "scope": "one_frame_coordinate_hold_not_temporal_replay_or_causal_intervention"
+    }
+  },
+  "raw_groups_with_any_change_on_switch": {
+    "motion": 95,
+    "environment": 95,
+    "device_relation": 88,
+    "connectivity": 90,
+    "digital_context": 4
+  },
+  "raw_fields_changed_on_switch": {
+    "motion.orientation_degrees": 95,
+    "motion.accel_raw": 95,
+    "motion.gyro_raw": 95,
+    "motion.motion_energy": 95,
+    "environment.device_temp_c": 95,
+    "motion.accel_magnitude": 94,
+    "motion.accel_rms": 94,
+    "motion.stationary_likelihood": 91,
+    "device_relation.current_ua": 88,
+    "motion.gyro_energy": 84,
+    "environment.pressure_hpa": 80,
+    "environment.ambient_light_lux": 79,
+    "connectivity.wifi_rssi": 78,
+    "connectivity.cellular_dbm": 59,
+    "connectivity.wifi_link_speed_mbps": 26,
+    "digital_context.touch_interval_jitter": 4,
+    "digital_context.touch_interaction_velocity": 4,
+    "digital_context.attention_fragmentation_entropy": 4,
+    "device_relation.battery_temp_c": 3,
+    "digital_context.app_switch_rate": 3
+  },
+  "upstream_provenance": {
+    "audio_context": {
+      "adapter": "traceform.streaming.physical_audio_v2.sample_audio_context",
+      "fields": {},
+      "limitations": [
+        "derived_audio_summaries"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "NOT_SAMPLED"
+    },
+    "connectivity": {
+      "adapter": "traceform.streaming.physical_connectivity_v2.sample_connectivity",
+      "fields": {
+        "bluetooth_nearby_environment": "not_exposed",
+        "cellular_cell_fingerprint": "derived_hmac",
+        "cellular_dbm": "reported_by_api",
+        "cellular_network_type": "reported_by_api",
+        "wifi_ap_count": "derived_from_api_scan",
+        "wifi_connected": "derived_from_api_bssid",
+        "wifi_environment_fingerprint": "derived_hmac",
+        "wifi_fingerprint": "derived_hmac",
+        "wifi_frequency_mhz": "reported_by_api",
+        "wifi_link_speed_mbps": "reported_by_api",
+        "wifi_rssi": "reported_by_api"
+      },
+      "limitations": [
+        "group_availability_does_not_establish_each_field"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "AVAILABLE"
+    },
+    "device_relation": {
+      "adapter": "traceform.streaming.physical_device_state_v2.sample_device_state",
+      "fields": {
+        "battery_percentage": "reported_by_api",
+        "battery_temp_c": "reported_by_api",
+        "bluetooth_a2dp": "reported_api_bool_coercion",
+        "current_ua": "reported_by_api",
+        "lock_state": "unsupported",
+        "plugged": "reported_by_api",
+        "screen_state": "unsupported",
+        "status": "reported_by_api",
+        "voltage_mv": "reported_by_api",
+        "wired_headset": "reported_api_bool_coercion"
+      },
+      "limitations": [
+        "audio_route_defaults_may_be_present",
+        "group_availability_does_not_establish_each_field"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "AVAILABLE"
+    },
+    "environment": {
+      "adapter": "traceform.streaming.physical_sensors_v2.sample_hardware_sensors",
+      "fields": {
+        "ambient_light_lux": "observed_rounded",
+        "device_temp_c": "observed_rounded",
+        "pressure_hpa": "observed_rounded",
+        "proximity_cm": "observed_rounded"
+      },
+      "limitations": [
+        "group_availability_does_not_establish_each_sensor"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "AVAILABLE"
+    },
+    "motion": {
+      "adapter": "traceform.streaming.physical_sensors_v2.sample_hardware_sensors",
+      "fields": {
+        "accel_magnitude": "derived",
+        "accel_raw": "observed_rounded",
+        "accel_rms": "derived",
+        "gyro_energy": "derived",
+        "gyro_raw": "observed",
+        "motion_energy": "derived",
+        "orientation_degrees": "observed_rounded",
+        "stationary_likelihood": "derived",
+        "step_count": "observed"
+      },
+      "limitations": [
+        "derived_motion_summaries",
+        "missing_gyroscope_may_be_zero_filled"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "AVAILABLE"
+    },
+    "place": {
+      "adapter": "traceform.streaming.physical_location_v2.sample_location",
+      "fields": {},
+      "limitations": [
+        "location_request_and_age_are_recorded_in_place_when_available"
+      ],
+      "measurement_scope": "adapter_return_not_per_field_direct_measurement",
+      "status": "AVAILABLE"
+    }
+  },
+  "source_row_digest": "d3cd376f717814fed0657aae08f61245e67ab90229d97bb59b77c8e4beeeb798",
+  "model_policy_threshold_modified": false,
+  "collector_restarted": false,
+  "provenance_followup": {
+    "place_status_counts": {
+      "missing": 32,
+      "NOT_SAMPLED": 82
+    },
+    "frames_with_latitude": 32,
+    "direct_GNSS_input_present_counts": {
+      "visible_satellites": 0,
+      "gnss_sat_count": 0,
+      "mean_carrier_to_noise_ratio": 0,
+      "gnss_cn0_dbhz": 0,
+      "position_dilution_of_precision": 0,
+      "pdop": 0
+    },
+    "latitude_presence_flips": 62,
+    "latitude_presence_flips_with_token_switch": 61,
+    "three_GNSS_vector_flips": 62,
+    "three_GNSS_vector_flips_with_token_switch": 61,
+    "feature_scaling_and_clipping": {
+      "gnss_visible_satellite_density": {
+        "normalizer_iqr": 1.0,
+        "distinct_normalized_values": 2,
+        "at_negative_clip": 82,
+        "at_positive_clip": 0,
+        "min_normalized": -10.0,
+        "max_normalized": 0.0
+      },
+      "gnss_mean_carrier_to_noise_ratio": {
+        "normalizer_iqr": 1.0,
+        "distinct_normalized_values": 2,
+        "at_negative_clip": 82,
+        "at_positive_clip": 0,
+        "min_normalized": -10.0,
+        "max_normalized": 0.0
+      },
+      "gnss_position_dilution_of_precision": {
+        "normalizer_iqr": 1.0,
+        "distinct_normalized_values": 2,
+        "at_negative_clip": 0,
+        "at_positive_clip": 82,
+        "min_normalized": 0.0,
+        "max_normalized": 10.0
+      },
+      "thermal_conduction_rate_dt": {
+        "normalizer_iqr": 1.2,
+        "distinct_normalized_values": 16,
+        "at_negative_clip": 0,
+        "at_positive_clip": 0,
+        "min_normalized": -8.33333,
+        "max_normalized": 8.33333
+      },
+      "thermal_flux_acceleration_dt2": {
+        "normalizer_iqr": 0.08,
+        "distinct_normalized_values": 53,
+        "at_negative_clip": 0,
+        "at_positive_clip": 5,
+        "min_normalized": -8.32637,
+        "max_normalized": 10.0
+      }
+    },
+    "device_temp_absolute_step_degC": {
+      "median": 0.39000000000000057,
+      "max": 2.4700000000000024,
+      "nonzero_pairs": 113
+    },
+    "feature_group_hold_previous_prevents_switch": {
+      "GNSS_three": 31,
+      "thermal_two": 22,
+      "GNSS_and_thermal": 74
+    },
+    "ablation_scope": "one_frame_hold_current_coordinates_to_previous_not_causal_or_new_model_evaluation",
+    "fallback_source": "GNSS density/CN0/PDOP default from latitude presence when direct GNSS measurements absent"
+  },
+  "verification": {
+    "exact_model_bound_token_replay": "114/114",
+    "exact_rounded_energy_replay": "114/114",
+    "final_frozen_checks_passed": 12,
+    "host_test_suite_not_rerun": "read-only numerical diagnosis; source-bound device replay is the relevant verification"
+  },
+  "snapshot_difference_from_previous_hour_report": "One additional already-timestamped row became visible after the earlier live query: 114 rather than 113 frames in the same fixed time window.",
+  "interpretation": {
+    "supported": "Frequent token switching is materially sensitive to GNSS availability-derived defaults and thermal derivatives; it cannot be equated with frequent human behavioral-state changes.",
+    "GNSS": "No direct satellite/CN0/PDOP input in any of 114 frames; latitude presence flips map exactly to three proxy-coordinate flips.",
+    "thermal": "Hardware temperature changes are observed, but its derivative/amplified coordinates do not establish behavioral or cognitive changes.",
+    "near_boundary": "9/95 switches have <=1% runner-up margin; 1% is descriptive, not an acceptance rule.",
+    "ablation": "Holding the three GNSS plus two thermal coordinates at the previous frame returns 74/95 switched frames to the prior token; this is exploratory one-frame model sensitivity, not causal attribution or a validated replacement model.",
+    "unresolved": "No user action annotations or repeated controlled states are available; fraction of genuinely behavioral transitions remains unmeasured.",
+    "next_step": "Develop explicit missingness/proxy handling as a separate candidate and evaluate independent annotated holdout; preserve the current frozen experiment and production thresholds."
+  },
+  "inspected_host_source_sha256": {
+    "traceform/representation/manifold_lattice.py": "9661e3e2190a78f61ecbe876ea78d90a61222e66c1e5ddd0ea37a914bf45524b",
+    "traceform/representation/normalizer.py": "400e4fab508e39838901865f4c68107e3a51bc7cc4673edc167017fe04e16407",
+    "traceform/streaming/physical_acquisition_v2.py": "7128b02c9e5b85c59b276eff53d5fb076b5ba440403268b4b3b21a6a4e777959",
+    "traceform/streaming/physical_observation_v2.py": "1406b0895e0ec9fb69c82f8a011387070471c069d1609cbc57f00a8d8b22df62",
+    "traceform/streaming/physical_sensors_v2.py": "716cf38c6224beafea779fe2656f8ed42e632b67e93c733ecc868c0ddba8f0b5"
+  },
+  "device_source_sha256": {
+    "traceform/representation/manifold_lattice.py": "9661e3e2190a78f61ecbe876ea78d90a61222e66c1e5ddd0ea37a914bf45524b",
+    "traceform/representation/normalizer.py": "b996e10b7ddc8980073b8409666c038ebc0b054efd392da656590ce3e9ad4501",
+    "traceform/streaming/physical_acquisition_v2.py": "7128b02c9e5b85c59b276eff53d5fb076b5ba440403268b4b3b21a6a4e777959",
+    "traceform/streaming/physical_observation_v2.py": "1406b0895e0ec9fb69c82f8a011387070471c069d1609cbc57f00a8d8b22df62",
+    "traceform/streaming/physical_sensors_v2.py": "716cf38c6224beafea779fe2656f8ed42e632b67e93c733ecc868c0ddba8f0b5"
+  },
+  "device_and_inspected_host_sources_match": false,
+  "source_mismatch_files": [
+    "traceform/representation/normalizer.py"
+  ],
+  "device_source_difference_assessment": {
+    "file": "traceform/representation/normalizer.py",
+    "finding": "Device retains earlier normalizer without robust-fit helpers and extraction-version flag. Device source was read directly after SHA mismatch.",
+    "relevant_formulas_verified": "GNSS latitude-presence defaults and thermal first/second derivative formulas match the diagnostic; all direct GNSS fields are absent, so zero-value version differences are not exercised.",
+    "deployment_changed": false
+  }
+}
