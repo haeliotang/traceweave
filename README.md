@@ -94,6 +94,12 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
   归一化后达到 0/±10。62 次定位存在性变化中 61 次伴随切换。
   这不能解释为真实行为状态频繁变化；未修改模型或冻结方案。见
   [输入来源与切换诊断](artifacts/forecasting_v2/state_switch_source_diagnostic_20261009.json)。
+- 独立离线缺测候选已实现：三项 GNSS 使用直接有效数值与独立有效性标记，
+  不再由定位存在性生成代理值；两项温度导数按实际间隔计算并共享幅度预算。
+  在原诊断的 114 帧上，其余 123 维全部保持原值，GNSS 截断坐标从 246
+  降至 0。19 项相关测试及十二项最终冻结检查通过；候选未注册、未激活，
+  尚需新流形及独立标注验证。见[候选设计](docs/missingness_projection_candidate.md)
+  和[工程回执](artifacts/forecasting_v2/missingness_projection_candidate_engineering_20261009.json)。
 - 前瞻预测训练快照和四个未来 UTC 日窗口已冻结，见
   [评估方案](docs/prospective_forecast_protocol.md)；窗口结束前不作科学验收结论。
 - 隔离 Android 应用在真实进程重启后拒绝重放已保留的未知分数请求，账本

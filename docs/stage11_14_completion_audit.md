@@ -49,6 +49,37 @@ It is not a release approval or a claim that the four stages are complete.
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
 
+## October 9 offline missingness projection candidate
+
+`MissingnessProjectionCandidate` supplies a distinct offline coordinate protocol;
+production extraction is unchanged. Three GNSS coordinates require finite
+in-range direct reports, preserve valid zeros and carry separate validity flags.
+Missing values are neutral, not latitude-based GNSS proxies. Two temperature
+derivatives use observed temperature and actual continuous intervals; fixed
+existing physical bounds and shared weights limit their combined squared
+coordinate magnitude to one. Screen/charging bias subtraction is omitted.
+The other 123 stored coordinates are retained exactly. This is a projection of
+bound stored frames, not a general replacement production normalizer.
+
+The evaluator restricts the diagnostic interval to before the frozen holdout,
+checks baseline coordinate binding and prevents overwriting inputs/frozen files.
+It fits no parameters or manifold and computes no forecast scores. On the same
+114-frame diagnostic window, all 123 other dimensions remain unchanged in every
+frame; GNSS clipped-coordinate count changes from 246 to zero and maximum
+combined thermal magnitude squared is 0.99643. Five-coordinate squared step sum
+changes from 37,469.46 to 92.17 by design. This amplitude reduction is not proof
+of accurate states or preservation of real transitions. No independent annotated
+validation has occurred; other correlated/proxy dimensions remain unchanged.
+
+Nineteen affected tests cover missingness-only alternation, zero/invalid input,
+thermal bounds, reset/gap behavior, coordinate preservation and exclusion of the
+frozen holdout. Twelve final frozen checks pass. Frozen plan/training/archive
+hashes match their previous values; field PIDs 12155/27649 remain unchanged and
+active collection stays unsilenced. Candidate configuration and detailed receipts
+remain device-private. No registry registration, activation or production source
+deployment occurs. See `missingness_projection_candidate.md` and
+`missingness_projection_candidate_engineering_20261009.json`.
+
 ## October 9 one-hour state-switch source diagnosis
 
 A fixed device-private window, October 8 21:34:34–22:34:34 UTC, contains 114

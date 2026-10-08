@@ -1,0 +1,71 @@
+{
+  "GNSS_clipped_coordinate_count": {
+    "baseline": 246,
+    "candidate": 0
+  },
+  "activated": false,
+  "baseline_normalizer_sha256": "ec8a10164f0f5a23ff2b8d9c114951f77f48d229769ff69eea624f0057e098f5",
+  "candidate_sha256": "8bd6df191dca21273abb129e8d82bd430b9f6673e578b524e5cb75f1de11d49f",
+  "direct_or_derived_validity_counts": {
+    "gnss_mean_carrier_to_noise_ratio": 0,
+    "gnss_position_dilution_of_precision": 0,
+    "gnss_visible_satellite_density": 0,
+    "thermal_conduction_rate_dt": 113,
+    "thermal_flux_acceleration_dt2": 112
+  },
+  "eligible_pairs": 113,
+  "engineering_checks": {
+    "other_coordinates_preserved": true,
+    "thermal_shared_energy_bound": true
+  },
+  "five_coordinate_squared_step_sum": {
+    "baseline": 37469.459387415,
+    "candidate": 92.16508896064784
+  },
+  "frames": 114,
+  "frozen_holdout_excluded": true,
+  "limitations": [
+    "Neutral missing coordinates are not measurements.",
+    "Validity masks must accompany any downstream analysis.",
+    "Availability transitions remain distinct from observed dynamics.",
+    "Other derived/proxy dimensions remain unchanged.",
+    "Independent annotated data and a newly fitted manifold are required."
+  ],
+  "maximum_combined_thermal_coordinate_energy": 0.996429157793512,
+  "private_outputs": [
+    "device-local data/missingness-projection-candidate-20261009.json",
+    "device-local data/missingness-projection-evaluation-20261009.json"
+  ],
+  "scientific_acceptance": "not_assessed",
+  "scope": "same_diagnostic_window_engineering_check_not_independent_validation",
+  "source_rows_sha256": "a862ff99fa2f8b8b7f517a2e444e0da4c06f8d54dfc5d4391bb0ab5f9717dcf2",
+  "source_sha256": {
+    "scripts/evaluate_missingness_projection.py": "6a6bddc869de84304b0b5f2e7a55756f9dab29113f47f2fb5cf869982e14fd45",
+    "tests/test_missingness_projection_candidate.py": "d7089ec4792d612c1767d0df35322a570ba7bff601a7f978d3e65f9a02c21e41",
+    "traceform/representation/missingness_candidate.py": "4301649c3edb9045249167de79593d958caac059c1c907a09e5789a3cd89e0b3"
+  },
+  "status": "offline_candidate_not_accepted",
+  "unchanged_other_123_dimensions_frames": 114,
+  "verification": {
+    "affected_host_tests_passed": 19,
+    "final_frozen_checks_passed": 12,
+    "final_health": {
+      "edge_alive": true,
+      "edge_pid": 27649,
+      "frozen_sha256": {
+        "code.tar.gz": "66e5b46946a531711a89c2cdaf884063c40bed3474ab00a5e5c2e8a3cb7e43b7",
+        "plan.json": "69ec780968bf6a7f0129a55aa1472bd404a127a86e4e1e210b740324a02dd4d0",
+        "training.sqlite": "0bf53db835d9e051b70dd0a16bfe4977e37f131741e710819391c3285fb39a00"
+      },
+      "latest_age_seconds": 52.90545916557312,
+      "physical_alive": true,
+      "silent": false
+    },
+    "frozen_material_hashes_unchanged": true,
+    "primary_collectors_restarted": false
+  },
+  "window": {
+    "window_end_utc": "2026-10-08T22:34:34.225877+00:00",
+    "window_start_utc": "2026-10-08T21:34:34.225877+00:00"
+  }
+}
