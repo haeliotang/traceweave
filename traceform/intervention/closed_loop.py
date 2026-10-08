@@ -2,6 +2,7 @@
 
 from concurrent.futures import ThreadPoolExecutor
 import json
+import math
 import os
 from pathlib import Path
 import random
@@ -226,8 +227,11 @@ class ClosedLoopIntervention:
             self.compact(now_epoch)
         instant = timestamp(frame).timestamp()
         outputs = []
-        for identifier, context, action, created, original_text in self.db.execute("SELECT id,context,action,created,frame FROM trials WHERE status='observing'").fetchall():
+        for identifier, context, action, created, original_text, receipt_text in self.db.execute("SELECT id,context,action,created,frame,receipt FROM trials WHERE status='observing'").fetchall():
             original = json.loads(original_text)
+            receipt = json.loads(receipt_text)
+            feedback_started = created if action == "none" else receipt.get("finished_epoch")
+            valid_clock = type(feedback_started) in (int, float) and math.isfinite(feedback_started) and feedback_started >= created
             discontinuity = not same_stream_segment(original, frame) or any(
                 original.get(field) != frame.get(field)
                 for field in ("session_id", "model_sha256", "normalizer_sha256"))
@@ -236,12 +240,16 @@ class ClosedLoopIntervention:
                 discontinuity = discontinuity or not same_stream_segment(self.previous, frame) or not 0 < gap <= 300 or any(
                     self.previous.get(field) != frame.get(field)
                     for field in ("session_id", "model_sha256", "normalizer_sha256"))
-            if discontinuity or instant - created > 900:
+            if not valid_clock:
+                outcome = {"status": "censored", "reason": "missing_or_invalid_delivery_clock", "timestamp_utc": frame["timestamp_utc"]}
+            elif discontinuity or instant - feedback_started > 900:
                 outcome = {"status": "censored", "reason": "continuity_or_timeout", "timestamp_utc": frame["timestamp_utc"]}
-            elif instant - created >= 600:
+            elif instant - feedback_started >= 600:
                 reward = int(frame["state_token"] != original["state_token"])
                 outcome = {"status": "evaluated", "reward": reward, "timestamp_utc": frame["timestamp_utc"],
-                           "evidence_scope": "state_change_association_not_individual_causal_effect"}
+                           "evidence_scope": "state_change_association_not_individual_causal_effect",
+                           "feedback_clock": "randomized_control_decision" if action == "none" else "delivery_acknowledgment",
+                           "feedback_started_epoch": feedback_started, "post_delivery_seconds": instant - feedback_started}
             else:
                 continue
             with self.db:

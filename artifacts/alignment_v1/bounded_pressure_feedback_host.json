@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "affected_host_tests": 37,
+  "additional_overlapping_closed_loop_maintenance_tests": 26,
+  "full_suite_rerun": false,
+  "delivery_clock_regression_failed_before_fix": true,
+  "invalid_delivery_clock_cases": [
+    null,
+    "NaN",
+    "infinity",
+    true,
+    0
+  ],
+  "device_frozen_checks_passed": 12,
+  "source_sha256": {
+    "traceform/intervention/closed_loop.py": "e2d110eb8b1cdcf91fe408206675b055a85f9481dce8a97a48e400ac73cbfc63",
+    "tests/test_closed_loop.py": "d7a99020cd86e0b6f9b797a21647e4135e42f3c8297fed76f4143dfd12a0e82e",
+    "scripts/verify_private_memory_pressure_usb.py": "860a76ebdae44f9a069992fd026c0493ac6f9155f71702a8ae425c93bf5bed6c",
+    "native/private_alignment_probe/memory_pressure_probe.c": "8fbe946a2f4b2c2c83610f7cb755e0c2d9fbc8f89aca889f0b6b93389a8e9010",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticMemoryPressureJob.java": "73993b8ea7b9f088a1ba96e0cadf8535f08af7aa0cb2bb630994563162546d65",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticMemoryPressureReceiver.java": "f4b847755ebdf89c58f41af9b643407e046d1ad47dd2910f286b01bcd5c2c98f",
+    "android/lifecycle_probe/AndroidManifest.xml": "16d6df70ac2362f5a388086771fb3d45cebd8eb7e6f0ef942969c9e75382d96e"
+  },
+  "scope": "bounded_real_memory_admission_and_feedback_clock_behavior_not_natural_effect_or_running_low_memory_withdrawal"
+}

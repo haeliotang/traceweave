@@ -17,7 +17,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Continuous daily and weekly kernel | Existing smoothing implementations and `continuous_time_validation*.json` | Verify current release retains the accepted boundary-continuity and weekly-conditioning behavior |
 | Configurable haptics/notifications/volume/color | Actuator and restoration implementations and bounded device receipts exist | Current-source device verification and separately authorized physical use; synthetic dispatch is not efficacy |
 | Intervention after recommendation and CSD | Authorized field daemon restored active; prolonged-dwell trigger deployed with source checks (`intervention_trigger_prolonged_dwell_20261004.json`) | Actual execution under the new trigger and decision-to-actuator evidence; deployment receipt records no delivered intervention yet |
-| 5–15 minute follow-up | Feedback and retention implementation; one authorized real pulse with complete ten-minute post-delivery window in a separate device-private diagnostic ledger | Natural-trigger follow-up and suitable controls; diagnostic state change is not causal attribution |
+| 5–15 minute follow-up | Delivery-acknowledgment feedback clock with invalid-clock censoring; one authorized real pulse with complete ten-minute post-delivery window in a separate device-private diagnostic ledger | Natural-trigger follow-up and suitable controls; diagnostic state change is not causal attribution |
 | Contextual bandit reward/fatigue | `traceform/intervention/closed_loop.py` and native policy | Current-source policy validation; causal efficacy requires suitable intervention/control evidence |
 | Hot 48h 1Hz 128D | Primary upgrade exercised 48h retention; bounded isolated sampling and provenance audit pass | Long-term 1Hz retention and complete source observability; Termux field sampling has a different cadence |
 | Warm 30d 30s tokens/potential | Warm migration check passed during primary upgrade; daily device-local SQLite snapshots retain 14 days | Long-term end-to-end retained-source consistency; daily backups do not replace the warm-tier contract |
@@ -26,7 +26,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Atomic model activation and recovery | Registry/admission/publication recovery receipts; later orphan cleanup separately checked | Bind the final release to all relevant changes and verify final device behavior |
 | Zero-raw-upload manifold comparison | Separate-party input authenticated MPC tests, including 14 standalone sixteen-node cases | Real-owner enrollment, authorization/query controls and independent security assessment |
 | GW alignment | Uniform permutation search with exact final loss; general-mass small-shape transport checks | Preserve bounded/non-global scope; uniform permutation descent is not unrestricted GW optimality |
-| Android private SDK | Fourteen known-statement cases plus18 guarded sixteen-node cases and2 CPU-phase cancellation/resource-permission withdrawal checks in `guarded_unknown_score_sdk16_android.json`; aborted children reaped, snapshots removed and sessions retained | Actual system low-memory withdrawal remains open; synthetic permission withdrawal is not system OOM; production privacy/deployment gates remain separate |
+| Android private SDK | Fourteen known-statement cases plus18 guarded sixteen-node cases and2 CPU-phase cancellation/resource-permission withdrawal checks in `guarded_unknown_score_sdk16_android.json`; aborted children reaped, snapshots removed and sessions retained; bounded real allocation now verifies admission rejection and readmission after release | Actual system low-memory withdrawal remains open; synthetic permission withdrawal is not system OOM; production privacy/deployment gates remain separate |
 | Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; previous six public/four signed SDK cases and two-node known-statement binding; five sixteen-node actual discovered-output proof/signature cases plus actual-app-restart replay in `discovered_unknown_score16_proof_android.json` | Distributed private proving, real owner enrollment and production key/setup provenance; the synthetic prover holds both models; v1 certificates cannot silently authorize v2 outputs |
 | Unknown-score private computation workflow | Signed unknown-score SDK entry and durable reservation;22 host MPC guard cases;18 guarded sixteen-node Android/Mac cases and2 CPU-phase abort checks; actual discovered statement bound to a centralized synthetic signed proof; computation and proof ledgers unchanged after app restart | Distributed private proving and real-owner enrollment remain open; bounded case coverage is not a security audit |
 | Native <15ms / <5MB core | `native_current_monthly_compute_android.json`: isolated fitted synthetic compute passes | Preserve measured workload scope; it does not prove whole-app/fit/history-scan/private-MPC memory below 5MB |
@@ -47,6 +47,49 @@ It is not a release approval or a claim that the four stages are complete.
 4. Complete distributed private proving with the unchanged two-owner security
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
+
+## October 8 bounded pressure and post-delivery feedback
+
+`bounded_real_memory_pressure_android.json` records actual incompressible anonymous
+allocations in a disposable isolated-app child, sampled against Android MemoryInfo.
+The fixed 32 MiB step, 768 MiB cap, 256 MiB available-memory floor, 120-second child
+timeout, parent-death cleanup and child OOM score 1000 bound the test. The final
+source/build run reaches production admission rejection at 384 MiB allocated and
+954,855,424 available bytes, then releases all allocations, exits zero and passes
+production admission again. An earlier run rejected at 448 MiB. The measured
+MemoryInfo low-memory threshold is 226,492,416 bytes; `lowMemory` remains false.
+No production threshold is modified. This proves real-pressure admission and
+recovery only: running MPC reserve exhaustion, system LMK and interrupted-session
+recovery under actual low memory remain unverified. The reproduction driver is
+`scripts/verify_private_memory_pressure_usb.py`; install the built isolated APK
+before running it. This fixture does not start a collector or enroll real owners.
+
+A regression reproduces natural feedback evaluated only 560 seconds after actual
+actuator completion. `ClosedLoopIntervention.observe` now uses a finite delivery
+completion timestamp for real actions, requires 600 seconds afterward and applies
+the 900-second timeout to that same clock. Missing/invalid acknowledgment clocks
+are censored and do not update policy. Randomized no-action controls retain their
+decision clock. Evaluated outcomes retain the clock, start time and elapsed window.
+Continuity/source binding gates, action propensities and dwell/cooldown thresholds
+are unchanged. All 37 affected host tests pass; the historical full suite was not
+rerun; see `bounded_pressure_feedback_host.json`. Twelve existing frozen device
+checks pass, and the isolated pressure application is removed after verification.
+The separate 26-test closed-loop/maintenance run also passes (overlapping
+coverage, not an additive count).
+
+The feedback source is deployed with a device-local rollback copy and verified
+hash. The edge daemon is gracefully restarted once; physical PID 12155 remains.
+The 17:28 UTC private health audit finds 55 frames in the last 30 minutes, a
+39.13-second maximum interval, active configuration and no silence marker.
+Natural trials remain zero, so no natural outcome or efficacy is claimed.
+Device trajectories and detailed field/readiness reports remain private.
+
+A six-hour thread heartbeat now checks collection, natural feedback, Sunday
+calibration and frozen readiness using the retained daily snapshots plus live
+store. It stays quiet while unchanged or pending. The fixed October 9–12 UTC
+window is still pending, with no current readiness blockers; no score is computed
+before October 13 00:00 UTC. The heartbeat never changes frozen materials,
+thresholds or production calibration and never repeats physical pressure tests.
 
 ## October 8 guarded sixteen-node follow-through
 

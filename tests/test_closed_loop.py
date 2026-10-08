@@ -9,6 +9,37 @@ from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActu
 
 
 class TestClosedLoop(unittest.TestCase):
+    def test_real_delivery_requires_full_post_acknowledgment_window(self):
+        with tempfile.TemporaryDirectory() as directory:
+            created = datetime.datetime.fromisoformat(self.frame(0)['timestamp_utc']).timestamp()
+            actuator = SimpleNamespace(execute=lambda action: {'delivered': True,
+                'started_epoch': created + 30, 'finished_epoch': created + 40})
+            loop = ClosedLoopIntervention(Path(directory) / 'trials.sqlite', actuator, 'active', seed=2)
+            self.addCleanup(loop.close)
+            decision = loop.propose(self.frame(0), 'CSD_TIPPING', self.comparison(), 'morning')
+            loop.futures[decision['trial_id']].result(timeout=1)
+            for seconds in (200, 400, 600, 639):
+                self.assertEqual(loop.observe(self.frame(seconds, 'B')), [])
+            outcome = loop.observe(self.frame(640, 'B'))[0]
+            self.assertEqual(outcome['status'], 'evaluated')
+            self.assertEqual(outcome['post_delivery_seconds'], 600)
+            self.assertEqual(outcome['feedback_clock'], 'delivery_acknowledgment')
+
+    def test_missing_or_invalid_delivery_clock_cannot_credit_policy(self):
+        for finished in (None, float('nan'), float('inf'), True, 0):
+            with self.subTest(finished=finished), tempfile.TemporaryDirectory() as directory:
+                actuator = SimpleNamespace(execute=lambda action: {'delivered': True, 'finished_epoch': finished})
+                loop = ClosedLoopIntervention(Path(directory) / 'trials.sqlite', actuator, 'active', seed=2)
+                try:
+                    decision = loop.propose(self.frame(0), 'CSD_TIPPING', self.comparison(), 'morning')
+                    loop.futures[decision['trial_id']].result(timeout=1)
+                    outcome = loop.observe(self.frame(200))[0]
+                    self.assertEqual(outcome['status'], 'censored')
+                    self.assertEqual(outcome['reason'], 'missing_or_invalid_delivery_clock')
+                    self.assertEqual(loop.db.execute('SELECT count(*) FROM policy').fetchone()[0], 0)
+                finally:
+                    loop.close()
+
     def test_rejected_proposal_reports_cooldown_without_consuming_randomness(self):
         with tempfile.TemporaryDirectory() as directory:
             loop = ClosedLoopIntervention(Path(directory) / 'trials.sqlite', MicroActuator(False), 'shadow', seed=2)
