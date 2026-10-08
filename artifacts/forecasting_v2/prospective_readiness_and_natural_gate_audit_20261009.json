@@ -1,0 +1,253 @@
+{
+  "checked_timestamp_utc": "2026-10-08T22:15:38.405325+00:00",
+  "health": {
+    "physical_pid": 12155,
+    "physical_alive": true,
+    "edge_pid": 27649,
+    "frames_last_30_minutes": 55,
+    "latest_frame_age_seconds": 54.88594436645508,
+    "max_gap_seconds_last_30_minutes": 44.1846969127655,
+    "silent_marker_present": false,
+    "active_mode": true,
+    "measured_timestamp_utc": "2026-10-08T22:16:47.214113+00:00"
+  },
+  "forecast": {
+    "protocol": "traceform.prospective-forecast.v1",
+    "status": "pending",
+    "blockers": [],
+    "checked_timestamp_utc": "2026-10-08T22:15:38.405325+00:00",
+    "plan_sha256": "69ec780968bf6a7f0129a55aa1472bd404a127a86e4e1e210b740324a02dd4d0",
+    "code_archive_sha256": "66e5b46946a531711a89c2cdaf884063c40bed3474ab00a5e5c2e8a3cb7e43b7",
+    "training_frame_sha256": "e22fbf760b063a0b28cd133c182b63f15af400045145e7ebe090ef206843a3d6",
+    "holdout_frame_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "holdout_start_utc": "2026-10-09T00:00:00+00:00",
+    "holdout_end_utc": "2026-10-13T00:00:00+00:00",
+    "training_records": 2048,
+    "holdout_records": 0,
+    "frames_per_predeclared_utc_day": {
+      "2026-10-09": 0,
+      "2026-10-10": 0,
+      "2026-10-11": 0,
+      "2026-10-12": 0
+    },
+    "scientific_acceptance": "not_assessed",
+    "automatic_activation": false,
+    "scope": "single_participant_fixed_window_next_observation_descriptive_evaluation"
+  },
+  "daily_window_readiness": [
+    {
+      "utc_day": "2026-10-09",
+      "state": "future",
+      "retained_frames": 0,
+      "minimum_frames": 2300,
+      "deficit": 2300,
+      "coverage_verdict": "not_due"
+    },
+    {
+      "utc_day": "2026-10-10",
+      "state": "future",
+      "retained_frames": 0,
+      "minimum_frames": 2300,
+      "deficit": 2300,
+      "coverage_verdict": "not_due"
+    },
+    {
+      "utc_day": "2026-10-11",
+      "state": "future",
+      "retained_frames": 0,
+      "minimum_frames": 2300,
+      "deficit": 2300,
+      "coverage_verdict": "not_due"
+    },
+    {
+      "utc_day": "2026-10-12",
+      "state": "future",
+      "retained_frames": 0,
+      "minimum_frames": 2300,
+      "deficit": 2300,
+      "coverage_verdict": "not_due"
+    }
+  ],
+  "frozen_materials_unchanged": true,
+  "material_sha256": {
+    "plan.json": "69ec780968bf6a7f0129a55aa1472bd404a127a86e4e1e210b740324a02dd4d0",
+    "training.sqlite": "0bf53db835d9e051b70dd0a16bfe4977e37f131741e710819391c3285fb39a00",
+    "code.tar.gz": "66e5b46946a531711a89c2cdaf884063c40bed3474ab00a5e5c2e8a3cb7e43b7"
+  },
+  "natural_last_24h": {
+    "gate_reasons": {
+      "dwell_below_threshold": 138
+    },
+    "candidate_types": {
+      "CSD_TIPPING": 138
+    },
+    "actuator_boolean_flags": {
+      "enabled=True": 138,
+      "silent_marker_present=False": 138,
+      "environment_disabled=False": 138,
+      "blocked=False": 138
+    },
+    "latest_gate_timestamp_utc": "2026-10-08T22:03:13.876912+00:00"
+  },
+  "changes": {
+    "model": false,
+    "thresholds": false,
+    "policy": false,
+    "collector_restart": false,
+    "scoring": false
+  },
+  "prediction_runtime": {
+    "utc_days": {
+      "2026-10-01": {
+        "started": 0,
+        "succeeded": 8,
+        "failed": 0,
+        "timed_out": 0,
+        "missing_runtime": 8,
+        "failure_reasons": {},
+        "runtime_seconds": null
+      },
+      "2026-10-02": {
+        "started": 0,
+        "succeeded": 4,
+        "failed": 0,
+        "timed_out": 0,
+        "missing_runtime": 4,
+        "failure_reasons": {},
+        "runtime_seconds": null
+      },
+      "2026-10-03": {
+        "started": 0,
+        "succeeded": 2,
+        "failed": 0,
+        "timed_out": 0,
+        "missing_runtime": 2,
+        "failure_reasons": {},
+        "runtime_seconds": null
+      },
+      "2026-10-08": {
+        "started": 81,
+        "succeeded": 80,
+        "failed": 1,
+        "timed_out": 0,
+        "missing_runtime": 0,
+        "failure_reasons": {
+          "latest segment requires two continuous pairs": 1
+        },
+        "runtime_seconds": {
+          "count": 81,
+          "min": 0.5076064859749749,
+          "median": 32.20394040399697,
+          "p95": 34.36188551504165,
+          "max": 36.3906058940338
+        }
+      }
+    },
+    "undated_historical_events": {
+      "CONTINUOUS_SANDBOX_FAILED": 119
+    },
+    "retained_started_jobs_without_terminal_receipt": 0,
+    "scope": "retained_event_receipts_not_complete_uptime_or_prediction_accuracy",
+    "day_basis": "terminal_completion_UTC_day_and_separate_start_UTC_day",
+    "undated_scope": "historical_missing_timestamps_are_not_assigned_to_a_day",
+    "invalid_event_lines": 0,
+    "segments_removed_during_read": 0
+  },
+  "archive_inventory": [
+    {
+      "file_name": "edge_storage_snapshot_20261003T145150.sqlite",
+      "records": 5310,
+      "first_epoch": 1790866255.472331,
+      "last_epoch": 1791039081.450768
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261003T185158.sqlite",
+      "records": 5345,
+      "first_epoch": 1790879457.884308,
+      "last_epoch": 1791053463.861363
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261004T184705.sqlite",
+      "records": 5346,
+      "first_epoch": 1790964380.330842,
+      "last_epoch": 1791139559.788494
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261005T184950.sqlite",
+      "records": 5371,
+      "first_epoch": 1791051205.183535,
+      "last_epoch": 1791226149.010907
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261006T185408.sqlite",
+      "records": 5368,
+      "first_epoch": 1791138235.825854,
+      "last_epoch": 1791312826.623158
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261007T184404.sqlite",
+      "records": 5356,
+      "first_epoch": 1791225105.338912,
+      "last_epoch": 1791398592.891657
+    },
+    {
+      "file_name": "edge_storage_snapshot_20261008T184233.sqlite",
+      "records": 5375,
+      "first_epoch": 1791311274.965945,
+      "last_epoch": 1791484896.873808
+    }
+  ],
+  "recorded_natural_gate_reasons": {
+    "dwell_below_threshold": 138
+  },
+  "recorded_natural_gate_status_counts": {
+    "blocked": 138
+  },
+  "natural_trial_status_counts": {},
+  "natural_failed_delivery_reasons": {},
+  "recent_retained_daily_coverage": {
+    "2026-10-07": {
+      "discontinuities": 0,
+      "max_dwell": 3,
+      "above_dwell_threshold": 0,
+      "frames": 2674,
+      "span_seconds": 86372.35773801804,
+      "max_gap_seconds": 44.011610984802246,
+      "gaps_over_300": 0,
+      "coordinate_versions": 1
+    },
+    "2026-10-08": {
+      "discontinuities": 2,
+      "max_dwell": 3,
+      "above_dwell_threshold": 0,
+      "frames": 2483,
+      "span_seconds": 80139.45334100723,
+      "max_gap_seconds": 44.50977396965027,
+      "gaps_over_300": 0,
+      "coordinate_versions": 1
+    }
+  },
+  "gate_interpretation": "Observed candidates stop at dwell gate; downstream counterfactual/history/cooldown stages are not exercised by these receipts.",
+  "readiness_interpretation": "Future days have not_due coverage, not missing-day failure; no scoring or model activation.",
+  "verification": {
+    "frozen_checks": {
+      "before": 12,
+      "after": 12
+    },
+    "affected_host_tests_passed": 15,
+    "host_tests": [
+      "test_natural_intervention_gate_diagnostics",
+      "test_prospective_forecast_evaluation",
+      "test_prospective_forecast_freeze",
+      "test_field_runtime_audit"
+    ],
+    "initial_test_invocation_corrected": "Two guessed module names were absent; rerun uses actual discovered module names."
+  },
+  "audit_source_sha256": {
+    "scripts/evaluate_prospective_forecast.py": "e1df0eeb7b1224b9db5eee95d9af3a8b5fb17d53b31dfe696d66530a107480c2",
+    "scripts/audit_field_runtime.py": "1e518cb7a0f787480f47f26e740025c87e4d087168f14ae64d95cf36df73851c",
+    "scripts/audit_prediction_runtime.py": "988158a328ae5bf2272f095fc291071331bbdbc552d228dd57e6f4662e678b9c"
+  },
+  "private_report_location": "device-local data/stage12-readiness-and-natural-gates-20261009.json",
+  "scope": "readiness_and_recorded_gate_aggregates_no_raw_trajectories_no_prediction_scores_no_causal_effect"
+}

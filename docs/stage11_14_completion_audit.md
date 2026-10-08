@@ -49,6 +49,35 @@ It is not a release approval or a claim that the four stages are complete.
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
 
+## October 9 prospective readiness and natural gate audit
+
+A device-local read-only audit at October 8 22:15 UTC (October 9 local time)
+verifies the frozen plan, 2,048 training frames and code archive, with unchanged
+file hashes before/after. The October 9–12 UTC holdout has not started: zero
+holdout rows and `pending` with no blockers are expected. Every future date is
+labeled `not_due`, not missing coverage. Seven retained snapshots plus the live
+store are inventoried; their current availability does not guarantee future
+four-day coverage. Evaluate only after October 13 00:00 UTC, preserving the
+fixed minimum of 2,300 frames per day and coordinate binding. No scores, model
+selection or activation occur in this audit.
+
+The recorded last-24-hour natural gates contain 138 CSD candidates, all rejected
+at `dwell_below_threshold`. All 138 actuator snapshots show enabled, not silent
+and not environment-disabled. Retained October 7/8 frames have maximum dwell 3
+against the unchanged threshold 60 and zero frames above threshold. These
+receipts do not exercise downstream counterfactual/history/cooldown checks;
+natural trial and failed-delivery ledgers are empty. This explains observed
+non-delivery without lowering the gate or proving lack of intervention value.
+
+Retained dated October 8 prediction receipts contain 81 starts, 80 successes and
+one failure (`latest segment requires two continuous pairs`), no timeout and no
+retained started job missing its terminal receipt. The 119 undated historical
+failures remain separate. Numerical success does not establish forecast accuracy.
+Final health is active with unchanged physical/edge PIDs 12155/27649, 55 frames
+in 30 minutes and maximum interval 44.18 seconds. Fifteen affected host tests
+and twelve frozen checks before/after pass. Detailed records stay device-private;
+aggregate evidence is in `prospective_readiness_and_natural_gate_audit_20261009.json`.
+
 ## October 9 cached-process pressure and interrupted-snapshot recovery
 
 A subsequent explicit user authorization permits exactly one 64 MiB-floor retest.
