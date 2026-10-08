@@ -1,22 +1,25 @@
 # Stage 11–14 completion audit
 
+Updated against published evidence through 2026-10-04 (repository baseline `d3330fd`),
+with the October 8 maintenance receipt repair noted below.
+
 This audit retains the scope of the supplied roadmap. It distinguishes available
 implementation and bounded evidence from the evidence needed for full completion.
 It is not a release approval or a claim that the four stages are complete.
 
 | Original requirement | Current evidence and boundary | Completion evidence still required |
 | --- | --- | --- |
-| Continuous 128D drift and diffusion | `traceform/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; current archived sequence has 5961 legacy 26D rows and zero eligible 128D pairs (`empirical_128d_input_readiness.json`), so controlled moments remain insufficient |
+| Continuous 128D drift and diffusion | `traceform/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; the legacy archive has 5961 26D rows and zero eligible 128D pairs, while device 128D inventories and chronological diagnostics now exist; neither establishes scientific acceptance |
 | Euler–Maruyama simulation | `additive_sde_refinement_host.json`: known 1D OU convergence | Validation of the intended empirical 128D model and appropriate time steps |
 | Long-range/fractional memory | Additive fractional driver and residual profile diagnostics exist; source explicitly disclaims empirical identification | Source-bound identification, uncertainty and comparison with Brownian/null alternatives; archived H=0.0623 is a finite-lag MSD diagnostic, not an accepted driver |
 | Conservative potential inversion | Smoothed graph potential/curvature diagnostics exist | Evidence that a conservative potential describes the empirical drift, or explicit qualification of the nonconservative component |
 | Continuous daily and weekly kernel | Existing smoothing implementations and `continuous_time_validation*.json` | Verify current release retains the accepted boundary-continuity and weekly-conditioning behavior |
 | Configurable haptics/notifications/volume/color | Actuator and restoration implementations and bounded device receipts exist | Current-source device verification and separately authorized physical use; synthetic dispatch is not efficacy |
-| Intervention after recommendation and CSD | Closed-loop policy exists; defaults retain shadow/silent behavior | Current-source decision-to-actuator checks, explicit operational enablement and actual safe execution |
+| Intervention after recommendation and CSD | Authorized field daemon restored active; prolonged-dwell trigger deployed with source checks (`intervention_trigger_prolonged_dwell_20261004.json`) | Actual execution under the new trigger and decision-to-actuator evidence; deployment receipt records no delivered intervention yet |
 | 5–15 minute follow-up | Feedback and retention implementation; `native_feedback_pixel.json` | Authorized real follow-up with complete observation window and attribution limitations |
 | Contextual bandit reward/fatigue | `traceform/intervention/closed_loop.py` and native policy | Current-source policy validation; causal efficacy requires suitable intervention/control evidence |
-| Hot 48h 1Hz 128D | Tiered storage and native retention implementations | Current production release retaining the correct bound and source provenance |
-| Warm 30d 30s tokens/potential | Warm SQL typing, snapshots and retention receipts | Current production migration and end-to-end retained-source consistency |
+| Hot 48h 1Hz 128D | Primary upgrade exercised 48h retention; bounded isolated sampling and provenance audit pass | Long-term 1Hz retention and complete source observability; Termux field sampling has a different cadence |
+| Warm 30d 30s tokens/potential | Warm migration check passed during primary upgrade; daily device-local SQLite snapshots retain 14 days | Long-term end-to-end retained-source consistency; daily backups do not replace the warm-tier contract |
 | Cold topology/energy under 500KB | Admission gate and lineage/export evidence | Empirically meaningful bifurcation parameters and bounded long-duration retention; small synthetic archives do not prove years of validity |
 | Sunday automatic audit/calibration/reordering | `native_current_weekly_probe_android.json` passes complete synthetic debug task | Actual production Sunday delivery and authorized source-bound calibration; debug job does not establish those |
 | Atomic model activation and recovery | Registry/admission/publication recovery receipts; later orphan cleanup separately checked | Bind the final release to all relevant changes and verify final device behavior |
@@ -26,21 +29,43 @@ It is not a release approval or a claim that the four stages are complete.
 | Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; six Android public-verifier cases and four signed SDK cases, including app-process restart replay; actual separate-party two-node known-statement MPC/proof binding in `zk_packed_uniform_v2_mpc_binding_android.json` | Unknown-score proof integration, distributed private proving and production key/setup provenance; v1 certificates cannot silently authorize v2 outputs |
 | Unknown-score private computation workflow | Signed unknown-score SDK entry, durable replay reservation; benign pre-fix Android case; circuit-level pre-reveal approval guard with 22 real host MPC cases | Guarded changed-model Android case passes after observed resource recovery and synthetic certificate rotation; normal unknown-score guarded coverage, process-restart app replay and packed-v2 proof binding remain open |
 | Native <15ms / <5MB core | `native_current_monthly_compute_android.json`: isolated fitted synthetic compute passes | Preserve measured workload scope; it does not prove whole-app/fit/history-scan/private-MPC memory below 5MB |
-| Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Build and install final production sources; current primary app is older |
-| Complete native 128-feature acquisition | Native feature provenance and `native_128_feature_source_index.json` account for all 128 names; the literal source index leaves variable dispatch/helper chains unresolved | Resolve producer paths and verify each intended observed feature on hardware; a name or assignment is not evidence of independent observability |
-| Final USB deployment | Independent probes have been installed and removed | Install the final production build with the existing signer and verify the requested operational behavior |
-| Repository publication | Public implementation and bounded source/build evidence are pushed to `https://github.com/haeliotang/traceform.git`; private device diagnostics are excluded | Verify each new push against the remote commit; publication does not close remaining scientific or deployment gates |
+| Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Primary upgraded to `23c1065` with same signer, rollback rehearsal, eight checks and bounded collection; long-term behavior and release identity remain open |
+| Complete native 128-feature acquisition | 51 extractor outputs and digital-context formulas ported with host and device parity; dataflow and observability registry distinguish measured inputs, proxies and missing inputs | Verify intended quantities on hardware; 12 port outputs lack required native inputs, and parity on identical base inputs does not establish 128 independently measured quantities |
+| Final USB deployment | `primary_app_upgrade_20261004.json`: primary installed in place, data kept, rollback rehearsed and health checks passed | Long-term operation and actual Sunday task; receipt ended with primary force-stopped, Termux running; development signer is not release identity |
+| Repository publication | Public implementation and bounded source/build evidence are pushed to `https://github.com/haeliotang/traceform.git`; selected device-derived inventory aggregates are also committed; two newer local evaluation reports remain untracked | Verify each new push against the remote commit; publication does not close remaining scientific or deployment gates |
 
 ## Next execution order
 
-1. Finish application SDK valid and rejection coverage using separate-party
-   synthetic inputs and matched nonce/source receipts.
-2. Implement the unknown-objective approval workflow and packed-v2 public
-   statement/proof binding; retain explicit owner authorization and replay controls.
-3. Resolve the empirical/model-family and real intervention requirements with
-   suitable data and authority. Keep unperformed scientific experiments open.
-4. Build the final production candidate, verify integrated behavior and resource
-   scope on USB hardware, then publish the reviewed repository state.
+1. Obtain independent multi-day holdout evidence for the guarded normalizer candidate
+   and empirical dynamics; do not activate a candidate that fails its gates.
+2. Observe actual authorized interventions and complete follow-up windows under the
+   deployed prolonged-dwell trigger; separate recommendations from causal evidence.
+3. Verify long-term collection, actual Sunday calibration and real low-memory behavior.
+   Primary upgrade and rollback rehearsal are already recorded, not pending installation.
+4. Complete guarded unknown-score Android coverage, packed-v2 binding and distributed
+   private proving, then real-owner enrollment and independent security assessment.
+
+## October 3–4 engineering evidence
+
+The latest recorded full host suite passes 569 tests with 182 subtests (JDK17),
+reported in `artifacts/native_android_v1/foreground_service_full_test.json`.
+This documentation update does not rerun that suite. Binding parse caching reduces
+bounded isolated-service mean tick cost from 234.5ms to 177.9ms; the final 719-frame
+run has zero over-period ticks and zero invalid provenance records. Whole-service
+cost and memory are separate from the <15ms / <5MB compute-core requirement.
+
+`low_memory_recovery_isolated_android.json` records trim signals tolerated and
+SIGKILL recovery with a new session and no cross-session continuity. It does not
+induce actual lmkd pressure or verify private-MPC withdrawal; no dedicated
+`onTrimMemory`/`onLowMemory` handler exists in the tested service.
+
+Daily device-local snapshots retain 14 days. The published normalizer candidate
+report rejects the single-window candidate on its forecast gate; no activation is
+recorded. The newer untracked two-snapshot evaluation also remains unaccepted due
+to insufficient independent holdout days. Comparisons use persistence within each
+normalization, not a common error scale. See
+[feature evidence and candidate scope](continuous_feature_provenance.md) and
+[recorded deployment state](pixel6a_deployment.md).
 
 The earlier 960 MiB SDK admission failures remain failures. The current fixed
 circuit uses an explicitly derived 929 MiB initial estimate (measured standalone
@@ -91,6 +116,17 @@ increment baseline checks, temporal-leakage rejection and an independent
 correlated two-coordinate covariance example. These controlled tests validate
 the reporting path and do not supply the missing empirical records.
 
+## October 8 maintenance receipt repair
+
+Hourly maintenance previously replaced the detailed weekly calibration result
+with a report containing only `last_calibration_week`. The maintenance script
+now carries `last_calibration_receipt` forward, retaining the attempt timestamp,
+week, forced/Sunday trigger, source audit, potential result and calibration
+acceptance or rejection. A regression first reproduces the lost receipt, then
+verifies preservation through the next ordinary maintenance run. All 19 affected
+maintenance and daily-snapshot tests pass. This does not reconstruct previously
+lost receipts or establish successful Sunday calibration.
+
 ## Conditional Brownian calibration
 
 `ContinuousDynamics.estimate_memory_irregular(records, coordinate=0,
@@ -106,8 +142,9 @@ empirical memory or scientific acceptance. Draws are bounded to 999.
 ## External conditions for full acceptance
 
 Real intervention evaluation requires a named participant, permitted actuator
-and observation window; the device remains shadow/silent until those conditions
-are explicit. Cross-individual validation requires a second independently held
+and observation window. The participant has authorized field operation, and the
+October 4 trigger receipt records an active daemon; actual trials and complete
+follow-up remain to be established. Cross-individual validation requires a second independently held
 device and enrolled owner identity. Synthetic identities and a Mac peer prove
 controlled protocol behavior, not cross-individual generalization. Neither
 external requirement can be replaced by additional unit tests.
@@ -116,7 +153,8 @@ Distributed private proving remains an implementation requirement. The current
 TACEO documentation supports BLS12-381, but its documented honest-majority
 protocols do not resolve Traceform's two-owner security requirement. See
 [the compatibility gates](collaborative_proof_integration.md). Full completion
-and final primary-app deployment are not claimed.
+remains unclaimed. Primary-app upgrade is separately recorded in the October 4
+receipt and does not close scientific or privacy requirements.
 
 ## Within-token CSD diagnostic
 
@@ -152,4 +190,6 @@ fixtures. A 128-dimensional, constant-Token controlled sequence checks Java
 against Python variance, lag-one correlation and tipping decisions; flat
 input, dimension changes and invalid normalized vectors have separate checks.
 Native frame metadata identifies the new diagnostic space. Host parity and a
-candidate build do not establish current primary-app deployment or efficacy.
+candidate build alone do not establish deployment or efficacy. Primary deployment
+is now separately supported by `primary_app_upgrade_20261004.json`; that bounded
+check does not establish intervention efficacy.

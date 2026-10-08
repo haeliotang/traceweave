@@ -5,12 +5,12 @@
 > **「检验在没有预定义行为语义的条件下，能否从连续自然人类轨迹中发现持久的潜在结构。」**
 
 [![Pipeline](https://img.shields.io/badge/Pipeline-Stage%2011--14%20Acceptance%20Pending-yellow)]()
-[![Tests](https://img.shields.io/badge/Tests-406%2F406%20Passing-success)]()
+[![Tests](https://img.shields.io/badge/Tests-569%20Passing-success)]()
 [![Corpus](https://img.shields.io/badge/Corpus-14%20Days%20Continuous-blue)]()
 [![Sensorium](https://img.shields.io/badge/Sensorium-128D%20Hypercube%20(2%5E7%20SIMD)-orange)]()
 [![Sandbox](https://img.shields.io/badge/Sandbox-Forward%20MC%20Simulation-violet)]()
 [![Code Health](https://img.shields.io/badge/Audit-100%25%20Verified%20(15%20Bugs%20Fixed)-teal)]()
-[![Hardware](https://img.shields.io/badge/Pixel%206a-Final%20Primary%20Update%20Pending-yellow)]()
+[![Hardware](https://img.shields.io/badge/Pixel%206a-Primary%20Upgraded-success)]()
 [![Manifold Dynamics](https://img.shields.io/badge/DETM%20%26%20CSD-Active%20Drift%20Audited-indigo)]()
 [![Multiscale Diffusion](https://img.shields.io/badge/Hurst%20Exponent-Sub--Diffusive%20(H%3D0.0623)-teal)]()
 [![Macroscope 2.0](https://img.shields.io/badge/Macroscope%202.0-Interactive%20Canvas-pink)]()
@@ -19,16 +19,17 @@
 
 ---
 
-## Stage 11–14 progress (2026-10-02)
+## Stage 11–14 progress (2026-10-04)
 
 **总进度：Stage 1–10 的既有研究与工程管线已形成；Stage 11–14
-主要工程模块已落地，但整体验收和最终主应用部署尚未完成。**
+主要工程模块已落地，主应用升级和回滚演练已完成，整体验收仍未完成。**
 目前不使用单一完成百分比：模块实现、合成验证、真实科学验证和生产部署
 分别记录，不能互相替代。
 
-最新完整 Python 测试为 **406 项通过**，耗时 56.442s；
+最新已记录的完整主机测试为 **569 项通过，另有 182 个子测试**（JDK17），
+见[整服务测试记录](artifacts/native_android_v1/foreground_service_full_test.json)；
 最新完整 Rust 证明后端测试为 **17 项通过**。测试覆盖主机实现和受控夹具，
-不能替代科学验收、完整隐私协议或最终主应用部署。
+不能替代科学验收、完整隐私协议或长期生产运行验收。
 隐私对齐已有 14 项已知公开声明的 Android SDK 用例、22 项批准绑定防护的
 独立双方主机 MPC 用例，以及真机更换模型拒绝用例。
 packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用例通过；
@@ -38,11 +39,11 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 最新源码重建组合的两节点已知分数 MPC 输出与签名证明绑定已通过真机验证
 （4.708s），应用进程重启后的计算入口重放拒绝为 102.299ms，账本保持不变；
 这不覆盖十六节点未知分数流程。接下来仍需完成十六节点带批准防护的正常
-未知分数流程及其应用重启重放验证、双方私有证明生成，以及最终主应用的
-USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参与端和公开
+未知分数流程及其应用重启重放验证、双方私有证明生成。当前候选包已重新编译核心 JNI、私有参与端和公开
 验证器并通过签名检查。真实干预因果效果、实测连续动力学及
-长期生产调度仍需各自的验证证据。Pixel6a 主应用仍是旧版本；独立测试
-应用已清理，默认运行策略保持 shadow/silent。
+长期生产调度仍需各自的验证证据。Pixel6a 主应用已于 10 月 4 日升级；
+部署检查结束时原生主服务已 force-stop，Termux 采集继续运行。现场守护进程
+已按参与者授权恢复 active；未授权或授权记录无效时仍回退 silent。
 
 公开源码进展：未知分数结果已提供规范的 224 字节声明编码接口，合成批准材料
 可在 USB 分发前校验电路、双方输入绑定与签名；合成证明生成器在生成前检查
@@ -50,7 +51,10 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 修复 60 帧网格窗口与 60 步同 Token 滞留无法同时预警的问题；
 受控测试证明触发可达，真实效果仍待验证。原生 Wi-Fi 来源已接入，
 生产服务与隔离能力检查共用读取路径；128 个原生特征名称的源码索引已建立，
-其中 44 项定位到直接赋值或已审查的变量分发路径，84 项仍未解析。
+早期索引中的 44 项定位、84 项未解析是历史快照。随后新增 51 项提取公式
+及数字上下文的原生迁移，通过 Python/Java 逐帧对照和真机夹具验证；
+这些公式共享基础输入，不能与旧计数相加来宣称独立观测数量。12 项输出所需
+输入仍受当前权限与采集来源限制，保持缺失。见[特征迁移范围](docs/continuous_feature_provenance.md#observability-registry-normalizer-evaluation-and-native-parity-ports)。
 原生温度入口匹配既有采集的 IMU 芯片温度来源，明确区别电池、环境和整机温度；
 传感器列表存在不等于已验证主服务回调与完整采集。
 内存压力字段已接入系统 PSI 来源；访问受限或格式无效时保持缺失，
@@ -59,23 +63,42 @@ USB 安装和集成检查。当前候选包已重新编译核心 JNI、私有参
 事件计数不等于切换频率或确切解锁次数。
 原生采集每次真正启动都会创建独立会话身份，保留服务绑定的停止/重启不会沿用旧身份。
 周审计核对原生 supplied/missing 清单、来源分类与有效期，并分别统计观测、派生、代理和填补坐标；矛盾记录不能进入自动校准；声明连续的帧还须保持来源覆盖、分类与提供者一致，清单重排不会被误拒。原生连续帧的间隔字段还须与单调时钟差一致。
-这些源码路径不等于完整硬件可观测性或生产采集验收。最新构建记录见
-[最新候选包记录](artifacts/alignment_v1/native_interval_contract_candidate_build.json)，
-该候选包已包含共享 Wi-Fi 来源和原生连续 CSD 诊断，
-源码摘要、包内资产与签名验证通过；构建可显式复用既有开发签名密钥，避免新输出目录改变升级身份；
-尚未安装到主应用，不能作为最终部署验收依据。
+这些源码路径不等于完整硬件可观测性或长期生产采集验收。主应用已使用同一签名
+原位升级到 commit `23c1065` 的 APK，保留数据并演练回滚；八项非执行器检查和
+约 135 秒真实采集通过。见[主应用部署回执](artifacts/native_android_v1/primary_app_upgrade_20261004.json)。
+
+10 月 3–4 日新增进展：
+
+- 修复 Termux 时区环境导致的沙盒退出和后台重启回到 silent 的问题；有效授权支持
+  active 重启，`.silent` 仍是停止开关。每日 SQLite 在线快照在设备本地保留 14 天。
+- 新增 128D 数据流与可观测性登记；已发布窗口的输入分类为 40 项观测输入、59 项
+  观测输入代理、29 项当前不可观测。这是输入证据分类，不是测量有效性认证。
+- 归一化候选已有饱和度、回放保真、常量维度及预测门槛；已发布单窗口候选未通过
+  预测检查，未注册或激活。跨日独立留出仍需补齐。
+- 模型绑定解析缓存将隔离整服务受测平均单帧耗时由约 234.5ms 降至 177.9ms；
+  719 帧测试无超周期 tick、保留来源审计无无效记录。这是短时整服务结果，
+  `<15ms / <5MB` 要求仍按计算核心范围解释。
+- 隔离包通过模拟杀进程后的恢复与新会话边界检查；这不覆盖真实系统低内存撤回。
+- 长时间滞留事件也可进入干预检查，已部署并 active 重启；部署回执尚无新触发下的
+  实际干预，离线推荐不构成效果验证。
+
+详见[部署记录](docs/pixel6a_deployment.md)、[整服务测量](artifacts/native_android_v1/foreground_service_full_test.json)、
+[可观测性登记](artifacts/forecasting_v2/device_128d_feature_observability_registry.json)、
+[候选评估](artifacts/forecasting_v2/device_128d_normalizer_candidate_evaluation.json)、
+[恢复测试](artifacts/native_android_v1/low_memory_recovery_isolated_android.json)和
+[干预触发部署回执](artifacts/forecasting_v2/intervention_trigger_prolonged_dwell_20261004.json)。
 
 The next-stage engineering implementation is substantially in place. The full
-host suite passes **406 tests**. Stage 11–14 is **not yet fully accepted**;
+latest recorded host suite passes **569 tests**, with 182 subtests. Stage 11–14 is **not yet fully accepted**;
 [the completion audit](docs/stage11_14_completion_audit.md) records the remaining
 requirements and evidence boundaries.
 
 | Area | Implemented and verified | Remaining work |
 | --- | --- | --- |
 | Continuous dynamics and time kernels | Continuous SDE/Euler–Maruyama rollouts, daily/weekly smoothing, controlled 128D covariance and refinement checks | Empirical held-out drift/diffusion, fractional-memory identification and conservative-potential validity |
-| Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Authorized real intervention and causal-effect evidence; defaults remain shadow/silent |
-| Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Final production-source deployment, actual Sunday delivery and meaningful long-term bifurcation parameters |
-| Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Final primary-app update and complete native feature provenance; these measurements do not cover whole-app or private-MPC memory |
+| Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Actual intervention, complete follow-up and causal-effect evidence; authorized field daemon is active |
+| Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Actual Sunday delivery, long-term retained-source consistency and meaningful bifurcation parameters |
+| Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Primary app upgraded with rollback rehearsal; complete hardware observability and long-term operation remain open; core measurements exclude whole-app and private-MPC memory |
 | Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations; two-node known-statement MPC/proof binding | Guarded normal unknown-score Android coverage, app-restart replay, unknown-score proof integration and distributed private proving, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
@@ -169,10 +192,14 @@ reviewed external prototypes are not production replacements. The
 [protocol integration decision](docs/collaborative_proof_integration.md) records
 party-count, witness privacy, statement compatibility and acceptance invariants.
 
-The primary app currently installed on Pixel6a is an older build. Final deployment
-and full scientific acceptance remain open. This repository snapshot publishes
+The October 4 receipt records the primary app upgraded to commit `23c1065`, with
+rollback rehearsal and bounded collection checks. It ended with the native service
+stopped while the Termux runtime continued; this is recorded deployment evidence,
+not a live device-state check. Full scientific and long-term operational acceptance
+remain open. This repository snapshot publishes
 implementation and bounded test evidence; it does not establish causal efficacy,
-zero-knowledge sharing completion or the whole-app<5MB target. See the
+zero-knowledge sharing completion or whole-app memory below 5MB; the requested
+<5MB bound applies to the compute core. See the
 [acceptance ledger](docs/next_stage_acceptance.md) and [native SDK scope](docs/native_android_sdk.md).
 
 ## 1. Scientific Motivation
@@ -444,7 +471,7 @@ traceform/
 │   ├── phase_transitions_v1/              # Stage 8 bifurcation detection report
 │   ├── infradian_v1/                      # Stage 9 weekly infradian dynamics report
 │   └── macroscope_dashboard_v1.html       # Stage 10 interactive HTML dashboard
-└── tests/                                 # 406 host tests; device receipts have separate scope
+└── tests/                                 # 569 recorded host tests; device receipts have separate scope
     ├── test_canonical_sensorium_26d.py    # 26D canonical physical basis tests
     ├── test_canonical_sensorium_35d.py    # 35D holo-spectral expansion tests
     ├── test_canonical_sensorium_44d.py    # 44D acoustic & RF dispersion tests
@@ -477,11 +504,11 @@ traceform/
 
 ## 5. Quick Start & Execution
 
-### A. Run Unit Tests (406/406 Host Tests Passing)
+### A. Run Unit Tests (Latest Recorded: 569 Passing, 182 Subtests)
 
 The [pressure-source candidate build](artifacts/alignment_v1/native_pressure_refresh_candidate_build.json) refreshes derivatives from each fresh endpoint using bounded five-second-or-longer references; freshness and coverage gates remain unchanged. The primary app has not been updated.
 
-The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The latest [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) remains uninstalled in the primary app. The host suite passes all 406 tests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
+The native continuous CSD detector maintains centered sliding sufficient statistics and refreshes one axis per full-window frame to limit accumulated roundoff. A 1,500-frame independent Python comparison covers rolling windows and continuity resets; the radial autocorrelation and legacy grid calculation retain direct residual evaluation. The earlier [candidate build](artifacts/alignment_v1/continuous_csd_statistics_candidate_build.json) is historical evidence; the subsequent [primary upgrade](artifacts/native_android_v1/primary_app_upgrade_20261004.json) records deployment of commit `23c1065`. The latest recorded host suite passes 569 tests with 182 subtests; per-frame grid and continuous-vector parity, constant-input controls, and continuity resets remain covered. These checks do not establish service latency, biological CSD, or intervention efficacy.
 
 ```bash
 # Run the full host suite locally:

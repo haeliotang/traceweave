@@ -8,6 +8,36 @@ import unittest
 
 
 class TestRuntimeMaintenance(unittest.TestCase):
+    def test_hourly_maintenance_preserves_last_calibration_evidence(self):
+        from unittest.mock import patch
+        from scripts import maintain_edge_runtime
+
+        class Thursday(datetime.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return cls(2026, 10, 8, 12, tzinfo=datetime.timezone.utc)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            arguments = ['maintenance', '--database', str(root / 'store.sqlite'),
+                         '--registry', str(root / 'registry')]
+            with patch.object(sys, 'argv', arguments + ['--force-calibration']), \
+                    patch.object(maintain_edge_runtime.datetime, 'datetime', Thursday):
+                maintain_edge_runtime.main()
+            path = root / 'registry' / 'maintenance.json'
+            attempted = json.loads(path.read_text())
+            with patch.object(sys, 'argv', arguments), \
+                    patch.object(maintain_edge_runtime.datetime, 'datetime', Thursday):
+                maintain_edge_runtime.main()
+            hourly = json.loads(path.read_text())
+            self.assertNotIn('calibration', hourly)
+            evidence = hourly['last_calibration_receipt']
+            self.assertEqual(evidence['calibration'], attempted['calibration'])
+            self.assertEqual(evidence['timestamp_utc'], attempted['timestamp_utc'])
+            self.assertEqual(evidence['week'], attempted['last_calibration_week'])
+            self.assertEqual(evidence['full_retained_stream_validation'],
+                             attempted['full_retained_stream_validation'])
+
     def test_weekly_potential_uses_only_latest_coordinate_segment(self):
         from traceform.evolution.potential_maintenance import persist_latest_potential
         from traceform.streaming.tiered_storage import TieredStorage

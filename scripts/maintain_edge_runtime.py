@@ -49,6 +49,8 @@ def main():
         receipt_path = args.registry / "maintenance.json"
         previous = json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
         report = {"timestamp_utc": now.isoformat(), "last_calibration_week": previous.get("last_calibration_week")}
+        if "last_calibration_receipt" in previous:
+            report["last_calibration_receipt"] = previous["last_calibration_receipt"]
         if args.snapshot_dir is not None:  # before compaction, so the day's raw frames are captured first
             try:
                 report["daily_snapshot"] = snapshot_if_due(args.database, args.snapshot_dir, now, resolve_zone(args.timezone),
@@ -86,6 +88,13 @@ def main():
                 except Exception as error:
                     report["calibration"] = {"accepted": False, "error": type(error).__name__, "reason": str(error)}
                 report["last_calibration_week"] = week
+                report["last_calibration_receipt"] = {
+                    "week": week, "timestamp_utc": now.isoformat(),
+                    "trigger": "forced" if args.force_calibration else "sunday_window",
+                    **{key: report[key] for key in
+                       ("full_retained_stream_validation", "potential_maintenance", "calibration")
+                       if key in report},
+                }
             report["retained_versions"] = registry.prune()
             with registry.lock():
                 bundles = [registry.bundle(version) for version in report["retained_versions"]]
