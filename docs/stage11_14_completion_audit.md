@@ -1,6 +1,6 @@
 # Stage 11–14 completion audit
 
-Updated through 2026-10-08, including the ordered four-step work and guarded
+Updated through 2026-10-09, including the ordered four-step work and guarded
 sixteen-node follow-through (baselines `7a39a57` and `91d6659`). Historical full-suite counts retain
 their original test scope.
 
@@ -48,6 +48,40 @@ It is not a release approval or a claim that the four stages are complete.
 4. Complete distributed private proving with the unchanged two-owner security
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
+
+## October 9 cached-process pressure and interrupted-snapshot recovery
+
+Three bounded real-pressure attempts allocate up to 880, 896 and 960 MiB.
+The isolated cached app survives all three; actual system LMK remains unverified.
+The final attempt uses a 160 MiB kernel MemAvailable pre-allocation floor and
+observes a minimum of 162,772 kB; this floor is not a guaranteed minimum for
+changing system memory. A proposed 64 MiB floor is rejected by automatic approval
+review and is not executed. No further pressure follows that rejection.
+
+The SDK now removes abandoned `private-circuit-approved-*.txt` regular snapshots
+under the matching exclusive query lease before owner/replay/admission checks.
+It preserves legacy files, unrelated names and symlinks. A regression first
+reproduces retained snapshots after spent-session replay; nine affected host
+tests now pass, including wrong-lease rejection and idempotent cleanup.
+
+Two controlled abrupt stops verify cleanup and replay recovery. Android records
+reason 10 (USER_REQUESTED), not reason 3 (LOW_MEMORY); neither closes the LMK gate.
+The final rebuilt isolated candidate is first prepared at cached priority 905
+without pressure. After its controlled stop, the snapshot count changes from
+one to zero, replay is rejected and the 96-byte ledger is unchanged. A fresh
+approved authenticated computation completes in 32.116 seconds, matches the
+independent Android/Mac reference and appends exactly 32 bytes (128 total).
+The prepared interrupted request is waiting for its peer, not in authenticated
+CPU-phase MPC. CPU-phase system-LMK recovery also remains open.
+
+All twelve frozen checks pass before and after. At 19:04 UTC October 8 (October 9
+local time), field collection has 55 frames in 30 minutes, a maximum interval of
+39.24 seconds and active mode without a silence marker. Physical/edge PIDs
+12155/27649 remain unchanged. The isolated app and pressure helper are removed.
+The primary APK, field runtime and production 929/192 MiB thresholds are unchanged.
+See `cached_lmk_attempt_and_snapshot_recovery_android.json` and
+`cached_lmk_snapshot_recovery_host.json`. Historical full-suite counts retain
+their original scope.
 
 ## October 8 real running-memory withdrawal and recovery
 

@@ -1,0 +1,34 @@
+{
+  "status": "bounded_recovery_verified_system_LMK_open",
+  "affected_tests": {
+    "passed": 9,
+    "seconds": 6.884
+  },
+  "regression_before_fix": "abandoned approved snapshot retained after replay recovery",
+  "frozen_checks": {
+    "before": 12,
+    "after": 12
+  },
+  "recovery_scope": [
+    "approved regular snapshots only",
+    "matching exclusive query lease",
+    "legacy files and symlinks retained",
+    "spent replay rejected without ledger mutation"
+  ],
+  "actual_system_LMK_verified": false,
+  "bounded_pressure_attempts": 3,
+  "controlled_stops": 2,
+  "unexecuted_pressure_floor_mib": 64,
+  "primary_collectors_restarted": false,
+  "production_admission_mib": 929,
+  "production_running_reserve_mib": 192,
+  "source_sha256": {
+    "android/src/org/traceform/edge/PrivateParticipant.java": "3e7c1f720ce5f3eacf05e9fb8de29d58d6180859435e1c43300a7956240e198b",
+    "android/src/org/traceform/edge/UniformPrivateAlignment.java": "4b02812d9668f058c5c5f01b6dd1b8a7b1c0b5388a42a5e43f2b579b35fa78bf",
+    "scripts/verify_cached_lmk_recovery_usb.py": "c7350277d788a86159aad93fb4935952d5fc1db8fcb2262b96c65e1186cfdb6f",
+    "tests/test_cached_lmk_evidence.py": "5af41ac5aa383acb135b5f7edc0e13365bfcbf88521c0aa80c19db2506e9a14e",
+    "tests/test_private_interrupted_snapshot_recovery.py": "063e3525ae4b6d148406168392e016e6a0c14262cff7167b417b49fd6c862358",
+    "tests/test_private_circuit_resource_admission.py": "3572286a346b4dae7b6884fc3ca766e6c5d3b70b39f81443bc07e4c0e1408ad3",
+    "native/private_alignment_probe/memory_pressure_probe.c": "035cc4d9f2e63d6b6ee4febe113707712b411194d898abe31ee247a5e37759fe"
+  }
+}

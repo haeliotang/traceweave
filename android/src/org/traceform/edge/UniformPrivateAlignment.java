@@ -24,6 +24,7 @@ public final class UniformPrivateAlignment {
     public static String computeApproved(Context context, String[] command, File circuit, File request,
                                          PublicKey[] trustedOwners, String privateBits) throws Exception {
         try (AlignmentQueryLease lease = AlignmentQueryLease.acquire(context.getFilesDir())) {
+            recoverInterruptedSnapshots(context.getCacheDir(), context.getFilesDir(), lease);
             byte[] bindings = OwnerAuthentication.verifyComputation(request, APPROVED_CIRCUIT_DIGEST, trustedOwners);
             byte[] session = java.util.Arrays.copyOfRange(bindings, 0, 32);
             session[31] = bindings[32];
@@ -35,6 +36,22 @@ public final class UniformPrivateAlignment {
                     return null;
                 });
         }
+    }
+
+    // Approved requests share this lease; legacy snapshots have a separate prefix.
+    static int recoverInterruptedSnapshots(File cache, File privateFiles, AlignmentQueryLease lease) throws Exception {
+        lease.requireQueryLease(privateFiles);
+        File[] entries = cache.listFiles();
+        if (entries == null) throw new java.io.IOException("private cache unavailable for recovery");
+        int removed = 0;
+        for (File entry : entries) {
+            if (entry.getName().matches("private-circuit-approved-[0-9]+\\.txt")
+                && java.nio.file.Files.isRegularFile(entry.toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                java.nio.file.Files.delete(entry.toPath());
+                removed++;
+            }
+        }
+        return removed;
     }
 
     // Authenticated canonical scalar encodings contain three 32-byte bindings.

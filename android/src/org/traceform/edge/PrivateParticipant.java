@@ -58,7 +58,7 @@ public final class PrivateParticipant {
             if (offset != 64 && statement[offset] != 0)
                 throw new SecurityException("public session configuration rejected");
         if (checkResources != null) checkResources.run();
-        File snapshot = Files.createTempFile(privateCache.toPath(), "private-circuit-", ".txt").toFile();
+        File snapshot = Files.createTempFile(privateCache.toPath(), approvedBindings == null ? "private-circuit-" : "private-circuit-approved-", ".txt").toFile();
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (InputStream source = Files.newInputStream(circuit.toPath());

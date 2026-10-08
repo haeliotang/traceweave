@@ -172,9 +172,12 @@ public class AdmissionTest {
             ComputationSessions.reserve(context.cache,new byte[32],lease);
         }
         context.manager.available=0;context.manager.low=true;
+        java.io.File abandoned = new java.io.File(context.cache,"private-circuit-approved-123.txt");
+        java.nio.file.Files.write(abandoned.toPath(),new byte[]{1});
         try { UniformPrivateAlignment.computeApproved(context,command,circuit,context.cache,owners,bits); }
         catch(SecurityException expected) {
             if(!expected.getMessage().equals("replayed computation session")) throw expected;
+            if(abandoned.exists()) throw new AssertionError("abandoned approved snapshot retained after replay recovery");
             if(new java.io.File(context.cache,"computation_sessions.bin").length()!=32)
                 throw new AssertionError("replay changed ledger");
             for(java.io.File file:context.cache.listFiles())

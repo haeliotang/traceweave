@@ -19,7 +19,7 @@
 
 ---
 
-## Stage 11–14 progress (2026-10-08)
+## Stage 11–14 progress (2026-10-09)
 
 **总进度：Stage 1–10 的既有研究与工程管线已形成；Stage 11–14
 主要工程模块已落地，主应用升级和回滚演练已完成，整体验收仍未完成。**
@@ -224,6 +224,22 @@ CPU work, with child reaping, snapshot removal and spent-session rejection.
 A later [real running-memory check](artifacts/alignment_v1/running_real_memory_withdrawal_android.json)
 passes the production guard, cleanup, app-restart replay and fresh-session recovery.
 Actual system LMK remains unverified.
+
+The October 9 local-time [cached-process pressure receipt](artifacts/alignment_v1/cached_lmk_attempt_and_snapshot_recovery_android.json)
+records three bounded allocation attempts (880, 896 and 960 MiB); none produces
+an actual system LMK. The approved SDK now removes abandoned approved circuit
+snapshots under the matching exclusive query lease before replay/admission checks.
+Legacy files and symlinks are preserved. Two controlled abrupt stops verify
+snapshot cleanup, spent-session rejection and unchanged reservation ledgers;
+Android records USER_REQUESTED, so these are not LMK evidence. The final rebuilt
+isolated candidate reaches cached priority 905 without pressure, recovers its
+snapshot from one to zero, and completes a new authenticated session in 32.116
+seconds with Android/Mac output matching the independent reference (ledger
+96 to 128 bytes). Nine affected host tests and all twelve frozen checks before
+and after pass; see the [host receipt](artifacts/alignment_v1/cached_lmk_snapshot_recovery_host.json).
+The isolated app and pressure helper are removed, and physical/edge collectors
+retain PIDs 12155/27649. Production thresholds remain unchanged. A proposed
+64 MiB pressure floor was rejected by automatic approval review and was not run.
 
 The archived 14-day state sequence is not eligible for empirical 128D fitting:
 all 5,961 records contain legacy 26D normalized features and lack the required
