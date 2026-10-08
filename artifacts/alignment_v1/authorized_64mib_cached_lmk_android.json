@@ -1,0 +1,644 @@
+{
+  "passed": false,
+  "run_tag": "e75628d7c86a4eebbf7bb57ea45776f4",
+  "status": "LMK_unverified_recovery_tested",
+  "scope": "cached_approved_request_waiting_for_peer_LMK_not_CPU_phase",
+  "pressure_limits": {
+    "step_mib": 16,
+    "maximum_mib": 1024,
+    "kernel_floor_mib": 64,
+    "child_timeout_seconds": 120,
+    "pressure_child_oom_score_adj": 800,
+    "touch_existing_pages_per_command_seconds": 2
+  },
+  "health_before": {
+    "physical_alive": true,
+    "physical_pid": 12155,
+    "edge_pid": 27649,
+    "edge_alive": true,
+    "latest_age_seconds": 41.85645866394043
+  },
+  "prepared": {
+    "nonce": "c9920b1b-7413-4dd2-ae7b-cace9a5db17b",
+    "pid": 5792,
+    "child_pid": 5863,
+    "prepared_epoch_ms": 1791493238109,
+    "low_memory_kill_reporting_supported": true,
+    "reservation_bytes": 32,
+    "scope": "approved_request_waiting_for_peer_not_authenticated_CPU_phase"
+  },
+  "cached_target_oom_score_adj": 905,
+  "memory_samples": [
+    {
+      "allocated_mib": 0,
+      "available_kb": 1412088
+    },
+    {
+      "allocated_mib": 16,
+      "available_kb": 1414472
+    },
+    {
+      "allocated_mib": 32,
+      "available_kb": 1397600
+    },
+    {
+      "allocated_mib": 48,
+      "available_kb": 1380344
+    },
+    {
+      "allocated_mib": 64,
+      "available_kb": 1369600
+    },
+    {
+      "allocated_mib": 80,
+      "available_kb": 1351204
+    },
+    {
+      "allocated_mib": 96,
+      "available_kb": 1332964
+    },
+    {
+      "allocated_mib": 112,
+      "available_kb": 1314820
+    },
+    {
+      "allocated_mib": 128,
+      "available_kb": 1304256
+    },
+    {
+      "allocated_mib": 144,
+      "available_kb": 1286420
+    },
+    {
+      "allocated_mib": 160,
+      "available_kb": 1267832
+    },
+    {
+      "allocated_mib": 176,
+      "available_kb": 1249940
+    },
+    {
+      "allocated_mib": 192,
+      "available_kb": 1232824
+    },
+    {
+      "allocated_mib": 208,
+      "available_kb": 1225340
+    },
+    {
+      "allocated_mib": 224,
+      "available_kb": 1208152
+    },
+    {
+      "allocated_mib": 240,
+      "available_kb": 1195004
+    },
+    {
+      "allocated_mib": 256,
+      "available_kb": 1175456
+    },
+    {
+      "allocated_mib": 272,
+      "available_kb": 1164908
+    },
+    {
+      "allocated_mib": 288,
+      "available_kb": 1148064
+    },
+    {
+      "allocated_mib": 304,
+      "available_kb": 1129332
+    },
+    {
+      "allocated_mib": 320,
+      "available_kb": 1112028
+    },
+    {
+      "allocated_mib": 336,
+      "available_kb": 1093460
+    },
+    {
+      "allocated_mib": 352,
+      "available_kb": 1082968
+    },
+    {
+      "allocated_mib": 368,
+      "available_kb": 1066064
+    },
+    {
+      "allocated_mib": 384,
+      "available_kb": 1047824
+    },
+    {
+      "allocated_mib": 400,
+      "available_kb": 1035236
+    },
+    {
+      "allocated_mib": 416,
+      "available_kb": 1017636
+    },
+    {
+      "allocated_mib": 432,
+      "available_kb": 1000504
+    },
+    {
+      "allocated_mib": 448,
+      "available_kb": 981896
+    },
+    {
+      "allocated_mib": 464,
+      "available_kb": 968524
+    },
+    {
+      "allocated_mib": 480,
+      "available_kb": 949664
+    },
+    {
+      "allocated_mib": 496,
+      "available_kb": 931116
+    },
+    {
+      "allocated_mib": 512,
+      "available_kb": 913808
+    },
+    {
+      "allocated_mib": 528,
+      "available_kb": 894872
+    },
+    {
+      "allocated_mib": 544,
+      "available_kb": 876772
+    },
+    {
+      "allocated_mib": 560,
+      "available_kb": 858024
+    },
+    {
+      "allocated_mib": 576,
+      "available_kb": 841480
+    },
+    {
+      "allocated_mib": 592,
+      "available_kb": 823080
+    },
+    {
+      "allocated_mib": 608,
+      "available_kb": 815852
+    },
+    {
+      "allocated_mib": 624,
+      "available_kb": 797876
+    },
+    {
+      "allocated_mib": 640,
+      "available_kb": 780008
+    },
+    {
+      "allocated_mib": 656,
+      "available_kb": 762684
+    },
+    {
+      "allocated_mib": 672,
+      "available_kb": 750404
+    },
+    {
+      "allocated_mib": 688,
+      "available_kb": 732512
+    },
+    {
+      "allocated_mib": 704,
+      "available_kb": 712552
+    },
+    {
+      "allocated_mib": 720,
+      "available_kb": 694260
+    },
+    {
+      "allocated_mib": 736,
+      "available_kb": 676436
+    },
+    {
+      "allocated_mib": 752,
+      "available_kb": 658928
+    },
+    {
+      "allocated_mib": 768,
+      "available_kb": 641152
+    },
+    {
+      "allocated_mib": 784,
+      "available_kb": 623524
+    },
+    {
+      "allocated_mib": 800,
+      "available_kb": 607000
+    },
+    {
+      "allocated_mib": 816,
+      "available_kb": 589072
+    },
+    {
+      "allocated_mib": 832,
+      "available_kb": 569868
+    },
+    {
+      "allocated_mib": 848,
+      "available_kb": 551616
+    },
+    {
+      "allocated_mib": 864,
+      "available_kb": 571716
+    },
+    {
+      "allocated_mib": 880,
+      "available_kb": 553588
+    },
+    {
+      "allocated_mib": 896,
+      "available_kb": 535348
+    },
+    {
+      "allocated_mib": 912,
+      "available_kb": 516464
+    },
+    {
+      "allocated_mib": 928,
+      "available_kb": 498240
+    },
+    {
+      "allocated_mib": 944,
+      "available_kb": 488056
+    },
+    {
+      "allocated_mib": 960,
+      "available_kb": 474112
+    },
+    {
+      "allocated_mib": 976,
+      "available_kb": 457612
+    },
+    {
+      "allocated_mib": 992,
+      "available_kb": 441040
+    },
+    {
+      "allocated_mib": 1008,
+      "available_kb": 420432
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 403980
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 401780
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 399880
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 397908
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 395832
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 393504
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 392392
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 390744
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 388956
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 387368
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 385508
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 383900
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 381920
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 380564
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 378680
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 376524
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 375048
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 370212
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 369172
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 367260
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 381400
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 382204
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 380600
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 387500
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 391852
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 390704
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 388252
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 386832
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 385224
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 383844
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 382204
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 380028
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 378300
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 376944
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 375400
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 376740
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 378088
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 375636
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 389512
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 392220
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 391168
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 401392
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 399296
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 397784
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 395824
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 393672
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 391948
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 389496
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 389832
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 388744
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 388252
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 385068
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 402824
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 400812
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 398808
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 397548
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 395772
+    },
+    {
+      "allocated_mib": 1024,
+      "available_kb": 393796
+    }
+  ],
+  "health_during": [
+    {
+      "physical_alive": true,
+      "physical_pid": 12155,
+      "edge_pid": 27649,
+      "edge_alive": true,
+      "latest_age_seconds": 45.65655159950256
+    },
+    {
+      "physical_alive": true,
+      "physical_pid": 12155,
+      "edge_pid": 27649,
+      "edge_alive": true,
+      "latest_age_seconds": 48.90080785751343
+    },
+    {
+      "physical_alive": true,
+      "physical_pid": 12155,
+      "edge_pid": 27649,
+      "edge_alive": true,
+      "latest_age_seconds": 52.09295439720154
+    },
+    {
+      "physical_alive": true,
+      "physical_pid": 12155,
+      "edge_pid": 27649,
+      "edge_alive": true,
+      "latest_age_seconds": 55.251174211502075
+    }
+  ],
+  "target_disappeared_before_manual_cleanup": false,
+  "pressure_child_exit": 0,
+  "pressure_stderr": "",
+  "health_after_pressure": {
+    "physical_alive": true,
+    "physical_pid": 12155,
+    "edge_pid": 27649,
+    "edge_alive": true,
+    "latest_age_seconds": 56.193264961242676
+  },
+  "actual_system_lmk": false,
+  "retained_cache_names": [
+    "private-circuit-approved-4802403098463881505.txt"
+  ],
+  "explicit_user_authorization": "One additional test with 64 MiB kernel pre-allocation floor",
+  "pressure_source_sha256": "7e64a3e4658ba508d22d327735d532d6cd9888c91a067a54813cfd170b791505",
+  "pressure_executable_sha256": "3959bba6350d880c1d829398d8f7e9440a947f11c100a8f044a61366d14f8d64",
+  "driver_source_sha256": "cf19734422c033d0cf425b2ecc879d3fbc97248109df06952122d9496fa317aa",
+  "controlled_cleanup_requested": true,
+  "recovery": {
+    "exit_records": [
+      {
+        "pid": 5792,
+        "reason": 10,
+        "timestamp_epoch_ms": 1791493265047,
+        "description": "[FORCE STOP] stop org.traceform.edge.synthetic due to from pid 6273",
+        "importance": 400,
+        "status": 0
+      }
+    ],
+    "actual_system_lmk": false,
+    "prepared_epoch_ms": 1791493238109,
+    "snapshots_before": 1,
+    "snapshots_after": 0,
+    "replay_rejected": true,
+    "ledger_unchanged": true,
+    "pid": 6283,
+    "old_pid": 5792,
+    "passed": false,
+    "nonce": "d75efe59-56b2-4b16-92c5-fec64c56f36f",
+    "scope": "system_exit_reason_bound_approved_waiting_request_recovery_not_CPU_phase_LMK"
+  },
+  "computation_child_absent": true,
+  "snapshot_recovery_verified": true,
+  "fresh_session_recovery": {
+    "device": {
+      "case": "fresh_after_cached_recovery",
+      "expected_valid": true,
+      "available_memory_before_entry_bytes": 1652674560,
+      "low_memory_before_entry": false,
+      "replay_rejected": true,
+      "request_excludes_objective": true,
+      "passed": true,
+      "output": "100000000000000000001000011101111110010001101111000011010001110100010110100010000010111001110111110011000101011100110100100100111011001111111000011110110101111100000100110101110001001010101000010000010001000001111101001001011111100011110000111111001100010101000001110111010010010100110011000010111100110100111100000110100001100001010000101000100000011111100111100001110000110011010001001001000001000001011100000110100001001011111000000100011100101101000110111110010101110010110111101011011010010111001110111010001101000010011000100000010001010000111011000110110110000101000100010001100100101111001000101100011101110011010101010000100110110110000000011010010111000011011101101000001100110001001000100101001111011100111010111101100000100111010110100011111010000000011100000000111001010011011100001000001000101101110011010110000011001110111101110111001",
+      "nonce": "7ee6cd46-6257-4dc6-ae31-cabcb9829e93",
+      "job_id": 34716,
+      "elapsed_ms": 30608.317235,
+      "sdk_int": 37,
+      "completed_epoch_ms": 1791493298043,
+      "scope": "synthetic_one_app_private_participant_with_separate_mac_peer_no_collection_no_owner_enrollment"
+    },
+    "peer_exit": 0,
+    "peer_stdout": "connected\n6992 6992 849 840952\nPUBLIC_OUTPUT=100000000000000000001000011101111110010001101111000011010001110100010110100010000010111001110111110011000101011100110100100100111011001111111000011110110101111100000100110101110001001010101000010000010001000001111101001001011111100011110000111111001100010101000001110111010010010100110011000010111100110100111100000110100001100001010000101000100000011111100111100001110000110011010001001001000001000001011100000110100001001011111000000100011100101101000110111110010101110010110111101011011010010111001110111010001101000010011000100000010001010000111011000110110110000101000100010001100100101111001000101100011101110011010101010000100110110110000000011010010111000011011101101000001100110001001000100101001111011100111010111101100000100111010110100011111010000000011100000000111001010011011100001000001000101101110011010110000011001110111101110111001\n",
+    "peer_stderr": "TRACEFORM_MPC_PHASE=independent\n",
+    "transient_startup_retries": 16,
+    "ledger_before_bytes": 32,
+    "ledger_after_bytes": 64,
+    "passed": true
+  },
+  "health_after_recovery": {
+    "physical_alive": true,
+    "physical_pid": 12155,
+    "edge_pid": 27649,
+    "edge_alive": true,
+    "latest_age_seconds": 36.11925721168518
+  },
+  "pressure_attempt_status": "bounded_LMK_condition_not_verified",
+  "pressure_attempt_count": 1,
+  "minimum_available_kb": 367260,
+  "maximum_allocated_mib": 1024,
+  "frozen_checks_after": 12,
+  "affected_host_tests_passed": 3,
+  "cleanup": {
+    "isolated_app_uninstalled": true,
+    "remote_pressure_helper_removed": true,
+    "production_collectors_restarted": false,
+    "committed_test_defaults_restored_to_floor_mib": 160
+  },
+  "one_run_source_overrides": {
+    "native_floor_mib": "160 -> 64",
+    "driver_floor_mib": "160 -> 64",
+    "driver_hold_threshold_mib": "176 -> 80"
+  }
+}

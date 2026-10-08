@@ -51,6 +51,20 @@ It is not a release approval or a claim that the four stages are complete.
 
 ## October 9 cached-process pressure and interrupted-snapshot recovery
 
+A subsequent explicit user authorization permits exactly one 64 MiB-floor retest.
+Automatic review allows it. The holder reaches its unchanged 1024 MiB cap and
+observes a minimum MemAvailable of 367,260 kB (358.65 MiB); it never reaches the
+64 MiB pre-allocation boundary. The target survives and the pressure child exits
+zero. This still does not verify actual system LMK. Controlled cleanup separately
+records USER_REQUESTED (reason 10), removes one orphan snapshot, rejects replay
+without ledger mutation, and completes a new authenticated session in 30.608
+seconds with Android/Mac/reference parity (ledger 32 to 64 bytes). Three focused
+host tests and twelve final frozen checks pass. Collectors retain PIDs 12155/27649.
+The isolated app and helper are removed; committed test defaults return to the
+160 MiB floor. See `authorized_64mib_cached_lmk_android.json`; its source hashes
+and explicit one-run overrides bind the temporary 64 MiB test configuration.
+
+
 Three bounded real-pressure attempts allocate up to 880, 896 and 960 MiB.
 The isolated cached app survives all three; actual system LMK remains unverified.
 The final attempt uses a 160 MiB kernel MemAvailable pre-allocation floor and

@@ -240,6 +240,13 @@ and after pass; see the [host receipt](artifacts/alignment_v1/cached_lmk_snapsho
 The isolated app and pressure helper are removed, and physical/edge collectors
 retain PIDs 12155/27649. Production thresholds remain unchanged. A proposed
 64 MiB pressure floor was rejected by automatic approval review and was not run.
+A later explicitly authorized [single 64 MiB-floor retest](artifacts/alignment_v1/authorized_64mib_cached_lmk_android.json)
+passes approval and reaches the unchanged 1024 MiB allocation cap. Minimum
+MemAvailable is 367,260 kB, so the 64 MiB boundary is never reached and no LMK
+occurs. Controlled cleanup removes the orphan snapshot and rejects replay; a new
+authenticated session passes in 30.608 seconds with the ledger growing from
+32 to 64 bytes. Collectors retain their PIDs, all twelve final frozen checks pass,
+and the fixture is removed. The default test floor returns to 160 MiB.
 
 The archived 14-day state sequence is not eligible for empirical 128D fitting:
 all 5,961 records contain legacy 26D normalized features and lack the required
