@@ -1,0 +1,56 @@
+{
+  "scope": "synthetic_interrupted_unknown_score_reservation_restart_preflight_not_completed_MPC_or_private_proof",
+  "passed": true,
+  "reserve": {
+    "reservation_bytes": 32,
+    "passed": true,
+    "phase": "reserve",
+    "pid": 31901,
+    "nonce": "sequence-reserve-20261008",
+    "scope": "synthetic_interrupted_unknown_score_reservation_not_completed_MPC_or_private_proof",
+    "actuator_calls": 0,
+    "collection_started": false
+  },
+  "replay": {
+    "replay_rejected": true,
+    "ledger_unchanged": true,
+    "no_circuit_snapshot": true,
+    "passed": true,
+    "phase": "replay",
+    "pid": 31929,
+    "nonce": "sequence-replay-20261008",
+    "scope": "synthetic_interrupted_unknown_score_reservation_not_completed_MPC_or_private_proof",
+    "actuator_calls": 0,
+    "collection_started": false
+  },
+  "actual_app_process_restart": true,
+  "isolated_app_removed": true,
+  "usb_forward_created": false,
+  "primary_app_modified": false,
+  "production_collection_restarted": false,
+  "apk_sha256": "c32c1b01dc7a62a4a09a5667ea18380bd7c164569a69d3a50a08c06efa446ae3",
+  "dependency_apk_sha256": "6f441bcee765711ba2ed4763d7e4e92202c001c046d47f66da38b2d45a3bdcab",
+  "source_sha256": {
+    "android/lifecycle_probe/AndroidManifest.xml": "ed50756f64678b63ec19529f93e2bdd85818a7f708e906bfceb9341c04bc8559",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticComputationRestartReceiver.java": "c7cb9bb4d93a63a97bcb1000ef8cb1c074f3a3e164f5af2819c250bfc8f2fe7c",
+    "android/src/org/traceform/edge/UniformPrivateAlignment.java": "0e1cec44a8a7a1955602eafc2f9e699cc5fa164e3607c757a62c4c5731dd5668",
+    "android/src/org/traceform/edge/OwnerAuthentication.java": "83135610b723a164dcaed35cec6c4689ccd1a9d9d13ec39d4ca26754433b82de",
+    "android/src/org/traceform/edge/ComputationSessions.java": "63fa88cb9f2bcb07794b064a7e53077eff2525b50f5f7aa9369c9a4fce66d45e",
+    "android/src/org/traceform/edge/AlignmentQueryLease.java": "2fb6cc1915208230d2ad7d9bb5bfb07360385aa0fc4b2f7db012d2cb7f4a27a2",
+    "android/src/org/traceform/edge/PrivateParticipant.java": "913f02cf3024898ca0716e19da55fcf556145c5579bed9097ad5bb0ddb53a5e4",
+    "scripts/build_native_lifecycle_probe.py": "cddb77c9d85a71d854210f5f59bf7ac45270641856a15f5355247ebea84abf0e"
+  },
+  "frozen_before_pass_count": 12,
+  "frozen_after_pass_count": 12,
+  "missing_runtime_assets": [
+    "previous_temporary_EMP_headers_and_host_runtime",
+    "previous_synthetic_guarded_circuit",
+    "previous_ARM64_private_participant"
+  ],
+  "limitations": [
+    "reservation_was_synthetic_interrupted_request_not_successful_unknown_score_computation",
+    "no_public_objective_computed",
+    "no_private_distributed_proof",
+    "not_sixteen_node_normal_case_coverage"
+  ]
+}

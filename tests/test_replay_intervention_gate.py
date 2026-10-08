@@ -50,14 +50,15 @@ class TestCli(unittest.TestCase):
             connection.close()
             events = root / 'events.jsonl'
             events.write_text('\n'.join(json.dumps({'event_type': 'CSD_TIPPING', 'timestamp_utc': frames[i]['timestamp_utc']})
-                                        for i in (3, 4, 30)) + '\nnot json\n')
+                                        for i in (3, 4, 30)) + '\n' + json.dumps(
+                {'event_type': 'PROLONGED_DWELL', 'timestamp_utc': frames[35]['timestamp_utc']}) + '\nnot json\n')
             out = root / 'report.json'
             subprocess.run([sys.executable, str(ROOT / 'scripts/replay_intervention_gate.py'), '--sqlite-file', str(database),
                             '--events-file', str(events), '--output-file', str(out), '--sample', '0', '--timezone', 'UTC'],
                            check=True, cwd=ROOT, capture_output=True)
             report = json.loads(out.read_text())
             self.assertEqual(report['tipping_events'], 3)
-            self.assertEqual(report['gate1_events_at_or_above_threshold'], 1)
+            self.assertEqual(report['gate1_events_at_or_above_threshold'], 2)
             self.assertEqual(report['gate1_dwell_at_tipping_histogram'], {'0': 2, '60': 1})
             self.assertEqual(report['gate2_frames_at_or_above_threshold'], 15)
             self.assertNotIn('2026-10-01', json.dumps({k: v for k, v in report.items() if k != 'gate1_replayed_exactly'}))

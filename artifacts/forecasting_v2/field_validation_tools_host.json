@@ -1,0 +1,37 @@
+{
+  "scope": "controlled_host_field_audit_feedback_preconditions_and_prospective_freeze_not_device_trajectory_or_scientific_acceptance",
+  "tests": {
+    "tests": 36,
+    "skipped": 0,
+    "passed": true,
+    "elapsed_seconds": 3.9722125000553206,
+    "patterns": [
+      "test_field_runtime_audit.py",
+      "test_controlled_field_feedback.py",
+      "test_prospective_forecast_freeze.py",
+      "test_replay_intervention_gate.py",
+      "test_closed_loop.py",
+      "test_private_computation_fixture.py",
+      "test_approved_unknown_computation.py",
+      "test_private_unknown_objective_output.py",
+      "test_private_computation_approval.py",
+      "test_alignment_query_lease.py",
+      "test_computation_session_reservation.py",
+      "test_approved_private_alignment.py"
+    ]
+  },
+  "source_sha256": {
+    "scripts/audit_field_runtime.py": "9b2d746a325a1d598617846d22f34ebf89d8326526216548246f4d95aab74bd8",
+    "scripts/verify_controlled_field_feedback.py": "2d4c00cddf1a4505ab8add3f9cb65a3cdc3af5f6e264c8b77d32dd11839767e3",
+    "scripts/freeze_prospective_forecast.py": "4c9ba638d66e96ec9a87b75e71283242944af092a79ae0b8298cf34328287253",
+    "scripts/replay_intervention_gate.py": "83582b2840e2a85286036ec70104687c10191bf51f28f801fb5eb423fcdade81",
+    "tests/test_field_runtime_audit.py": "7775262c2010fc46506456e66bcfe776ec75438b441b0e71cf2c4e06b853debb",
+    "tests/test_controlled_field_feedback.py": "e9a70458fa5372bb01dbad4457b05798748c8e006f97c56ec21888dd60dd1144",
+    "tests/test_prospective_forecast_freeze.py": "94d6eeda004fdcd2ef83fc82ec27f5bfd719701c826bfa8e65d9938c6b49bb21",
+    "tests/test_replay_intervention_gate.py": "a7116c5fba8ab5e366bb916a379d0070741d24977d39b75f443ad970c37b03e8"
+  },
+  "regression_before": "prolonged dwell trigger omitted from offline intervention gate count",
+  "regression_after": "both production trigger types counted, legacy tipping-only histogram retained",
+  "device_derived_data_included": false,
+  "full_suite_rerun": false
+}

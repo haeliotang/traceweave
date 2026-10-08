@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Replay the daemon's intervention gate offline on a stored hot tier (read-only, aggregates only).
 
-The live daemon proposes an intervention only when, at a newly inserted CSD_TIPPING event, the dwell
+The live daemon proposes an intervention only when, at a newly inserted CSD_TIPPING or PROLONGED_DWELL event, the dwell
 count reaches --dwell-steps and the sandbox counterfactual (clamping the current state's dwell at 10
 steps, 30 steps ahead, 100 rollouts) recommends it. That needs the terminal risk count on the current
 state to fall by more than 5 rollouts out of 100. This script reports, per stage:
 
-  gate 1  how many CSD_TIPPING events fall at dwell >= threshold (needs the events file);
+  gate 1  how many supported trigger events fall at dwell >= threshold (needs the events file);
   gate 2  for frames at dwell >= threshold, what the same counterfactual recommends and by how much
           the current state's absorption probability changes.
 
@@ -24,6 +24,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from traceform.forecasting.continuity import same_stream_segment
+from traceform.intervention.closed_loop import TRIGGER_EVENT_TYPES
 from traceform.forecasting.sandbox_simulator import SandboxSimulator, ScenarioIntervention
 
 HISTORY = 2048
@@ -85,7 +86,9 @@ def main():
     matched = [e for e in tipping if e.get('timestamp_utc') in by_stamp]
     dwell_at_tipping = collections.Counter(min(frames[by_stamp[e['timestamp_utc']]]['dwell_steps'] // 10 * 10, args.dwell_steps)
                                            for e in matched)
-    gate1_hits = [by_stamp[e['timestamp_utc']] for e in matched if frames[by_stamp[e['timestamp_utc']]]['dwell_steps'] >= args.dwell_steps]
+    triggers = [e for e in events if e.get('event_type') in TRIGGER_EVENT_TYPES]
+    matched_triggers = [e for e in triggers if e.get('timestamp_utc') in by_stamp]
+    gate1_hits = [by_stamp[e['timestamp_utc']] for e in matched_triggers if frames[by_stamp[e['timestamp_utc']]]['dwell_steps'] >= args.dwell_steps]
     live = [i for i, f in enumerate(frames) if f.get('source_mode') == 'live_follow']
     long_dwell = [i for i in live if frames[i]['dwell_steps'] >= args.dwell_steps]
     step = max(1, len(long_dwell) // max(1, args.sample))
@@ -93,7 +96,11 @@ def main():
 
     report = {
         'scope': 'offline_replay_of_intervention_gate_not_effect_validation',
-        'frames': len(frames), 'tipping_events': len(tipping), 'tipping_events_matching_stored_frames': len(matched),
+        'frames': len(frames), 'trigger_events': len(triggers),
+        'trigger_events_matching_stored_frames': len(matched_triggers),
+        'trigger_types': list(TRIGGER_EVENT_TYPES),
+        'blocked_dwell_below_threshold': len(matched_triggers) - len(gate1_hits),
+        'tipping_events': len(tipping), 'tipping_events_matching_stored_frames': len(matched),
         'gate1_dwell_threshold': args.dwell_steps,
         'gate1_dwell_at_tipping_histogram': {str(k): v for k, v in sorted(dwell_at_tipping.items())},
         'gate1_events_at_or_above_threshold': len(gate1_hits),

@@ -156,6 +156,48 @@ held-out predictive validity or intervention efficacy. The multi-day normalizer
 candidate remains inactive because its manifold topology gate failed; no gate
 was relaxed on the evaluated holdout window.
 
+## October 8 ordered field validation
+
+`scripts/audit_field_runtime.py` reads retained hot snapshots and rotated events
+without exporting rows. It deduplicates frame identities, rejects conflicting
+copies, reports UTC-day gaps/continuity and modality availability categories,
+and distinguishes supported triggers blocked by dwell from events requiring
+counterfactual/policy review. Unmatched events cannot establish their gate reason.
+Reported availability is not measurement validity or complete uptime. The older
+replay entry now includes `PROLONGED_DWELL`, with a failing-before regression;
+its legacy tipping-only histogram remains explicitly separate.
+
+`scripts/verify_controlled_field_feedback.py` executed one authorized 100ms pulse
+with an API acknowledgment and completed a real ten-minute post-delivery frame
+window. Its separate diagnostic ledger contains an observational outcome; it
+does not add a natural-trigger trial or modify the production policy. Delivery
+acknowledgment is not participant response, and a state change is not a causal
+effect. Device-derived reports and frames remain private. Natural triggered
+trials, suitable controls and effect validation remain open.
+
+A fixed training snapshot, coordinate bindings, code archive and four future UTC
+days are frozen on the device under the
+[prospective forecast protocol](prospective_forecast_protocol.md). Missing days
+or coordinate changes block evaluation; the window cannot be replaced after
+seeing results. The accepted production calibration schedule remains independent.
+Future scores and scientific acceptance are not yet available.
+
+`interrupted_unknown_score_restart_android.json` records a newly built isolated
+application reserving a synthetic signed unknown-score session, followed by an
+actual app-process restart and replay through `computeApproved`. The PID changes;
+replay is rejected before resource admission, circuit reads or child creation.
+The 32-byte reservation ledger stays unchanged and no circuit snapshot exists.
+The fixture intentionally models an interrupted request, not successful MPC.
+No objective, completed sixteen-node case or distributed proof is supplied.
+Old temporary circuit/runtime/dependency files are missing, so their historical
+receipts are not reused as current execution. The isolated app is removed.
+
+All 36 affected host tests pass without skips; see
+`artifacts/forecasting_v2/field_validation_tools_host.json`. The full suite is not
+rerun. Twelve frozen checks pass before and after device work. The physical
+collector, active daemon, production model and intervention thresholds retain
+their prior identities/settings; diagnostics require no production restart.
+
 ## Conditional Brownian calibration
 
 `ContinuousDynamics.estimate_memory_irregular(records, coordinate=0,
@@ -172,8 +214,9 @@ empirical memory or scientific acceptance. Draws are bounded to 999.
 
 Real intervention evaluation requires a named participant, permitted actuator
 and observation window. The participant has authorized field operation, and the
-October 4 trigger receipt records an active daemon; actual trials and complete
-follow-up remain to be established. Cross-individual validation requires a second independently held
+October 4 trigger receipt records an active daemon. A controlled execution and
+ten-minute feedback window now pass; natural-trigger trials and causal-effect
+evidence remain to be established. Cross-individual validation requires a second independently held
 device and enrolled owner identity. Synthetic identities and a Mac peer prove
 controlled protocol behavior, not cross-individual generalization. Neither
 external requirement can be replaced by additional unit tests.
