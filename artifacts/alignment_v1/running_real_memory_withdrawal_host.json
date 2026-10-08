@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "affected_host_tests": 10,
+  "full_suite_rerun": false,
+  "device_frozen_checks": {
+    "before": 12,
+    "after": 12
+  },
+  "source_sha256": {
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticGuardedLifecycle.java": "a1c450536caeaa58607bf6a449452821ec4fdb0925f0f6714e984202490cc823",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticComputationRestartReceiver.java": "e2e625877b6d2599499d9d65e560fcf7fb9a5a11ba5bdb305b02c8b5eea0e240",
+    "native/private_alignment_probe/memory_pressure_probe.c": "55a69c92d7000ae8af84469930657fe73afcdf9b1966295c2d74d08fb7aef24a",
+    "scripts/verify_running_private_memory_usb.py": "695d2bf7cd6c4e5d93f4eef3fd3703cd7402bd3a7808bf5b188fef3dc83a85c7",
+    "tests/test_running_private_memory_pressure.py": "1ac57ce8b7c8d698c532592a1d046c2f86829fd349717af43f53ef0dd534eb60"
+  },
+  "production_threshold_changes": false,
+  "field_process_restarts": false,
+  "memory_pressure_runs": 1,
+  "fresh_recovery_runs": 1,
+  "startup_failed_before_pressure": 1,
+  "isolated_app_removed": true,
+  "dedicated_forward_removed": true,
+  "scope": "bounded_real_production_memory_guard_withdrawal_cleanup_restart_replay_and_new_session_recovery_not_system_LMK_or_full_privacy_protocol"
+}

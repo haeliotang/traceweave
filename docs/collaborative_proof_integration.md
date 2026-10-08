@@ -153,3 +153,13 @@ actual-app-restart proof/computation replay rejection pass in
 `discovered_unknown_score16_proof_android.json`. Both receipts are bounded
 synthetic evidence; neither changes this document's incomplete collaborative
 prover status.
+
+A later real-pressure check is recorded in
+`running_real_memory_withdrawal_android.json`: authenticated CPU work precedes
+actual allocation, production MemoryInfo withdrawal, child/snapshot cleanup,
+app-restart replay rejection and fresh-session normal completion. It uses fake
+owners and the same two-process guarded circuit; no synthetic permission failure
+or low-memory flag is substituted. See the
+[running-pressure audit](stage11_14_completion_audit.md#october-8-real-running-memory-withdrawal-and-recovery).
+System LMK, distributed private proving and real-owner enrollment remain separate
+unverified requirements.

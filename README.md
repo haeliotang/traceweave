@@ -41,7 +41,8 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 10 月 8 日另已完成固定批准电路上的十六节点非零未知分数用例：Android、Mac
 与独立整数参考的全部输出一致，完成后的应用重启重放被拒绝、账本不变且无电路
 快照残留。随后已扩展到 18 项十六节点正常/异常用例与 2 项 CPU 阶段撤回检查，
-均通过；实际系统低内存撤回及双方私有证明生成仍未验收。当前候选包已重新编译核心 JNI、私有参与端和公开
+均通过；后续真实内存压力已验证运行中撤回与恢复，系统 LMK 和双方私有证明生成
+仍未验收。当前候选包已重新编译核心 JNI、私有参与端和公开
 验证器并通过签名检查。真实干预因果效果、实测连续动力学及
 长期生产调度仍需各自的验证证据。Pixel6a 主应用已于 10 月 4 日升级；
 部署检查结束时原生主服务已 force-stop，Termux 采集继续运行。现场守护进程
@@ -119,7 +120,12 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
   256 MiB 可用内存并自动释放。最终源码复测在分配 384 MiB 后触发生产
   929 MiB 准入拒绝，释放后重新准入成功；
   [压力测试回执](artifacts/alignment_v1/bounded_real_memory_pressure_android.json)。
-  未触发运行中 192 MiB 保留量撤回或系统 LMK，该验收仍未完成。
+  该轮仅覆盖准入；后续运行中撤回验证见下一条，系统 LMK 仍未覆盖。
+- 真实 MPC 认证后观察到 63 个 CPU 时钟滴答，再按 16 MiB 步长加压；
+  分配 528 MiB 时系统低内存标志为真，生产检查主动撤回。子进程与快照
+  清理、隔离应用重启后的防重放及全新会话恢复计算均通过；
+  [运行中撤回回执](artifacts/alignment_v1/running_real_memory_withdrawal_android.json)。
+  生产 929 MiB 准入、192 MiB 运行保留量未修改；这不覆盖系统直接杀进程。
 - 修复自然干预反馈计时：实际动作从执行完成回执起计满十分钟；缺失、非有限
   或早于决策的完成时间会删失，不更新策略奖励。随机不执行对照仍从决策计时。
   回归先复现提前计分，再验证修复；37 项相关主机测试通过。
@@ -161,7 +167,7 @@ requirements and evidence boundaries.
 | Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Actual intervention, complete follow-up and causal-effect evidence; authorized field daemon is active |
 | Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Actual Sunday delivery, long-term retained-source consistency and meaningful bifurcation parameters |
 | Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Primary app upgraded with rollback rehearsal; complete hardware observability and long-term operation remain open; core measurements exclude whole-app and private-MPC memory |
-| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable reservations;18 guarded sixteen-node cases and2 CPU-phase abort cases; actual discovered sixteen-node statement bound to a centralized synthetic signed packed-v2 proof, with restart replay rejection | Distributed private proving, actual system low-memory withdrawal, production setup provenance, real owner enrollment and independent security assessment |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable reservations;18 guarded sixteen-node cases and2 CPU-phase abort cases; actual discovered sixteen-node statement bound to a centralized synthetic signed packed-v2 proof, with restart replay rejection; bounded real running-memory withdrawal, restart replay and fresh-session recovery | Distributed private proving, actual system LMK recovery, production setup provenance, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
 approved commitment. The dedicated approved circuit now checks both parties'
@@ -215,7 +221,9 @@ reaped and their snapshots removed. See the [lifecycle receipt](artifacts/alignm
 Later [guarded sixteen-node CPU checks](artifacts/alignment_v1/guarded_unknown_score_sdk16_android.json)
 also pass worker cancellation and synthetic permission withdrawal after observed
 CPU work, with child reaping, snapshot removal and spent-session rejection.
-Actual system low-memory withdrawal remains unverified.
+A later [real running-memory check](artifacts/alignment_v1/running_real_memory_withdrawal_android.json)
+passes the production guard, cleanup, app-restart replay and fresh-session recovery.
+Actual system LMK remains unverified.
 
 The archived 14-day state sequence is not eligible for empirical 128D fitting:
 all 5,961 records contain legacy 26D normalized features and lack the required

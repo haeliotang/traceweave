@@ -26,7 +26,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Atomic model activation and recovery | Registry/admission/publication recovery receipts; later orphan cleanup separately checked | Bind the final release to all relevant changes and verify final device behavior |
 | Zero-raw-upload manifold comparison | Separate-party input authenticated MPC tests, including 14 standalone sixteen-node cases | Real-owner enrollment, authorization/query controls and independent security assessment |
 | GW alignment | Uniform permutation search with exact final loss; general-mass small-shape transport checks | Preserve bounded/non-global scope; uniform permutation descent is not unrestricted GW optimality |
-| Android private SDK | Fourteen known-statement cases plus18 guarded sixteen-node cases and2 CPU-phase cancellation/resource-permission withdrawal checks in `guarded_unknown_score_sdk16_android.json`; aborted children reaped, snapshots removed and sessions retained; bounded real allocation now verifies admission rejection and readmission after release | Actual system low-memory withdrawal remains open; synthetic permission withdrawal is not system OOM; production privacy/deployment gates remain separate |
+| Android private SDK | Fourteen known-statement cases plus18 guarded sixteen-node cases and2 CPU-phase cancellation/resource-permission withdrawal checks in `guarded_unknown_score_sdk16_android.json`; aborted children reaped, snapshots removed and sessions retained; bounded real allocation verifies admission rejection and readmission; real CPU-phase pressure verifies production withdrawal, cleanup, app-restart replay and fresh-session recovery | Actual system LMK remains open; bounded real withdrawal is not a worst-case memory proof; production privacy/deployment gates remain separate |
 | Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; previous six public/four signed SDK cases and two-node known-statement binding; five sixteen-node actual discovered-output proof/signature cases plus actual-app-restart replay in `discovered_unknown_score16_proof_android.json` | Distributed private proving, real owner enrollment and production key/setup provenance; the synthetic prover holds both models; v1 certificates cannot silently authorize v2 outputs |
 | Unknown-score private computation workflow | Signed unknown-score SDK entry and durable reservation;22 host MPC guard cases;18 guarded sixteen-node Android/Mac cases and2 CPU-phase abort checks; actual discovered statement bound to a centralized synthetic signed proof; computation and proof ledgers unchanged after app restart | Distributed private proving and real-owner enrollment remain open; bounded case coverage is not a security audit |
 | Native <15ms / <5MB core | `native_current_monthly_compute_android.json`: isolated fitted synthetic compute passes | Preserve measured workload scope; it does not prove whole-app/fit/history-scan/private-MPC memory below 5MB |
@@ -42,11 +42,55 @@ It is not a release approval or a claim that the four stages are complete.
    Empirical dynamics accuracy still requires separate evidence.
 2. Observe actual authorized interventions and complete follow-up windows under the
    deployed prolonged-dwell trigger; separate recommendations from causal evidence.
-3. Verify long-term collection, actual Sunday calibration and real low-memory behavior.
+3. Verify long-term collection, actual Sunday calibration and actual system LMK recovery.
+   Bounded production withdrawal under real running-memory pressure now passes.
    Primary upgrade and rollback rehearsal are already recorded, not pending installation.
 4. Complete distributed private proving with the unchanged two-owner security
    requirement, production setup provenance, real-owner enrollment and independent
    security assessment. Synthetic discovered-statement binding is now recorded.
+
+## October 8 real running-memory withdrawal and recovery
+
+`running_real_memory_withdrawal_android.json` records one authenticated sixteen-node
+MPC request with a separate Mac participant. After the host observes the real
+independent MPC phase and 63 additional Android child CPU ticks, the isolated
+fixture starts a disposable anonymous-memory holder. It never injects a permission
+rejection, worker interrupt or low-memory flag. The holder uses 16 MiB steps, a
+768 MiB cap, 120-second timeout, parent-death cleanup and OOM score 1000. Its
+208 MiB floor checks kernel MemAvailable before allocation; Android MemoryInfo
+is a different, changing source and is not guaranteed above that floor.
+
+At 528 MiB allocated, Android reports `lowMemory=true`, available memory
+200,339,456 bytes and threshold 226,492,416 bytes. The unchanged production
+resource check throws `private alignment memory reserve exhausted`. The peer
+exits without a public result. Both computation and pressure children are reaped;
+the pinned circuit snapshot is removed; the reserved session remains spent.
+An actual isolated-app restart rejects replay before admission or circuit access
+and leaves the 64-byte ledger unchanged. A new approved session then completes
+normally in 30.899 seconds, with Android/Mac output matching the independent
+reference. Exactly one 32-byte reservation is appended, leaving 96 bytes.
+The ledger also retains the first startup attempt; it is never reset.
+
+The first host connection fails before authenticated MPC or pressure starts.
+Cancellation confirms the waiting participant and snapshot are cleared. Adding
+the existing bounded transient-handshake retry behavior allows the real-pressure
+run to proceed (15 startup retries). Recovery runs separately from the verified
+withdrawal checkpoint, without repeating pressure (13 startup retries).
+`scripts/verify_running_private_memory_usb.py` combines withdrawal, restart replay
+and fresh-session recovery; `--resume-recovery` resumes an existing verified
+withdrawal receipt. `aborted_replay` labels the actual restart test accurately.
+
+This closes bounded real-pressure production withdrawal, cleanup and recovery.
+It does not induce or establish system LMK, OS callback delivery, worst-case
+memory usage, real-owner enrollment or distributed private proving. Production
+929 MiB admission and 192 MiB reserve are unchanged; the primary APK and field
+runtime source are not modified. Physical PID 12155 and edge PID 27649 remain
+throughout the observed checks. After cleanup, the 18:00 UTC device-private audit
+finds 56 frames in 30 minutes, maximum interval 38.78 seconds, active mode and no
+silence marker. Field trajectories and detailed readiness reports remain private.
+The isolated app and dedicated forward are removed. Ten affected host tests pass;
+existing frozen device checks pass before and after. Historical full-suite counts
+retain their original scope. See `running_real_memory_withdrawal_host.json`.
 
 ## October 8 bounded pressure and post-delivery feedback
 
@@ -59,8 +103,8 @@ source/build run reaches production admission rejection at 384 MiB allocated and
 production admission again. An earlier run rejected at 448 MiB. The measured
 MemoryInfo low-memory threshold is 226,492,416 bytes; `lowMemory` remains false.
 No production threshold is modified. This proves real-pressure admission and
-recovery only: running MPC reserve exhaustion, system LMK and interrupted-session
-recovery under actual low memory remain unverified. The reproduction driver is
+recovery only; it did not cover running MPC withdrawal or system LMK. The later
+running-pressure check below supplies separate withdrawal/recovery evidence. The reproduction driver is
 `scripts/verify_private_memory_pressure_usb.py`; install the built isolated APK
 before running it. This fixture does not start a collector or enroll real owners.
 
@@ -135,8 +179,9 @@ The twelve existing frozen device checks pass during testing and after cleanup.
 The isolated app and dedicated USB forward are removed; neither primary
 collector nor active field daemon is restarted. This closes bounded mechanical
 composition only. Distributed two-owner private proving, real enrollment,
-production setup provenance, independent security assessment and actual system
-low-memory withdrawal remain open. See
+production setup provenance and independent security assessment remain open.
+Actual system LMK is also unverified; the later running-pressure section separately
+records production memory-guard withdrawal. See
 [protocol scope and reproduction](collaborative_proof_integration.md#discovered-statement-synthetic-validation).
 
 ## October 3–4 engineering evidence

@@ -16,7 +16,7 @@ public final class SyntheticComputationRestartReceiver extends BroadcastReceiver
         JSONObject report = new JSONObject();
         try {
             String phase = intent.getStringExtra("phase");
-            File request = new File(context.getFilesDir(), "completed_replay".equals(phase)
+            File request = new File(context.getFilesDir(), ("completed_replay".equals(phase) || "aborted_replay".equals(phase))
                 ? "private_uniform16" : "restart_computation_request");
             File ledger = new File(context.getFilesDir(), "computation_sessions.bin");
             if ("reserve".equals(phase)) {
@@ -40,7 +40,7 @@ public final class SyntheticComputationRestartReceiver extends BroadcastReceiver
                     ComputationSessions.reserve(context.getFilesDir(), session, lease);
                 }
                 report.put("reservation_bytes", ledger.length()).put("passed", ledger.length() == 32);
-            } else if ("replay".equals(phase) || "completed_replay".equals(phase)) {
+            } else if ("replay".equals(phase) || "completed_replay".equals(phase) || "aborted_replay".equals(phase)) {
                 byte[] before = Files.readAllBytes(ledger.toPath());
                 boolean rejected = false;
                 try {
@@ -55,14 +55,16 @@ public final class SyntheticComputationRestartReceiver extends BroadcastReceiver
                 for (File file : context.getCacheDir().listFiles()) if (file.getName().startsWith("private-circuit-")) noSnapshot = false;
                 report.put("replay_rejected", rejected).put("ledger_unchanged", unchanged)
                     .put("no_circuit_snapshot", noSnapshot).put("passed", rejected && unchanged && noSnapshot);
-            } else throw new IllegalArgumentException("reserve, replay or completed_replay phase required");
+            } else throw new IllegalArgumentException("reserve, replay, completed_replay or aborted_replay phase required");
             report.put("phase", phase).put("pid", android.os.Process.myPid());
         } catch (Exception error) {
             try { report.put("passed", false).put("error", error.toString()); } catch (Exception ignored) {}
         }
         try {
             report.put("nonce", intent.getStringExtra("nonce"))
-                .put("scope", "completed_replay".equals(intent.getStringExtra("phase"))
+                .put("scope", "aborted_replay".equals(intent.getStringExtra("phase"))
+                    ? "synthetic_running_resource_abort_restart_replay_not_system_LMK"
+                    : "completed_replay".equals(intent.getStringExtra("phase"))
                     ? "synthetic_completed_unknown_score_computation_restart_replay_not_private_proof"
                     : "synthetic_interrupted_unknown_score_reservation_not_completed_MPC_or_private_proof")
                 .put("actuator_calls", 0).put("collection_started", false);
