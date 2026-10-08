@@ -19,6 +19,7 @@ from traceform.intervention.closed_loop import compact_trial_rows
 from traceform.streaming.daily_snapshot import snapshot_if_due
 from traceform.streaming.tiered_storage import TieredStorage
 from traceform.streaming.rolling_ledger import RollingLedger
+from scripts.audit_prediction_runtime import audit as audit_prediction_runtime
 
 
 def main():
@@ -67,6 +68,11 @@ def main():
             events = RollingLedger(args.events_file or args.database.parent / "manifold_events.jsonl",
                                    max_bytes=8 * 1024 * 1024, retention_seconds=30 * 86400)
             report["event_segments_deleted"] = events.compact(now)
+            try:
+                report["prediction_runtime"] = audit_prediction_runtime(events.path)
+            except (ValueError, OSError) as error:
+                report["prediction_runtime"] = {"status": "failed", "error_type": type(error).__name__}
+            atomic_json(args.database.parent / "prediction_daily_runtime.json", report["prediction_runtime"])
             if args.physical_ledger_dir is not None:
                 report["physical_segments_deleted"] = {}
                 for name, field in [("observations", "timestamp_utc"), ("transitions", "timestamp_utc"), ("episodes", "end_time_utc")]:

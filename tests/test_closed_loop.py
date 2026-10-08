@@ -9,6 +9,19 @@ from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActu
 
 
 class TestClosedLoop(unittest.TestCase):
+    def test_rejected_proposal_reports_cooldown_without_consuming_randomness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            loop = ClosedLoopIntervention(Path(directory) / 'trials.sqlite', MicroActuator(False), 'shadow', seed=2)
+            self.addCleanup(loop.close)
+            decision = loop.propose(self.frame(0), 'CSD_TIPPING', self.comparison(), 'morning')
+            before = loop.rng.getstate()
+            self.assertIsNone(loop.propose(self.frame(1), 'CSD_TIPPING', self.comparison(), 'morning'))
+            self.assertEqual(loop.last_proposal_block['reason'], 'global_cooldown')
+            self.assertEqual(loop.last_proposal_block['required_seconds'], 900)
+            self.assertEqual(loop.rng.getstate(), before)
+            self.assertEqual(loop.db.execute('SELECT count(*) FROM trials').fetchone()[0], 1)
+            self.assertTrue(decision)
+
     def test_compaction_preserves_pending_trials_boundary_and_policy_aggregates(self):
         with tempfile.TemporaryDirectory() as directory:
             loop = ClosedLoopIntervention(Path(directory) / "trials.sqlite", MicroActuator(False))

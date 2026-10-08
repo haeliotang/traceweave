@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 import sqlite3
 import sys
+import time
+import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from traceform.evolution.model_registry import ModelRegistry, atomic_json
@@ -23,7 +25,12 @@ def main():
     parser.add_argument('--output-file', type=Path, required=True)
     parser.add_argument('--rollouts', type=int, default=300)
     parser.add_argument('--horizon-steps', type=int, default=30)
+    parser.add_argument('--job-id', default=None)
     args = parser.parse_args()
+    started = time.monotonic()
+    context = {'job_id': args.job_id or uuid.uuid4().hex, 'through_timestamp': args.through_timestamp,
+               'registry_version': args.registry_version,
+               'started_timestamp_utc': datetime.datetime.now(datetime.timezone.utc).isoformat()}
     try:
         through = datetime.datetime.fromisoformat(args.through_timestamp.replace('Z', '+00:00'))
         if through.tzinfo is None:
@@ -35,14 +42,15 @@ def main():
         result = predict_latest_segment(records, bundle, args.horizon_steps, args.rollouts)
         if result['initial_timestamp_utc'] != args.through_timestamp:
             raise ValueError('trigger frame is not retained at prediction boundary')
-        result['registry_version'] = args.registry_version
-        result['completed_timestamp_utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        result.update(context, runtime_seconds=time.monotonic() - started,
+                      completed_timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
         atomic_json(args.output_file, result)
         return 0
     except Exception as error:
         atomic_json(args.output_file, {'event_type': 'CONTINUOUS_SANDBOX_FAILED',
                                       'error_type': type(error).__name__, 'reason': str(error),
-                                      'through_timestamp': args.through_timestamp})
+                                      **context, 'runtime_seconds': time.monotonic() - started,
+                                      'completed_timestamp_utc': datetime.datetime.now(datetime.timezone.utc).isoformat()})
         return 1
 
 

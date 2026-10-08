@@ -29,6 +29,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import uuid
 from typing import Any, Dict, List, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -39,13 +40,74 @@ from traceform.representation.normalizer import MultimodalNormalizer
 from traceform.representation.manifold_lattice import DynamicalEnergyManifold
 from traceform.streaming.edge_manifold_daemon import EdgeManifoldDaemon, EdgeDaemonEvent
 
-from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActuator, should_consider_intervention
+from traceform.intervention.closed_loop import ClosedLoopIntervention, MicroActuator, TRIGGER_EVENT_TYPES, should_consider_intervention
 from traceform.forecasting.sandbox_simulator import SandboxSimulator, ScenarioIntervention
 from traceform.forecasting.continuity import same_stream_segment
 from traceform.evolution.model_registry import ModelRegistry
 from traceform.probes.digital_sensorium import DigitalSensoriumProbe
 from traceform.streaming.tiered_storage import TieredStorage
 from traceform.streaming.rolling_ledger import RollingLedger, RotationAwareTail
+
+
+def prediction_receipt(job, output, context, started, now=None):
+    now = time.monotonic() if now is None else now
+    status = job.poll()
+    if status is None and now - started < 900:
+        return None
+    if status is None:
+        job.kill()
+        status = job.wait()
+        result = {'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'reason': '900_second_timeout'}
+    else:
+        try:
+            result = json.loads(output.read_text())
+            if not isinstance(result, dict) or result.get('job_id') != context['job_id']:
+                raise ValueError('worker receipt job mismatch')
+            if any(result.get(key) != context[key] for key in ('through_timestamp', 'registry_version')):
+                raise ValueError('worker receipt trigger mismatch')
+            if status != 0 and result.get('event_type') != 'CONTINUOUS_SANDBOX_FAILED':
+                raise ValueError('successful receipt with failed worker exit')
+        except (OSError, ValueError) as error:
+            result = {'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'reason': 'missing_or_invalid_worker_receipt',
+                      'error_type': type(error).__name__}
+    return dict(result, **context, runtime_seconds=now - started, exit_code=status,
+                completed_timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                timeout_seconds=900)
+
+
+def intervention_gate_receipts(store, intervention_loop, payload, ev, inserted, dwell_threshold, timezone_name):
+    gate = {'event_type': 'INTERVENTION_GATE', 'candidate_event_type': ev.event_type,
+            'timestamp_utc': payload['timestamp_utc'], 'model_version': payload['model_version'],
+            'source_mode': payload.get('source_mode'), 'dwell_steps': payload['dwell_steps'],
+            'dwell_threshold': dwell_threshold,
+            'actuator_snapshot': intervention_loop.actuator.availability_snapshot(),
+            'recorded_timestamp_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'evidence_scope': 'natural_candidate_gate_diagnostic_not_delivery_or_causal_effect'}
+    if not inserted:
+        return [dict(gate, status='blocked', reason='duplicate_frame')]
+    if not should_consider_intervention(ev.event_type, payload['dwell_steps'], dwell_threshold, intervention_loop.mode):
+        return [dict(gate, status='blocked', reason='mode_off' if intervention_loop.mode == 'off' else 'dwell_below_threshold')]
+    recent = store.hot_records(limit=2048)
+    start = len(recent) - 1
+    while start > 0 and same_stream_segment(recent[start - 1], recent[start]):
+        start -= 1
+    recent = recent[start:]
+    gate.update(continuous_history_frames=len(recent), minimum_history_frames=20)
+    if len(recent) < 20:
+        return [dict(gate, status='blocked', reason='insufficient_continuous_history')]
+    intervals = [row['frame_interval_seconds'] for row in recent if row.get('frame_interval_seconds')]
+    nominal_step = statistics.median(intervals) if intervals else 30.0
+    simulator = SandboxSimulator(step_nominal_seconds=nominal_step, timezone_name=timezone_name).fit_from_records(recent, max_gap_seconds=300)
+    instant = datetime.datetime.fromisoformat(payload['timestamp_utc'].replace('Z', '+00:00'))
+    comparison = simulator.simulate_counterfactual(
+        payload['state_token'], ScenarioIntervention(action_type='CLAMP_DWELL', max_dwell_steps=10),
+        horizon_steps=30, num_rollouts=100, high_risk_states={payload['state_token']}, start_time_utc=instant)
+    phase = simulator.periodic_kernel.phases(instant)[0]
+    decision = intervention_loop.propose(payload, ev.event_type, comparison, int(phase * 4 / (2 * 3.141592653589793)))
+    gate['counterfactual_recommended_path'] = comparison.recommended_path
+    if decision:
+        return [dict(gate, status='decision_logged', reason='policy_decision', trial_id=decision['trial_id'], action=decision['action']), decision]
+    return [dict(gate, status='blocked', **intervention_loop.last_proposal_block)]
 
 
 def main():
@@ -189,6 +251,7 @@ def main():
     digital_probe = DigitalSensoriumProbe()
     continuous_job = None
     continuous_job_started = None
+    continuous_job_context = None
     continuous_output = args.output_stream.parent / 'continuous_prediction.json'
 
     def stop_daemon(signum, frame):
@@ -201,18 +264,10 @@ def main():
         with reader as in_f:
             while True:
                 if continuous_job is not None:
-                    status = continuous_job.poll()
-                    if status is not None:
-                        if continuous_output.is_file():
-                            events_out.append(json.loads(continuous_output.read_text()))
-                        else:
-                            events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'exit_code': status})
+                    receipt = prediction_receipt(continuous_job, continuous_output, continuous_job_context, continuous_job_started)
+                    if receipt is not None:
+                        events_out.append(receipt)
                         continuous_job = None
-                    elif time.monotonic() - continuous_job_started >= 900:
-                        continuous_job.kill()
-                        continuous_job.wait()
-                        continuous_job = None
-                        events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED', 'reason': '900_second_timeout'})
                 line = in_f.read_line() if args.follow else in_f.readline()
                 if not line:
                     if args.simulate:
@@ -276,6 +331,10 @@ def main():
 
                         if inserted and ev.event_type == 'CSD_TIPPING' and continuous_job is None:
                             continuous_output.unlink(missing_ok=True)
+                            continuous_job_started = time.monotonic()
+                            continuous_job_context = {'job_id': uuid.uuid4().hex,
+                                'through_timestamp': payload['timestamp_utc'], 'registry_version': active_registry_version,
+                                'started_timestamp_utc': datetime.datetime.now(datetime.timezone.utc).isoformat()}
                             try:
                                 continuous_job = subprocess.Popen([
                                     sys.executable, str(PROJECT_ROOT / 'scripts/predict_continuous_edge.py'),
@@ -283,34 +342,20 @@ def main():
                                     '--model-registry', str(registry.root),
                                     '--registry-version', active_registry_version,
                                     '--through-timestamp', payload['timestamp_utc'],
+                                    '--job-id', continuous_job_context['job_id'],
                                     '--output-file', str(continuous_output),
                                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                                continuous_job_started = time.monotonic()
+                                events_out.append(dict(continuous_job_context, event_type='CONTINUOUS_SANDBOX_STARTED', timeout_seconds=900))
                             except OSError as error:
                                 events_out.append({'event_type': 'CONTINUOUS_SANDBOX_FAILED',
+                                                   **continuous_job_context, 'runtime_seconds': time.monotonic() - continuous_job_started,
+                                                   'completed_timestamp_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                                                    'reason': 'worker_start_failed', 'error_type': type(error).__name__})
 
-                        if inserted and should_consider_intervention(ev.event_type, payload["dwell_steps"], args.dwell_steps, args.intervention_mode):
-                            recent = store.hot_records(limit=2048)
-                            # Fit only the current uninterrupted representation segment.
-                            start = len(recent) - 1
-                            while start > 0 and same_stream_segment(recent[start - 1], recent[start]):
-                                start -= 1
-                            recent = recent[start:]
-                            if len(recent) >= 20:
-                                intervals = [row["frame_interval_seconds"] for row in recent if row.get("frame_interval_seconds")]
-                                nominal_step = statistics.median(intervals) if intervals else 30.0
-                                simulator = SandboxSimulator(step_nominal_seconds=nominal_step, timezone_name=args.timezone).fit_from_records(recent, max_gap_seconds=300)
-                                comparison = simulator.simulate_counterfactual(
-                                    payload["state_token"], ScenarioIntervention(action_type="CLAMP_DWELL", max_dwell_steps=10),
-                                    horizon_steps=30, num_rollouts=100,
-                                    high_risk_states={payload["state_token"]},
-                                    start_time_utc=datetime.datetime.fromisoformat(payload["timestamp_utc"].replace("Z", "+00:00")),
-                                )
-                                phase = simulator.periodic_kernel.phases(datetime.datetime.fromisoformat(payload["timestamp_utc"].replace("Z", "+00:00")))[0]
-                                decision = intervention_loop.propose(payload, ev.event_type, comparison, int(phase * 4 / (2 * 3.141592653589793)))
-                                if decision:
-                                    events_out.append(decision)
+                        if ev.event_type in TRIGGER_EVENT_TYPES:
+                            for receipt in intervention_gate_receipts(store, intervention_loop, payload, ev, inserted,
+                                                                     args.dwell_steps, args.timezone):
+                                events_out.append(receipt)
 
                 if processed_count % 25 == 0 or processed_count == 1:
                     avg_lat = total_latency_ms / processed_count
@@ -335,6 +380,9 @@ def main():
             except subprocess.TimeoutExpired:
                 continuous_job.kill()
                 continuous_job.wait()
+            events_out.append(dict(continuous_job_context, event_type='CONTINUOUS_SANDBOX_FAILED', reason='daemon_shutdown',
+                                   runtime_seconds=time.monotonic() - continuous_job_started,
+                                   completed_timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat()))
         if stream_out is not None:
             stream_out.close()
         store.close()

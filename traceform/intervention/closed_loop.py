@@ -29,8 +29,10 @@ class MicroActuator:
 
     def execute(self, action):
         started = time.time()
-        if not self.enabled or (self.silent_file and self.silent_file.exists()) or os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in ("1", "true", "yes"):
-            return {"delivered": False, "reason": "disabled_or_silent", "started_epoch": started}
+        availability = self.availability_snapshot()
+        if availability['blocked']:
+            return {"delivered": False, "reason": "disabled_or_silent", "started_epoch": started,
+                    "availability": availability}
         commands = {
             "pulse": ["termux-vibrate", "-d", "100"],
             "notification": ["termux-notification", "--id", "traceform-micro", "-t", "Traceform", "-c", "A moment to check your current activity."],
@@ -54,6 +56,13 @@ class MicroActuator:
             if action == "volume_duck":
                 receipt["restoration_status"] = "unknown_after_execution_error"
             return receipt
+
+    def availability_snapshot(self):
+        silent = bool(self.silent_file and self.silent_file.exists())
+        environment_disabled = os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in ("1", "true", "yes")
+        return {'enabled': self.enabled, 'silent_marker_present': silent, 'environment_disabled': environment_disabled,
+                'blocked': not self.enabled or silent or environment_disabled,
+                'scope': 'current_flags_not_delivery_acknowledgment'}
 
     def music_volume(self):
         result = subprocess.run(["termux-volume"], capture_output=True, timeout=3)
@@ -128,6 +137,7 @@ class ClosedLoopIntervention:
         self.futures = {}
         self.previous = None
         self.last_compaction_epoch = None
+        self.last_proposal_block = None
         # An interrupted actuator has unknown delivery/outcome; do not credit it.
         with self.db:
             self.db.execute("UPDATE trials SET status='censored_restart' WHERE status IN ('queued','observing')")
@@ -143,11 +153,17 @@ class ClosedLoopIntervention:
         return report
 
     def propose(self, frame, event_type, comparison, local_phase):
-        if self.mode == "off" or comparison.recommended_path != "RECOMMEND_INTERVENTION":
+        self.last_proposal_block = None
+        if self.mode == "off":
+            self.last_proposal_block = {'reason': 'mode_off'}
+            return None
+        if comparison.recommended_path != "RECOMMEND_INTERVENTION":
+            self.last_proposal_block = {'reason': 'counterfactual_not_recommended'}
             return None
         instant = timestamp(frame).timestamp()
         last = self.db.execute("SELECT MAX(created) FROM trials").fetchone()[0]
         if last is not None and instant - last < 900:
+            self.last_proposal_block = {'reason': 'global_cooldown', 'elapsed_seconds': instant - last, 'required_seconds': 900}
             return None
         context = json.dumps([frame["model_version"], frame["state_token"], event_type, local_phase])
         evaluated = self.db.execute("SELECT created,outcome FROM trials WHERE context=? AND action!='none' AND status='evaluated' ORDER BY created DESC LIMIT 3", (context,)).fetchall()
@@ -158,6 +174,8 @@ class ClosedLoopIntervention:
             failed_outcomes += 1
         context_cooldown = 900 * (2 ** min(2, failed_outcomes))
         if evaluated and instant - evaluated[0][0] < context_cooldown:
+            self.last_proposal_block = {'reason': 'context_cooldown', 'elapsed_seconds': instant - evaluated[0][0],
+                                       'required_seconds': context_cooldown, 'consecutive_no_escape_outcomes': failed_outcomes}
             return None
         rewards = {action: (reward + 1) / (count + 2) for action, count, reward in
                    self.db.execute("SELECT action,n,reward FROM policy WHERE context=?", (context,))}

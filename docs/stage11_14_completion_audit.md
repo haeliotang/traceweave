@@ -1,7 +1,8 @@
 # Stage 11–14 completion audit
 
-Updated against published evidence through 2026-10-04 (repository baseline `d3330fd`),
-with October 8 maintenance and fitted white-noise prediction repairs noted below.
+Updated through 2026-10-08, including the ordered four-step work below
+(starting repository baseline `7a39a57`). Historical full-suite counts retain
+their original test scope.
 
 This audit retains the scope of the supplied roadmap. It distinguishes available
 implementation and bounded evidence from the evidence needed for full completion.
@@ -16,7 +17,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Continuous daily and weekly kernel | Existing smoothing implementations and `continuous_time_validation*.json` | Verify current release retains the accepted boundary-continuity and weekly-conditioning behavior |
 | Configurable haptics/notifications/volume/color | Actuator and restoration implementations and bounded device receipts exist | Current-source device verification and separately authorized physical use; synthetic dispatch is not efficacy |
 | Intervention after recommendation and CSD | Authorized field daemon restored active; prolonged-dwell trigger deployed with source checks (`intervention_trigger_prolonged_dwell_20261004.json`) | Actual execution under the new trigger and decision-to-actuator evidence; deployment receipt records no delivered intervention yet |
-| 5–15 minute follow-up | Feedback and retention implementation; `native_feedback_pixel.json` | Authorized real follow-up with complete observation window and attribution limitations |
+| 5–15 minute follow-up | Feedback and retention implementation; one authorized real pulse with complete ten-minute post-delivery window in a separate device-private diagnostic ledger | Natural-trigger follow-up and suitable controls; diagnostic state change is not causal attribution |
 | Contextual bandit reward/fatigue | `traceform/intervention/closed_loop.py` and native policy | Current-source policy validation; causal efficacy requires suitable intervention/control evidence |
 | Hot 48h 1Hz 128D | Primary upgrade exercised 48h retention; bounded isolated sampling and provenance audit pass | Long-term 1Hz retention and complete source observability; Termux field sampling has a different cadence |
 | Warm 30d 30s tokens/potential | Warm migration check passed during primary upgrade; daily device-local SQLite snapshots retain 14 days | Long-term end-to-end retained-source consistency; daily backups do not replace the warm-tier contract |
@@ -27,7 +28,7 @@ It is not a release approval or a claim that the four stages are complete.
 | GW alignment | Uniform permutation search with exact final loss; general-mass small-shape transport checks | Preserve bounded/non-global scope; uniform permutation descent is not unrestricted GW optimality |
 | Android private SDK | Fourteen sixteen-node SDK cases in `uniform_private_sdk16_cases_completed_pixel.json`, with invalid witnesses rejected and snapshots cleaned | Packaged waiting-for-TLS cancellation/resource-permission withdrawal passes in `private_participant_lifecycle_android.json`; sixteen-node CPU-phase and actual low-memory withdrawal remain open, alongside unknown-score proof integration |
 | Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; six Android public-verifier cases and four signed SDK cases, including app-process restart replay; actual separate-party two-node known-statement MPC/proof binding in `zk_packed_uniform_v2_mpc_binding_android.json` | Unknown-score proof integration, distributed private proving and production key/setup provenance; v1 certificates cannot silently authorize v2 outputs |
-| Unknown-score private computation workflow | Signed unknown-score SDK entry, durable replay reservation; benign pre-fix Android case; circuit-level pre-reveal approval guard with 22 real host MPC cases | Guarded changed-model Android case passes after observed resource recovery and synthetic certificate rotation; normal unknown-score guarded coverage, process-restart app replay and packed-v2 proof binding remain open |
+| Unknown-score private computation workflow | Signed unknown-score SDK entry and durable reservation; 22 host MPC guard cases; Android changed-model rejection; rebuilt guarded nonzero sixteen-node Android/Mac case with independent reference and completed-app restart replay in `completed_unknown_score_restart_android.json` | Broader guarded normal-case coverage, packed-v2 unknown-score proof binding, distributed private proving and real-owner enrollment remain open |
 | Native <15ms / <5MB core | `native_current_monthly_compute_android.json`: isolated fitted synthetic compute passes | Preserve measured workload scope; it does not prove whole-app/fit/history-scan/private-MPC memory below 5MB |
 | Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Primary upgraded to `23c1065` with same signer, rollback rehearsal, eight checks and bounded collection; long-term behavior and release identity remain open |
 | Complete native 128-feature acquisition | 51 extractor outputs and digital-context formulas ported with host and device parity; dataflow and observability registry distinguish measured inputs, proxies and missing inputs | Verify intended quantities on hardware; 12 port outputs lack required native inputs, and parity on identical base inputs does not establish 128 independently measured quantities |
@@ -43,7 +44,7 @@ It is not a release approval or a claim that the four stages are complete.
    deployed prolonged-dwell trigger; separate recommendations from causal evidence.
 3. Verify long-term collection, actual Sunday calibration and real low-memory behavior.
    Primary upgrade and rollback rehearsal are already recorded, not pending installation.
-4. Complete guarded unknown-score Android coverage, packed-v2 binding and distributed
+4. Expand guarded unknown-score Android coverage, complete packed-v2 binding and distributed
    private proving, then real-owner enrollment and independent security assessment.
 
 ## October 3–4 engineering evidence
@@ -197,6 +198,63 @@ All 36 affected host tests pass without skips; see
 rerun. Twelve frozen checks pass before and after device work. The physical
 collector, active daemon, production model and intervention thresholds retain
 their prior identities/settings; diagnostics require no production restart.
+
+## October 8 four-step follow-through
+
+1. **Guarded normal computation and completed-app replay.** Fixed EMP and
+   OpenSSL dependency commits were restored; the regenerated compacted circuit
+   matches the accepted `ba00463c…` digest exactly. One nonzero sixteen-node
+   `different_scale` case completes through the Android approved unknown-score
+   entry with a separate Mac peer in 28.789 seconds. Both parties' 849 output bits
+   match the independent integer reference. After force-stop, a new app process
+   rejects the spent signed request before admission, circuit access or child
+   creation; the ledger stays unchanged and no circuit snapshot remains.
+   See `completed_unknown_score_restart_android.json` and
+   `guarded_unknown_score_rebuilt_dependencies.json`. The first scheduling
+   attempt was blocked by the newly installed synthetic app's NEVER standby
+   bucket, before session reservation; only that app's bucket was changed for
+   the retry. The app and dedicated USB forward are removed. This closes one
+   normal guarded case and its completed-app replay, not all guarded coverage,
+   distributed private proof or real-owner enrollment.
+2. **Executable prospective evaluation.**
+   `scripts/evaluate_prospective_forecast.py` verifies the frozen training digest,
+   code archive, fixed parameters, exact October 9–12 UTC window, per-day coverage,
+   coordinate bindings and duplicate identities. Pending/blocked receipts contain
+   no scores. On readiness it runs only the verified archived source in a separate
+   process, excluding cached bytecode and verified macOS metadata sidecars,
+   with full covariance and all four discrete
+   baselines. No fitting uses holdout records and no activation follows. Device
+   readiness passes with status `pending`; closing time is October 13 00:00 UTC.
+   Pass every relevant retained daily snapshot as well as the live store; a 48h
+   live store alone cannot cover the four-day window. Missing days or switched
+   bindings block this experiment rather than selecting replacement days.
+3. **Prediction lifecycle and daily operation records.** Each worker has an
+   identifier and trigger binding, UTC start/completion timestamps and monotonic
+   elapsed time. The daemon records launch failures, invalid/stale receipts,
+   900-second timeout and shutdown. Hourly maintenance updates device-private
+   `prediction_daily_runtime.json`; undated historical events remain separate.
+   Reporting failure does not disable calibration or compaction. A complete
+   300×30 device prediction and the production receipt-polling path pass after
+   sufficient post-restart frames accumulate. The initial insufficient-segment
+   failure remains logged. This checks execution, not accuracy or long-term
+   timeout absence.
+4. **Natural intervention blocker records.** `INTERVENTION_GATE` distinguishes
+   duplicate frames, off mode, dwell below threshold, insufficient current-segment
+   history, non-recommended counterfactuals, global cooldown and context cooldown.
+   It includes current actuator silence/disable flags; failed-delivery receipts
+   retain the actual blocking flags. Rejections consume no policy draw or trial.
+   Dwell/history/counterfactual thresholds and action propensities are unchanged.
+   These records and private audit aggregates support subsequent field review;
+   natural-trigger trials and causal-effect evidence remain open.
+
+All 70 affected host tests pass without skips. The diagnostic source closure is
+deployed with matching hashes and a rollback
+backup. Only the edge daemon is gracefully restarted once, preserving its active
+configuration; the physical collector retains its process identity. Twelve frozen
+checks pass before and after the device work. Device-derived prediction, feedback,
+readiness and gate reports remain private. Updated affected host validation is
+recorded in `ordered_followthrough_host.json`; the historical full suite is not
+rerun.
 
 ## Conditional Brownian calibration
 

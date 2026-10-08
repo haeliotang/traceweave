@@ -1,0 +1,66 @@
+{
+  "timestamp_utc": "2026-10-08T15:22:49.605378+00:00",
+  "tests": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "tests.test_prospective_forecast_evaluation",
+      "tests.test_prospective_forecast_freeze",
+      "tests.test_prediction_job_diagnostics",
+      "tests.test_natural_intervention_gate_diagnostics",
+      "tests.test_closed_loop",
+      "tests.test_field_runtime_audit",
+      "tests.test_runtime_maintenance",
+      "tests.test_continuous_sandbox",
+      "tests.test_continuous_holdout_validation",
+      "tests.test_edge_manifold_daemon",
+      "tests.test_private_computation_fixture",
+      "tests.test_approved_unknown_computation",
+      "tests.test_private_computation_approval",
+      "tests.test_alignment_query_lease",
+      "tests.test_computation_session_reservation",
+      "tests.test_approved_private_alignment"
+    ],
+    "passed": 70,
+    "seconds": 6.517,
+    "skipped": 0
+  },
+  "final_prospective_supplement": {
+    "passed": 10,
+    "scope": "final_error_receipt_fields_and_AppleDouble_source_extraction"
+  },
+  "red_green": [
+    "worker_failure_runtime_field_missing_then_passes",
+    "policy_rejection_reason_missing_then_passes",
+    "actual_macos_frozen_archive_sidecars_rejected_then_safely_ignored"
+  ],
+  "source_sha256": {
+    "scripts/evaluate_prospective_forecast.py": "e1df0eeb7b1224b9db5eee95d9af3a8b5fb17d53b31dfe696d66530a107480c2",
+    "scripts/audit_prediction_runtime.py": "988158a328ae5bf2272f095fc291071331bbdbc552d228dd57e6f4662e678b9c",
+    "scripts/audit_field_runtime.py": "1e518cb7a0f787480f47f26e740025c87e4d087168f14ae64d95cf36df73851c",
+    "scripts/maintain_edge_runtime.py": "b750bff1b5085d307b526ddc883aa3000d922f46f8f2b749f774f0f71fa3e2d8",
+    "scripts/phone_edge_manifold_daemon.py": "3f6f9f453a7a71297050d72d631ffe90b5482a26008ca5e90672d1de56e8d080",
+    "scripts/predict_continuous_edge.py": "6ec7842df1da859029602fa6888290b6de68e540ab424fe522fffc3015082fcd",
+    "traceform/intervention/closed_loop.py": "a1e1bcc66f84bb993d93e9748d0440b0f791b9559dcb27b694732288aa5f091c",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticComputationRestartReceiver.java": "5167c7d88769ff32cebb0909afbca734d65449f2d7d42d837f776498c77227bc",
+    "tests/test_prospective_forecast_evaluation.py": "712933de6560261166580d88c5e05fdecca6ad86f29f40ac0d577cc119f76e31",
+    "tests/test_prospective_forecast_freeze.py": "94d6eeda004fdcd2ef83fc82ec27f5bfd719701c826bfa8e65d9938c6b49bb21",
+    "tests/test_prediction_job_diagnostics.py": "2caeb955c8f5b4eca0d195b828bb0690cea181d54cfb9a41879f5174ada7bdb0",
+    "tests/test_natural_intervention_gate_diagnostics.py": "3687a3c078d0674cbb9f259260ce24bd82e04e9276d41b9c0b73d0b96a8a4f81",
+    "tests/test_closed_loop.py": "4617ca006c81212449ec70b9f797990e184856b24553272537f6631fb01e4866",
+    "tests/test_field_runtime_audit.py": "7f2e5ca5d97c6fafa693a039a56d2232f7b4fadc0cee296c37e555dbf403730e",
+    "tests/test_runtime_maintenance.py": "35fa66e96a09a3a550d70dc7b996e28cfc72bf2216ce95789ea5111b3a266e20",
+    "tests/test_continuous_sandbox.py": "fe01c0327eac2f5d90ccf793e09d8f278a05445c292a4ff3b5327d3aaacb21f7",
+    "tests/test_continuous_holdout_validation.py": "1a02a9c515631684277d91c7175e2eaf973069e37c4aad6702c68cbde74cf719",
+    "tests/test_edge_manifold_daemon.py": "6baeb8d5ba7b57c3376df71e6760c1c835d78a043b0a14385fda0f18b67ed4c4",
+    "tests/test_private_computation_fixture.py": "f3dcb7f1128d3564af32033b03b1d24300e4324cd59fbebf5514afce5b5bb642",
+    "tests/test_approved_unknown_computation.py": "e1454d79536dc51e7b7c8544aec7ef9fd4205ff30a8ea1ed873c0440915bcf1f",
+    "tests/test_private_computation_approval.py": "1546000573ebe1c58782e2fba2dd1453813dbf21e59a9a87cac1f4825e7b2ed2",
+    "tests/test_alignment_query_lease.py": "90b23213ae82b99d99ac1f3acc8d7bd82f02f8552274c45c7cc9865d1c30382a",
+    "tests/test_computation_session_reservation.py": "4d4bc0c3020f856b18b094607610988c4f1f4401f108b8483ff51770d9ef98f9",
+    "tests/test_approved_private_alignment.py": "2d6d049471182c93cd47b8e11a3bcfa42172104656b859bf54665d5aaf8b48c0"
+  },
+  "scope": "affected_host_tests_and_synthetic_fixtures_not_full_suite_device_prediction_accuracy_natural_intervention_efficacy_or_private_proof_acceptance",
+  "device_reports": "private_not_in_this_receipt"
+}

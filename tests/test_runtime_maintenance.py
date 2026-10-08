@@ -8,6 +8,22 @@ import unittest
 
 
 class TestRuntimeMaintenance(unittest.TestCase):
+    def test_diagnostic_failure_does_not_disable_calibration_or_compaction(self):
+        from unittest.mock import patch
+        from scripts import maintain_edge_runtime
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            arguments = ['maintenance', '--database', str(root / 'store.sqlite'),
+                         '--registry', str(root / 'registry'), '--force-calibration']
+            with patch.object(sys, 'argv', arguments), \
+                    patch.object(maintain_edge_runtime, 'audit_prediction_runtime', side_effect=ValueError('conflict')):
+                maintain_edge_runtime.main()
+            report = json.loads((root / 'registry' / 'maintenance.json').read_text())
+            self.assertEqual(report['prediction_runtime']['status'], 'failed')
+            self.assertIn('compaction', report)
+            self.assertIn('last_calibration_receipt', report)
+            self.assertIn('cold_bundle', report)
+
     def test_hourly_maintenance_preserves_last_calibration_evidence(self):
         from unittest.mock import patch
         from scripts import maintain_edge_runtime

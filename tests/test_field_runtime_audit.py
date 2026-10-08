@@ -32,7 +32,7 @@ class TestFieldRuntimeAudit(unittest.TestCase):
                               json.dumps({'event_type': 'CSD_TIPPING', 'timestamp_utc': frames[0]['timestamp_utc']}) + '\n')
             trials = root / 'trials.sqlite'
             with closing(sqlite3.connect(trials)) as database:
-                database.execute('CREATE TABLE trials (status TEXT)')
+                database.execute('CREATE TABLE trials (status TEXT,receipt TEXT)')
                 database.commit()
             report = audit(databases, events, trials)
             self.assertEqual(report['unique_retained_frames'], 3)

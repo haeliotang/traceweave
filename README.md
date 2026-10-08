@@ -38,8 +38,9 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 
 最新源码重建组合的两节点已知分数 MPC 输出与签名证明绑定已通过真机验证
 （4.708s），应用进程重启后的计算入口重放拒绝为 102.299ms，账本保持不变；
-这不覆盖十六节点未知分数流程。接下来仍需完成十六节点带批准防护的正常
-未知分数流程及其应用重启重放验证、双方私有证明生成。当前候选包已重新编译核心 JNI、私有参与端和公开
+10 月 8 日另已完成固定批准电路上的十六节点非零未知分数用例：Android、Mac
+与独立整数参考的全部输出一致，完成后的应用重启重放被拒绝、账本不变且无电路
+快照残留。仍需扩大批准防护用例覆盖及完成双方私有证明生成。当前候选包已重新编译核心 JNI、私有参与端和公开
 验证器并通过签名检查。真实干预因果效果、实测连续动力学及
 长期生产调度仍需各自的验证证据。Pixel6a 主应用已于 10 月 4 日升级；
 部署检查结束时原生主服务已 force-stop，Termux 采集继续运行。现场守护进程
@@ -83,6 +84,22 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
   [评估方案](docs/prospective_forecast_protocol.md)；窗口结束前不作科学验收结论。
 - 隔离 Android 应用在真实进程重启后拒绝重放已保留的未知分数请求，账本
   保持不变，未读取电路或启动参与端；这不覆盖完整十六节点计算与私有证明。
+- 随后恢复固定版本依赖并重建批准电路，完成十六节点 `different_scale` 非零
+  未知分数计算及完成后的进程重启重放检查；见
+  [新计算回执](artifacts/alignment_v1/completed_unknown_score_restart_android.json)与
+  [依赖重建记录](artifacts/alignment_v1/guarded_unknown_score_rebuilt_dependencies.json)。
+  合成测试应用及专用 USB 转发已清理，私有证明与真实所有者登记仍未完成。
+- 前瞻验收入口已部署，核对冻结训练和代码摘要、固定四日窗口、坐标绑定及
+  重复冲突，只从归档源码计算完整协方差及离散基线。当前为等待窗口完成；
+  10 月 13 日 00:00 UTC 前不评分，缺失日期或坐标切换会阻断验收。
+- 预测增加逐任务开始、完成、耗时、失败与 900 秒超时记录，小时时段维护
+  自动更新设备私有的每日运行汇总；缺少时间戳的历史事件单列。
+  一次完整 300×30 真机诊断通过，运行成功不等于预测准确。
+- 自然干预候选记录驻留、连续历史、反事实推荐、全局/上下文冷却等阻断原因，
+  并记录执行器静音/禁用状态。阈值与随机策略不变；保留回滚备份，仅重启一次
+  边缘进程加载诊断，物理采集未重启，active 状态保持。
+- 本轮 70 项相关主机测试通过，十二项冻结检查在设备操作前后均通过；
+  历史完整测试计数保持原验证范围。
 
 10 月 3–4 日新增进展：
 
@@ -116,7 +133,7 @@ requirements and evidence boundaries.
 | Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Actual intervention, complete follow-up and causal-effect evidence; authorized field daemon is active |
 | Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Actual Sunday delivery, long-term retained-source consistency and meaningful bifurcation parameters |
 | Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Primary app upgraded with rollback rehearsal; complete hardware observability and long-term operation remain open; core measurements exclude whole-app and private-MPC memory |
-| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable session reservations; two-node known-statement MPC/proof binding | Guarded normal unknown-score Android coverage, app-restart replay, unknown-score proof integration and distributed private proving, real owner enrollment and independent security assessment |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable reservations; one guarded nonzero sixteen-node Android/Mac case with completed-app restart replay; two-node known-statement MPC/proof binding | Broader guarded unknown-score coverage, unknown-score proof integration and distributed private proving, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
 approved commitment. The dedicated approved circuit now checks both parties'

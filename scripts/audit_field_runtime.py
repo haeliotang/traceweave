@@ -57,6 +57,7 @@ def audit(databases, events_file, trials_file, dwell_threshold=60):
                    max_gap_seconds=max(gaps, default=None), gaps_over_300=sum(gap > 300 for gap in gaps),
                    coordinate_versions=len(row.pop('versions')))
     events, matched, blocks = Counter(), Counter(), Counter()
+    gate_status, gate_reasons, gate_days = Counter(), Counter(), {}
     invalid_lines = 0
     event_paths = sorted(events_file.parent.glob(events_file.name + '.segment.*'))
     if events_file.exists():
@@ -71,6 +72,13 @@ def audit(databases, events_file, trials_file, dwell_threshold=60):
                     continue
                 kind = event.get('event_type', 'untyped')
                 events[kind] += 1
+                if kind == 'INTERVENTION_GATE':
+                    gate_status[event.get('status', 'missing')] += 1
+                    gate_reasons[event.get('reason', 'missing')] += 1
+                    instant = datetime.datetime.fromisoformat(event['recorded_timestamp_utc'].replace('Z', '+00:00'))
+                    day = instant.astimezone(datetime.timezone.utc).date().isoformat()
+                    reasons = gate_days.setdefault(day, Counter())
+                    reasons[event.get('reason', 'missing')] += 1
                 if kind in TRIGGER_EVENT_TYPES and event.get('timestamp_utc') in hot:
                     matched[kind] += 1
                     frame = hot[event['timestamp_utc']]
@@ -78,6 +86,8 @@ def audit(databases, events_file, trials_file, dwell_threshold=60):
                     blocks[reason] += 1
     with closing(sqlite3.connect(trials_file.resolve().as_uri() + '?mode=ro', uri=True)) as database:
         trials = dict(database.execute('SELECT status,count(*) FROM trials GROUP BY status'))
+        failed_delivery = Counter(json.loads(receipt).get('reason', 'missing') for (receipt,) in
+                                  database.execute("SELECT receipt FROM trials WHERE status='delivery_failed'"))
     return {'scope': 'retained_field_coverage_and_matched_gate_audit_not_complete_uptime_or_causal_evidence',
             'source_frame_sha256': digest.hexdigest(), 'database_count': len(databases),
             'unique_retained_frames': len(seen), 'utc_days': daily, 'hot_frames': len(hot),
@@ -85,6 +95,9 @@ def audit(databases, events_file, trials_file, dwell_threshold=60):
                                            for modality, _ in availability},
             'event_counts': dict(events), 'invalid_event_lines': invalid_lines,
             'matched_trigger_counts': dict(matched), 'matched_trigger_blocks': dict(blocks),
+            'recorded_natural_gate_status_counts': dict(gate_status), 'recorded_natural_gate_reasons': dict(gate_reasons),
+            'recorded_natural_gate_utc_days': {day: dict(reasons) for day, reasons in gate_days.items()},
+            'natural_failed_delivery_reasons': dict(failed_delivery),
             'dwell_threshold': dwell_threshold, 'natural_trial_status_counts': trials,
             'unmatched_event_scope': 'missing_hot_frame_cannot_establish_a_gate_reason'}
 

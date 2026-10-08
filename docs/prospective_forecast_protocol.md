@@ -40,3 +40,28 @@ source snapshots through the planned closing time. Evaluate only after that time
 using the archived code, verified training digest, exact declared holdout window
 and unchanged bindings. A future run must verify readiness before computing
 scores; an unavailable or blocked window is a terminal recorded result for v1.
+
+The executable entry is `scripts/evaluate_prospective_forecast.py`:
+
+```bash
+python3 scripts/evaluate_prospective_forecast.py \
+  --frozen-directory DEVICE_PRIVATE_FROZEN_DIRECTORY \
+  --database RETAINED_DAILY_SNAPSHOT.sqlite \
+  --database LIVE_EDGE.sqlite \
+  --output-file DEVICE_PRIVATE_EVALUATION_RECEIPT.json
+```
+
+Repeat `--database` for all snapshots spanning the fixed window; overlapping
+identities are deduplicated and conflicting copies are rejected. The live hot
+store retains only 48 hours and cannot alone supply this four-day experiment.
+The output must stay outside the frozen directory and source databases.
+Before closing, verified materials yield `pending` without scores. Missing
+coverage after closing, mixed coordinates or broken provenance yield `blocked`.
+Ready inputs are evaluated by the hash-verified archived source in an isolated
+child process, excluding cached bytecode and identified AppleDouble metadata
+sidecars from macOS archives. Other unexpected paths and links are rejected.
+The training snapshot and original
+archive are read-only throughout. Full covariance diagnostics remain enabled;
+an execution failure is recorded rather than silently dropping diagnostics.
+Continuous and discrete day-bootstrap bases are labeled separately. Results
+remain descriptive with scientific acceptance unassessed and activation disabled.
