@@ -1,0 +1,58 @@
+{
+  "baseline_commit": "91d6659bbf345392c82d38c1d872beacb258ffdc",
+  "source_sha256": {
+    "scripts/verify_guarded_private_sdk_usb.py": "8a8548dc07e33a6753b30ad0193e8f0d3280862975d98788af050418f450f32f",
+    "native/private_alignment_probe/smoke.cpp": "0a585550eed3224d8ed2f56185f01412e6d06d36f0b075e13807711216aa1eab",
+    "native/private_alignment_probe/verify_uniform_permutation.py": "aae6b2583ec7ef9ae7836c535c007d4ae889060f76394d44a06a6f61c37ade6c",
+    "native/zk_alignment/src/bin/discovered_fixture.rs": "acf2821157db18ad2a4c3570f3d64aca0de8efad23ea8cd6d4cdcabd32cdbb60",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticGuardedLifecycle.java": "1de40b0142399090b660fe3fcf1e7d64cd415035261991d55e884a804426dbc1",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticPrivateAlignmentJob.java": "a2a6179b071c455e85c2b6d69a0e82089bff3158b0b3559d44bbe9304d3dc93e",
+    "android/lifecycle_probe/src/org/traceform/edge/SyntheticProofJob.java": "755dd467788718df65ebece0a3215bcc939ccc18657a551505fcf467e7fee5a1",
+    "android/src/org/traceform/edge/UniformPrivateAlignment.java": "9e2cc24014a33242bba8533ad678630cbb7baba97b03a5aa599c63018880d2df",
+    "tests/test_guarded_private_sdk_cases.py": "d7ffb0a2f58c4fd67f44dde94d35060635ba642e4de1aca53bc0dacf427d564e"
+  },
+  "host_tests": {
+    "count": 28,
+    "skips": 0,
+    "command": "PATH=/opt/homebrew/opt/openjdk@17/bin:$PATH python3 -m unittest tests.test_guarded_private_sdk_cases tests.test_private_unknown_objective_output tests.test_private_circuit_resource_admission tests.test_private_computation_fixture tests.test_private_usb_client tests.test_approved_private_alignment tests.test_proof_verifier_process tests.test_native_private_participant tests.test_private_alignment_output tests.test_native_private_alignment_output tests.test_private_computation_approval tests.test_private_sdk_usb_statement tests.test_private_packed_commitment tests.test_private_participant_build",
+    "passed": true
+  },
+  "new_rust_tests": {
+    "count": 2,
+    "command": "cargo test --locked --offline --manifest-path native/zk_alignment/Cargo.toml --bin discovered_fixture",
+    "elapsed_seconds": 81.11,
+    "passed": true
+  },
+  "regressions": {
+    "android_missing_job_exit_23": {
+      "red_before_fix": true,
+      "green_after_fix": true,
+      "native_computation_itself_succeeded": true
+    },
+    "sixteen_node_synthetic_prover_test_stack": {
+      "initial_stack_overflow": true,
+      "bounded_host_thread_stack_bytes": 67108864,
+      "full_witness_check_passed": true
+    }
+  },
+  "scope": "affected_host_checks_not_full_suite_or_empirical_or_private_protocol_acceptance",
+  "passed": true,
+  "frozen_checks": {
+    "during_isolated_tests": {
+      "count": 12,
+      "passed": true
+    },
+    "after_isolated_cleanup": {
+      "count": 12,
+      "passed": true
+    },
+    "scope": "existing_frozen_device_materials_not_prospective_scores"
+  },
+  "cleanup": {
+    "isolated_app_uninstalled": true,
+    "dedicated_usb_forward_removed": true,
+    "primary_collector_not_restarted": true,
+    "field_edge_daemon_not_restarted": true,
+    "real_trajectory_reports_not_committed": true
+  }
+}

@@ -1,7 +1,7 @@
 # Stage 11–14 completion audit
 
-Updated through 2026-10-08, including the ordered four-step work below
-(starting repository baseline `7a39a57`). Historical full-suite counts retain
+Updated through 2026-10-08, including the ordered four-step work and guarded
+sixteen-node follow-through (baselines `7a39a57` and `91d6659`). Historical full-suite counts retain
 their original test scope.
 
 This audit retains the scope of the supplied roadmap. It distinguishes available
@@ -26,9 +26,9 @@ It is not a release approval or a claim that the four stages are complete.
 | Atomic model activation and recovery | Registry/admission/publication recovery receipts; later orphan cleanup separately checked | Bind the final release to all relevant changes and verify final device behavior |
 | Zero-raw-upload manifold comparison | Separate-party input authenticated MPC tests, including 14 standalone sixteen-node cases | Real-owner enrollment, authorization/query controls and independent security assessment |
 | GW alignment | Uniform permutation search with exact final loss; general-mass small-shape transport checks | Preserve bounded/non-global scope; uniform permutation descent is not unrestricted GW optimality |
-| Android private SDK | Fourteen sixteen-node SDK cases in `uniform_private_sdk16_cases_completed_pixel.json`, with invalid witnesses rejected and snapshots cleaned | Packaged waiting-for-TLS cancellation/resource-permission withdrawal passes in `private_participant_lifecycle_android.json`; sixteen-node CPU-phase and actual low-memory withdrawal remain open, alongside unknown-score proof integration |
-| Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; six Android public-verifier cases and four signed SDK cases, including app-process restart replay; actual separate-party two-node known-statement MPC/proof binding in `zk_packed_uniform_v2_mpc_binding_android.json` | Unknown-score proof integration, distributed private proving and production key/setup provenance; v1 certificates cannot silently authorize v2 outputs |
-| Unknown-score private computation workflow | Signed unknown-score SDK entry and durable reservation; 22 host MPC guard cases; Android changed-model rejection; rebuilt guarded nonzero sixteen-node Android/Mac case with independent reference and completed-app restart replay in `completed_unknown_score_restart_android.json` | Broader guarded normal-case coverage, packed-v2 unknown-score proof binding, distributed private proving and real-owner enrollment remain open |
+| Android private SDK | Fourteen known-statement cases plus18 guarded sixteen-node cases and2 CPU-phase cancellation/resource-permission withdrawal checks in `guarded_unknown_score_sdk16_android.json`; aborted children reaped, snapshots removed and sessions retained | Actual system low-memory withdrawal remains open; synthetic permission withdrawal is not system OOM; production privacy/deployment gates remain separate |
+| Packed-v2 public proof and owner approval | Dedicated uniform-permutation proof relation; previous six public/four signed SDK cases and two-node known-statement binding; five sixteen-node actual discovered-output proof/signature cases plus actual-app-restart replay in `discovered_unknown_score16_proof_android.json` | Distributed private proving, real owner enrollment and production key/setup provenance; the synthetic prover holds both models; v1 certificates cannot silently authorize v2 outputs |
+| Unknown-score private computation workflow | Signed unknown-score SDK entry and durable reservation;22 host MPC guard cases;18 guarded sixteen-node Android/Mac cases and2 CPU-phase abort checks; actual discovered statement bound to a centralized synthetic signed proof; computation and proof ledgers unchanged after app restart | Distributed private proving and real-owner enrollment remain open; bounded case coverage is not a security audit |
 | Native <15ms / <5MB core | `native_current_monthly_compute_android.json`: isolated fitted synthetic compute passes | Preserve measured workload scope; it does not prove whole-app/fit/history-scan/private-MPC memory below 5MB |
 | Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Primary upgraded to `23c1065` with same signer, rollback rehearsal, eight checks and bounded collection; long-term behavior and release identity remain open |
 | Complete native 128-feature acquisition | 51 extractor outputs and digital-context formulas ported with host and device parity; dataflow and observability registry distinguish measured inputs, proxies and missing inputs | Verify intended quantities on hardware; 12 port outputs lack required native inputs, and parity on identical base inputs does not establish 128 independently measured quantities |
@@ -44,8 +44,57 @@ It is not a release approval or a claim that the four stages are complete.
    deployed prolonged-dwell trigger; separate recommendations from causal evidence.
 3. Verify long-term collection, actual Sunday calibration and real low-memory behavior.
    Primary upgrade and rollback rehearsal are already recorded, not pending installation.
-4. Expand guarded unknown-score Android coverage, complete packed-v2 binding and distributed
-   private proving, then real-owner enrollment and independent security assessment.
+4. Complete distributed private proving with the unchanged two-owner security
+   requirement, production setup provenance, real-owner enrollment and independent
+   security assessment. Synthetic discovered-statement binding is now recorded.
+
+## October 8 guarded sixteen-node follow-through
+
+Starting from `91d6659`, the isolated Android/Mac run passes eighteen guarded
+normal/adversarial cases: identity, transposition, reversal, two nonzero/large
+objective cases, invalid metric/mass bounds, session/nonce changes, model
+replacement and each approved binding block. Invalid witnesses expose all-zero
+peer output. Each request uses a fresh session; the driver never resets the
+computation ledger. See `guarded_unknown_score_sdk16_android.json`.
+
+Two additional runs observe authenticated MPC setup and at least fifty further
+Android child CPU ticks before worker cancellation or synthetic resource
+permission withdrawal. Both reap the child, remove its snapshot and reject
+reuse of the spent session. The production 929 MiB admission and 192 MiB running
+reserve are unchanged. This is not an induced system OOM or proof of actual
+low-memory callback delivery.
+
+`discovered_unknown_score16_proof_android.json` records the final nonzero
+849-bit actual MPC output exported as a 224-byte statement. A centralized
+synthetic generator verifies matching commitments and the complete sixteen-node
+packed-v2 R1CS before setup/proving. Both fake owners then approve that exact
+statement/proof/key pin. Five Android cases pass: wrong owner signature, signed
+statement replacement, well-encoded invalid proof, valid proof and replay.
+Only the valid proof consumes a proof session. A subsequent actual application
+process restart rejects both proof and computation replay; the 32-byte proof
+ledger and cumulative 672-byte computation ledger are unchanged. The latter
+includes one successful computation from the earlier driver-state regression.
+Separate host public verification passes. Public synthetic proof, key, statement,
+owner public keys and signatures are included; private keys and witnesses are not.
+
+`guarded_unknown_score_builds.json` binds both isolated APKs and packaged native
+libraries. The proof-scope label update preserves the isolated UID, discovered
+output and ledgers after the MPC jobs finish. The rebuilt Android participant
+matches the packaged binary byte-for-byte; the reused public verifier and the
+synthetic host's separate OpenSSL dependencies are recorded explicitly.
+`guarded_unknown_score_host.json` records 28 affected host tests and two new Rust
+tests, without replacing historical full-suite counts. A driver regression first
+rejects Android's terminal-job exit 23, then passes after handling its explicit
+missing-job response. The sixteen-node synthetic prover uses a bounded 64 MiB
+host thread stack after reproducing test-stack exhaustion.
+
+The twelve existing frozen device checks pass during testing and after cleanup.
+The isolated app and dedicated USB forward are removed; neither primary
+collector nor active field daemon is restarted. This closes bounded mechanical
+composition only. Distributed two-owner private proving, real enrollment,
+production setup provenance, independent security assessment and actual system
+low-memory withdrawal remain open. See
+[protocol scope and reproduction](collaborative_proof_integration.md#discovered-statement-synthetic-validation).
 
 ## October 3–4 engineering evidence
 

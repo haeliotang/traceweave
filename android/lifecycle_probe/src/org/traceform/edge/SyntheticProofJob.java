@@ -30,7 +30,14 @@ public final class SyntheticProofJob extends JobService {
                 else try {
                     boolean compute = fixture.optBoolean("compute_alignment", false);
                     JSONObject result;
-                    if (compute) {
+                    if (fixture.optBoolean("bind_discovered", false)) {
+                        report.put("discovered_statement_bound", true);
+                        String output = new String(OwnerAuthentication.readBounded(
+                            new File(getFilesDir(), "private_uniform16/discovered_output.bits"), 849), "US-ASCII");
+                        result = ProofVerifier.verifyPrivateAlignment(this, root, pin, owners, output);
+                        report.put("mpc_output_bound_to_signed_proof", result.getBoolean("verified"))
+                            .put("computation_scope", "synthetic_sixteen_node_discovered_statement_centralized_prover");
+                    } else if (compute) {
                         byte[] inputs = OwnerAuthentication.readBounded(new File(root, "public_inputs.bin"), 224);
                         if (inputs.length != 224) throw new SecurityException("fixture statement length rejected");
                         StringBuilder session = new StringBuilder();
@@ -46,7 +53,7 @@ public final class SyntheticProofJob extends JobService {
                         report.put("mpc_output_bound_to_signed_proof", result.getBoolean("verified"))
                             .put("computation_scope", "synthetic_two_node_known_statement_separate_mac_peer");
                     } else result = ProofVerifier.verify(this, root, pin, owners);
-                    if ("bad_owner".equals(label)) throw new IllegalStateException("invalid owner accepted");
+                    if ("bad_owner".equals(label) || "bad_binding".equals(label)) throw new IllegalStateException("invalid package accepted");
                     boolean valid = result.getBoolean("verified");
                     if (valid != "valid".equals(label)) throw new IllegalStateException("unexpected proof result");
                     String receipt = result.getString("receipt");
@@ -58,6 +65,9 @@ public final class SyntheticProofJob extends JobService {
                 } catch (SecurityException error) {
                     if ("bad_owner".equals(label) && "owner signature rejected".equals(error.getMessage()))
                         report.put("signature_rejected", true);
+                    else if ("bad_binding".equals(label)
+                             && "private alignment output does not match public statement".equals(error.getMessage()))
+                        report.put("binding_rejected", true);
                     else if (fixture.optBoolean("compute_alignment", false) && "replay".equals(label)
                              && "replayed session".equals(error.getMessage()))
                         report.put("mpc_replay_rejected_before_launch", true);
@@ -77,7 +87,9 @@ public final class SyntheticProofJob extends JobService {
                         .put("completed_epoch_ms", System.currentTimeMillis())
                         .put("scope", "lifecycle".equals(report.optString("case"))
                             ? "synthetic_packaged_private_participant_cleanup_no_proof_verification_or_collection"
-                            : "synthetic_two_node_signed_packed_v2_public_proof_in_app_UID_no_collection_no_owner_enrollment");
+                            : report.optBoolean("discovered_statement_bound", false)
+                                ? "synthetic_sixteen_node_discovered_packed_v2_signed_proof_centralized_prover_no_collection"
+                                : "synthetic_two_node_signed_packed_v2_public_proof_in_app_UID_no_collection_no_owner_enrollment");
                     NativeVerificationJob.write(new File(getFilesDir(), "proof_v2.json"), report);
                 } catch (Exception error) { android.util.Log.e("TraceformProbe", "proof receipt failed", error); }
             }

@@ -61,6 +61,10 @@ int main(int argc, char **argv) try {
     emp::NetIO &io = transport;
     emp::C2PC<emp::NetIO> computation(&io, party, &circuit);
 #endif
+#ifdef TRACEFORM_PHASE_PROBE
+    // Synthetic host diagnostics only: no inputs or intermediate wires disclosed.
+    std::cerr << "TRACEFORM_MPC_PHASE=independent" << std::endl;
+#endif
     computation.function_independent();
     io.flush();
     computation.function_dependent();

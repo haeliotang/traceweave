@@ -40,7 +40,8 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
 （4.708s），应用进程重启后的计算入口重放拒绝为 102.299ms，账本保持不变；
 10 月 8 日另已完成固定批准电路上的十六节点非零未知分数用例：Android、Mac
 与独立整数参考的全部输出一致，完成后的应用重启重放被拒绝、账本不变且无电路
-快照残留。仍需扩大批准防护用例覆盖及完成双方私有证明生成。当前候选包已重新编译核心 JNI、私有参与端和公开
+快照残留。随后已扩展到 18 项十六节点正常/异常用例与 2 项 CPU 阶段撤回检查，
+均通过；实际系统低内存撤回及双方私有证明生成仍未验收。当前候选包已重新编译核心 JNI、私有参与端和公开
 验证器并通过签名检查。真实干预因果效果、实测连续动力学及
 长期生产调度仍需各自的验证证据。Pixel6a 主应用已于 10 月 4 日升级；
 部署检查结束时原生主服务已 force-stop，Termux 采集继续运行。现场守护进程
@@ -100,6 +101,17 @@ packed-v2 另有 6 项真机公开证明验证和 4 项应用内签名验证用�
   边缘进程加载诊断，物理采集未重启，active 状态保持。
 - 本轮 70 项相关主机测试通过，十二项冻结检查在设备操作前后均通过；
   历史完整测试计数保持原验证范围。
+- 后续隔离验证通过 18 项批准电路正常/异常用例及 2 项 CPU 阶段取消/资源许可
+  撤回，检查公开输出、子进程退出、快照清理和会话防重放；
+  [十六节点回执](artifacts/alignment_v1/guarded_unknown_score_sdk16_android.json)。
+  资源许可撤回为夹具内模拟，不等同于实际系统 OOM。
+- 十六节点实际未知分数输出已贯通 224 字节声明、集中式合成 packed-v2 证明、
+  双方合成所有者签名和 Android 校验；五项正确/错误材料检查均通过，真实应用
+  进程重启后计算与证明重放均被拒绝，账本不变。
+  见[发现结果后的证明绑定](artifacts/alignment_v1/discovered_unknown_score16_proof_android.json)。
+  另有 28 项相关主机测试及 2 项新 Rust 检查通过；十二项冻结检查在测试期间
+  与清理后通过，隔离应用及专用转发已清理，主采集未重启。
+  集中式合成证明仍持有双方假模型，不能视为双方私密联合证明。
 
 10 月 3–4 日新增进展：
 
@@ -133,7 +145,7 @@ requirements and evidence boundaries.
 | Closed-loop interventions | Configurable haptics, notifications, volume/color restoration, contextual policy and 5–15 minute feedback windows | Actual intervention, complete follow-up and causal-effect evidence; authorized field daemon is active |
 | Storage and evolution | Hot48h/Warm30d/Cold<500KB bounds, guarded calibration, atomic registry recovery and complete synthetic weekly Android task | Actual Sunday delivery, long-term retained-source consistency and meaningful bifurcation parameters |
 | Native Android | Independent APK, Service/Binder/lifecycle checks; isolated 300×120 compute measures6.665–7.992ms and2.92MB RSS | Primary app upgraded with rollback rehearsal; complete hardware observability and long-term operation remain open; core measurements exclude whole-app and private-MPC memory |
-| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable reservations; one guarded nonzero sixteen-node Android/Mac case with completed-app restart replay; two-node known-statement MPC/proof binding | Broader guarded unknown-score coverage, unknown-score proof integration and distributed private proving, real owner enrollment and independent security assessment |
+| Private alignment | Authenticated separate-party MPC,14 known-statement Android SDK cases, signed unknown-score entry and durable reservations;18 guarded sixteen-node cases and2 CPU-phase abort cases; actual discovered sixteen-node statement bound to a centralized synthetic signed packed-v2 proof, with restart replay rejection | Distributed private proving, actual system low-memory withdrawal, production setup provenance, real owner enrollment and independent security assessment |
 
 A real changed-model regression revealed a score before the SDK checked its
 approved commitment. The dedicated approved circuit now checks both parties'
@@ -159,8 +171,15 @@ computation entry after an actual app-process restart (102.299ms), with the
 session ledger unchanged and no peer connection available. See the
 [current native MPC restart receipt](artifacts/alignment_v1/all_native_source_mpc_restart_android.json).
 This is a known-statement synthetic case. The synthetic prover knows both models;
-distributed private proving, unknown-score proof integration and real-owner
+distributed private proving and real-owner
 enrollment remain open.
+
+The later [sixteen-node discovered-statement receipt](artifacts/alignment_v1/discovered_unknown_score16_proof_android.json)
+binds actual unknown-score MPC output to a centralized synthetic packed-v2 proof
+and two fake owners' signatures. All five Android cases pass; proof and computation
+replay remain rejected after an actual app-process restart, with unchanged ledgers.
+Public synthetic verification material is included for independent replay.
+This completes bounded mechanical composition, not distributed private proving.
 
 The current-source development candidate builds and passes signature validation.
 Its SDK now exports the unknown-score computation entry; external-client compilation
@@ -177,7 +196,10 @@ a new session. See the [replay preflight regression](artifacts/alignment_v1/comp
 Packaged private-participant cancellation and resource-permission withdrawal
 pass on Pixel while waiting for a synthetic TLS peer: live children are observed,
 reaped and their snapshots removed. See the [lifecycle receipt](artifacts/alignment_v1/private_participant_lifecycle_android.json).
-This does not cover sixteen-node computation or actual system low-memory withdrawal.
+Later [guarded sixteen-node CPU checks](artifacts/alignment_v1/guarded_unknown_score_sdk16_android.json)
+also pass worker cancellation and synthetic permission withdrawal after observed
+CPU work, with child reaping, snapshot removal and spent-session rejection.
+Actual system low-memory withdrawal remains unverified.
 
 The archived 14-day state sequence is not eligible for empirical 128D fitting:
 all 5,961 records contain legacy 26D normalized features and lack the required

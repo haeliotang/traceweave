@@ -22,6 +22,8 @@ public final class SyntheticPrivateAlignmentJob extends JobService {
                 boolean expectedValid = fixture.getBoolean("expected_valid");
                 report.put("case", fixture.getString("case")).put("expected_valid", expectedValid);
                 boolean approvedComputation = fixture.optBoolean("approved_computation", false);
+                java.nio.file.Files.deleteIfExists(new File(root, "discovered_output.bits").toPath());
+                java.nio.file.Files.deleteIfExists(new File(root, "discovered_statement.bin").toPath());
                 byte[] inputs;
                 if (approvedComputation) {
                     inputs = new byte[224];
@@ -46,15 +48,26 @@ public final class SyntheticPrivateAlignmentJob extends JobService {
                         java.security.PublicKey[] owners = new java.security.PublicKey[2];
                         for (int owner = 0; owner < 2; owner++) owners[owner] = java.security.KeyFactory.getInstance("EC").generatePublic(
                             new java.security.spec.X509EncodedKeySpec(OwnerAuthentication.readBounded(new File(root, "owner" + owner + ".der"), 256)));
+                        String lifecycle = fixture.optString("lifecycle", "");
+                        if (!lifecycle.isEmpty()) {
+                            report.put("lifecycle", SyntheticGuardedLifecycle.verify(this, command, circuit, root, owners, bits, lifecycle));
+                            report.put("passed", true);
+                            output = null;
+                        } else {
                         output = UniformPrivateAlignment.computeApproved(this, command, circuit, root, owners, bits);
                         boolean replayRejected = false;
                         try { UniformPrivateAlignment.computeApproved(this, command, circuit, root, owners, bits); }
                         catch (SecurityException error) { replayRejected = "replayed computation session".equals(error.getMessage()); }
                         if (!replayRejected) throw new IllegalStateException("approved computation replay not rejected");
                         report.put("replay_rejected", true).put("request_excludes_objective", true);
+                        }
                     } else output = UniformPrivateAlignment.run(this, command, circuit, bits, inputs);
+                    if (output != null) {
                     if (!expectedValid) throw new IllegalStateException("invalid fixture accepted");
+                    java.nio.file.Files.write(new File(root, "discovered_output.bits").toPath(), output.getBytes("US-ASCII"));
+                    java.nio.file.Files.write(new File(root, "discovered_statement.bin").toPath(), PrivateAlignmentOutput.encodePublicStatement(output));
                     report.put("passed", true).put("output", output);
+                    }
                 } catch (SecurityException error) {
                     if (expectedValid || !"private alignment witness rejected".equals(error.getMessage())) throw error;
                     report.put("passed", true).put("witness_rejected", true);

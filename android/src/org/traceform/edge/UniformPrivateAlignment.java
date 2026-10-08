@@ -48,7 +48,7 @@ public final class UniformPrivateAlignment {
         return result.toString();
     }
 
-    private static Runnable admit(Context context, String privateBits) throws Exception {
+    static Runnable admit(Context context, String privateBits) throws Exception {
         if (privateBits == null || !privateBits.matches("[01]{6224}"))
             throw new IllegalArgumentException("uniform sixteen-node private input required");
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);

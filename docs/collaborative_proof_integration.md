@@ -45,9 +45,9 @@ explicitly describes itself as insecure and intended for benchmarking. It is a
 research reference, not an accepted production replacement.
 
 No new dependency, remote prover, third computing party or private-model export
-has been enabled. A pending user choice concerns only whether an isolated local
-three-node synthetic evaluation is acceptable; it does not authorize a production
-trust-model change. Until resolved, retain the two-owner computation architecture.
+has been enabled. The authorized isolated synthetic work retains two MPC
+participants and a centralized synthetic prover. It does not change the
+production trust model or introduce a third computing party.
 
 ## Required integration invariants
 
@@ -77,7 +77,7 @@ trust-model change. Until resolved, retain the two-owner computation architectur
    Its honest-majority results do not establish security for two owners with one
    dishonest participant. This remains a protocol acceptance requirement.
 
-The next implementation depends on a compatible protocol and witness-generation
+Distributed private proving depends on a compatible protocol and witness-generation
 path, not just a new verifier adapter. Current synthetic tests and builds remain
 available; final privacy acceptance and full deployment remain open.
 
@@ -95,3 +95,61 @@ The centralized synthetic `fixture` generator checks satisfaction of its exact
 R1CS before setup/proving. Invalid objectives, commitments, metrics and couplings
 are rejected before proof generation. This local check holds the complete
 witness and supplies no evidence of private distributed witness validation.
+
+## Discovered-statement synthetic validation
+
+`scripts/verify_guarded_private_sdk_usb.py` uses only fake TLS/owner identities
+and generated sixteen-node metrics in `org.traceform.edge.synthetic`. Every
+case receives a fresh session; existing computation reservations are retained.
+The guarded circuit pin, 929 MiB admission and 192 MiB running reserve remain
+unchanged. Invalid metric, session, nonce, model and approval cases must expose
+only an all-zero result and leave no circuit snapshot.
+
+For CPU cancellation and resource-permission withdrawal, the synthetic Mac
+participant reports entry into authenticated MPC setup. The host then observes
+at least 50 additional Android child CPU ticks before signalling the isolated
+fixture. It uses the production admission/running-memory guard and reservation
+primitives. A worker interrupt or an additional synthetic permission rejection
+must reap the child, remove its snapshot and retain the spent session. This
+does not induce system OOM, establish actual low-memory delivery, or measure a
+worst-case memory bound. `TRACEFORM_PHASE_PROBE` is enabled only for the synthetic
+host build and reveals no private inputs or intermediate wires.
+
+The final nonzero computation exports its actual 224-byte statement from Android.
+`discovered_fixture` consumes both synthetic witnesses and the independently
+reconstructed permutation coupling; it rejects statement/commitment mismatch
+and checks the complete sixteen-node packed-v2 R1CS before setup/proving. Its
+host thread uses a bounded 64 MiB stack for the large R1CS expression/drop path.
+Neither witness reconstruction nor this stack allocation occurs in the Android
+public verifier.
+
+Both synthetic owners subsequently sign the exact discovered statement, proof
+and verifying-key pin using the separate proof-approval domain. Android calls
+`ProofVerifier.verifyPrivateAlignment` against its retained actual MPC output.
+Wrong owner signatures, a freshly signed different statement, a well-encoded
+invalid proof and replay must be rejected without consuming an additional proof
+session. This validates mechanical composition; the centralized prover still
+knows both models and nonces. Real enrollment, distributed private witness
+generation, production setup provenance and independent security review remain
+open.
+
+With the rebuilt isolated probe installed, fake identities in `RUNTIME/fixture`,
+the pinned circuit and synthetic host participant available, run:
+
+```sh
+python3 scripts/verify_guarded_private_sdk_usb.py \
+  --adb /opt/homebrew/bin/adb --serial SYNTHETIC_TEST_DEVICE \
+  --runtime RUNTIME --openssl OPENSSL --prover DISCOVERED_FIXTURE \
+  --output LOCAL_SYNTHETIC_REPORT.json
+```
+
+The driver removes its dedicated USB forward. Remove the isolated application
+after recording its receipts; do not install it over the primary collector.
+
+Recorded on 2026-10-08: eighteen normal/adversarial guarded cases and two CPU
+abort cases pass in `guarded_unknown_score_sdk16_android.json`. Five discovered
+statement proof/signature cases, separate host public verification and subsequent
+actual-app-restart proof/computation replay rejection pass in
+`discovered_unknown_score16_proof_android.json`. Both receipts are bounded
+synthetic evidence; neither changes this document's incomplete collaborative
+prover status.

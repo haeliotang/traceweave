@@ -79,12 +79,14 @@ def packed_uniform_message(owner, metric, session, nonce):
     return message + bytes(int(payload[index:index + 8][::-1], 2) for index in range(0, len(payload), 8))
 
 
-def encode(witness, label, quantized=False, packed=False, search_distance_shift=12):
+def encode(witness, label, quantized=False, packed=False, search_distance_shift=12, session=None):
     if packed and not quantized:
         raise ValueError('packed v2 commitments require the dedicated quantized-search circuit')
     if search_distance_shift == 14 and not packed:
         raise ValueError('six-bit search requires the dedicated packed low-memory circuit')
-    session = bytes(range(32))
+    session = bytes(range(32)) if session is None else session
+    if not isinstance(session, bytes) or len(session) != 32:
+        raise ValueError('exact synthetic session required')
     sessions = [session, session]
     if label == 'session_mismatch':
         sessions[1] = bytes([session[0] ^ 1]) + session[1:]
