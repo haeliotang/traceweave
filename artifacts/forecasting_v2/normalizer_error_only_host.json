@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-08",
+  "scope": "controlled_host_error_only_holdout_equivalence_not_device_or_scientific_acceptance",
+  "test_groups": [
+    {
+      "tests_passed": 51,
+      "modules": [
+        "tests.test_masked_holdout",
+        "tests.test_continuous_dynamics",
+        "tests.test_continuous_sandbox",
+        "tests.test_normalizer_candidate"
+      ]
+    },
+    {
+      "tests_passed": 25,
+      "modules": [
+        "tests.test_continuous_holdout_validation",
+        "tests.test_normalizer_candidate_bundle",
+        "tests.test_normalizer_candidate_sources"
+      ],
+      "required_import_path": "PYTHONPATH=tests"
+    }
+  ],
+  "regression": "error-only and full diagnostics retain equal increment errors, pair counts, interval strata, UTC-day bootstrap and coordinate bindings; foreign bindings rejected",
+  "omitted_covariance_fields": "null_not_zero",
+  "default_full_covariance_diagnostics": "preserved",
+  "source_sha256": {
+    "scripts/evaluate_normalizer_candidate.py": "c30c80bf4a8d77bbf586a0574a0ff8834fa1503010689e1dd17259ae759aa9a5",
+    "scripts/validate_continuous_holdout.py": "511612c0ac9d66c3c2a5a4ea0ed44de08726ba6fc5036be9c439170f235a07d9",
+    "traceform/dynamics/continuous.py": "454198507a2de206cc9c772306a91b41b32027a61235189a7ee8882dd9bfe80f",
+    "tests/test_masked_holdout.py": "e348def87d38c586f61c1c646d1bd0e6ba3fb18fb241212ec0b00cb803cf1457",
+    "tests/test_continuous_dynamics.py": "464cab1ee9d2713831dbe1779236ae5b03721c6c3be632fa8d9ffef2f38f7fec",
+    "tests/test_continuous_sandbox.py": "fe01c0327eac2f5d90ccf793e09d8f278a05445c292a4ff3b5327d3aaacb21f7",
+    "tests/test_normalizer_candidate.py": "5e7ff2c0352c35a18e0047c8f979798d5e4a0f75f8c7e60d84f9f728967b4065",
+    "tests/test_continuous_holdout_validation.py": "1a02a9c515631684277d91c7175e2eaf973069e37c4aad6702c68cbde74cf719",
+    "tests/test_normalizer_candidate_bundle.py": "9b636cfc2587cd845ebdc4167fabd39e463e0543fca0747c86430665076f5cfb",
+    "tests/test_normalizer_candidate_sources.py": "05101942fc0b4faa38b869c25b2d984d618a532be06f3e88570a1a3bb3c77e57"
+  }
+}

@@ -21,17 +21,19 @@ def _subset(rows, indices):
     return [dict(row, continuous_vector=[row['continuous_vector'][i] for i in indices]) for row in rows]
 
 
-def validate(train, holdout, bandwidth=1, dimension=128, keep_indices=None):
+def validate(train, holdout, bandwidth=1, dimension=128, keep_indices=None, include_covariance=True):
     """Chronological drift-versus-persistence diagnostics.
 
     ``keep_indices`` restricts both the state space the drift is fitted in and the error measure
     to those coordinates, so dimensions without informative inputs cannot dilute the comparison.
+    Candidate error-only evaluation can omit covariance diagnostics; omitted values are null.
     """
     if keep_indices is not None:
         indices = list(keep_indices)
         if not indices or len(set(indices)) != len(indices) or any(not 0 <= i < dimension for i in indices):
             raise ValueError('keep_indices must be a non-empty set of valid coordinates')
-        result = validate(_subset(train, indices), _subset(holdout, indices), bandwidth, len(indices))
+        result = validate(_subset(train, indices), _subset(holdout, indices), bandwidth, len(indices),
+                          include_covariance=include_covariance)
         result['dimension_subset'] = {'kept': len(indices), 'of': dimension, 'indices': indices}
         return result
     for rows in (train, holdout):
@@ -54,7 +56,10 @@ def validate(train, holdout, bandwidth=1, dimension=128, keep_indices=None):
     daily, intervals, strata = {}, [], {}
     for first, second, _ in adjacent_examples(holdout, 300):
         dt = (timestamp(second) - timestamp(first)).total_seconds()
-        drift, covariance = model.coefficients(first['continuous_vector'])
+        if include_covariance:
+            drift, covariance = model.coefficients(first['continuous_vector'])
+        else:
+            drift = model.drift(first['continuous_vector'])
         delta = [b - a for a, b in zip(first['continuous_vector'], second['continuous_vector'])]
         errors = [value - slope * dt for value, slope in zip(delta, drift)]
         pair_error = sum(v * v for v in errors)
@@ -71,10 +76,11 @@ def validate(train, holdout, bandwidth=1, dimension=128, keep_indices=None):
         group[0] += pair_error; group[1] += pair_baseline; group[2] += 1
         exposure += dt
         count += 1
-        for row in range(dimension):
-            for column in range(dimension):
-                residual[row][column] += errors[row] * errors[column]
-                predicted[row][column] += covariance[row][column] * dt
+        if include_covariance:
+            for row in range(dimension):
+                for column in range(dimension):
+                    residual[row][column] += errors[row] * errors[column]
+                    predicted[row][column] += covariance[row][column] * dt
     if count < 2:
         raise ValueError('at least two eligible holdout pairs required')
     samples = []
@@ -86,10 +92,12 @@ def validate(train, holdout, bandwidth=1, dimension=128, keep_indices=None):
             samples.append(sum(group[0] for group in selected) / sum(group[1] for group in selected))
         samples.sort()
     intervals.sort()
-    observed = [[v / exposure for v in row] for row in residual]
-    expected = [[v / exposure for v in row] for row in predicted]
-    difference = math.sqrt(sum((a - b) ** 2 for left, right in zip(observed, expected) for a, b in zip(left, right)))
-    norm = math.sqrt(sum(v * v for row in expected for v in row))
+    observed = expected = difference = norm = None
+    if include_covariance:
+        observed = [[v / exposure for v in row] for row in residual]
+        expected = [[v / exposure for v in row] for row in predicted]
+        difference = math.sqrt(sum((a - b) ** 2 for left, right in zip(observed, expected) for a, b in zip(left, right)))
+        norm = math.sqrt(sum(v * v for row in expected for v in row))
     return {'dimension': dimension, 'training_pair_count': model.fit_pair_count, 'holdout_pair_count': count,
             'holdout_exposure_seconds': exposure, 'drift_increment_mse': squared / (count * dimension),
             'persistence_increment_mse': baseline / (count * dimension),

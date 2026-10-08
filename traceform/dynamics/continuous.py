@@ -157,14 +157,22 @@ class ContinuousDynamics:
             self.anchors.append({"center": list(center), "drift": drift, "noise_covariance": covariance})
         return self
 
-    def coefficients(self, vector):
+    def _query_weights(self, vector):
         if len(vector) != self.dimension or not self.anchors:
             raise ValueError("fitted model and matching vector dimension required")
         log_weights = [-sum((a - b) ** 2 for a, b in zip(vector, anchor["center"])) / (2 * self.bandwidth ** 2) for anchor in self.anchors]
         peak = max(log_weights)
         weights = [math.exp(value - peak) for value in log_weights]
         total = sum(weights)
-        weights = [weight / total for weight in weights]
+        return [weight / total for weight in weights]
+
+    def drift(self, vector):
+        """Evaluate the same fitted drift without constructing noise covariance."""
+        weights = self._query_weights(vector)
+        return [sum(weight * anchor["drift"][index] for weight, anchor in zip(weights, self.anchors)) for index in range(self.dimension)]
+
+    def coefficients(self, vector):
+        weights = self._query_weights(vector)
         drift = [sum(weight * anchor["drift"][index] for weight, anchor in zip(weights, self.anchors)) for index in range(self.dimension)]
         covariance = [[sum(weight * anchor["noise_covariance"][row][column] for weight, anchor in zip(weights, self.anchors)) for column in range(self.dimension)] for row in range(self.dimension)]
         return drift, covariance

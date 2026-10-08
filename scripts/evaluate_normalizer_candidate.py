@@ -116,7 +116,8 @@ def forecast(rows, vectors, params, split):
         record['normalizer_sha256'] = digest
         records.append(record)
     try:
-        result = validate(records[:split], records[split:], 1, len(vectors[0]))
+        result = validate(records[:split], records[split:], 1, len(vectors[0]),
+                          include_covariance=False)
     except ValueError as error:
         return {'error': str(error)}
     return {key: result[key] for key in ('training_pair_count', 'holdout_pair_count', 'drift_increment_mse',

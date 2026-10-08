@@ -127,6 +127,13 @@ after every check and manifold gate passes, and only for the exact baseline and 
 evaluated. A candidate that fails the forecast check is neither registered nor activated, and the
 drift-versus-persistence ratio changed sign between two windows, so one window does not settle it.
 
+Candidate forecast checks now request increment-error diagnostics without
+constructing unused holdout covariance matrices. The default holdout entry still
+reports full covariance; omitted covariance fields in the error-only path are
+null. Controlled tests preserve errors, pair counts, day-bootstrap results,
+interval strata and coordinate-binding rejection. The source-bound controlled
+checks are recorded in `artifacts/forecasting_v2/normalizer_error_only_host.json`.
+
 **Native parity ports.** `ReferenceUsageFeatures`, `ReferenceSignalFeatures`,
 `ReferenceDynamicsFeatures` and `ReferenceDigitalProbe` are statement-by-statement ports of 51
 extractor outputs and of the digital-context formula layer. `tests/parity_support.py` feeds the

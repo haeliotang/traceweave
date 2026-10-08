@@ -21,6 +21,27 @@ def rows(start, count=6):
 
 
 class TestMaskedHoldout(unittest.TestCase):
+    def test_increment_only_diagnostics_match_full_and_retain_binding_guards(self):
+        train, holdout = rows(0), rows(6, count=12)
+        for index, record in enumerate(holdout):
+            record['timestamp_utc'] = f'2026-10-{3 + index // 6:02d}T00:00:{index % 6:02d}Z'
+        for keep in (None, [0, 2]):
+            full = validate(train, holdout, dimension=3, keep_indices=keep)
+            lean = validate(train, holdout, dimension=3, keep_indices=keep,
+                            include_covariance=False)
+            for key in ('drift_increment_mse', 'persistence_increment_mse',
+                        'training_pair_count', 'holdout_pair_count', 'interval_strata',
+                        'paired_day_bootstrap_95_interval', 'coordinate_bindings'):
+                self.assertEqual(lean[key], full[key], key)
+            self.assertIsNone(lean['predicted_covariance_rate'])
+            self.assertIsNone(lean['residual_covariance_rate'])
+            self.assertIsNotNone(lean['paired_day_bootstrap_95_interval'])
+        wrong = copy.deepcopy(holdout)
+        for record in wrong:
+            record['model_sha256'] = '3' * 64
+        with self.assertRaisesRegex(ValueError, 'bindings must match'):
+            validate(train, wrong, dimension=3, include_covariance=False)
+
     def test_subset_equals_validating_pre_masked_records(self):
         train, holdout = rows(0), rows(6)
         masked = validate(train, holdout, dimension=3, keep_indices=[0])
