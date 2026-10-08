@@ -1,0 +1,33 @@
+{
+  "protocol": "traceform.continuous-factor-host.v1",
+  "date": "2026-10-08",
+  "source_sha256": {
+    "traceform/dynamics/continuous.py": "a8f4a62b77b5c5f6216f043673924b11de99208473b1b3f76df2a15f32a2b486",
+    "traceform/forecasting/continuous_sandbox.py": "aea89304afe99b850f7811beb99dc744e37da052dda72ad5c6a270f663f82c15",
+    "tests/test_continuous_dynamics.py": "469c7614d826b196038d318c3091f981eab1e032691017d6866f591664fd7073"
+  },
+  "tests": {
+    "continuous_patterns": 40,
+    "masked_holdout": 9,
+    "sandbox_simulator": 14,
+    "normalizer_candidate": 14,
+    "total_distinct": 77,
+    "passed": true,
+    "full_suite_rerun": false
+  },
+  "regression_before": "deterministic 128D seven-pair Gram covariance raises diffusion covariance must be positive semidefinite",
+  "checks": [
+    "finite reproducible fitted low-rank white-noise trajectories",
+    "full state-dependent covariance recovered from independent Gaussian factors at two queries",
+    "modified invalid covariance falls back and remains rejected",
+    "custom coefficient subclasses and fractional driver retain original path"
+  ],
+  "semantics": {
+    "diffusion_convention": "noise_covariance=2D",
+    "conditional_gaussian_covariance_unchanged": true,
+    "seeded_paths_changed": true,
+    "public_model_serialization_unchanged": true
+  },
+  "scope": "controlled implementation regression, not empirical accuracy, causal efficacy or full acceptance",
+  "device_records_included": false
+}

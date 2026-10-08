@@ -3,6 +3,7 @@
 No conservative potential or empirically identified fractional memory is claimed.
 """
 
+import copy
 import math
 import random
 
@@ -103,10 +104,12 @@ class ContinuousDynamics:
         self.model_version = None
         self.fit_pair_count = 0
         self.coordinate_provenance = {}
+        self._empirical_noise = None
 
     def fit(self, records, max_gap_seconds=300.0, max_anchors=16):
         if max_anchors < 1:
             raise ValueError("max_anchors must be positive")
+        self._empirical_noise = None
         pairs = []
         versions = set()
         provenance = set()
@@ -138,12 +141,14 @@ class ContinuousDynamics:
         self.coordinate_provenance = {"model_sha256": model_digest, "normalizer_sha256": normalizer_digest}
         self.fit_pair_count = len(pairs)
         self.anchors = []
+        scales = []
         stride = max(1, math.ceil(len(pairs) / max_anchors))
         for center, _, _ in pairs[::stride]:
             log_weights = [-sum((a - b) ** 2 for a, b in zip(center, start)) / (2 * self.bandwidth ** 2) for start, _, _ in pairs]
             peak = max(log_weights)
             weights = [math.exp(value - peak) for value in log_weights]
             exposure = sum(weight * dt for weight, (_, _, dt) in zip(weights, pairs))
+            scales.append([math.sqrt(weight / exposure) for weight in weights])
             drift = [sum(weight * delta[index] for weight, (_, delta, _) in zip(weights, pairs)) / exposure for index in range(dimension)]
             covariance = [[0.0] * dimension for _ in range(dimension)]
             for weight, (_, delta, dt) in zip(weights, pairs):
@@ -155,6 +160,8 @@ class ContinuousDynamics:
                 for column in range(row):
                     covariance[column][row] = covariance[row][column]
             self.anchors.append({"center": list(center), "drift": drift, "noise_covariance": covariance})
+        self._empirical_noise = (copy.deepcopy(self.anchors),
+                                 [(list(delta), dt) for _, delta, dt in pairs], scales)
         return self
 
     def _query_weights(self, vector):
@@ -177,11 +184,37 @@ class ContinuousDynamics:
         covariance = [[sum(weight * anchor["noise_covariance"][row][column] for weight, anchor in zip(weights, self.anchors)) for column in range(self.dimension)] for row in range(self.dimension)]
         return drift, covariance
 
+    def _empirical_increment(self, vector, rng):
+        """Sample the exact fitted mixture covariance using residual factors.
+
+        Independent anchor/pair Gaussians give covariance sum(q_a C_a).
+        Collecting delta and drift terms avoids dense per-step factorization.
+        """
+        _, pairs, scales = self._empirical_noise
+        weights = self._query_weights(vector)
+        pair_noise = [0.0] * len(pairs)
+        drift_noise = []
+        for weight, anchor_scales in zip(weights, scales):
+            root = math.sqrt(weight)
+            coefficients = [root * scale * rng.gauss(0.0, 1.0) for scale in anchor_scales]
+            drift_noise.append(sum(value * dt for value, (_, dt) in zip(coefficients, pairs)))
+            for index, value in enumerate(coefficients):
+                pair_noise[index] += value
+        drift = [sum(weight * anchor["drift"][index] for weight, anchor in zip(weights, self.anchors))
+                 for index in range(self.dimension)]
+        noise = [sum(value * delta[index] for value, (delta, _) in zip(pair_noise, pairs))
+                 - sum(value * anchor["drift"][index] for value, anchor in zip(drift_noise, self.anchors))
+                 for index in range(self.dimension)]
+        return drift, noise
+
     def rollout(self, initial, duration_seconds, dt_seconds=1.0, num_rollouts=100, seed=42,
                 observer=None):
         if not all(math.isfinite(value) and value > 0 for value in
                    (duration_seconds, dt_seconds)) or num_rollouts <= 0:
             raise ValueError("positive finite duration, step and rollout count required")
+        empirical = (self._empirical_noise is not None
+                     and type(self).coefficients is ContinuousDynamics.coefficients
+                     and self.anchors == self._empirical_noise[0])
         rng = random.Random(seed)
         terminals = []
         sample_paths = []
@@ -195,10 +228,16 @@ class ContinuousDynamics:
             while elapsed < duration_seconds:
                 next_time = min((index + 1) * dt_seconds, duration_seconds)
                 step = next_time - elapsed
-                drift, covariance = self.coefficients(vector)
-                lower = cholesky_psd(covariance)
-                noise = [rng.gauss(0.0, 1.0) for _ in vector]
-                vector = [vector[row] + drift[row] * step + math.sqrt(step) * sum(lower[row][column] * noise[column] for column in range(row + 1)) for row in range(self.dimension)]
+                if empirical:
+                    drift, increment = self._empirical_increment(vector, rng)
+                else:
+                    drift, covariance = self.coefficients(vector)
+                    lower = cholesky_psd(covariance)
+                    noise = [rng.gauss(0.0, 1.0) for _ in vector]
+                    increment = [sum(lower[row][column] * noise[column] for column in range(row + 1))
+                                 for row in range(self.dimension)]
+                vector = [vector[row] + drift[row] * step + math.sqrt(step) * increment[row]
+                          for row in range(self.dimension)]
                 if not all(math.isfinite(value) for value in vector):
                     raise ValueError("nonfinite SDE trajectory")
                 elapsed = next_time
@@ -214,6 +253,7 @@ class ContinuousDynamics:
         variance = [sum((vector[index] - mean[index]) ** 2 for vector in terminals) / num_rollouts for index in range(self.dimension)]
         return {"terminal_mean": mean, "terminal_variance": variance, "sample_paths": sample_paths,
                 "duration_seconds": duration_seconds, "dt_seconds": dt_seconds, "num_rollouts": num_rollouts,
+                "noise_sampler": "fitted_empirical_gaussian_factor" if empirical else "cholesky",
                 "evidence_scope": "white_noise_ito_model_not_fractional_memory_or_causal_effect"}
 
     def to_dict(self):

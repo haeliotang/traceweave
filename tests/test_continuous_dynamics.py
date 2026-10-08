@@ -8,6 +8,46 @@ from traceform.dynamics.continuous import ContinuousDynamics, cholesky_psd
 
 
 class TestContinuousDynamics(unittest.TestCase):
+    def test_fitted_low_rank_128d_rollout_does_not_reject_gram_covariance(self):
+        rng = random.Random(20)
+        start = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        records = [{'timestamp_utc': (start + datetime.timedelta(seconds=i)).isoformat(),
+                    'continuous_vector': [rng.gauss(0, 100) for _ in range(128)],
+                    'state_token': 'A', 'model_version': 'low-rank-fixture'}
+                   for i in range(8)]
+        model = ContinuousDynamics(bandwidth=1e6).fit(records, max_anchors=2)
+        first = model.rollout(records[-1]['continuous_vector'], 2, num_rollouts=2)
+        self.assertEqual(first, model.rollout(records[-1]['continuous_vector'], 2, num_rollouts=2))
+        self.assertTrue(all(math.isfinite(value) for value in first['terminal_mean']))
+        self.assertEqual(first['noise_sampler'], 'fitted_empirical_gaussian_factor')
+
+    def test_empirical_factor_recovers_full_query_covariance_and_mutation_falls_back(self):
+        start = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        records = [{'timestamp_utc': (start + datetime.timedelta(seconds=t)).isoformat(),
+                    'continuous_vector': vector, 'state_token': 'A', 'model_version': 'factor-fixture'}
+                   for t, vector in zip((0, 1, 3, 4), ([0, 0], [1, 2], [0, 3], [2, 1]))]
+        model = ContinuousDynamics(bandwidth=2).fit(records, max_anchors=2)
+        count = len(model.anchors) * model.fit_pair_count
+        for query in ([0, 0], [2, 1]):
+            expected_drift, covariance = model.coefficients(query)
+            factors = []
+            for column in range(count):
+                generator = mock.Mock()
+                generator.gauss.side_effect = [float(index == column) for index in range(count)]
+                drift, noise = model._empirical_increment(query, generator)
+                self.assertEqual(drift, expected_drift)
+                factors.append(noise)
+            for row in range(2):
+                for column in range(2):
+                    self.assertAlmostEqual(sum(factor[row] * factor[column] for factor in factors),
+                                           covariance[row][column], places=12)
+        # Public serialized anchors remain ordinary covariance models. Changes
+        # must not silently use an obsolete fitted factor or hide invalid noise.
+        self.assertNotIn('_empirical_noise', model.to_dict())
+        model.anchors[0]['noise_covariance'] = [[-100, 0], [0, -100]]
+        with self.assertRaisesRegex(ValueError, 'positive semidefinite'):
+            model.rollout([0, 0], 1, num_rollouts=1)
+
     def test_additive_stochastic_step_refinement_with_shared_brownian_paths(self):
         class OrnsteinUhlenbeck(ContinuousDynamics):
             def coefficients(self, vector):

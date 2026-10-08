@@ -1,7 +1,7 @@
 # Stage 11–14 completion audit
 
 Updated against published evidence through 2026-10-04 (repository baseline `d3330fd`),
-with the October 8 maintenance receipt repair noted below.
+with October 8 maintenance and fitted white-noise prediction repairs noted below.
 
 This audit retains the scope of the supplied roadmap. It distinguishes available
 implementation and bounded evidence from the evidence needed for full completion.
@@ -36,8 +36,9 @@ It is not a release approval or a claim that the four stages are complete.
 
 ## Next execution order
 
-1. Obtain independent multi-day holdout evidence for the guarded normalizer candidate
-   and empirical dynamics; do not activate a candidate that fails its gates.
+1. Use new independent holdout data for any revised normalizer/manifold candidate;
+   the October 8 multi-day candidate failed its topology gate and remains inactive.
+   Empirical dynamics accuracy still requires separate evidence.
 2. Observe actual authorized interventions and complete follow-up windows under the
    deployed prolonged-dwell trigger; separate recommendations from causal evidence.
 3. Verify long-term collection, actual Sunday calibration and real low-memory behavior.
@@ -126,6 +127,34 @@ acceptance or rejection. A regression first reproduces the lost receipt, then
 verifies preservation through the next ordinary maintenance run. All 19 affected
 maintenance and daily-snapshot tests pass. This does not reconstruct previously
 lost receipts or establish successful Sunday calibration.
+
+## October 8 fitted white-noise prediction repair
+
+A deterministic 128D seven-pair fixture first reproduces Cholesky rejection of
+an empirical Gram covariance. Fitted white-noise rollouts now sample independent
+anchor/pair Gaussian residual factors with exactly the same position-dependent
+mixture covariance. Collecting increment and drift terms avoids dense covariance
+construction and factorization at every step. This introduces no ridge, frozen
+white-noise covariance or diffusion-convention change. The fractional driver and
+custom coefficient models retain their existing path. Changed public anchors
+fall back to the original covariance validation; invalid covariance remains
+rejected. Public model serialization does not contain fitting increments.
+
+All 77 affected tests pass; full covariance equality is checked at two query
+locations, alongside finite seeded low-rank trajectories and invalid-model
+rejection. The seed remains reproducible within the new implementation, but its
+paths differ from the old Cholesky sampler. Prediction output records the noise
+sampler. See `artifacts/forecasting_v2/continuous_factor_host.json` for source
+hashes and test scope. The previously recorded 569-test full suite was not rerun.
+
+A bounded complete device prediction succeeds in the isolated evaluation path;
+the two prediction modules are deployed with backups and matching source hashes.
+Acquisition and the active daemon continue without a restart. Twelve frozen
+checks pass before and after deployment. Device-derived evaluation details stay
+private. This establishes bounded execution, not long-term timeout absence,
+held-out predictive validity or intervention efficacy. The multi-day normalizer
+candidate remains inactive because its manifold topology gate failed; no gate
+was relaxed on the evaluated holdout window.
 
 ## Conditional Brownian calibration
 
