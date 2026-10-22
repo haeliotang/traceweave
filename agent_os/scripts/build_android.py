@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Build the standalone Agent OS Android prototype APK with an installed SDK."""
+
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+import zipfile
+
+
+def run(arguments):
+    subprocess.run([str(argument) for argument in arguments], check=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--android-jar", type=Path, required=True)
+    parser.add_argument("--build-tools", type=Path, required=True)
+    parser.add_argument("--keystore", type=Path, required=True)
+    parser.add_argument("--key-alias", required=True)
+    parser.add_argument("--password-env", default="AGENT_OS_KEYSTORE_PASSWORD")
+    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--extra-source", type=Path, action="append", default=[])
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--scope", default="local_encrypted_task_memory_archive_and_user_confirmed_demo_capability_broker")
+    args = parser.parse_args()
+
+    root = Path(__file__).resolve().parents[2]
+    manifest = (args.manifest or root / "agent_os/android/AndroidManifest.xml").resolve()
+    sources = sorted((root / "agent_os/android/src").rglob("*.java"))
+    sources.extend(path.resolve() for path in args.extra_source)
+    android_jar = args.android_jar.resolve()
+    build_tools = args.build_tools.resolve()
+    keystore = args.keystore.resolve()
+    output_dir = (args.output_dir or root / "agent_os/build").resolve()
+    password = os.environ.get(args.password_env)
+    if not android_jar.is_file():
+        parser.error("--android-jar must point to an installed Android platform android.jar")
+    if not manifest.is_file() or not sources:
+        parser.error("Agent OS Android sources or manifest are missing")
+    if any(not source.is_file() for source in sources):
+        parser.error("--extra-source must point to existing Java files")
+    if not keystore.is_file():
+        parser.error("--keystore must point to an existing local development keystore")
+    if not password:
+        parser.error("Set the keystore password in the environment variable named by --password-env")
+
+    tools = {name: build_tools / name for name in ("aapt2", "d8", "zipalign", "apksigner")}
+    for name, path in tools.items():
+        if not path.is_file():
+            parser.error("Missing Android build tool: " + str(path))
+
+    build = output_dir
+    classes = build / "classes"
+    dex = build / "dex"
+    build.mkdir(parents=True, exist_ok=True)
+    for directory in (classes, dex):
+        if directory.exists():
+            shutil.rmtree(directory)
+        directory.mkdir(parents=True)
+
+    run(["javac", "--release", "8", "-classpath", android_jar, "-d", classes, *sources])
+    class_files = sorted(classes.rglob("*.class"))
+    run([tools["d8"], "--min-api", "26", "--lib", android_jar, "--output", dex, *class_files])
+
+    unsigned = build / "agent-os-unsigned.apk"
+    aligned = build / "agent-os-aligned.apk"
+    apk = build / "agent-os.apk"
+    run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-o", unsigned])
+    with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.write(dex / "classes.dex", "classes.dex")
+    run([tools["zipalign"], "-f", "-p", "4", unsigned, aligned])
+    run([tools["apksigner"], "sign", "--ks", keystore, "--ks-key-alias", args.key_alias,
+         "--ks-pass", "env:" + args.password_env, "--out", apk, aligned])
+    run([tools["apksigner"], "verify", "--verbose", apk])
+
+    tracked_sources = [manifest, *sources, Path(__file__).resolve()]
+    report = {
+        "package": ET.parse(manifest).getroot().get("package"),
+        "version": "0.1.0",
+        "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
+        "apk_bytes": apk.stat().st_size,
+        "signing": "local_development_key",
+        "source_sha256": {
+            str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in tracked_sources
+        },
+        "scope": args.scope,
+    }
+    (build / "build_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"apk": str(apk), "apk_bytes": report["apk_bytes"]}))
+
+
+if __name__ == "__main__":
+    main()

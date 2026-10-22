@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.traceform.agentos"
+    android:versionCode="1"
+    android:versionName="0.1.0">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
+    <queries>
+        <package android:name="org.traceform.agentos.validation.provider" />
+    </queries>
+    <application
+        android:allowBackup="false"
+        android:label="Agent OS Prototype"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:usesCleartextTraffic="false">
+        <activity android:name=".RemoteUriPickerActivity" android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
