@@ -74,3 +74,28 @@ data/.cold_statistics.json.gz.tmp
 
 # Rust proof backend build outputs
 native/zk_alignment/target/
+
+# Real-device observations stay on the local machine; only source assets are tracked.
+data/raw/*
+!data/raw/.pixel_sensorium/
+data/raw/.pixel_sensorium/*
+!data/raw/.pixel_sensorium/releases/
+data/raw/.pixel_sensorium/releases/*
+!data/raw/.pixel_sensorium/releases/v6.5.3/
+data/raw/.pixel_sensorium/releases/v6.5.3/*
+!data/raw/.pixel_sensorium/releases/v6.5.3/ACCEPTANCE.txt
+!data/raw/.pixel_sensorium/releases/v6.5.3/SHA256SUMS
+!data/raw/.pixel_sensorium/releases/v6.5.3/android_bridge.py
+!data/raw/pixel_trajectory_corpus_14d_v1/
+data/raw/pixel_trajectory_corpus_14d_v1/*
+!data/raw/pixel_trajectory_corpus_14d_v1/corpus_health_snapshot.py
+
+# Per-device telemetry can contain health and behavioral information.
+field_telemetry/*/
+!field_telemetry/*/
+field_telemetry/*/**
+!field_telemetry/*/README.md
+
+# Local device archives and pre-redaction originals.
+local_device_archives/
+local_private_metadata/

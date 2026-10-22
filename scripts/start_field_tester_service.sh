@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # Start Traceform Complete Field Tester Runtime on Pixel 6a
 # 1. Runs Edge Manifold Daemon in background (live real-time quantization + haptics)
-# 2. Runs Field Sync Engine periodically (daily OTA sync to private GitHub repo)
+# 2. Generates local field telemetry without remote synchronization
 
 set -e
 
@@ -48,9 +48,9 @@ else
     echo "[*] Edge daemon is already running."
 fi
 
-# Run field sync once on start
-echo "[*] Triggering initial OTA telemetry sync to GitHub..."
-python3 "$DIR/scripts/phone_field_sync.py" --push || true
+# Generate local field telemetry once on start
+echo "[*] Generating local field telemetry..."
+python3 "$DIR/scripts/phone_field_sync.py" || true
 
 echo "============================================================================"
 echo " [✓] Field Tester Service Ready."

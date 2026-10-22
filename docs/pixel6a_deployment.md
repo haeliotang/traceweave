@@ -62,7 +62,7 @@ found. A daemon or acquisition process started through `adb run-as` carries the
 `runas_app` SELinux domain, while Termux jobs run as `untrusted_app_27`; the
 job's `pgrep` could not see the `runas_app` processes. Every tick therefore
 recreated `.silent`, started a duplicate daemon that exited on the lock, and
-ran the telemetry commit. Observed with a 1 s process-tree capture (parent of
+ran the local telemetry generator. Observed with a 1 s process-tree capture (parent of
 the script was the Termux app) and a `Job started for ".../start_field_tester_service.sh"`
 logcat record. The Android app has no code path that writes `.silent`.
 
@@ -108,8 +108,11 @@ the whole store per local day, before compaction, retaining 14 days. Each copy i
 file as a single self-contained file (rollback-journal mode), checked with `quick_check` and its hot row
 count, then renamed and listed in `MANIFEST.jsonl` with its SHA-256. A snapshot is skipped, not
 forced, when the hot tier is empty or free space is below 2.5 times the store size; the newest snapshot
-is never pruned. Snapshots hold raw device observations: they stay on the device and are never
-exported. Rollback archive: `~/traceform-runtime-rollback-20261003-snapshot.tar`. The first scheduled
+is never pruned. Snapshots hold raw device observations and stay on the device
+by default. To copy them to the computer, use the manual USB-only workflow in
+`docs/local_device_archives.md`; the archive is verified and stored locally,
+while the phone originals remain in place. Rollback archive:
+`~/traceform-runtime-rollback-20261003-snapshot.tar`. The first scheduled
 snapshot happens at the first hourly run after local midnight.
 
 ## 2026-10-04 primary app upgrade

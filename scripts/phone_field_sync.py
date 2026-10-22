@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
-Traceform Field Telemetry & Autonomous Sync Runner (Scheme 1 + Scheme 2).
+Traceform Field Telemetry & Autonomous Evolution Runner.
 
-Executes the combined Edge-Cloud protocol on Pixel 6a:
+Runs local autonomous evaluation on the device:
 1. Scheme 1 (On-Device Autonomous Evolution):
    - Computes topological strain on recent frames.
    - Triggers autonomous DETM lattice recalibration if threshold exceeded.
-2. Scheme 2 (OTA Git Synchronization):
-   - Summarizes daily events and device health in `field_telemetry/pixel6a/`.
-   - Commits and pushes changes directly to the private GitHub repository via SSH.
-   - Pulls updates/overrides from GitHub with --rebase.
+2. Writes device-health and event summaries locally under `field_telemetry/`.
+   Device telemetry is not synchronized to Git or a remote service.
 """
 
 from __future__ import annotations
@@ -19,7 +17,6 @@ import datetime
 import json
 import os
 from pathlib import Path
-import subprocess
 import sys
 import time
 
@@ -35,20 +32,9 @@ if os.path.isdir(termux_bin) and termux_bin not in os.environ.get("PATH", ""):
 from traceform.evolution.autonomous_learner import AutonomousLearner
 
 
-def run_cmd(cmd: list[str], cwd: Path, timeout: float = 45.0) -> tuple[int, str]:
-    try:
-        res = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout)
-        return res.returncode, res.stdout.strip()
-    except subprocess.TimeoutExpired:
-        return 124, f"Command timed out after {timeout}s"
-    except Exception as e:
-        return 1, str(e)
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Field Tester Autonomous Evolution & Git OTA Sync")
+    parser = argparse.ArgumentParser(description="Field Tester Autonomous Evolution and Local Telemetry")
     parser.add_argument("--calibrate", action="store_true", help="Force autonomous DETM recalibration")
-    parser.add_argument("--push", action="store_true", help="Push changes to GitHub repository via SSH")
     parser.add_argument("--strain-threshold", type=float, default=120.0, help="Topological strain trigger threshold")
     args = parser.parse_args()
 
@@ -72,8 +58,8 @@ def main():
     calibrated_model_file = models_dir / "manifold_lattice_model.json"
 
     print("=" * 76)
-    print(" Traceform Field Telemetry & Autonomous Sync (Pixel 6a)")
-    print(f" Target: haeliotang/traceform | Mode: Scheme 1 + Scheme 2")
+    print(" Traceform Field Telemetry & Autonomous Evolution")
+    print(" Mode: local device processing and local telemetry")
     print("=" * 76)
 
     # 1. Scheme 1: On-Device Autonomous Evolution
@@ -136,39 +122,8 @@ def main():
         json.dump(recent_events[-50:], f, indent=2)
     print(f"[*] [Telemetry] Synced {len(recent_events[-50:])} Recent Events -> {events_dest}")
 
-    # 4. Scheme 2: OTA Git Synchronization
-    if args.push:
-        print("\n[*] [Scheme 2] Initiating OTA Git Synchronization over SSH...")
-        # Check if git is initialized in PROJECT_ROOT
-        c_status, out = run_cmd(["git", "status", "--porcelain"], PROJECT_ROOT)
-        if c_status != 0:
-            print(f"[!] Warning: Git repo not configured at {PROJECT_ROOT}: {out}")
-            return
-
-        # Add field_telemetry/pixel6a/
-        run_cmd(["git", "add", "field_telemetry/pixel6a/"], PROJECT_ROOT)
-        ts_now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        commit_msg = f"telemetry(pixel6a): Autonomous field telemetry sync [{ts_now}]"
-        c_commit, commit_out = run_cmd(["git", "commit", "-m", commit_msg], PROJECT_ROOT)
-        print(f"    - Git Commit: {commit_out.splitlines()[0] if commit_out else 'No changes'}")
-
-        # Pull rebase
-        c_pull, pull_out = run_cmd(["git", "pull", "--rebase", "origin", "main"], PROJECT_ROOT)
-        if c_pull != 0:
-            print(f"    [!] Git pull --rebase failed: {pull_out.splitlines()[-1] if pull_out else 'Error'}")
-            run_cmd(["git", "rebase", "--abort"], PROJECT_ROOT)
-        else:
-            print(f"    - Git Pull: {pull_out.splitlines()[-1] if pull_out else 'OK'}")
-
-            # Push only if pull was successful
-            c_push, push_out = run_cmd(["git", "push", "origin", "main"], PROJECT_ROOT)
-            if c_push == 0:
-                print(f"    [✓] Successfully pushed field telemetry to GitHub (haeliotang/traceform)")
-            else:
-                print(f"    [!] Git push error: {push_out}")
-
     print("\n" + "=" * 76)
-    print(" [✓] Field Telemetry & Autonomous Sync Completed.")
+    print(" [✓] Local Field Telemetry & Autonomous Evolution Completed.")
     print("=" * 76)
 
 
