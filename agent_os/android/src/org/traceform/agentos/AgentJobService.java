@@ -43,7 +43,7 @@ public final class AgentJobService extends JobService {
     private void runTask(Run run) {
         AgentStore store = new AgentStore(this);
         try {
-            new AgentExecutor(store, new CapabilityBroker(this, store)).execute(run.taskId, run.stopped);
+            new AgentExecutor(store, new CapabilityBroker(this, store), new HybridReasoningEngine(this, store)).execute(run.taskId, run.stopped);
         } catch (Exception error) {
             if (store.isTaskActive(run.taskId)) store.markExecutionFailed(run.taskId);
         } finally {

@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.FileOutputStream;
@@ -46,6 +47,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_DYNAMIC_EXECUTOR = "org.traceform.agentos.validation.VERIFY_DYNAMIC_EXECUTOR";
     static final String ACTION_VERIFY_STEP_TREE_AND_JIT_GRANT = "org.traceform.agentos.validation.VERIFY_STEP_TREE_AND_JIT_GRANT";
     static final String ACTION_VERIFY_END_TO_END_INTEGRATED = "org.traceform.agentos.validation.VERIFY_END_TO_END_INTEGRATED";
+    static final String ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION = "org.traceform.agentos.validation.VERIFY_HYBRID_CLOUD_AND_REDACTION";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -104,6 +106,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyStepTreeAndJitGrant();
                 } else if (ACTION_VERIFY_END_TO_END_INTEGRATED.equals(action)) {
                     result = verifyEndToEndIntegrated();
+                } else if (ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION.equals(action)) {
+                    result = verifyHybridCloudAndRedaction();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -1385,6 +1389,246 @@ public final class DeviceValidationActivity extends Activity {
                 + String.format(Locale.US, "%.1f", resumeMs) + "ms; task=" + task.id;
         } finally {
             AgentExecutor.afterFirstCheckpointForValidation = null;
+            store.close();
+        }
+    }
+
+    private String verifyHybridCloudAndRedaction() throws Exception {
+        AgentStore store = new AgentStore(this);
+        CapabilityBroker broker = new CapabilityBroker(this, store);
+        SQLiteDatabase database = store.getWritableDatabase();
+        try {
+            // 1. ContextRedactor Unit & Benchmark verification
+            // Phone
+            ContextRedactor.RedactionResult phoneRes = ContextRedactor.redact("联系张三 13812345678 确认发票");
+            if (!phoneRes.hasRedactions() || phoneRes.redactionsCount != 1
+                    || !phoneRes.redactedText.contains("138****5678") || phoneRes.redactedText.contains("13812345678")) {
+                throw new IllegalStateException("Phone redaction failed: " + phoneRes.redactedText);
+            }
+
+            // Email
+            ContextRedactor.RedactionResult emailRes = ContextRedactor.redact("发送通知至 alice@company.org 存档");
+            if (!emailRes.hasRedactions() || emailRes.redactionsCount != 1
+                    || !emailRes.redactedText.contains("a***@company.org") || emailRes.redactedText.contains("alice@company.org")) {
+                throw new IllegalStateException("Email redaction failed: " + emailRes.redactedText);
+            }
+
+            // API Key
+            ContextRedactor.RedactionResult apiKeyRes = ContextRedactor.redact("配置密钥 key=sk-abcdef1234567890_test 后继续");
+            if (!apiKeyRes.hasRedactions() || !apiKeyRes.redactedText.contains("[REDACTED_SECRET]")
+                    || apiKeyRes.redactedText.contains("sk-abcdef1234567890")) {
+                throw new IllegalStateException("API key redaction failed: " + apiKeyRes.redactedText);
+            }
+
+            // ID Card
+            ContextRedactor.RedactionResult idRes = ContextRedactor.redact("身份证号 110101199003072345 需核实");
+            if (!idRes.hasRedactions() || !idRes.redactedText.contains("1101********2345")
+                    || idRes.redactedText.contains("19900307")) {
+                throw new IllegalStateException("ID card redaction failed: " + idRes.redactedText);
+            }
+
+            // Bank Card
+            ContextRedactor.RedactionResult cardRes = ContextRedactor.redact("转账到银行卡 6222021234567890 进行测试");
+            if (!cardRes.hasRedactions() || !cardRes.redactedText.contains("6222********7890")
+                    || cardRes.redactedText.contains("02123456")) {
+                throw new IllegalStateException("Bank card redaction failed: " + cardRes.redactedText);
+            }
+
+            // Redaction Benchmark (warmup + 100 iterations)
+            String mixed = "电话 13911223344，邮箱 test@example.com，密钥 token=secret123456，卡号 6222021234567890";
+            for (int i = 0; i < 10; i++) {
+                ContextRedactor.redact(mixed);
+            }
+            long tStart = System.nanoTime();
+            for (int i = 0; i < 100; i++) {
+                ContextRedactor.redact(mixed);
+            }
+            double avgRedactionMs = (System.nanoTime() - tStart) / 100.0 / 1_000_000.0;
+            if (avgRedactionMs > 5.0) {
+                throw new IllegalStateException("Redaction latency exceeded 5ms SLA: " + avgRedactionMs + "ms");
+            }
+
+            // 2. Offline / Network Error Graceful Degradation Verification
+            CloudModelConfig badConfig = new CloudModelConfig(true, "http://127.0.0.1:58999/v1/chat/completions",
+                "test-key", "gpt-4o-mini", 500, 0.1);
+            HybridReasoningEngine engineWithBadCloud = new HybridReasoningEngine(this, store, badConfig);
+
+            String goal1 = "根据便笺 13800001111 整理本地笔记与状态";
+            AgentStore.Task task1 = store.createTask(goal1);
+            List<CapabilityDescriptor> availableCaps = broker.listAvailableCapabilities(task1.id);
+            List<AgentStore.Memory> memories = store.listMemories();
+
+            ExecutionPlan fallbackPlan = engineWithBadCloud.plan(task1.id, goal1, availableCaps, memories);
+            if (fallbackPlan == null || fallbackPlan.totalSteps() < 2) {
+                throw new IllegalStateException("Fallback plan invalid or null");
+            }
+
+            if (auditEventCount(database, task1.id, "context_redacted:count=1") != 1) {
+                throw new IllegalStateException("Redaction audit event missing in task1");
+            }
+            int fallbackAuditCount = auditEventCount(database, task1.id, "cloud_planning_fallback:reason=error")
+                + auditEventCount(database, task1.id, "cloud_planning_fallback:reason=timeout")
+                + auditEventCount(database, task1.id, "cloud_planning_fallback:reason=offline");
+            if (fallbackAuditCount != 1) {
+                throw new IllegalStateException("Fallback audit event missing in task1: count=" + fallbackAuditCount);
+            }
+
+            // 3. In-Process Mock Cloud Server Verification with Security Wire Inspection
+            final java.net.ServerSocket mockServer = new java.net.ServerSocket(0);
+            final int mockPort = mockServer.getLocalPort();
+            final String[] wireInspectionError = new String[1];
+            final java.util.concurrent.atomic.AtomicBoolean serverHandled = new java.util.concurrent.atomic.AtomicBoolean(false);
+
+            Thread serverThread = new Thread(() -> {
+                try {
+                    mockServer.setSoTimeout(5000);
+                    java.net.Socket client = mockServer.accept();
+                    client.setSoTimeout(5000);
+                    java.io.InputStream in = client.getInputStream();
+
+                    // Read HTTP request headers
+                    java.io.ByteArrayOutputStream headerBuf = new java.io.ByteArrayOutputStream();
+                    int b;
+                    byte[] prev4 = new byte[4];
+                    while ((b = in.read()) != -1) {
+                        headerBuf.write(b);
+                        prev4[0] = prev4[1];
+                        prev4[1] = prev4[2];
+                        prev4[2] = prev4[3];
+                        prev4[3] = (byte) b;
+                        if (prev4[0] == '\r' && prev4[1] == '\n' && prev4[2] == '\r' && prev4[3] == '\n') {
+                            break;
+                        }
+                    }
+
+                    String headerStr = new String(headerBuf.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+                    int contentLength = 0;
+                    for (String hLine : headerStr.split("\r\n")) {
+                        if (hLine.toLowerCase(Locale.ROOT).startsWith("content-length:")) {
+                            contentLength = Integer.parseInt(hLine.substring(hLine.indexOf(':') + 1).trim());
+                        }
+                    }
+
+                    // Read HTTP request body
+                    byte[] bodyBytes = new byte[contentLength];
+                    int readTotal = 0;
+                    while (readTotal < contentLength) {
+                        int r = in.read(bodyBytes, readTotal, contentLength - readTotal);
+                        if (r < 0) break;
+                        readTotal += r;
+                    }
+                    String requestBody = new String(bodyBytes, java.nio.charset.StandardCharsets.UTF_8);
+
+                    if (requestBody.contains("13988776655")) {
+                        wireInspectionError[0] = "SECURITY LEAK: raw unmasked phone 13988776655 was transmitted over HTTP wire!";
+                    }
+                    if (!requestBody.contains("139****6655")) {
+                        wireInspectionError[0] = "SECURITY LEAK: masked phone 139****6655 was not found in wire payload!";
+                    }
+
+                    JSONObject responseJson = new JSONObject();
+                    JSONArray choices = new JSONArray();
+                    JSONObject choice = new JSONObject();
+                    JSONObject message = new JSONObject();
+                    message.put("role", "assistant");
+
+                    JSONObject planObj = new JSONObject();
+                    planObj.put("totalSteps", 3);
+                    JSONArray steps = new JSONArray();
+
+                    JSONObject s0 = new JSONObject();
+                    s0.put("index", 0);
+                    s0.put("title", "读取示例便笺");
+                    s0.put("capability", "demo.note.read");
+                    s0.put("scope", "synthetic.welcome");
+                    s0.put("prompt", "读取便笺");
+                    steps.put(s0);
+
+                    JSONObject s1 = new JSONObject();
+                    s1.put("index", 1);
+                    s1.put("title", "读取设备状态");
+                    s1.put("capability", "demo.status.read");
+                    s1.put("scope", "synthetic.device_status");
+                    s1.put("prompt", "读取状态");
+                    steps.put(s1);
+
+                    JSONObject s2 = new JSONObject();
+                    s2.put("index", 2);
+                    s2.put("title", "端侧综合推演报告");
+                    s2.put("capability", "builtin.synthesis");
+                    s2.put("scope", "local_inference");
+                    s2.put("prompt", "综合推演");
+                    steps.put(s2);
+
+                    planObj.put("steps", steps);
+                    message.put("content", planObj.toString());
+                    choice.put("message", message);
+                    choices.put(choice);
+                    responseJson.put("choices", choices);
+
+                    byte[] respBytes = responseJson.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    java.io.OutputStream out = client.getOutputStream();
+                    String respHeader = "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
+                        + respBytes.length + "\r\n\r\n";
+                    out.write(respHeader.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    out.write(respBytes);
+                    out.flush();
+                    client.shutdownOutput();
+                    Thread.sleep(80);
+                    client.close();
+                    serverHandled.set(true);
+                } catch (Exception ex) {
+                    wireInspectionError[0] = "Server error: " + ex.getMessage();
+                } finally {
+                    try { mockServer.close(); } catch (Exception ignored) {}
+                }
+            });
+            serverThread.start();
+
+            CloudModelConfig mockConfig = new CloudModelConfig(true, "http://127.0.0.1:" + mockPort + "/v1/chat/completions",
+                "test-key", "gpt-4o-mini", 3000, 0.1);
+            HybridReasoningEngine mockEngine = new HybridReasoningEngine(this, store, mockConfig);
+
+            String goal2 = "根据联系人 13988776655 整理便笺与状态";
+            AgentStore.Task task2 = store.createTask(goal2);
+            ExecutionPlan cloudPlan = mockEngine.plan(task2.id, goal2, availableCaps, memories);
+            serverThread.join(4000);
+
+            if (wireInspectionError[0] != null) {
+                throw new IllegalStateException(wireInspectionError[0]);
+            }
+            if (!serverHandled.get()) {
+                throw new IllegalStateException("Mock cloud server was not reached");
+            }
+            if (cloudPlan == null || cloudPlan.totalSteps() != 3) {
+                throw new IllegalStateException("Cloud plan step count mismatch: " + (cloudPlan == null ? 0 : cloudPlan.totalSteps()));
+            }
+
+            if (auditEventCount(database, task2.id, "cloud_planning_started:gpt-4o-mini") != 1
+                    || auditEventCount(database, task2.id, "cloud_planning_completed:3") != 1
+                    || auditEventCount(database, task2.id, "context_redacted:count=1") != 1) {
+                throw new IllegalStateException("Cloud planning audit trail incomplete for task2");
+            }
+
+            // 4. Execute the Cloud-Generated Plan with Local JIT Authorization
+            broker.grant(task2.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            broker.grant(task2.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+            store.transition(task2.id, AgentStore.ACTIVE);
+
+            new AgentExecutor(store, broker, mockEngine).execute(task2.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task completed2 = store.getTask(task2.id);
+            if (!AgentStore.COMPLETED.equals(completed2.status)) {
+                throw new IllegalStateException("Cloud-planned task did not complete: " + completed2.status);
+            }
+            if (!completed2.result.contains("本地演示结果") || !completed2.result.contains("端侧推演分析")) {
+                throw new IllegalStateException("Result missing expected components: " + completed2.result);
+            }
+
+            return "PASS: Hybrid cloud planner and context redaction verified on device; 5 PII categories sanitized (avg="
+                + String.format(Locale.US, "%.3f", avgRedactionMs) + "ms); offline network failure gracefully fell back to local planner with audit; wire inspection confirmed zero unmasked PII transmission; cloud plan executed cleanly to COMPLETED with JIT authorization. task1="
+                + task1.id + " task2=" + task2.id;
+        } finally {
             store.close();
         }
     }

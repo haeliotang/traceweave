@@ -57,6 +57,8 @@ public final class MainActivity extends Activity {
     private TextView activityStatus;
     private TextView traceformStatus;
     private Button traceformToggleButton;
+    private TextView cloudModelStatus;
+    private Button cloudModelConfigButton;
     private MemoryIndex memoryIndex;
     private char[] pendingExportPassphrase;
     private boolean busy;
@@ -202,6 +204,20 @@ public final class MainActivity extends Activity {
         page.addView(traceformToggleButton);
         updateTraceformProviderControls();
 
+        TextView cloudHeading = new TextView(this);
+        cloudHeading.setText("端云协同推演（可选）");
+        cloudHeading.setTextSize(20);
+        cloudHeading.setPadding(0, 20, 0, 4);
+        page.addView(cloudHeading);
+
+        cloudModelStatus = new TextView(this);
+        page.addView(cloudModelStatus);
+        cloudModelConfigButton = new Button(this);
+        cloudModelConfigButton.setOnClickListener(view -> promptCloudModelConfig());
+        persistentButtons.add(cloudModelConfigButton);
+        page.addView(cloudModelConfigButton);
+        updateCloudModelControls();
+
         taskInput = new EditText(this);
         taskInput.setHint("输入一条合成任务，例如：整理本地示例笔记");
         taskInput.setMinLines(2);
@@ -260,7 +276,7 @@ public final class MainActivity extends Activity {
         try {
             String title = taskInput.getText().toString();
             AgentStore.Task task = store.createTask(title);
-            ReasoningEngine planner = new SemanticRulePlanner();
+            ReasoningEngine planner = new HybridReasoningEngine(this, store);
             ExecutionPlan plan = planner.plan(task.id, task.title,
                 capabilityBroker.listAvailableCapabilities(task.id), store.listMemories());
             store.savePlan(task.id, plan);
@@ -730,6 +746,63 @@ public final class MainActivity extends Activity {
             ? signatureMatched ? "已启用；读取仍需逐任务授权，且不会启动传感器采集。"
                 : "设置已启用，但没有找到签名匹配的 Traceform 安装。"
             : "默认关闭。启用本身不会读取数据；每次读取和保存为记忆都需单独确认。");
+    }
+
+    private void updateCloudModelControls() {
+        if (cloudModelStatus == null || cloudModelConfigButton == null) return;
+        CloudModelConfig config = CloudModelConfig.load(this);
+        cloudModelConfigButton.setText(config.enabled ? "设置端云协同参数" : "启用端云协同推演");
+        cloudModelStatus.setText(config.enabled
+            ? "已启用（模型：" + config.modelName + "） · 请求前强制经端侧脱敏门禁过滤个人敏感数据；断网时自动降级。"
+            : "默认关闭。仅在端侧进行确定性规则推演，完全不发起外部网络连接。");
+    }
+
+    private void promptCloudModelConfig() {
+        CloudModelConfig current = CloudModelConfig.load(this);
+        LinearLayout fields = new LinearLayout(this);
+        fields.setOrientation(LinearLayout.VERTICAL);
+        fields.setPadding(dp(24), dp(8), dp(24), 0);
+
+        final android.widget.CheckBox enabledCheck = new android.widget.CheckBox(this);
+        enabledCheck.setText("启用端云协同推演（OpenAI 兼容接口）");
+        enabledCheck.setChecked(current.enabled);
+        fields.addView(enabledCheck);
+
+        final EditText urlInput = new EditText(this);
+        urlInput.setHint("端点 URL，例如 https://api.openai.com/v1/chat/completions");
+        urlInput.setText(current.endpointUrl);
+        fields.addView(urlInput);
+
+        final EditText keyInput = new EditText(this);
+        keyInput.setHint("API Key（可选，局域网 Ollama 可留空）");
+        keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        keyInput.setText(current.apiKey);
+        fields.addView(keyInput);
+
+        final EditText modelInput = new EditText(this);
+        modelInput.setHint("模型名称，例如 gpt-4o-mini 或 qwen2.5:7b");
+        modelInput.setText(current.modelName);
+        fields.addView(modelInput);
+
+        new AlertDialog.Builder(this)
+            .setTitle("配置端云协同推演")
+            .setMessage("启用后，任务目标和关联记忆在离开手机前强制经过端侧脱敏门禁过滤敏感信息。断网或超时时自动无缝降级回本地规则推演。云端输出由端侧严格校验并逐步授权。")
+            .setView(fields)
+            .setNegativeButton("取消", null)
+            .setPositiveButton("保存配置", (dialog, which) -> {
+                CloudModelConfig updated = new CloudModelConfig(
+                    enabledCheck.isChecked(),
+                    urlInput.getText().toString(),
+                    keyInput.getText().toString(),
+                    modelInput.getText().toString(),
+                    CloudModelConfig.DEFAULT_TIMEOUT_MILLIS,
+                    CloudModelConfig.DEFAULT_TEMPERATURE
+                );
+                updated.save(MainActivity.this);
+                updateCloudModelControls();
+                showMessage("端云协同配置已更新");
+            })
+            .show();
     }
 
     private void revokeCapability(AgentStore.Task task, String label, String capability, String scope) {
