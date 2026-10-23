@@ -186,7 +186,10 @@ public final class AgentAccessibilityService extends AccessibilityService {
                         try {
                             android.hardware.HardwareBuffer hb = result.getHardwareBuffer();
                             android.graphics.Bitmap hwBitmap = android.graphics.Bitmap.wrapHardwareBuffer(hb, result.getColorSpace());
-                            android.graphics.Bitmap copy = hwBitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
+                            android.graphics.Bitmap copy = hwBitmap != null ? hwBitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false) : null;
+                            if (hwBitmap != null) {
+                                hwBitmap.recycle();
+                            }
                             hb.close();
                             if (callback != null) callback.onBitmapCaptured(copy);
                         } catch (Exception e) {

@@ -37,6 +37,7 @@ public final class HardwarePeripheralService {
     private volatile HardwareEventListener mListener;
     private BluetoothGatt mActiveGatt;
     private volatile boolean mPttActive = false;
+    private long mLastPttTimestamp = 0;
 
     public static HardwarePeripheralService getInstance() {
         if (sInstance == null) {
@@ -63,7 +64,18 @@ public final class HardwarePeripheralService {
      * Executes the Push-To-Talk action: vibrates device, triggers VoiceInteractionManager,
      * and dispatches native hardware action response.
      */
-    public JSONObject triggerPttAction(Context context, boolean pressed) {
+    public synchronized JSONObject triggerPttAction(Context context, boolean pressed) {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now - mLastPttTimestamp < 50) {
+            JSONObject debounced = new JSONObject();
+            try {
+                debounced.put("status", "debounced");
+                debounced.put("action", "NOOP");
+            } catch (Exception ignored) {}
+            return debounced;
+        }
+        mLastPttTimestamp = now;
+
         mPttActive = pressed;
         String eventType = pressed ? "ptt_pressed" : "ptt_released";
 
@@ -190,6 +202,12 @@ public final class HardwarePeripheralService {
                         gatt.discoverServices();
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Log.w(TAG, "Disconnected from BLE peripheral: " + gatt.getDevice().getAddress());
+                        try {
+                            gatt.close();
+                        } catch (Exception ignored) {}
+                        if (mActiveGatt == gatt) {
+                            mActiveGatt = null;
+                        }
                     }
                 }
 

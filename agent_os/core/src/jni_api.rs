@@ -904,7 +904,15 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeV
         Ok(p) => p,
         Err(_) => return JNI_FALSE,
     };
+    let capacity = match env.get_direct_buffer_capacity(&direct_buffer) {
+        Ok(c) => c,
+        Err(_) => return JNI_FALSE,
+    };
     if ptr.is_null() || sample_count <= 0 || sample_offset < 0 {
+        return JNI_FALSE;
+    }
+    let required_bytes = (sample_offset as usize + sample_count as usize) * 2;
+    if capacity < required_bytes {
         return JNI_FALSE;
     }
     let samples: &[i16] = unsafe {

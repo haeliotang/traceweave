@@ -115,13 +115,26 @@ final class LocalSlmEngine implements ReasoningEngine {
                     if (planObj != null) {
                         org.json.JSONArray stepsArr = planObj.optJSONArray("steps");
                         if (stepsArr != null && stepsArr.length() > 0) {
+                            Set<String> supportedCaps = new HashSet<>();
+                            if (availableCaps != null) {
+                                for (CapabilityDescriptor desc : availableCaps) {
+                                    if (desc != null && desc.capability != null) {
+                                        supportedCaps.add(desc.capability);
+                                    }
+                                }
+                            }
+
                             List<ExecutionPlan.Step> steps = new ArrayList<>();
                             for (int i = 0; i < stepsArr.length(); i++) {
                                 org.json.JSONObject sObj = stepsArr.getJSONObject(i);
+                                String cap = sObj.optString("capability", CapabilityBroker.DEMO_NOTE_CAPABILITY);
+                                if (!supportedCaps.isEmpty() && !supportedCaps.contains(cap)) {
+                                    continue;
+                                }
                                 steps.add(new ExecutionPlan.Step(
-                                        sObj.optInt("index", i),
-                                        sObj.optString("title", "步骤 " + (i + 1)),
-                                        sObj.optString("capability", CapabilityBroker.DEMO_NOTE_CAPABILITY),
+                                        steps.size(),
+                                        sObj.optString("title", "步骤 " + (steps.size() + 1)),
+                                        cap,
                                         sObj.optString("scope", CapabilityBroker.DEMO_NOTE_SCOPE),
                                         sObj.optString("prompt", ""),
                                         ExecutionPlan.STEP_PENDING,

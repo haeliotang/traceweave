@@ -71,11 +71,17 @@ pub struct SlmPlanOutput {
 pub struct ChatMlFormatter;
 
 impl ChatMlFormatter {
+    pub fn sanitize_token(s: &str) -> String {
+        s.replace("<|im_start|>", "").replace("<|im_end|>", "")
+    }
+
     pub fn format(system: &str, user: &str) -> String {
+        let clean_system = Self::sanitize_token(system.trim());
+        let clean_user = Self::sanitize_token(user.trim());
         format!(
             "<|im_start|>system\n{}<|im_end|>\n<|im_start|>user\n{}<|im_end|>\n<|im_start|>assistant\n",
-            system.trim(),
-            user.trim()
+            clean_system,
+            clean_user
         )
     }
 

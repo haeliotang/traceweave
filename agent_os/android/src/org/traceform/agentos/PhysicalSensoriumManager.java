@@ -181,6 +181,9 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     }
 
     public boolean isVoiceWakeAllowed() {
+        if (mProximityCm < 1.0f && mLightLux < 5.0f) {
+            return false;
+        }
         return mLastContext.optBoolean("voice_wake_allowed", true);
     }
 }

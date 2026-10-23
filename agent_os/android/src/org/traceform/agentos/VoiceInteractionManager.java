@@ -156,11 +156,15 @@ public final class VoiceInteractionManager {
         boolean inSpeech = false;
         int speechFrameCount = 0;
         int silentFrameCount = 0;
+        long lastWaveformUpdate = 0;
         final List<short[]> speechChunks = new ArrayList<>();
 
-        while (mIsRecording && mAudioRecord != null) {
+        while (mIsRecording) {
+            final AudioRecord record = mAudioRecord;
+            if (record == null) break;
+
             directBuf.clear();
-            int bytesRead = mAudioRecord.read(directBuf, BYTES_PER_FRAME);
+            int bytesRead = record.read(directBuf, BYTES_PER_FRAME);
 
             if (bytesRead < BYTES_PER_FRAME) {
                 if (bytesRead < 0) {
@@ -216,8 +220,10 @@ public final class VoiceInteractionManager {
                 }
             });
 
-            // 3. Update Suspended Floating Capsule Waveform Bar
-            if (!isGated && energyRms > 0.005f) {
+            // 3. Update Suspended Floating Capsule Waveform Bar (10 FPS rate-limited)
+            long now = android.os.SystemClock.elapsedRealtime();
+            if (!isGated && energyRms > 0.005f && (now - lastWaveformUpdate >= 100)) {
+                lastWaveformUpdate = now;
                 Intent waveIntent = new Intent(mContext, AgentFloatingService.class);
                 waveIntent.setAction(AgentFloatingService.ACTION_UPDATE_VOICE);
                 waveIntent.putExtra(AgentFloatingService.EXTRA_ENERGY_LEVEL, energyRms);
@@ -234,6 +240,11 @@ public final class VoiceInteractionManager {
                 short[] chunk = new short[SAMPLES_PER_FRAME];
                 System.arraycopy(pcmCopyBuf, 0, chunk, 0, SAMPLES_PER_FRAME);
                 speechChunks.add(chunk);
+
+                // Cap burst to max 1500 frames (30s) to prevent memory exhaustion
+                if (speechChunks.size() >= 1500) {
+                    silentFrameCount = SILENCE_HANGOVER_FRAMES;
+                }
 
                 if (!inSpeech && speechFrameCount >= 2) {
                     inSpeech = true;
@@ -305,6 +316,9 @@ public final class VoiceInteractionManager {
 
         if (mCaptureThread != null) {
             mCaptureThread.interrupt();
+            try {
+                mCaptureThread.join(300);
+            } catch (InterruptedException ignored) {}
             mCaptureThread = null;
         }
 
