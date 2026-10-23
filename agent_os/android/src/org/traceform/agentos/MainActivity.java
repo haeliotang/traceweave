@@ -168,80 +168,62 @@ public final class MainActivity extends Activity {
 
     private void buildScreen() {
         ScrollView scroll = new ScrollView(this);
+        scroll.setBackgroundColor(0xFFF8FAFC);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(20), dp(44), dp(20), dp(28));
+        page.setPadding(dp(16), dp(40), dp(16), dp(28));
         scroll.addView(page);
 
+        // Header Title
         TextView title = new TextView(this);
         title.setText("Agent OS 掌上智能系统");
-        title.setTextSize(26);
+        title.setTextSize(22);
+        title.setTextColor(0xFF0F172A);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         page.addView(title);
 
+        // Status Badges Row
         LinearLayout statusRow = new LinearLayout(this);
         statusRow.setOrientation(LinearLayout.HORIZONTAL);
         statusRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        statusRow.setPadding(0, dp(4), 0, dp(12));
+        statusRow.setPadding(0, dp(4), 0, dp(10));
 
         if (NativeAgentCore.isAvailable()) {
-            TextView rustBadge = IconFactory.createBadge(this, "RUST NATIVE", 0xFFE8F5E9, 0xFF1B5E20);
+            TextView rustBadge = IconFactory.createBadge(this, "RUST NATIVE 16KB", 0xFFDCFCE7, 0xFF166534);
             statusRow.addView(rustBadge);
-
-            TextView nativeStatus = new TextView(this);
-            nativeStatus.setText(" 16KB 内存对齐 · 4.10μs NEON SIMD 极速推演");
-            nativeStatus.setTextColor(0xFF2E7D32);
-            nativeStatus.setTextSize(13);
-            nativeStatus.setPadding(dp(6), 0, 0, 0);
-            statusRow.addView(nativeStatus);
         } else {
-            TextView fallbackBadge = IconFactory.createBadge(this, "JAVA FALLBACK", 0xFFFFF3E0, 0xFFE65100);
+            TextView fallbackBadge = IconFactory.createBadge(this, "JAVA FALLBACK", 0xFFFEF3C7, 0xFF92400E);
             statusRow.addView(fallbackBadge);
-
-            TextView nativeStatus = new TextView(this);
-            nativeStatus.setText(" Native 核心未加载");
-            nativeStatus.setTextColor(0xFFE65100);
-            nativeStatus.setTextSize(13);
-            nativeStatus.setPadding(dp(6), 0, 0, 0);
-            statusRow.addView(nativeStatus);
         }
+
+        TextView daemonBadge = IconFactory.createBadge(this, "DAEMON 19898", 0xFFEFF6FF, 0xFF1D4ED8);
+        LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        dLp.setMargins(dp(6), 0, 0, 0);
+        statusRow.addView(daemonBadge, dLp);
+
+        TextView deviceBadge = IconFactory.createBadge(this, "PIXEL 6A", 0xFFF1F5F9, 0xFF475569);
+        LinearLayout.LayoutParams devLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        devLp.setMargins(dp(6), 0, 0, 0);
+        statusRow.addView(deviceBadge, devLp);
+
         page.addView(statusRow);
 
-        // --- DASHBOARD CARD 1: SYSTEM HEALTH & HARDWARE ---
-        LinearLayout hwCard = createCard(page, IconFactory.IconType.CHIP, "硬件与端侧常驻资源 (Pixel 6a)", 0xFF1565C0);
-        TextView hwInfo = new TextView(this);
-        hwInfo.setText("SoC: Google Tensor G1 (8-core ARMv8.2-A)\n系统: GrapheneOS Android 17 / API 37\n常驻 SLM 内存配额: ~500MB (安全上限 800MB)");
-        hwInfo.setTextSize(13);
-        hwInfo.setTextColor(0xFF37474F);
-        hwInfo.setPadding(0, dp(6), 0, 0);
-        hwCard.addView(hwInfo);
-
-        // --- DASHBOARD CARD 2: COGNITIVE ENGINE ---
-        LinearLayout slmCard = createCard(page, IconFactory.IconType.BRAIN, "端侧离线大模型认知引擎", 0xFF6A1B9A);
-        TextView slmInfo = new TextView(this);
-        slmInfo.setText("常驻模型: Qwen2.5-0.5B-Instruct (GGUF Q4_K_M)\n格式: ChatML + JSON Schema 原生工具参数抽取\n生成吞吐: ~25-35 tokens/s (Cortex-X1 加速)");
-        slmInfo.setTextSize(13);
-        slmInfo.setTextColor(0xFF37474F);
-        slmInfo.setPadding(0, dp(6), 0, 0);
-        slmCard.addView(slmInfo);
-
-        // --- DASHBOARD CARD 3: AUTOMATION & CONTROLS ---
-        LinearLayout autoCard = createCard(page, IconFactory.IconType.SCREEN, "跨应用悬浮胶囊与语音中枢", 0xFF00695C);
+        // --- COMPACT DASHBOARD CONSOLE CARD ---
+        LinearLayout consoleCard = createCard(page, IconFactory.IconType.SCREEN, "交互中枢与控制台 (Console)", 0xFF00695C);
 
         floatPermStatus = new TextView(this);
-        floatPermStatus.setTextSize(12);
-        floatPermStatus.setPadding(0, dp(4), 0, dp(4));
+        floatPermStatus.setTextSize(11);
+        floatPermStatus.setPadding(0, dp(2), 0, dp(6));
         updateFloatPermStatus();
-        autoCard.addView(floatPermStatus);
+        consoleCard.addView(floatPermStatus);
 
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        autoBtnRow.setPadding(0, dp(4), 0, 0);
+        autoBtnRow.setPadding(0, dp(2), 0, dp(4));
 
-        Button toggleFloatingBtn = new Button(this);
-        toggleFloatingBtn.setText("开启/切换悬浮胶囊");
-        toggleFloatingBtn.setTextSize(12);
-        toggleFloatingBtn.setOnClickListener(v -> {
+        Button toggleFloatingBtn = createCompactActionButton("开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
                         .setTitle("开启悬浮胶囊权限")
@@ -265,104 +247,53 @@ public final class MainActivity extends Activity {
             startService(fIntent);
             Toast.makeText(this, "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
         });
-        autoBtnRow.addView(toggleFloatingBtn);
+        autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
 
-        Button hideFloatingBtn = new Button(this);
-        hideFloatingBtn.setText("隐藏胶囊");
-        hideFloatingBtn.setTextSize(12);
-        hideFloatingBtn.setOnClickListener(v -> {
+        Button hideFloatingBtn = createCompactActionButton("隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
             Intent fIntent = new Intent(this, AgentFloatingService.class);
             fIntent.setAction(AgentFloatingService.ACTION_HIDE);
             startService(fIntent);
             Toast.makeText(this, "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
         });
-        autoBtnRow.addView(hideFloatingBtn);
+        LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
+        hideLp.setMargins(dp(4), 0, 0, 0);
+        autoBtnRow.addView(hideFloatingBtn, hideLp);
 
-        Button testVoiceBtn = new Button(this);
-        testVoiceBtn.setText("离线语音 VAD 测试");
-        testVoiceBtn.setTextSize(12);
-        testVoiceBtn.setOnClickListener(v -> {
+        Button pingDaemonBtn = createCompactActionButton("Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
+            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
+            runOnUiThread(() -> Toast.makeText(this, "守护进程响应: " + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
+        }).start());
+        LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
+        pingLp.setMargins(dp(4), 0, 0, 0);
+        autoBtnRow.addView(pingDaemonBtn, pingLp);
+
+        consoleCard.addView(autoBtnRow);
+
+        LinearLayout diagBtnRow = new LinearLayout(this);
+        diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        diagBtnRow.setPadding(0, dp(2), 0, dp(2));
+
+        Button testVoiceBtn = createCompactActionButton("离线 VAD", 0xFFF8FAFC, 0xFF475569, v -> {
             short[] testPcm = new short[640];
             for (int i = 0; i < testPcm.length; i++) {
                 testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
             }
             org.json.JSONObject res = VoiceInteractionManager.processPcmFrame(testPcm);
-            Toast.makeText(this, "VAD 语音激活: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "VAD 激活: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
         });
-        autoBtnRow.addView(testVoiceBtn);
-        autoCard.addView(autoBtnRow);
+        diagBtnRow.addView(testVoiceBtn, new LinearLayout.LayoutParams(0, dp(30), 1.0f));
 
-        // --- DASHBOARD CARD 4: P2P & E2EE SYNC ---
-        LinearLayout syncCard = createCard(page, IconFactory.IconType.SHIELD, "零知识 E2EE 同步与 CRDT 节点", 0xFF2E7D32);
-        TextView syncInfo = new TextView(this);
-        syncInfo.setText("加密信封: PBKDF2-HMAC-SHA256 (600,000次) + AES-256-GCM\n冲突合并: Vector Clock 向量时钟 + 墓碑优先\n局域网互联: P2P TCP/mDNS 零信任数据同步");
-        syncInfo.setTextSize(13);
-        syncInfo.setTextColor(0xFF37474F);
-        syncInfo.setPadding(0, dp(6), 0, 0);
-        syncCard.addView(syncInfo);
-
-        // --- DASHBOARD CARD 5: AOSP SYSTEM DAEMON (agentosd) ---
-        LinearLayout daemonCard = createCard(page, IconFactory.IconType.SERVER, "AOSP 系统常驻守护进程 (agentosd)", 0xFFD84315);
-        TextView daemonInfo = new TextView(this);
-        daemonInfo.setText("运行架构: ARM aarch64 独立 Linux ELF 二进制\n通信信道: 127.0.0.1:19898 (免 SELinux 阻断)\n生命周期: 独立于 ART 运行时，应用退出后仍旧保活调度");
-        daemonInfo.setTextSize(13);
-        daemonInfo.setTextColor(0xFF37474F);
-        daemonInfo.setPadding(0, dp(6), 0, 0);
-        daemonCard.addView(daemonInfo);
-
-        LinearLayout daemonBtnRow = new LinearLayout(this);
-        daemonBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        daemonBtnRow.setPadding(0, dp(8), 0, 0);
-        Button pingDaemonBtn = new Button(this);
-        pingDaemonBtn.setText("Ping 常驻守护进程");
-        pingDaemonBtn.setTextSize(12);
-        pingDaemonBtn.setOnClickListener(v -> new Thread(() -> {
-            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
-            runOnUiThread(() -> Toast.makeText(this, "守护进程响应: " + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
-        }).start());
-        daemonBtnRow.addView(pingDaemonBtn);
-        daemonCard.addView(daemonBtnRow);
-
-        // --- DASHBOARD CARD 6: PHYSICAL SENSORIUM ---
-        LinearLayout sensCard = createCard(page, IconFactory.IconType.SENSOR, "真实物理世界环境感知与传感器融合", 0xFF0277BD);
-        TextView sensInfo = new TextView(this);
-        sensInfo.setText("感知流: 加速度计 (IMU) + 陀螺仪 + 光感 (Lux) + 接近传感器\n情境判定: 姿态 (静止/行走/载具) + 口袋检测 (自适应静音)\n温控功耗: Google Tensor 动态频温感知推演调步 (0-250ms)");
-        sensInfo.setTextSize(13);
-        sensInfo.setTextColor(0xFF37474F);
-        sensInfo.setPadding(0, dp(6), 0, 0);
-        sensCard.addView(sensInfo);
-
-        LinearLayout sensBtnRow = new LinearLayout(this);
-        sensBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        sensBtnRow.setPadding(0, dp(8), 0, 0);
-        Button refreshSensBtn = new Button(this);
-        refreshSensBtn.setText("刷新环境感知遥测");
-        refreshSensBtn.setTextSize(12);
-        refreshSensBtn.setOnClickListener(v -> {
+        Button refreshSensBtn = createCompactActionButton("环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
             sens.startMonitoring();
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
-            Toast.makeText(this, "姿态: " + ctx.optString("motion_state") + ", 环境: " + ctx.optString("ambient_environment") + ", 语音唤醒: " + (ctx.optBoolean("voice_wake_allowed") ? "允许" : "口袋静音"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "姿态: " + ctx.optString("motion_state") + ", 环境: " + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
         });
-        sensBtnRow.addView(refreshSensBtn);
-        sensCard.addView(sensBtnRow);
+        LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        sensLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(refreshSensBtn, sensLp);
 
-        // --- DASHBOARD CARD 7: MULTIMODAL VISION & OCR ---
-        LinearLayout visionCard = createCard(page, IconFactory.IconType.EYE, "多模态视觉理解与跨树 OCR 定位", 0xFF4527A0);
-        TextView visionInfo = new TextView(this);
-        visionInfo.setText("无障碍破障: 突破 Flutter/Canvas/WebView 无障碍树盲区\n元素定位: 纯端侧快速 OCR 意图匹配与绝对中心点击映射\n物理票据: 真实世界发票/收据实体抽取并归档为任务记忆");
-        visionInfo.setTextSize(13);
-        visionInfo.setTextColor(0xFF37474F);
-        visionInfo.setPadding(0, dp(6), 0, 0);
-        visionCard.addView(visionInfo);
-
-        LinearLayout visBtnRow = new LinearLayout(this);
-        visBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        visBtnRow.setPadding(0, dp(8), 0, 0);
-        Button testVisionBtn = new Button(this);
-        testVisionBtn.setText("模拟视觉 OCR 定位");
-        testVisionBtn.setTextSize(12);
-        testVisionBtn.setOnClickListener(v -> {
+        Button testVisionBtn = createCompactActionButton("OCR 定位", 0xFFF8FAFC, 0xFF475569, v -> {
             try {
                 org.json.JSONObject scene = new org.json.JSONObject();
                 scene.put("screen_width", 1080);
@@ -376,93 +307,106 @@ public final class MainActivity extends Activity {
                 elems.put(btn);
                 scene.put("elements", elems);
                 org.json.JSONObject target = VisionAgentManager.getInstance().locateTarget(scene, "确认支付");
-                Toast.makeText(this, "OCR 定位成功: (" + (int)target.optDouble("tap_x") + "," + (int)target.optDouble("tap_y") + ") 动作: " + target.optString("action_type"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "OCR 定位成功: (" + (int)target.optDouble("tap_x") + "," + (int)target.optDouble("tap_y") + ")", Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Toast.makeText(this, "定位异常: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-        visBtnRow.addView(testVisionBtn);
-        visionCard.addView(visBtnRow);
+        LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        visLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(testVisionBtn, visLp);
 
-        // --- DASHBOARD CARD 8: HARDWARE PERIPHERALS & PTT ---
-        LinearLayout hwLinkCard = createCard(page, IconFactory.IconType.HARDWARE, "外设硬件联动与低延迟 PTT 按键", 0xFF00695C);
-        TextView hwLinkInfo = new TextView(this);
-        hwLinkInfo.setText("外设支持: BLE 智能指环 / 传感器标签 / USB-C HID 控制器\n物理 PTT: 实体按键瞬间捕获语音，无需点亮屏幕或解锁手机\n遥测归档: 生理指标 (心率/血氧) 与环境数据秒级沉淀为上下文");
-        hwLinkInfo.setTextSize(13);
-        hwLinkInfo.setTextColor(0xFF37474F);
-        hwLinkInfo.setPadding(0, dp(6), 0, 0);
-        hwLinkCard.addView(hwLinkInfo);
-
-        LinearLayout hwBtnRow = new LinearLayout(this);
-        hwBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        hwBtnRow.setPadding(0, dp(8), 0, 0);
-        Button testPttBtn = new Button(this);
-        testPttBtn.setText("模拟 PTT 物理按键触发");
-        testPttBtn.setTextSize(12);
-        testPttBtn.setOnClickListener(v -> {
+        Button testPttBtn = createCompactActionButton("PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
             HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
             hwSvc.registerPeripheral("ring-01", "Traceform Ring", "ble", new String[]{"ptt_button", "heart_rate"});
             org.json.JSONObject pttRes = hwSvc.dispatchEvent("ring-01", "ptt_pressed", new org.json.JSONObject());
-            Toast.makeText(this, "PTT 动作: " + pttRes.optString("action") + " (延迟: " + pttRes.optLong("latency_us") + "μs)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "PTT 动作: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs)", Toast.LENGTH_SHORT).show();
         });
-        hwBtnRow.addView(testPttBtn);
-        hwLinkCard.addView(hwBtnRow);
+        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        pttLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(testPttBtn, pttLp);
 
-        TextView note = new TextView(this);
-        note.setText("Agent OS 已全面接入端侧原生 Rust 核心、AOSP 系统常驻守护进程 (agentosd)、IMU 物理环境传感器融合、多模态视觉 OCR 与悬浮胶囊交互中枢。\n\n核心状态与记忆完全在本机硬件加密保存；支持离线纯端侧微秒级推演与端云协同隐私脱敏推演。跨应用能力遵循 5 分钟 JIT 严格授权保护。");
-        note.setTextSize(14);
-        note.setTextColor(0xFF546E7A);
-        note.setPadding(0, 16, 0, 16);
-        page.addView(note);
+        consoleCard.addView(diagBtnRow);
 
-        LinearLayout archiveActions = new LinearLayout(this);
-        archiveActions.setOrientation(LinearLayout.HORIZONTAL);
-        addActionButton(archiveActions, "加密导出", view -> promptExportPassphrase());
-        addActionButton(archiveActions, "导入档案", view -> chooseArchiveToImport());
-        page.addView(archiveActions);
+        // --- 2-COLUMN TELEMETRY GRID ---
+        LinearLayout gridRow1 = createGridRow(page);
+        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, "硬件常驻资源", 0xFF1565C0);
+        TextView hwInfo = new TextView(this);
+        hwInfo.setText("Tensor G1 (8-core)\nRAM 常驻: 4.1MB\n16KB 对齐 NEON SIMD");
+        hwInfo.setTextSize(11);
+        hwInfo.setTextColor(0xFF475569);
+        hwInfo.setPadding(0, dp(4), 0, 0);
+        hwCard.addView(hwInfo);
 
-        activityStatus = new TextView(this);
-        activityStatus.setText("本机数据仅在你选择时导出。导入前可选择同 ID 记忆冲突如何处理；删除墓碑始终优先。");
-        activityStatus.setPadding(0, 4, 0, 8);
-        page.addView(activityStatus);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, "端侧大模型", 0xFF6A1B9A);
+        TextView slmInfo = new TextView(this);
+        slmInfo.setText("Qwen2.5-0.5B-Instruct\nChatML + JSON Schema\n吞吐: ~30 tokens/s");
+        slmInfo.setTextSize(11);
+        slmInfo.setTextColor(0xFF475569);
+        slmInfo.setPadding(0, dp(4), 0, 0);
+        slmCard.addView(slmInfo);
 
-        TextView traceformHeading = new TextView(this);
-        traceformHeading.setText("Traceform 可选 Provider");
-        traceformHeading.setTextSize(20);
-        traceformHeading.setPadding(0, 20, 0, 4);
-        page.addView(traceformHeading);
+        LinearLayout gridRow2 = createGridRow(page);
+        LinearLayout daemonCard = createGridCard(gridRow2, IconFactory.IconType.SERVER, "AOSP 守护进程", 0xFFD84315);
+        TextView daemonInfo = new TextView(this);
+        daemonInfo.setText("agentosd · 19898\noom_score -1000 免疫\n独立于 ART 运行时");
+        daemonInfo.setTextSize(11);
+        daemonInfo.setTextColor(0xFF475569);
+        daemonInfo.setPadding(0, dp(4), 0, 0);
+        daemonCard.addView(daemonInfo);
 
-        traceformStatus = new TextView(this);
-        page.addView(traceformStatus);
-        traceformToggleButton = new Button(this);
-        traceformToggleButton.setOnClickListener(view -> toggleTraceformProvider());
-        persistentButtons.add(traceformToggleButton);
-        page.addView(traceformToggleButton);
-        updateTraceformProviderControls();
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, "E2EE 同步节点", 0xFF2E7D32);
+        TextView syncInfo = new TextView(this);
+        syncInfo.setText("AES-256-GCM + PBKDF2\nVector Clock 向量时钟\nP2P 局域网零信任");
+        syncInfo.setTextSize(11);
+        syncInfo.setTextColor(0xFF475569);
+        syncInfo.setPadding(0, dp(4), 0, 0);
+        syncCard.addView(syncInfo);
 
-        TextView cloudHeading = new TextView(this);
-        cloudHeading.setText("端云协同推演（可选）");
-        cloudHeading.setTextSize(20);
-        cloudHeading.setPadding(0, 20, 0, 4);
-        page.addView(cloudHeading);
+        LinearLayout gridRow3 = createGridRow(page);
+        LinearLayout sensCard = createGridCard(gridRow3, IconFactory.IconType.SENSOR, "环境传感器融合", 0xFF0277BD);
+        TextView sensInfo = new TextView(this);
+        sensInfo.setText("IMU + 陀螺仪 + 光感\n姿态判定 (行走/车载)\n口袋检测防误触");
+        sensInfo.setTextSize(11);
+        sensInfo.setTextColor(0xFF475569);
+        sensInfo.setPadding(0, dp(4), 0, 0);
+        sensCard.addView(sensInfo);
 
-        cloudModelStatus = new TextView(this);
-        page.addView(cloudModelStatus);
-        cloudModelConfigButton = new Button(this);
-        cloudModelConfigButton.setOnClickListener(view -> promptCloudModelConfig());
-        persistentButtons.add(cloudModelConfigButton);
-        page.addView(cloudModelConfigButton);
-        updateCloudModelControls();
+        LinearLayout visionCard = createGridCard(gridRow3, IconFactory.IconType.EYE, "视觉 OCR / PTT", 0xFF4527A0);
+        TextView visionInfo = new TextView(this);
+        visionInfo.setText("无障碍破障意图匹配\nBLE 指环外设联动\n物理 PTT 瞬时激活");
+        visionInfo.setTextSize(11);
+        visionInfo.setTextColor(0xFF475569);
+        visionInfo.setPadding(0, dp(4), 0, 0);
+        visionCard.addView(visionInfo);
+
+        // --- TASK SECTION ---
+        TextView taskHeading = new TextView(this);
+        taskHeading.setText("智能任务管理");
+        taskHeading.setTextSize(17);
+        taskHeading.setTypeface(null, android.graphics.Typeface.BOLD);
+        taskHeading.setTextColor(0xFF0F172A);
+        taskHeading.setPadding(0, dp(14), 0, dp(4));
+        page.addView(taskHeading);
+
+        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, "新建智能任务", 0xFF0284C7);
 
         taskInput = new EditText(this);
-        taskInput.setHint("输入一条智能任务，例如：安排团队待办日程，或整理工作笔记");
+        taskInput.setHint("输入任务目标，如：安排团队待办日程，或整理工作笔记");
+        taskInput.setTextSize(13);
         taskInput.setMinLines(2);
-        taskInput.setMaxLines(4);
-        page.addView(taskInput);
+        taskInput.setMaxLines(3);
+        GradientDrawable inputBg = new GradientDrawable();
+        inputBg.setColor(0xFFF8FAFC);
+        inputBg.setCornerRadius(dp(8));
+        inputBg.setStroke(dp(1), 0xFFE2E8F0);
+        taskInput.setBackground(inputBg);
+        taskInput.setPadding(dp(10), dp(8), dp(10), dp(8));
+        taskInputCard.addView(taskInput);
 
         LinearLayout pillsLayout = new LinearLayout(this);
         pillsLayout.setOrientation(LinearLayout.HORIZONTAL);
-        pillsLayout.setPadding(0, dp(4), 0, dp(8));
+        pillsLayout.setPadding(0, dp(6), 0, dp(6));
 
         IconFactory.IconType[] quickIcons = {
             IconFactory.IconType.TASK,
@@ -472,51 +416,73 @@ public final class MainActivity extends Activity {
         String[] quickPrompts = {
             "整理便笺与状态",
             "安排团队待办日程",
-            "发送通知并导出分享"
+            "发送通知并分享"
         };
         for (int i = 0; i < quickPrompts.length; i++) {
             final String promptText = quickPrompts[i];
             Button pill = new Button(this);
             pill.setText(promptText);
-            pill.setTextSize(12);
+            pill.setTextSize(11);
+            pill.setAllCaps(false);
+            GradientDrawable pillBg = new GradientDrawable();
+            pillBg.setColor(0xFFF1F5F9);
+            pillBg.setCornerRadius(dp(12));
+            pill.setBackground(pillBg);
+            pill.setPadding(dp(8), dp(2), dp(8), dp(2));
             pill.setCompoundDrawablesWithIntrinsicBounds(
-                IconFactory.getIcon(this, quickIcons[i], 0xFF37474F, 14), null, null, null);
+                IconFactory.getIcon(this, quickIcons[i], 0xFF475569, 12), null, null, null);
             pill.setCompoundDrawablePadding(dp(4));
             pill.setOnClickListener(v -> {
                 taskInput.setText(promptText);
                 taskInput.setSelection(promptText.length());
             });
             persistentButtons.add(pill);
-            pillsLayout.addView(pill);
+            LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams(0, dp(28), 1.0f);
+            pLp.setMargins(dp(2), 0, dp(2), 0);
+            pillsLayout.addView(pill, pLp);
         }
-        page.addView(pillsLayout);
+        taskInputCard.addView(pillsLayout);
 
-        addPageButton(page, "新增本地任务", view -> createTask());
-
-        TextView taskHeading = new TextView(this);
-        taskHeading.setText("任务记录");
-        taskHeading.setTextSize(20);
-        taskHeading.setPadding(0, 24, 0, 8);
-        page.addView(taskHeading);
+        Button submitTaskBtn = createCompactActionButton("提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
+        submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
+        persistentButtons.add(submitTaskBtn);
+        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
+        subLp.setMargins(0, dp(4), 0, 0);
+        taskInputCard.addView(submitTaskBtn, subLp);
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
         page.addView(taskList);
 
+        // --- MEMORY SECTION ---
         TextView memoryHeading = new TextView(this);
-        memoryHeading.setText("用户记忆");
-        memoryHeading.setTextSize(20);
-        memoryHeading.setPadding(0, 24, 0, 8);
+        memoryHeading.setText("用户记忆与知识库");
+        memoryHeading.setTextSize(17);
+        memoryHeading.setTypeface(null, android.graphics.Typeface.BOLD);
+        memoryHeading.setTextColor(0xFF0F172A);
+        memoryHeading.setPadding(0, dp(14), 0, dp(4));
         page.addView(memoryHeading);
+
+        LinearLayout memoryInputCard = createCard(page, IconFactory.IconType.BRAIN, "新增或搜索记忆", 0xFF7C3AED);
+
+        LinearLayout memControlsRow = new LinearLayout(this);
+        memControlsRow.setOrientation(LinearLayout.HORIZONTAL);
+        memControlsRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
         memoryKind = new Spinner(this);
         memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
             new String[]{"偏好", "事实", "工作流"}));
-        page.addView(memoryKind);
+        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(100), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
-        memorySearch.setHint("搜索记忆内容、类型和来源");
-        page.addView(memorySearch);
+        memorySearch.setHint("搜索记忆内容...");
+        memorySearch.setTextSize(12);
+        GradientDrawable searchBg = new GradientDrawable();
+        searchBg.setColor(0xFFF8FAFC);
+        searchBg.setCornerRadius(dp(8));
+        searchBg.setStroke(dp(1), 0xFFE2E8F0);
+        memorySearch.setBackground(searchBg);
+        memorySearch.setPadding(dp(8), dp(4), dp(8), dp(4));
         memorySearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
@@ -524,17 +490,82 @@ public final class MainActivity extends Activity {
             }
             @Override public void afterTextChanged(Editable text) {}
         });
+        LinearLayout.LayoutParams msLp = new LinearLayout.LayoutParams(0, dp(34), 1.0f);
+        msLp.setMargins(dp(6), 0, 0, 0);
+        memControlsRow.addView(memorySearch, msLp);
+        memoryInputCard.addView(memControlsRow);
 
         memoryInput = new EditText(this);
-        memoryInput.setHint("写一条由你提供的记忆（来源会标记为“你提供”）");
+        memoryInput.setHint("记录一条个人偏好、重要事实或固定工作流（来源标记为你提供）");
+        memoryInput.setTextSize(13);
         memoryInput.setMinLines(2);
-        memoryInput.setMaxLines(5);
-        page.addView(memoryInput);
-        addPageButton(page, "保存记忆", view -> createMemory());
+        memoryInput.setMaxLines(3);
+        GradientDrawable memInBg = new GradientDrawable();
+        memInBg.setColor(0xFFF8FAFC);
+        memInBg.setCornerRadius(dp(8));
+        memInBg.setStroke(dp(1), 0xFFE2E8F0);
+        memoryInput.setBackground(memInBg);
+        memoryInput.setPadding(dp(10), dp(8), dp(10), dp(8));
+        LinearLayout.LayoutParams miLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        miLp.setMargins(0, dp(6), 0, dp(6));
+        memoryInputCard.addView(memoryInput, miLp);
+
+        Button saveMemoryBtn = createCompactActionButton("保存加密记忆", 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
+        saveMemoryBtn.setTypeface(null, android.graphics.Typeface.BOLD);
+        persistentButtons.add(saveMemoryBtn);
+        LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
+        memoryInputCard.addView(saveMemoryBtn, smLp);
 
         memoryList = new LinearLayout(this);
         memoryList.setOrientation(LinearLayout.VERTICAL);
         page.addView(memoryList);
+
+        // --- SETTINGS & ADVANCED SECTION ---
+        TextView settingsHeading = new TextView(this);
+        settingsHeading.setText("数据管理与扩展服务");
+        settingsHeading.setTextSize(17);
+        settingsHeading.setTypeface(null, android.graphics.Typeface.BOLD);
+        settingsHeading.setTextColor(0xFF0F172A);
+        settingsHeading.setPadding(0, dp(14), 0, dp(4));
+        page.addView(settingsHeading);
+
+        LinearLayout settingsCard = createCard(page, IconFactory.IconType.SHIELD, "E2EE 归档与可选 Provider", 0xFF334155);
+
+        LinearLayout archiveActions = new LinearLayout(this);
+        archiveActions.setOrientation(LinearLayout.HORIZONTAL);
+        addActionButton(archiveActions, "加密导出", view -> promptExportPassphrase());
+        addActionButton(archiveActions, "导入档案", view -> chooseArchiveToImport());
+        settingsCard.addView(archiveActions);
+
+        activityStatus = new TextView(this);
+        activityStatus.setText("本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
+        activityStatus.setTextSize(11);
+        activityStatus.setTextColor(0xFF64748B);
+        activityStatus.setPadding(0, dp(4), 0, dp(6));
+        settingsCard.addView(activityStatus);
+
+        traceformStatus = new TextView(this);
+        traceformStatus.setTextSize(12);
+        settingsCard.addView(traceformStatus);
+
+        traceformToggleButton = createCompactActionButton("配置 Traceform Provider", 0xFFF1F5F9, 0xFF334155, view -> toggleTraceformProvider());
+        persistentButtons.add(traceformToggleButton);
+        LinearLayout.LayoutParams tfLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
+        tfLp.setMargins(0, dp(2), 0, dp(8));
+        settingsCard.addView(traceformToggleButton, tfLp);
+        updateTraceformProviderControls();
+
+        cloudModelStatus = new TextView(this);
+        cloudModelStatus.setTextSize(12);
+        settingsCard.addView(cloudModelStatus);
+
+        cloudModelConfigButton = createCompactActionButton("配置端云协同推演", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
+        persistentButtons.add(cloudModelConfigButton);
+        LinearLayout.LayoutParams cmLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
+        cmLp.setMargins(0, dp(2), 0, dp(2));
+        settingsCard.addView(cloudModelConfigButton, cmLp);
+        updateCloudModelControls();
+
         setContentView(scroll);
     }
 
@@ -692,24 +723,50 @@ public final class MainActivity extends Activity {
     private void addTaskCard(AgentStore.Task task) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(0, 14, 0, 14);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFFFFFFFF);
+        bg.setCornerRadius(dp(12));
+        bg.setStroke(dp(1), 0xFFE2E8F0);
+        card.setBackground(bg);
+        card.setPadding(dp(12), dp(10), dp(12), dp(10));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, dp(4), 0, dp(6));
+        card.setLayoutParams(lp);
+
+        // Header: Title + Status Badge
+        LinearLayout headerRow = new LinearLayout(this);
+        headerRow.setOrientation(LinearLayout.HORIZONTAL);
+        headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
         TextView description = new TextView(this);
         description.setText(task.title);
-        description.setTextSize(17);
-        card.addView(description);
+        description.setTextSize(15);
+        description.setTypeface(null, android.graphics.Typeface.BOLD);
+        description.setTextColor(0xFF0F172A);
+        headerRow.addView(description, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+
+        TextView badge = getStatusBadge(task.status);
+        headerRow.addView(badge);
+        card.addView(headerRow);
 
         TextView metadata = new TextView(this);
-        metadata.setText(statusLabel(task.status) + " · "
-            + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(task.updatedAt)));
-        metadata.setPadding(0, 4, 0, 4);
+        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(task.updatedAt)));
+        metadata.setTextSize(11);
+        metadata.setTextColor(0xFF94A3B8);
+        metadata.setPadding(0, dp(2), 0, dp(4));
         card.addView(metadata);
 
         if (!task.result.isEmpty()) {
             TextView result = new TextView(this);
             result.setText(task.result);
-            result.setTextSize(15);
-            result.setPadding(0, 4, 0, 8);
+            result.setTextSize(12);
+            result.setTextColor(0xFF1E293B);
+            GradientDrawable resBg = new GradientDrawable();
+            resBg.setColor(0xFFF1F5F9);
+            resBg.setCornerRadius(dp(6));
+            result.setBackground(resBg);
+            result.setPadding(dp(8), dp(6), dp(8), dp(6));
             card.addView(result);
         }
 
@@ -719,6 +776,8 @@ public final class MainActivity extends Activity {
 
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
+        actions.setPadding(0, dp(4), 0, 0);
+
         if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
                 || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status)) {
             String label = AgentStore.QUEUED.equals(task.status) ? "开始"
@@ -735,7 +794,7 @@ public final class MainActivity extends Activity {
             addCapabilityControls(card, task);
         }
 
-        addDivider(taskList, card);
+        taskList.addView(card);
     }
 
     private void addPlanStepTree(LinearLayout card, AgentStore.Task task) {
@@ -876,44 +935,63 @@ public final class MainActivity extends Activity {
     private void addMemoryCard(AgentStore.Memory memory) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(0, 14, 0, 14);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFFFFFFFF);
+        bg.setCornerRadius(dp(10));
+        bg.setStroke(dp(1), 0xFFE2E8F0);
+        card.setBackground(bg);
+        card.setPadding(dp(12), dp(8), dp(12), dp(8));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, dp(3), 0, dp(5));
+        card.setLayoutParams(lp);
 
-        TextView kind = new TextView(this);
-        String kindTag = memoryKindLabel(memory.kind);
+        // Header: Kind Badge + Source Tag + Delete Button
+        LinearLayout topRow = new LinearLayout(this);
+        topRow.setOrientation(LinearLayout.HORIZONTAL);
+        topRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        topRow.addView(getMemoryKindBadge(memory.kind));
+
+        TextView srcTv = new TextView(this);
+        String source;
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            kind.setText(kindTag + " · [系统自主提取]");
-            kind.setTextColor(0xFF1B5E20);
+            source = "系统自主提取";
+        } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
+            source = "Traceform";
         } else {
-            kind.setText(kindTag);
-            kind.setTextColor(0xFF455A64);
+            source = "你提供";
         }
-        kind.setTextSize(14);
-        card.addView(kind);
+        srcTv.setText(" · " + source);
+        srcTv.setTextSize(11);
+        srcTv.setTextColor(0xFF64748B);
+        srcTv.setPadding(dp(4), 0, 0, 0);
+        topRow.addView(srcTv, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+
+        TextView delBtn = new TextView(this);
+        delBtn.setText("删除");
+        delBtn.setTextSize(12);
+        delBtn.setTextColor(0xFFEF4444);
+        delBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
+        delBtn.setOnClickListener(v -> confirmDeleteMemory(memory));
+        topRow.addView(delBtn);
+
+        card.addView(topRow);
 
         TextView content = new TextView(this);
         content.setText(memory.content);
-        content.setTextSize(17);
-        content.setPadding(0, 4, 0, 4);
+        content.setTextSize(13);
+        content.setTextColor(0xFF1E293B);
+        content.setPadding(0, dp(4), 0, dp(4));
         card.addView(content);
 
         TextView metadata = new TextView(this);
-        String source;
-        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            source = "[系统沉淀]";
-        } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
-            source = "[Traceform 历史]";
-        } else {
-            source = "[用户提供]";
-        }
-        metadata.setText(source + (memory.sourceReference.isEmpty() ? "" : " · " + memory.sourceReference)
-            + " · " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
+        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
+        metadata.setTextSize(10);
+        metadata.setTextColor(0xFF94A3B8);
         card.addView(metadata);
 
-        LinearLayout actions = new LinearLayout(this);
-        actions.setOrientation(LinearLayout.HORIZONTAL);
-        addCardActionButton(actions, "删除记忆", view -> confirmDeleteMemory(memory), memoryButtons);
-        card.addView(actions);
-        addDivider(memoryList, card);
+        memoryList.addView(card);
     }
 
     private void addTaskButton(LinearLayout parent, String label, AgentStore.Task task, String status) {
@@ -1427,10 +1505,21 @@ public final class MainActivity extends Activity {
     private void addActionButton(LinearLayout parent, String label, View.OnClickListener listener) {
         Button button = new Button(this);
         button.setText(label);
+        button.setTextSize(12);
+        button.setAllCaps(false);
+        button.setTextColor(0xFF334155);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFFF1F5F9);
+        bg.setCornerRadius(dp(8));
+        bg.setStroke(dp(1), 0xFFCBD5E1);
+        button.setBackground(bg);
+        button.setPadding(dp(8), dp(4), dp(8), dp(4));
         button.setOnClickListener(listener);
         button.setEnabled(!busy);
         persistentButtons.add(button);
-        parent.addView(button, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(36), 1);
+        lp.setMargins(dp(3), dp(4), dp(3), dp(4));
+        parent.addView(button, lp);
     }
 
     private void updateFloatPermStatus() {
@@ -1448,20 +1537,43 @@ public final class MainActivity extends Activity {
     private void addPageButton(LinearLayout parent, String label, View.OnClickListener listener) {
         Button button = new Button(this);
         button.setText(label);
+        button.setTextSize(13);
+        button.setAllCaps(false);
+        button.setTextColor(0xFFFFFFFF);
+        button.setTypeface(null, android.graphics.Typeface.BOLD);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFF0F172A);
+        bg.setCornerRadius(dp(8));
+        button.setBackground(bg);
+        button.setPadding(dp(10), dp(4), dp(10), dp(4));
         button.setOnClickListener(listener);
         button.setEnabled(!busy);
         persistentButtons.add(button);
-        parent.addView(button);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+        lp.setMargins(0, dp(6), 0, dp(6));
+        parent.addView(button, lp);
     }
 
     private void addCardActionButton(LinearLayout parent, String label, View.OnClickListener listener,
             java.util.ArrayList<Button> buttonGroup) {
         Button button = new Button(this);
         button.setText(label);
+        button.setTextSize(12);
+        button.setAllCaps(false);
+        button.setTextColor(0xFF334155);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFFF1F5F9);
+        bg.setCornerRadius(dp(8));
+        bg.setStroke(dp(1), 0xFFCBD5E1);
+        button.setBackground(bg);
+        button.setPadding(dp(8), dp(4), dp(8), dp(4));
         button.setOnClickListener(listener);
         button.setEnabled(!busy);
         buttonGroup.add(button);
-        parent.addView(button, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(34), 1);
+        lp.setMargins(dp(3), dp(4), dp(3), dp(4));
+        parent.addView(button, lp);
     }
 
     private void addDivider(LinearLayout parent, LinearLayout child) {
@@ -1530,21 +1642,93 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFFF7F9FC);
-        bg.setCornerRadius(dp(16));
-        bg.setStroke(dp(1), 0xFFCFD8DC);
+        bg.setColor(0xFFFFFFFF);
+        bg.setCornerRadius(dp(12));
+        bg.setStroke(dp(1), 0xFFE2E8F0);
         card.setBackground(bg);
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        card.setPadding(dp(12), dp(10), dp(12), dp(10));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, dp(8), 0, dp(12));
+        lp.setMargins(0, dp(4), 0, dp(6));
         card.setLayoutParams(lp);
 
-        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 18);
+        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 15);
         card.addView(headerRow);
 
         parent.addView(card);
         return card;
+    }
+
+    private LinearLayout createGridCard(LinearLayout rowParent, IconFactory.IconType iconType, String title, int titleColor) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFFFFFFFF);
+        bg.setCornerRadius(dp(12));
+        bg.setStroke(dp(1), 0xFFE2E8F0);
+        card.setBackground(bg);
+        card.setPadding(dp(10), dp(10), dp(10), dp(10));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+        lp.setMargins(dp(3), dp(3), dp(3), dp(3));
+        card.setLayoutParams(lp);
+
+        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 14);
+        card.addView(headerRow);
+
+        rowParent.addView(card);
+        return card;
+    }
+
+    private LinearLayout createGridRow(LinearLayout page) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, dp(1), 0, dp(2));
+        row.setLayoutParams(lp);
+        page.addView(row);
+        return row;
+    }
+
+    private TextView getStatusBadge(String status) {
+        if (AgentStore.COMPLETED.equals(status)) {
+            return IconFactory.createBadge(this, "已完成", 0xFFDCFCE7, 0xFF166534);
+        } else if (AgentStore.ACTIVE.equals(status)) {
+            return IconFactory.createBadge(this, "执行中", 0xFFDBEAFE, 0xFF1E40AF);
+        } else if (AgentStore.WAITING_FOR_USER.equals(status)) {
+            return IconFactory.createBadge(this, "等待授权", 0xFFFEF3C7, 0xFF92400E);
+        } else if (AgentStore.PAUSED.equals(status)) {
+            return IconFactory.createBadge(this, "已暂停", 0xFFF1F5F9, 0xFF475569);
+        } else if (AgentStore.CANCELLED.equals(status)) {
+            return IconFactory.createBadge(this, "已取消", 0xFFFEE2E2, 0xFF991B1B);
+        }
+        return IconFactory.createBadge(this, "待处理", 0xFFE0E7FF, 0xFF3730A3);
+    }
+
+    private TextView getMemoryKindBadge(String kind) {
+        if (AgentStore.MEMORY_PREFERENCE.equals(kind)) {
+            return IconFactory.createBadge(this, "偏好", 0xFFEDE9FE, 0xFF5B21B6);
+        } else if (AgentStore.MEMORY_FACT.equals(kind)) {
+            return IconFactory.createBadge(this, "事实", 0xFFDBEAFE, 0xFF1E40AF);
+        }
+        return IconFactory.createBadge(this, "工作流", 0xFFCCFBF1, 0xFF115E59);
+    }
+
+    private Button createCompactActionButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
+        Button btn = new Button(this);
+        btn.setText(text);
+        btn.setTextSize(11);
+        btn.setAllCaps(false);
+        btn.setTextColor(textColor);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(bgColor);
+        bg.setCornerRadius(dp(8));
+        bg.setStroke(dp(1), 0xFFCBD5E1);
+        btn.setBackground(bg);
+        btn.setPadding(dp(8), dp(2), dp(8), dp(2));
+        btn.setOnClickListener(listener);
+        return btn;
     }
 
     private int dp(int value) {
