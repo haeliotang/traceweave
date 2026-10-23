@@ -55,8 +55,8 @@ public final class CapabilityBroker {
     public CapabilityBroker(android.content.Context context, AgentStore store) {
         this.store = store;
         traceformProvider = new TraceformProvider(context);
-        registerProvider(new LocalDemoNoteProvider());
-        registerProvider(new LocalDemoStatusProvider());
+        registerProvider(new LocalDemoNoteProvider(store));
+        registerProvider(new LocalDemoStatusProvider(context));
         registerProvider(new AndroidRemoteStatusProvider(context));
         registerProvider(new LocalNotificationProvider(context));
         registerProvider(new LocalCalendarProvider());

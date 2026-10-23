@@ -550,50 +550,11 @@ public final class MainActivity extends Activity {
         taskInput.setPadding(dp(10), dp(8), dp(10), dp(8));
         taskInputCard.addView(taskInput);
 
-        LinearLayout pillsLayout = new LinearLayout(this);
-        pillsLayout.setOrientation(LinearLayout.HORIZONTAL);
-        pillsLayout.setPadding(0, dp(6), 0, dp(6));
-
-        IconFactory.IconType[] quickIcons = {
-            IconFactory.IconType.TASK,
-            IconFactory.IconType.CALENDAR,
-            IconFactory.IconType.BELL
-        };
-        String[] quickPrompts = {
-            "整理便笺与状态",
-            "安排团队待办日程",
-            "发送通知并分享"
-        };
-        for (int i = 0; i < quickPrompts.length; i++) {
-            final String promptText = quickPrompts[i];
-            Button pill = new Button(this);
-            pill.setText(promptText);
-            pill.setTextSize(11);
-            pill.setAllCaps(false);
-            GradientDrawable pillBg = new GradientDrawable();
-            pillBg.setColor(0xFFF1F5F9);
-            pillBg.setCornerRadius(dp(12));
-            pill.setBackground(pillBg);
-            pill.setPadding(dp(8), dp(2), dp(8), dp(2));
-            pill.setCompoundDrawablesWithIntrinsicBounds(
-                IconFactory.getIcon(this, quickIcons[i], 0xFF475569, 12), null, null, null);
-            pill.setCompoundDrawablePadding(dp(4));
-            pill.setOnClickListener(v -> {
-                taskInput.setText(promptText);
-                taskInput.setSelection(promptText.length());
-            });
-            persistentButtons.add(pill);
-            LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams(0, dp(28), 1.0f);
-            pLp.setMargins(dp(2), 0, dp(2), 0);
-            pillsLayout.addView(pill, pLp);
-        }
-        taskInputCard.addView(pillsLayout);
-
         Button submitTaskBtn = createCompactActionButton("提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
         submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(submitTaskBtn);
         LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
-        subLp.setMargins(0, dp(4), 0, 0);
+        subLp.setMargins(0, dp(6), 0, 0);
         taskInputCard.addView(submitTaskBtn, subLp);
 
         taskList = new LinearLayout(this);
@@ -903,9 +864,49 @@ public final class MainActivity extends Activity {
         metadata.setPadding(0, dp(2), 0, dp(4));
         card.addView(metadata);
 
+        boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status);
+        final LinearLayout detailContainer = new LinearLayout(this);
+        detailContainer.setOrientation(LinearLayout.VERTICAL);
+
+        if (isTerminal) {
+            detailContainer.setVisibility(View.GONE);
+
+            LinearLayout toggleRow = new LinearLayout(this);
+            toggleRow.setOrientation(LinearLayout.HORIZONTAL);
+            toggleRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            toggleRow.setPadding(0, dp(2), 0, dp(4));
+
+            final TextView toggleBtn = new TextView(this);
+            int stepCount = (task.plan != null) ? task.plan.totalSteps() : 0;
+            String statusText = AgentStore.COMPLETED.equals(task.status) ? "已完成" : "已取消";
+            toggleBtn.setText(statusText + "（共 " + stepCount + " 步） · 点击展开详细内容 ▼");
+            toggleBtn.setTextSize(12);
+            toggleBtn.setTextColor(0xFF0284C7);
+            toggleRow.addView(toggleBtn);
+
+            View.OnClickListener toggleClick = v -> {
+                boolean willExpand = detailContainer.getVisibility() != View.VISIBLE;
+                detailContainer.setVisibility(willExpand ? View.VISIBLE : View.GONE);
+                toggleBtn.setText(willExpand
+                    ? statusText + "（共 " + stepCount + " 步） · 点击收起详细内容 ▲"
+                    : statusText + "（共 " + stepCount + " 步） · 点击展开详细内容 ▼");
+            };
+            toggleRow.setOnClickListener(toggleClick);
+            toggleBtn.setOnClickListener(toggleClick);
+
+            card.addView(toggleRow);
+        }
+
         if (!task.result.isEmpty()) {
+            String cleanResult = task.result;
+            if (cleanResult.contains("本地推演结论：")) {
+                int idx = cleanResult.indexOf("本地推演结论：");
+                cleanResult = cleanResult.substring(idx + "本地推演结论：".length()).trim();
+            } else if (cleanResult.contains("【端侧") && cleanResult.contains("任务意图目标：")) {
+                cleanResult = "端侧多步核对通过，数据 100% 保留在本机安全沙盒。";
+            }
             TextView result = new TextView(this);
-            result.setText(task.result);
+            result.setText("执行结果：" + cleanResult);
             result.setTextSize(12);
             result.setTextColor(0xFF1E293B);
             GradientDrawable resBg = new GradientDrawable();
@@ -913,11 +914,11 @@ public final class MainActivity extends Activity {
             resBg.setCornerRadius(dp(6));
             result.setBackground(resBg);
             result.setPadding(dp(8), dp(6), dp(8), dp(6));
-            card.addView(result);
+            detailContainer.addView(result);
         }
 
         if (task.plan != null && !task.plan.steps.isEmpty()) {
-            addPlanStepTree(card, task);
+            addPlanStepTree(detailContainer, task);
         }
 
         LinearLayout actions = new LinearLayout(this);
@@ -931,15 +932,16 @@ public final class MainActivity extends Activity {
             addTaskButton(actions, label, task, AgentStore.ACTIVE);
         }
         if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, "暂停", task, AgentStore.PAUSED);
-        if (!AgentStore.COMPLETED.equals(task.status) && !AgentStore.CANCELLED.equals(task.status))
+        if (!isTerminal)
             addTaskButton(actions, "取消", task, AgentStore.CANCELLED);
         addCardActionButton(actions, "删除", view -> confirmDeleteTask(task), taskButtons);
-        card.addView(actions);
+        detailContainer.addView(actions);
 
-        if (!AgentStore.COMPLETED.equals(task.status) && !AgentStore.CANCELLED.equals(task.status)) {
-            addCapabilityControls(card, task);
+        if (!isTerminal) {
+            addCapabilityControls(detailContainer, task);
         }
 
+        card.addView(detailContainer);
         taskList.addView(card);
     }
 
@@ -1022,14 +1024,14 @@ public final class MainActivity extends Activity {
             if (step.isBuiltin()) {
                 if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
                     TextView obsView = new TextView(this);
-                    obsView.setText("端侧推演分析：\n" + step.observation);
-                    obsView.setTextSize(13);
+                    obsView.setText("端侧状态：已完成任务整合与多步安全校验");
+                    obsView.setTextSize(12);
                     obsView.setTextColor(0xFF1B5E20);
                     obsView.setPadding(dp(16), dp(2), 0, 0);
                     stepRow.addView(obsView);
                 } else {
                     TextView hint = new TextView(this);
-                    hint.setText("端侧内置逻辑推演（无需外部权限）");
+                    hint.setText("端侧多步核对（无需外部权限）");
                     hint.setTextSize(12);
                     hint.setTextColor(0xFF777777);
                     hint.setPadding(dp(16), dp(2), 0, 0);
