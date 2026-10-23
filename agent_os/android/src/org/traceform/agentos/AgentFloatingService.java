@@ -23,6 +23,7 @@ public final class AgentFloatingService extends Service {
 
     public static final String ACTION_SHOW = "org.traceform.agentos.floating.SHOW";
     public static final String ACTION_HIDE = "org.traceform.agentos.floating.HIDE";
+    public static final String ACTION_TOGGLE = "org.traceform.agentos.floating.TOGGLE";
     public static final String ACTION_UPDATE_STEP = "org.traceform.agentos.floating.UPDATE_STEP";
     public static final String ACTION_REQUEST_JIT = "org.traceform.agentos.floating.REQUEST_JIT";
     public static final String ACTION_UPDATE_VOICE = "org.traceform.agentos.floating.UPDATE_VOICE";
@@ -81,10 +82,18 @@ public final class AgentFloatingService extends Service {
         initFloatingLayout();
     }
 
-    private void initFloatingLayout() {
+    private synchronized void initFloatingLayout() {
+        if (floatingView != null) {
+            floatingView.setVisibility(View.VISIBLE);
+            return;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             Log.w(TAG, "SYSTEM_ALERT_WINDOW permission not granted; overlay running in fallback mode");
             return;
+        }
+
+        if (windowManager == null) {
+            windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         }
 
         int layoutType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -129,11 +138,57 @@ public final class AgentFloatingService extends Service {
         pillHeader.addView(statusTextView);
 
         micButtonView = IconFactory.createIconView(this, IconFactory.IconType.MIC, Color.parseColor("#4AF6C3"), 18);
-        micButtonView.setOnClickListener(v -> toggleVoiceListening());
         pillHeader.addView(micButtonView);
 
-        // Click pill to toggle expansion
-        pillHeader.setOnClickListener(v -> toggleExpansion());
+        // Pill header handles dragging and tapping
+        pillHeader.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX, initialY;
+            private float initialTouchX, initialTouchY;
+            private boolean isMoving = false;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if (floatingParams != null) {
+                            initialX = floatingParams.x;
+                            initialY = floatingParams.y;
+                        }
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        isMoving = false;
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        int dx = (int) (event.getRawX() - initialTouchX);
+                        int dy = (int) (event.getRawY() - initialTouchY);
+                        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                            isMoving = true;
+                        }
+                        if (floatingParams != null && floatingView != null && windowManager != null) {
+                            floatingParams.x = Math.max(0, initialX - dx);
+                            floatingParams.y = Math.max(0, initialY + dy);
+                            try {
+                                windowManager.updateViewLayout(floatingView, floatingParams);
+                            } catch (Exception ignored) {}
+                        }
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isMoving) {
+                            android.graphics.Rect micHit = new android.graphics.Rect();
+                            if (micButtonView != null) {
+                                micButtonView.getHitRect(micHit);
+                            }
+                            if (micButtonView != null && micHit.contains((int) event.getX(), (int) event.getY())) {
+                                toggleVoiceListening();
+                            } else {
+                                toggleExpansion();
+                            }
+                        }
+                        return true;
+                }
+                return false;
+            }
+        });
         rootLayout.addView(pillHeader);
 
         // --- 2. Expanded Dashboard Panel ---
@@ -229,50 +284,13 @@ public final class AgentFloatingService extends Service {
 
         rootLayout.addView(expandedPanel);
 
-        // Draggable touch handler
-        rootLayout.setOnTouchListener(new View.OnTouchListener() {
-            private int initialX, initialY;
-            private float initialTouchX, initialTouchY;
-            private boolean isMoving = false;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        initialX = floatingParams.x;
-                        initialY = floatingParams.y;
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
-                        isMoving = false;
-                        return true;
-                    case MotionEvent.ACTION_MOVE:
-                        int dx = (int) (event.getRawX() - initialTouchX);
-                        int dy = (int) (event.getRawY() - initialTouchY);
-                        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-                            isMoving = true;
-                        }
-                        floatingParams.x = initialX + dx;
-                        floatingParams.y = initialY + dy;
-                        try {
-                            windowManager.updateViewLayout(floatingView, floatingParams);
-                        } catch (Exception ignored) {}
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        if (!isMoving) {
-                            toggleExpansion();
-                        }
-                        return true;
-                }
-                return false;
-            }
-        });
-
         floatingView = rootLayout;
         try {
             windowManager.addView(floatingView, floatingParams);
             Log.i(TAG, "Agent floating capsule 2.0 attached successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to attach floating overlay: " + e.getMessage());
+            floatingView = null;
         }
     }
 
@@ -282,7 +300,9 @@ public final class AgentFloatingService extends Service {
             expandedPanel.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
         }
         try {
-            windowManager.updateViewLayout(floatingView, floatingParams);
+            if (floatingView != null && floatingParams != null && windowManager != null) {
+                windowManager.updateViewLayout(floatingView, floatingParams);
+            }
         } catch (Exception ignored) {}
     }
 
@@ -300,9 +320,20 @@ public final class AgentFloatingService extends Service {
         if (intent == null) return START_NOT_STICKY;
         String action = intent.getAction();
 
-        if (ACTION_SHOW.equals(action)) {
-            if (floatingView != null) floatingView.setVisibility(View.VISIBLE);
+        if (ACTION_SHOW.equals(action) || ACTION_TOGGLE.equals(action)) {
+            if (floatingView == null) {
+                initFloatingLayout();
+            } else if (ACTION_TOGGLE.equals(action)) {
+                int nextVis = (floatingView.getVisibility() == View.VISIBLE) ? View.GONE : View.VISIBLE;
+                floatingView.setVisibility(nextVis);
+            } else {
+                floatingView.setVisibility(View.VISIBLE);
+            }
         } else if (ACTION_HIDE.equals(action)) {
+            if (floatingView != null) {
+                floatingView.setVisibility(View.GONE);
+            }
+        } else if (ACTION_UPDATE_STEP.equals(action)) {
             if (floatingView != null) floatingView.setVisibility(View.GONE);
         } else if (ACTION_UPDATE_STEP.equals(action)) {
             String title = intent.getStringExtra(EXTRA_TASK_TITLE);
@@ -371,6 +402,7 @@ public final class AgentFloatingService extends Service {
             try {
                 windowManager.removeView(floatingView);
             } catch (Exception ignored) {}
+            floatingView = null;
         }
     }
 }

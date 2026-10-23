@@ -6,10 +6,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -56,6 +58,7 @@ public final class MainActivity extends Activity {
     private LinearLayout taskList;
     private LinearLayout memoryList;
     private TextView activityStatus;
+    private TextView floatPermStatus;
     private TextView traceformStatus;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
@@ -83,6 +86,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        updateFloatPermStatus();
         expireRemoteUriGrant();
         try {
             int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
@@ -223,20 +227,56 @@ public final class MainActivity extends Activity {
 
         // --- DASHBOARD CARD 3: AUTOMATION & CONTROLS ---
         LinearLayout autoCard = createCard(page, IconFactory.IconType.SCREEN, "跨应用悬浮胶囊与语音中枢", 0xFF00695C);
+
+        floatPermStatus = new TextView(this);
+        floatPermStatus.setTextSize(12);
+        floatPermStatus.setPadding(0, dp(4), 0, dp(4));
+        updateFloatPermStatus();
+        autoCard.addView(floatPermStatus);
+
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        autoBtnRow.setPadding(0, dp(8), 0, 0);
+        autoBtnRow.setPadding(0, dp(4), 0, 0);
 
         Button toggleFloatingBtn = new Button(this);
         toggleFloatingBtn.setText("开启/切换悬浮胶囊");
         toggleFloatingBtn.setTextSize(12);
         toggleFloatingBtn.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("开启悬浮胶囊权限")
+                        .setMessage("悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Agent OS 并开启【在其他应用上层显示】。")
+                        .setPositiveButton("前往设置", (dialog, which) -> {
+                            try {
+                                Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:" + getPackageName()));
+                                startActivity(reqIntent);
+                            } catch (Exception e) {
+                                startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
+                return;
+            }
+
             Intent fIntent = new Intent(this, AgentFloatingService.class);
-            fIntent.setAction(AgentFloatingService.ACTION_SHOW);
+            fIntent.setAction(AgentFloatingService.ACTION_TOGGLE);
             startService(fIntent);
-            Toast.makeText(this, "悬浮胶囊 2.0 已启动", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
         });
         autoBtnRow.addView(toggleFloatingBtn);
+
+        Button hideFloatingBtn = new Button(this);
+        hideFloatingBtn.setText("隐藏胶囊");
+        hideFloatingBtn.setTextSize(12);
+        hideFloatingBtn.setOnClickListener(v -> {
+            Intent fIntent = new Intent(this, AgentFloatingService.class);
+            fIntent.setAction(AgentFloatingService.ACTION_HIDE);
+            startService(fIntent);
+            Toast.makeText(this, "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
+        });
+        autoBtnRow.addView(hideFloatingBtn);
 
         Button testVoiceBtn = new Button(this);
         testVoiceBtn.setText("离线语音 VAD 测试");
@@ -1391,6 +1431,18 @@ public final class MainActivity extends Activity {
         button.setEnabled(!busy);
         persistentButtons.add(button);
         parent.addView(button, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+    }
+
+    private void updateFloatPermStatus() {
+        if (floatPermStatus == null) return;
+        boolean canDraw = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this);
+        if (canDraw) {
+            floatPermStatus.setText("悬浮窗权限状态：已授权 (可在任意应用顶层呼出)");
+            floatPermStatus.setTextColor(0xFF00796B);
+        } else {
+            floatPermStatus.setText("悬浮窗权限状态：未授权 (点击下方按钮前往系统设置开启)");
+            floatPermStatus.setTextColor(0xFFD32F2F);
+        }
     }
 
     private void addPageButton(LinearLayout parent, String label, View.OnClickListener listener) {
