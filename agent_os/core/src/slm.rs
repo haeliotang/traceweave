@@ -83,10 +83,76 @@ fn get_weights() -> &'static [[i8; EMBEDDING_DIM]; NUM_CAPABILITY_CLASSES] {
     })
 }
 
-/// Computes on-device quantized neural logit predictions across the 6 capability classes.
-pub fn infer_intent_logits(goal: &str, memories: &[String]) -> [f32; NUM_CAPABILITY_CLASSES] {
+static PROJECTION_WEIGHTS_F32: OnceLock<[[f32; EMBEDDING_DIM]; NUM_CAPABILITY_CLASSES]> = OnceLock::new();
+
+pub fn get_weights_f32() -> &'static [[f32; EMBEDDING_DIM]; NUM_CAPABILITY_CLASSES] {
+    PROJECTION_WEIGHTS_F32.get_or_init(|| {
+        let raw = get_weights();
+        let mut f_weights = [[0.0f32; EMBEDDING_DIM]; NUM_CAPABILITY_CLASSES];
+        for c in 0..NUM_CAPABILITY_CLASSES {
+            for d in 0..EMBEDDING_DIM {
+                f_weights[c][d] = raw[c][d] as f32 * WEIGHT_SCALE;
+            }
+        }
+        f_weights
+    })
+}
+
+#[cfg(target_arch = "aarch64")]
+#[inline(always)]
+pub unsafe fn dot_product_64_neon(w: &[f32; EMBEDDING_DIM], e: &[f32; EMBEDDING_DIM]) -> f32 {
+    use std::arch::aarch64::*;
+    let mut acc0 = vdupq_n_f32(0.0);
+    let mut acc1 = vdupq_n_f32(0.0);
+    let mut acc2 = vdupq_n_f32(0.0);
+    let mut acc3 = vdupq_n_f32(0.0);
+
+    let w_ptr = w.as_ptr();
+    let e_ptr = e.as_ptr();
+
+    // 16 floats * 4 unrolled blocks = 64 floats total
+    acc0 = vfmaq_f32(acc0, vld1q_f32(w_ptr.add(0)), vld1q_f32(e_ptr.add(0)));
+    acc1 = vfmaq_f32(acc1, vld1q_f32(w_ptr.add(4)), vld1q_f32(e_ptr.add(4)));
+    acc2 = vfmaq_f32(acc2, vld1q_f32(w_ptr.add(8)), vld1q_f32(e_ptr.add(8)));
+    acc3 = vfmaq_f32(acc3, vld1q_f32(w_ptr.add(12)), vld1q_f32(e_ptr.add(12)));
+
+    acc0 = vfmaq_f32(acc0, vld1q_f32(w_ptr.add(16)), vld1q_f32(e_ptr.add(16)));
+    acc1 = vfmaq_f32(acc1, vld1q_f32(w_ptr.add(20)), vld1q_f32(e_ptr.add(20)));
+    acc2 = vfmaq_f32(acc2, vld1q_f32(w_ptr.add(24)), vld1q_f32(e_ptr.add(24)));
+    acc3 = vfmaq_f32(acc3, vld1q_f32(w_ptr.add(28)), vld1q_f32(e_ptr.add(28)));
+
+    acc0 = vfmaq_f32(acc0, vld1q_f32(w_ptr.add(32)), vld1q_f32(e_ptr.add(32)));
+    acc1 = vfmaq_f32(acc1, vld1q_f32(w_ptr.add(36)), vld1q_f32(e_ptr.add(36)));
+    acc2 = vfmaq_f32(acc2, vld1q_f32(w_ptr.add(40)), vld1q_f32(e_ptr.add(40)));
+    acc3 = vfmaq_f32(acc3, vld1q_f32(w_ptr.add(44)), vld1q_f32(e_ptr.add(44)));
+
+    acc0 = vfmaq_f32(acc0, vld1q_f32(w_ptr.add(48)), vld1q_f32(e_ptr.add(48)));
+    acc1 = vfmaq_f32(acc1, vld1q_f32(w_ptr.add(52)), vld1q_f32(e_ptr.add(52)));
+    acc2 = vfmaq_f32(acc2, vld1q_f32(w_ptr.add(56)), vld1q_f32(e_ptr.add(56)));
+    acc3 = vfmaq_f32(acc3, vld1q_f32(w_ptr.add(60)), vld1q_f32(e_ptr.add(60)));
+
+    let sum01 = vaddq_f32(acc0, acc1);
+    let sum23 = vaddq_f32(acc2, acc3);
+    let sum_all = vaddq_f32(sum01, sum23);
+    vaddvq_f32(sum_all)
+}
+
+#[inline(always)]
+pub fn dot_product_64(w: &[f32; EMBEDDING_DIM], e: &[f32; EMBEDDING_DIM]) -> f32 {
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        dot_product_64_neon(w, e)
+    }
+    #[cfg(not(target_arch = "aarch64"))]
+    {
+        w.iter().zip(e.iter()).map(|(wi, ei)| wi * ei).sum()
+    }
+}
+
+/// Computes on-device quantized neural logit predictions across the 6 capability classes using string slices.
+pub fn infer_intent_logits_str_slices(goal: &str, memories: &[&str]) -> [f32; NUM_CAPABILITY_CLASSES] {
     let token_map = get_token_map();
-    let weights = get_weights();
+    let weights_f32 = get_weights_f32();
     let lower_goal = goal.to_lowercase();
 
     let mut embedding = [0.0f32; EMBEDDING_DIM];
@@ -111,14 +177,12 @@ pub fn infer_intent_logits(goal: &str, memories: &[String]) -> [f32; NUM_CAPABIL
         }
     }
 
-    // Dense quantized vector projection: Logits = Sigmoid(W_q * S * embedding + Bias)
+    // Dense quantized vector projection: Logits = Sigmoid(W_f32 * embedding + Bias)
+    // Accelerated via ARMv8-A NEON SIMD intrinsics on aarch64
     let mut logits = [0.0f32; NUM_CAPABILITY_CLASSES];
     for c in 0..NUM_CAPABILITY_CLASSES {
-        let mut sum = BIASES[c];
-        let row = &weights[c];
-        for d in 0..EMBEDDING_DIM {
-            sum += (row[d] as f32 * WEIGHT_SCALE) * embedding[d];
-        }
+        let dot = dot_product_64(&weights_f32[c], &embedding);
+        let sum = BIASES[c] + dot;
         logits[c] = 1.0 / (1.0 + (-sum).exp());
     }
 
@@ -132,6 +196,12 @@ pub fn infer_intent_logits(goal: &str, memories: &[String]) -> [f32; NUM_CAPABIL
     }
 
     logits
+}
+
+/// Computes on-device quantized neural logit predictions across the 6 capability classes.
+pub fn infer_intent_logits(goal: &str, memories: &[String]) -> [f32; NUM_CAPABILITY_CLASSES] {
+    let mem_refs: Vec<&str> = memories.iter().map(|s| s.as_str()).collect();
+    infer_intent_logits_str_slices(goal, &mem_refs)
 }
 
 /// Generates a structured multi-step execution plan based on on-device SLM intent classification.
@@ -292,6 +362,23 @@ mod tests {
         assert_eq!(p.steps[0].capability, DEMO_NOTE_CAPABILITY);
         assert_eq!(p.steps[1].capability, NOTIFICATION_CAPABILITY);
         assert_eq!(p.steps[2].capability, "builtin.synthesis");
+    }
+
+    #[test]
+    fn test_neon_simd_dot_product_equivalence() {
+        let weights_f32 = get_weights_f32();
+        let mut embedding = [0.0f32; EMBEDDING_DIM];
+        for i in 0..EMBEDDING_DIM {
+            embedding[i] = (i as f32) * 0.125;
+        }
+
+        for c in 0..NUM_CAPABILITY_CLASSES {
+            let row = &weights_f32[c];
+            let scalar_res: f32 = row.iter().zip(embedding.iter()).map(|(w, e)| w * e).sum();
+            let simd_res = dot_product_64(row, &embedding);
+            let diff = (scalar_res - simd_res).abs();
+            assert!(diff < 1e-4, "Class {c} precision mismatch: scalar={scalar_res}, simd={simd_res}");
+        }
     }
 
     #[test]

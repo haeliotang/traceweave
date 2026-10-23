@@ -220,28 +220,49 @@ final class LocalSlmEngine implements ReasoningEngine {
     }
 
     /**
+     * Computes quantized neural logit predictions across the 6 capability classes using Zero-Copy JNI.
+     */
+    static void inferIntentLogitsZeroCopy(String goal, String[] memories, float[] outLogits) {
+        if (NativeAgentCore.isAvailable()) {
+            NativeAgentCore.inferZeroCopy(goal, memories, outLogits);
+            return;
+        }
+        List<AgentStore.Memory> memList = null;
+        if (memories != null && memories.length > 0) {
+            memList = new ArrayList<>();
+            for (int i = 0; i < memories.length; i++) {
+                memList.add(new AgentStore.Memory("m-" + i, "fact", memories[i], "test", "", 0, 0));
+            }
+        }
+        float[] res = computeJavaLogits(goal, memList);
+        System.arraycopy(res, 0, outLogits, 0, Math.min(res.length, outLogits.length));
+    }
+
+    /**
      * Computes quantized neural logit predictions across the 6 capability classes.
      */
     static float[] inferIntentLogits(String goal, List<AgentStore.Memory> memories) {
         if (NativeAgentCore.isAvailable()) {
             try {
-                org.json.JSONArray memArr = new org.json.JSONArray();
-                if (memories != null) {
-                    for (AgentStore.Memory m : memories) {
-                        memArr.put(m.content);
+                float[] nativeLogits = new float[NUM_CAPABILITY_CLASSES];
+                String[] memStrs = null;
+                if (memories != null && !memories.isEmpty()) {
+                    memStrs = new String[memories.size()];
+                    for (int i = 0; i < memories.size(); i++) {
+                        memStrs[i] = memories.get(i).content;
                     }
                 }
-                String json = NativeAgentCore.infer(goal, memArr.toString());
-                org.json.JSONArray res = new org.json.JSONArray(json);
-                float[] nativeLogits = new float[res.length()];
-                for (int i = 0; i < res.length(); i++) {
-                    nativeLogits[i] = (float) res.getDouble(i);
-                }
+                NativeAgentCore.inferZeroCopy(goal, memStrs, nativeLogits);
                 return nativeLogits;
             } catch (Throwable t) {
                 // Graceful fallback to Java quantized feed-forward projection on exception
             }
         }
+
+        return computeJavaLogits(goal, memories);
+    }
+
+    private static float[] computeJavaLogits(String goal, List<AgentStore.Memory> memories) {
 
         float[] embedding = new float[EMBEDDING_DIM];
         String lowerGoal = goal.toLowerCase(Locale.ROOT);

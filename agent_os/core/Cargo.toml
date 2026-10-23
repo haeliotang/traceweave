@@ -10,6 +10,7 @@ name = "agent_os_core"
 crate-type = ["lib", "staticlib", "cdylib"]
 
 [dependencies]
+boa_engine = { version = "0.22.0", default-features = false, features = ["jsvalue-enum"] }
 jni = { version = "0.21", default-features = false }
 regex = "1.11.1"
 rusqlite = { version = "0.40.2", features = ["bundled"] }

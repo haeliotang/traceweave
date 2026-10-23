@@ -1,4 +1,4 @@
-use jni::objects::{JClass, JString};
+use jni::objects::{JClass, JFloatArray, JObjectArray, JString};
 use jni::sys::{jboolean, jint, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
@@ -66,6 +66,96 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeInfer(
     let memories: Vec<String> = serde_json::from_str(&mems_str).unwrap_or_default();
     let logits = slm::infer_intent_logits(&goal_str, &memories);
     let output_json = serde_json::to_string(&logits).unwrap_or_default();
+
+    match env.new_string(output_json) {
+        Ok(js) => js.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeInferZeroCopy(
+    mut env: JNIEnv,
+    _class: JClass,
+    goal: JString,
+    memories: JObjectArray,
+    out_logits: JFloatArray,
+) {
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return,
+    };
+
+    let mem_refs: Vec<String> = if !memories.is_null() {
+        let len = env.get_array_length(&memories).unwrap_or(0);
+        let mut v = Vec::with_capacity(len as usize);
+        for i in 0..len {
+            if let Ok(obj) = env.get_object_array_element(&memories, i) {
+                if !obj.is_null() {
+                    let jstr = JString::from(obj);
+                    let str_res: Result<String, _> = env.get_string(&jstr).map(|s| s.into());
+                    if let Ok(s) = str_res {
+                        v.push(s);
+                    }
+                }
+            }
+        }
+        v
+    } else {
+        Vec::new()
+    };
+
+    let mem_slices: Vec<&str> = mem_refs.iter().map(|s| s.as_str()).collect();
+    let logits = slm::infer_intent_logits_str_slices(&goal_str, &mem_slices);
+
+    // Direct primitive array copy: stack -> Java float[] buffer (Zero-Copy)
+    let _ = env.set_float_array_region(&out_logits, 0, &logits);
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeExecuteJsTool(
+    mut env: JNIEnv,
+    _class: JClass,
+    script: JString,
+    tool_name: JString,
+    params_json: JString,
+) -> jstring {
+    let script_opt: Option<String> = if !script.is_null() {
+        env.get_string(&script).ok().map(|s| s.into())
+    } else {
+        None
+    };
+
+    let tool_str: String = match env.get_string(&tool_name) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let params_str: String = if !params_json.is_null() {
+        match env.get_string(&params_json) {
+            Ok(s) => s.into(),
+            Err(_) => "{}".to_string(),
+        }
+    } else {
+        "{}".to_string()
+    };
+
+    let result = crate::js_engine::JsEngine::execute_mcp_tool(
+        script_opt.as_deref().filter(|s| !s.trim().is_empty()),
+        &tool_str,
+        &params_str,
+    );
+
+    let output_json = match result {
+        Ok(call_res) => serde_json::to_string(&call_res).unwrap_or_default(),
+        Err(err) => serde_json::to_string(&crate::mcp::McpCallResult {
+            content: vec![crate::mcp::McpContent {
+                content_type: "text".to_string(),
+                text: format!("In-process JS engine error: {}", err),
+            }],
+            is_error: true,
+        }).unwrap_or_default(),
+    };
 
     match env.new_string(output_json) {
         Ok(js) => js.into_raw(),

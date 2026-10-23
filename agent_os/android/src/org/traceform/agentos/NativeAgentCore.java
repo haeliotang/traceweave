@@ -95,10 +95,30 @@ public final class NativeAgentCore {
         return nativeStoreSelectMemories(goal, topK);
     }
 
+    // =========================================================================
+    // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
+    // =========================================================================
+
+    public static void inferZeroCopy(String goal, String[] memories, float[] outLogits) {
+        if (!IS_LOADED) {
+            throw new IllegalStateException("Native core not available");
+        }
+        nativeInferZeroCopy(goal, memories, outLogits);
+    }
+
+    public static String executeJsTool(String script, String toolName, String paramsJson) {
+        if (!IS_LOADED) {
+            throw new IllegalStateException("Native core not available");
+        }
+        return nativeExecuteJsTool(script, toolName, paramsJson);
+    }
+
     // Native JNI declarations
     public static native boolean nativeIsLoaded();
     public static native String nativeRedact(String text);
     public static native String nativeInfer(String goal, String capabilitiesJson);
+    public static native void nativeInferZeroCopy(String goal, String[] memories, float[] outLogits);
+    public static native String nativeExecuteJsTool(String script, String toolName, String paramsJson);
     public static native String nativeRankMemories(String goal, String memoriesJson, int topK);
 
     public static native boolean nativeStoreOpen(String dbPath);

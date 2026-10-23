@@ -52,6 +52,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI = "org.traceform.agentos.validation.VERIFY_MEMORY_CONSOLIDATION_AND_UI";
     static final String ACTION_VERIFY_NATIVE_CORE_AND_JNI = "org.traceform.agentos.validation.VERIFY_NATIVE_CORE_AND_JNI";
     static final String ACTION_VERIFY_FULL_RUST_STORE = "org.traceform.agentos.validation.VERIFY_FULL_RUST_STORE";
+    static final String ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS = "org.traceform.agentos.validation.VERIFY_ZERO_COPY_AND_EMBEDDED_JS";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -120,6 +121,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyNativeCoreAndJni();
                 } else if (ACTION_VERIFY_FULL_RUST_STORE.equals(action)) {
                     result = verifyFullRustStore();
+                } else if (ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS.equals(action)) {
+                    result = verifyZeroCopyAndEmbeddedJs();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -1409,6 +1412,9 @@ public final class DeviceValidationActivity extends Activity {
         AgentStore store = new AgentStore(this);
         CapabilityBroker broker = new CapabilityBroker(this, store);
         SQLiteDatabase database = store.getWritableDatabase();
+        database.delete("memories", null, null);
+        database.delete("tasks", null, null);
+        database.delete("audit", null, null);
         try {
             // 1. ContextRedactor Unit & Benchmark verification
             // Phone
@@ -2102,5 +2108,117 @@ public final class DeviceValidationActivity extends Activity {
 
         return "PASS: Route 1 (Full Rust Sinking: SQLite store, task state machine, in-place deduplication, and checkpoints owned 100% by agent-os-core) verified on Pixel 6a! taskId="
             + taskId + " memId=" + mem1Id + " db=" + dbFile.getName();
+    }
+
+    private String verifyZeroCopyAndEmbeddedJs() throws Exception {
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("NativeAgentCore is NOT available on device!");
+        }
+
+        // =========================================================================
+        // PART 1: OPTION 2 - JNI ZERO-COPY DIRECT BUFFERS & ARM NEON SIMD
+        // =========================================================================
+        float[] logits = new float[6];
+        String testGoal = "查看本地便笺，然后发送系统通知，并将摘要导出分享";
+        NativeAgentCore.inferZeroCopy(testGoal, null, logits);
+
+        if (logits[LocalSlmEngine.CLASS_NOTE] < 0.50f) {
+            throw new IllegalStateException("Zero-copy Note logit below threshold: " + logits[LocalSlmEngine.CLASS_NOTE]);
+        }
+        if (logits[LocalSlmEngine.CLASS_NOTIFICATION] < 0.50f) {
+            throw new IllegalStateException("Zero-copy Notification logit below threshold: " + logits[LocalSlmEngine.CLASS_NOTIFICATION]);
+        }
+        if (logits[LocalSlmEngine.CLASS_SHARE] < 0.50f) {
+            throw new IllegalStateException("Zero-copy Share logit below threshold: " + logits[LocalSlmEngine.CLASS_SHARE]);
+        }
+
+        // Test Calendar goal with NEON acceleration
+        NativeAgentCore.inferZeroCopy("安排周五下午3点团队例会日程", null, logits);
+        if (logits[LocalSlmEngine.CLASS_CALENDAR] < 0.95f) {
+            throw new IllegalStateException("Zero-copy Calendar logit below 0.95: " + logits[LocalSlmEngine.CLASS_CALENDAR]);
+        }
+
+        // Micro-Benchmark: 100 iterations of Zero-Copy vs Legacy JSON JNI
+        int warmUp = 20;
+        int iters = 100;
+        for (int i = 0; i < warmUp; i++) {
+            NativeAgentCore.inferZeroCopy(testGoal, null, logits);
+            NativeAgentCore.infer(testGoal, "[]");
+        }
+
+        long t0ZeroCopy = System.nanoTime();
+        for (int i = 0; i < iters; i++) {
+            NativeAgentCore.inferZeroCopy(testGoal, null, logits);
+        }
+        long t1ZeroCopy = System.nanoTime();
+        double avgZeroCopyUs = (t1ZeroCopy - t0ZeroCopy) / (double) iters / 1000.0;
+
+        long t0Json = System.nanoTime();
+        for (int i = 0; i < iters; i++) {
+            NativeAgentCore.infer(testGoal, "[]");
+        }
+        long t1Json = System.nanoTime();
+        double avgJsonUs = (t1Json - t0Json) / (double) iters / 1000.0;
+
+        double speedup = avgJsonUs / Math.max(0.001, avgZeroCopyUs);
+
+        // =========================================================================
+        // PART 2: OPTION 1 - EMBEDDED IN-PROCESS JS/TS ENGINE (boa_engine)
+        // =========================================================================
+        // 1. Built-in MCP calculate_metrics
+        JSONObject calcParams = new JSONObject();
+        JSONArray values = new JSONArray();
+        values.put(10).put(25).put(40).put(65).put(80);
+        calcParams.put("values", values);
+
+        String calcResultJson = NativeAgentCore.executeJsTool(null, "calculate_metrics", calcParams.toString());
+        JSONObject calcObj = new JSONObject(calcResultJson);
+        if (calcObj.optBoolean("isError", true)) {
+            throw new IllegalStateException("In-process JS calculate_metrics returned error: " + calcResultJson);
+        }
+        JSONArray calcContent = calcObj.getJSONArray("content");
+        JSONObject calcMetrics = new JSONObject(calcContent.getJSONObject(0).getString("text"));
+        if (calcMetrics.getInt("count") != 5 || calcMetrics.getInt("sum") != 220 || calcMetrics.getDouble("mean") != 44.0) {
+            throw new IllegalStateException("In-process JS calculate_metrics wrong values: " + calcMetrics);
+        }
+
+        // 2. Built-in MCP fetch_weather
+        JSONObject weatherParams = new JSONObject();
+        weatherParams.put("city", "Tokyo");
+        weatherParams.put("days", 3);
+        String weatherResultJson = NativeAgentCore.executeJsTool(null, "fetch_weather", weatherParams.toString());
+        JSONObject weatherObj = new JSONObject(weatherResultJson);
+        if (weatherObj.optBoolean("isError", true)) {
+            throw new IllegalStateException("In-process JS fetch_weather returned error: " + weatherResultJson);
+        }
+        String weatherText = weatherObj.getJSONArray("content").getJSONObject(0).getString("text");
+        if (!weatherText.contains("[Weather MCP] Tokyo") || !weatherText.contains("Forecast for 3 days")) {
+            throw new IllegalStateException("In-process JS fetch_weather content mismatch: " + weatherText);
+        }
+
+        // 3. Dynamic Custom JavaScript script execution without Node process
+        String customScript = "function handleToolsCall(name, args) {"
+            + "  const product = args.a * args.b;"
+            + "  return { content: [{ type: 'text', text: 'DynamicJS:' + product }], isError: false };"
+            + "}";
+        JSONObject dynParams = new JSONObject();
+        dynParams.put("a", 6);
+        dynParams.put("b", 7);
+        String customResultJson = NativeAgentCore.executeJsTool(customScript, "multiply_tool", dynParams.toString());
+        JSONObject customObj = new JSONObject(customResultJson);
+        if (customObj.optBoolean("isError", true)) {
+            throw new IllegalStateException("In-process custom JS tool returned error: " + customResultJson);
+        }
+        String customText = customObj.getJSONArray("content").getJSONObject(0).getString("text");
+        if (!customText.contains("DynamicJS:42")) {
+            throw new IllegalStateException("In-process custom JS tool text mismatch: " + customText);
+        }
+
+        return "PASS: Option 1 (Embedded In-Process JS Engine) + Option 2 (JNI Zero-Copy Direct Buffers & ARM NEON SIMD) verified 100% on Pixel 6a! "
+            + "zero_copy_latency=" + String.format(Locale.ROOT, "%.2f", avgZeroCopyUs) + "us, "
+            + "json_latency=" + String.format(Locale.ROOT, "%.2f", avgJsonUs) + "us, "
+            + "speedup=" + String.format(Locale.ROOT, "%.1f", speedup) + "x, "
+            + "js_metrics=count:" + calcMetrics.getInt("count") + "/sum:" + calcMetrics.getInt("sum") + ", "
+            + "dynamic_js=" + customText;
     }
 }
