@@ -15,3 +15,7 @@ pub mod edge_slm;
 pub mod sync;
 pub mod voice_dsp;
 pub mod screen_agent;
+pub mod daemon;
+pub mod physical_sensorium;
+pub mod vision;
+pub mod hardware_broker;

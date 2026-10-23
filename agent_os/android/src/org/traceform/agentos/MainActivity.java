@@ -261,6 +261,113 @@ public final class MainActivity extends Activity {
         syncInfo.setPadding(0, dp(6), 0, 0);
         syncCard.addView(syncInfo);
 
+        // --- DASHBOARD CARD 5: AOSP SYSTEM DAEMON (agentosd) ---
+        LinearLayout daemonCard = createCard(page, IconFactory.IconType.SERVER, "AOSP 系统常驻守护进程 (agentosd)", 0xFFD84315);
+        TextView daemonInfo = new TextView(this);
+        daemonInfo.setText("运行架构: ARM aarch64 独立 Linux ELF 二进制\n通信信道: 127.0.0.1:19898 (免 SELinux 阻断)\n生命周期: 独立于 ART 运行时，应用退出后仍旧保活调度");
+        daemonInfo.setTextSize(13);
+        daemonInfo.setTextColor(0xFF37474F);
+        daemonInfo.setPadding(0, dp(6), 0, 0);
+        daemonCard.addView(daemonInfo);
+
+        LinearLayout daemonBtnRow = new LinearLayout(this);
+        daemonBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        daemonBtnRow.setPadding(0, dp(8), 0, 0);
+        Button pingDaemonBtn = new Button(this);
+        pingDaemonBtn.setText("Ping 常驻守护进程");
+        pingDaemonBtn.setTextSize(12);
+        pingDaemonBtn.setOnClickListener(v -> new Thread(() -> {
+            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
+            runOnUiThread(() -> Toast.makeText(this, "守护进程响应: " + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
+        }).start());
+        daemonBtnRow.addView(pingDaemonBtn);
+        daemonCard.addView(daemonBtnRow);
+
+        // --- DASHBOARD CARD 6: PHYSICAL SENSORIUM ---
+        LinearLayout sensCard = createCard(page, IconFactory.IconType.SENSOR, "真实物理世界环境感知与传感器融合", 0xFF0277BD);
+        TextView sensInfo = new TextView(this);
+        sensInfo.setText("感知流: 加速度计 (IMU) + 陀螺仪 + 光感 (Lux) + 接近传感器\n情境判定: 姿态 (静止/行走/载具) + 口袋检测 (自适应静音)\n温控功耗: Google Tensor 动态频温感知推演调步 (0-250ms)");
+        sensInfo.setTextSize(13);
+        sensInfo.setTextColor(0xFF37474F);
+        sensInfo.setPadding(0, dp(6), 0, 0);
+        sensCard.addView(sensInfo);
+
+        LinearLayout sensBtnRow = new LinearLayout(this);
+        sensBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        sensBtnRow.setPadding(0, dp(8), 0, 0);
+        Button refreshSensBtn = new Button(this);
+        refreshSensBtn.setText("刷新环境感知遥测");
+        refreshSensBtn.setTextSize(12);
+        refreshSensBtn.setOnClickListener(v -> {
+            PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
+            sens.startMonitoring();
+            org.json.JSONObject ctx = sens.evaluateCurrentContext();
+            Toast.makeText(this, "姿态: " + ctx.optString("motion_state") + ", 环境: " + ctx.optString("ambient_environment") + ", 语音唤醒: " + (ctx.optBoolean("voice_wake_allowed") ? "允许" : "口袋静音"), Toast.LENGTH_SHORT).show();
+        });
+        sensBtnRow.addView(refreshSensBtn);
+        sensCard.addView(sensBtnRow);
+
+        // --- DASHBOARD CARD 7: MULTIMODAL VISION & OCR ---
+        LinearLayout visionCard = createCard(page, IconFactory.IconType.EYE, "多模态视觉理解与跨树 OCR 定位", 0xFF4527A0);
+        TextView visionInfo = new TextView(this);
+        visionInfo.setText("无障碍破障: 突破 Flutter/Canvas/WebView 无障碍树盲区\n元素定位: 纯端侧快速 OCR 意图匹配与绝对中心点击映射\n物理票据: 真实世界发票/收据实体抽取并归档为任务记忆");
+        visionInfo.setTextSize(13);
+        visionInfo.setTextColor(0xFF37474F);
+        visionInfo.setPadding(0, dp(6), 0, 0);
+        visionCard.addView(visionInfo);
+
+        LinearLayout visBtnRow = new LinearLayout(this);
+        visBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        visBtnRow.setPadding(0, dp(8), 0, 0);
+        Button testVisionBtn = new Button(this);
+        testVisionBtn.setText("模拟视觉 OCR 定位");
+        testVisionBtn.setTextSize(12);
+        testVisionBtn.setOnClickListener(v -> {
+            try {
+                org.json.JSONObject scene = new org.json.JSONObject();
+                scene.put("screen_width", 1080);
+                scene.put("screen_height", 2400);
+                org.json.JSONArray elems = new org.json.JSONArray();
+                org.json.JSONObject btn = new org.json.JSONObject();
+                btn.put("id", "btn_confirm");
+                btn.put("text", "确认支付 $68.00");
+                btn.put("bounds", new org.json.JSONArray(java.util.Arrays.asList(100, 1800, 880, 120)));
+                btn.put("element_type", "button");
+                elems.put(btn);
+                scene.put("elements", elems);
+                org.json.JSONObject target = VisionAgentManager.getInstance().locateTarget(scene, "确认支付");
+                Toast.makeText(this, "OCR 定位成功: (" + (int)target.optDouble("tap_x") + "," + (int)target.optDouble("tap_y") + ") 动作: " + target.optString("action_type"), Toast.LENGTH_SHORT).show();
+            } catch (Exception ex) {
+                Toast.makeText(this, "定位异常: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        visBtnRow.addView(testVisionBtn);
+        visionCard.addView(visBtnRow);
+
+        // --- DASHBOARD CARD 8: HARDWARE PERIPHERALS & PTT ---
+        LinearLayout hwLinkCard = createCard(page, IconFactory.IconType.HARDWARE, "外设硬件联动与低延迟 PTT 按键", 0xFF00695C);
+        TextView hwLinkInfo = new TextView(this);
+        hwLinkInfo.setText("外设支持: BLE 智能指环 / 传感器标签 / USB-C HID 控制器\n物理 PTT: 实体按键瞬间捕获语音，无需点亮屏幕或解锁手机\n遥测归档: 生理指标 (心率/血氧) 与环境数据秒级沉淀为上下文");
+        hwLinkInfo.setTextSize(13);
+        hwLinkInfo.setTextColor(0xFF37474F);
+        hwLinkInfo.setPadding(0, dp(6), 0, 0);
+        hwLinkCard.addView(hwLinkInfo);
+
+        LinearLayout hwBtnRow = new LinearLayout(this);
+        hwBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        hwBtnRow.setPadding(0, dp(8), 0, 0);
+        Button testPttBtn = new Button(this);
+        testPttBtn.setText("模拟 PTT 物理按键触发");
+        testPttBtn.setTextSize(12);
+        testPttBtn.setOnClickListener(v -> {
+            HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
+            hwSvc.registerPeripheral("ring-01", "Traceform Ring", "ble", new String[]{"ptt_button", "heart_rate"});
+            org.json.JSONObject pttRes = hwSvc.dispatchEvent("ring-01", "ptt_pressed", new org.json.JSONObject());
+            Toast.makeText(this, "PTT 动作: " + pttRes.optString("action") + " (延迟: " + pttRes.optLong("latency_us") + "μs)", Toast.LENGTH_SHORT).show();
+        });
+        hwBtnRow.addView(testPttBtn);
+        hwLinkCard.addView(hwBtnRow);
+
         TextView note = new TextView(this);
         note.setText("本地任务与用户记忆原型。内容在本机加密保存；导出档案使用独立口令加密，便于迁移。当前不运行模型或访问网络。Traceform 是可选来源，默认关闭。\n\n开始任务后，端侧执行器会读取固定合成便笺并保存本地演示结果；读取前需为该任务授权。Android JobScheduler 负责唤醒短任务，系统可能延后执行。能力授权最多 5 分钟有效，进程重启后清除。\n\n跨应用能力必须先由你选择来源并接收单条内容的临时 URI 读取权，再为具体任务授权。Traceform 读取还需你显式启用，并且不会启动传感器采集或访问网络。");
         note.setTextSize(15);

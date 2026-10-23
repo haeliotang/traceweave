@@ -9,6 +9,10 @@ description = "Native high-performance core engine for Agent OS: SLM inference, 
 name = "agent_os_core"
 crate-type = ["lib", "staticlib", "cdylib"]
 
+[[bin]]
+name = "agentosd"
+path = "src/bin/agentosd.rs"
+
 [dependencies]
 aes-gcm = "0.10.3"
 base64 = "0.22"

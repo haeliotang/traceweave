@@ -32,7 +32,11 @@ public final class IconFactory {
         STATUS_DOT_AMBER,
         STATUS_DOT_GRAY,
         CHECK,
-        ALERT
+        ALERT,
+        SERVER,
+        SENSOR,
+        EYE,
+        HARDWARE
     }
 
     public static Drawable getIcon(Context context, IconType type, int color, int dpSize) {
@@ -170,6 +174,18 @@ public final class IconFactory {
                     break;
                 case ALERT:
                     drawAlert(canvas, s);
+                    break;
+                case SERVER:
+                    drawServer(canvas, s);
+                    break;
+                case SENSOR:
+                    drawSensor(canvas, s);
+                    break;
+                case EYE:
+                    drawEye(canvas, s);
+                    break;
+                case HARDWARE:
+                    drawHardware(canvas, s);
                     break;
             }
 
@@ -353,6 +369,55 @@ public final class IconFactory {
 
             canvas.drawLine(s * 0.50f, s * 0.40f, s * 0.50f, s * 0.60f, paint);
             canvas.drawCircle(s * 0.50f, s * 0.70f, s * 0.04f, fillPaint);
+        }
+
+        private void drawServer(Canvas canvas, float s) {
+            // Upper rack blade
+            RectF r1 = new RectF(s * 0.20f, s * 0.22f, s * 0.80f, s * 0.46f);
+            canvas.drawRoundRect(r1, s * 0.04f, s * 0.04f, paint);
+            canvas.drawCircle(s * 0.32f, s * 0.34f, s * 0.035f, fillPaint);
+            canvas.drawLine(s * 0.46f, s * 0.34f, s * 0.70f, s * 0.34f, paint);
+
+            // Lower rack blade
+            RectF r2 = new RectF(s * 0.20f, s * 0.54f, s * 0.80f, s * 0.78f);
+            canvas.drawRoundRect(r2, s * 0.04f, s * 0.04f, paint);
+            canvas.drawCircle(s * 0.32f, s * 0.66f, s * 0.035f, fillPaint);
+            canvas.drawLine(s * 0.46f, s * 0.66f, s * 0.70f, s * 0.66f, paint);
+        }
+
+        private void drawSensor(Canvas canvas, float s) {
+            // Outer compass/motion ring
+            canvas.drawCircle(s * 0.50f, s * 0.50f, s * 0.28f, paint);
+            // Cardinal axis ticks
+            canvas.drawLine(s * 0.50f, s * 0.14f, s * 0.50f, s * 0.22f, paint);
+            canvas.drawLine(s * 0.50f, s * 0.78f, s * 0.50f, s * 0.86f, paint);
+            canvas.drawLine(s * 0.14f, s * 0.50f, s * 0.22f, s * 0.50f, paint);
+            canvas.drawLine(s * 0.78f, s * 0.50f, s * 0.86f, s * 0.50f, paint);
+            // Center inertial mass
+            canvas.drawCircle(s * 0.50f, s * 0.50f, s * 0.08f, fillPaint);
+        }
+
+        private void drawEye(Canvas canvas, float s) {
+            // Outer eye curve
+            Path p = new Path();
+            p.moveTo(s * 0.18f, s * 0.50f);
+            p.quadTo(s * 0.50f, s * 0.20f, s * 0.82f, s * 0.50f);
+            p.quadTo(s * 0.50f, s * 0.80f, s * 0.18f, s * 0.50f);
+            p.close();
+            canvas.drawPath(p, paint);
+            // Iris / pupil
+            canvas.drawCircle(s * 0.50f, s * 0.50f, s * 0.10f, fillPaint);
+        }
+
+        private void drawHardware(Canvas canvas, float s) {
+            // Smart ring / wearable hardware loop
+            canvas.drawCircle(s * 0.44f, s * 0.50f, s * 0.24f, paint);
+            // PTT push button trigger on the side
+            RectF ptt = new RectF(s * 0.64f, s * 0.40f, s * 0.76f, s * 0.60f);
+            canvas.drawRoundRect(ptt, s * 0.03f, s * 0.03f, fillPaint);
+            // Wireless wave arcs
+            RectF wave = new RectF(s * 0.74f, s * 0.32f, s * 0.90f, s * 0.68f);
+            canvas.drawArc(wave, -45, 90, false, paint);
         }
 
         @Override

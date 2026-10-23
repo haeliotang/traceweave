@@ -827,3 +827,119 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeClassify
     env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
 }
 
+// =========================================================================
+// PHASE 10: AOSP SYSTEM DAEMON, SENSOR FUSION, VISION OCR, HARDWARE BROKER
+// =========================================================================
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeQueryDaemon(
+    mut env: JNIEnv,
+    _class: JClass,
+    socket_path: JString,
+    request_json: JString,
+) -> jstring {
+    let path_str: String = match env.get_string(&socket_path) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let req_str: String = match env.get_string(&request_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::daemon::send_client_request(&path_str, &req_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeProcessSensorTelemetry(
+    mut env: JNIEnv,
+    _class: JClass,
+    telemetry_json: JString,
+) -> jstring {
+    let telem_str: String = match env.get_string(&telemetry_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::physical_sensorium::fuse_sensor_telemetry(&telem_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeVisualScene(
+    mut env: JNIEnv,
+    _class: JClass,
+    scene_json: JString,
+    query: JString,
+) -> jstring {
+    let scene_str: String = match env.get_string(&scene_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let q_str: String = match env.get_string(&query) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::vision::analyze_visual_scene(&scene_str, &q_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeParseVisualDocument(
+    mut env: JNIEnv,
+    _class: JClass,
+    ocr_json: JString,
+) -> jstring {
+    let ocr_str: String = match env.get_string(&ocr_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::vision::parse_visual_document(&ocr_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeRegisterPeripheral(
+    mut env: JNIEnv,
+    _class: JClass,
+    peripheral_json: JString,
+) -> jstring {
+    let dev_str: String = match env.get_string(&peripheral_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::hardware_broker::register_peripheral(&dev_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeDispatchHardwareEvent(
+    mut env: JNIEnv,
+    _class: JClass,
+    event_json: JString,
+) -> jstring {
+    let ev_str: String = match env.get_string(&event_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let result = crate::hardware_broker::dispatch_hardware_event(&ev_str)
+        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
+
+    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+

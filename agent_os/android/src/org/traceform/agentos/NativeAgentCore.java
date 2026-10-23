@@ -173,6 +173,40 @@ public final class NativeAgentCore {
     }
 
     // =========================================================================
+    // PHASE 10: AOSP SYSTEM DAEMON, SENSOR FUSION, VISION OCR, HARDWARE BROKER
+    // =========================================================================
+
+    public static String queryDaemon(String socketPath, String requestJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeQueryDaemon(socketPath, requestJson);
+    }
+
+    public static String processSensorTelemetry(String telemetryJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeProcessSensorTelemetry(telemetryJson);
+    }
+
+    public static String analyzeVisualScene(String sceneJson, String query) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeAnalyzeVisualScene(sceneJson, query);
+    }
+
+    public static String parseVisualDocument(String ocrJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeParseVisualDocument(ocrJson);
+    }
+
+    public static String registerPeripheral(String peripheralJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeRegisterPeripheral(peripheralJson);
+    }
+
+    public static String dispatchHardwareEvent(String eventJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeDispatchHardwareEvent(eventJson);
+    }
+
+    // =========================================================================
     // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
     // =========================================================================
 
@@ -226,4 +260,11 @@ public final class NativeAgentCore {
     public static native String nativeP2pExchange(String host, int port, String localEnvelopeJson);
     public static native String nativeAnalyzeVoicePcm(short[] pcmSamples);
     public static native String nativeClassifyVoiceIntent(String transcript);
+
+    public static native String nativeQueryDaemon(String socketPath, String requestJson);
+    public static native String nativeProcessSensorTelemetry(String telemetryJson);
+    public static native String nativeAnalyzeVisualScene(String sceneJson, String query);
+    public static native String nativeParseVisualDocument(String ocrJson);
+    public static native String nativeRegisterPeripheral(String peripheralJson);
+    public static native String nativeDispatchHardwareEvent(String eventJson);
 }

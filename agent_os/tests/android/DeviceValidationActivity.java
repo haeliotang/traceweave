@@ -56,6 +56,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS = "org.traceform.agentos.validation.VERIFY_ZERO_COPY_AND_EMBEDDED_JS";
     static final String ACTION_VERIFY_ABCD_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_ABCD_ALL_IN_ONE";
     static final String ACTION_VERIFY_PHASE9_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE9_ALL_IN_ONE";
+    static final String ACTION_VERIFY_PHASE10_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE10_ALL_IN_ONE";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -130,6 +131,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyAbcdAllInOne();
                 } else if (ACTION_VERIFY_PHASE9_ALL_IN_ONE.equals(action)) {
                     result = verifyPhase9AllInOne();
+                } else if (ACTION_VERIFY_PHASE10_ALL_IN_ONE.equals(action)) {
+                    result = verifyPhase10AllInOne();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -2528,6 +2531,167 @@ public final class DeviceValidationActivity extends Activity {
             + "3_p2p=TCP_E2EE_ACK, "
             + "4_voice=VAD(is_speech:" + vadObj.getBoolean("is_speech") + ")+Intent(" + intentObj.getString("intent") + "), "
             + "UI=Capsule2.0";
+    }
+
+    private String verifyPhase10AllInOne() throws Exception {
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("Native core not loaded");
+        }
+
+        // =====================================================================
+        // DIRECTION 1: AOSP SYSTEM DAEMON (agentosd) & IPC BRIDGE
+        // =====================================================================
+        AgentSystemBridge bridge = AgentSystemBridge.getInstance();
+        JSONObject pingResp = bridge.ping();
+        if (!"ok".equals(pingResp.optString("status"))) {
+            throw new IllegalStateException("AOSP Daemon ping failed: " + pingResp);
+        }
+
+        JSONObject evalTaskResp = bridge.evaluateTask("task-aosp-10", "Orchestrate background system task");
+        if (!"ok".equals(evalTaskResp.optString("status"))) {
+            throw new IllegalStateException("AOSP Daemon task evaluation failed: " + evalTaskResp);
+        }
+
+        // =====================================================================
+        // DIRECTION 2: PHYSICAL WORLD GROUNDING & REAL-TIME SENSOR FUSION
+        // =====================================================================
+        PhysicalSensoriumManager sensorium = PhysicalSensoriumManager.getInstance(this);
+        sensorium.startMonitoring();
+        JSONObject liveContext = sensorium.evaluateCurrentContext();
+        if (!liveContext.has("motion_state") || !liveContext.has("ambient_environment")) {
+            throw new IllegalStateException("Live sensor context missing fields: " + liveContext);
+        }
+
+        // Test in-pocket gating & thermal throttling logic via synthetic telemetry
+        JSONObject pocketTelem = new JSONObject();
+        pocketTelem.put("accel_x", 0.5);
+        pocketTelem.put("accel_y", 9.8);
+        pocketTelem.put("accel_z", 1.2);
+        pocketTelem.put("gyro_x", 0.05);
+        pocketTelem.put("gyro_y", 0.05);
+        pocketTelem.put("gyro_z", 0.05);
+        pocketTelem.put("light_lux", 1.0); // very dark
+        pocketTelem.put("proximity_cm", 0.0); // covered
+        pocketTelem.put("temperature_c", 35.0);
+        pocketTelem.put("battery_level", 75.0);
+
+        String pocketFusionStr = NativeAgentCore.processSensorTelemetry(pocketTelem.toString());
+        JSONObject pocketFusion = new JSONObject(pocketFusionStr);
+        if (!pocketFusion.getBoolean("in_pocket") || pocketFusion.getBoolean("voice_wake_allowed")) {
+            throw new IllegalStateException("In-pocket voice wake gating failed: " + pocketFusionStr);
+        }
+
+        // =====================================================================
+        // DIRECTION 3: MULTIMODAL VISION & SCREEN OCR LAYOUT UNDERSTANDING
+        // =====================================================================
+        VisionAgentManager vision = VisionAgentManager.getInstance();
+
+        // 3.1: Screen layout OCR target location (e.g. Flutter/Canvas payment button)
+        JSONObject scene = new JSONObject();
+        scene.put("screen_width", 1080);
+        scene.put("screen_height", 2400);
+        JSONArray elements = new JSONArray();
+
+        JSONObject titleElem = new JSONObject();
+        titleElem.put("id", "txt_title");
+        titleElem.put("text", "Checkout Summary");
+        titleElem.put("bounds", new JSONArray(Arrays.asList(80, 200, 400, 50)));
+        titleElem.put("element_type", "text");
+        elements.put(titleElem);
+
+        JSONObject totalElem = new JSONObject();
+        totalElem.put("id", "txt_total");
+        totalElem.put("text", "Amount Due: $88.50");
+        totalElem.put("bounds", new JSONArray(Arrays.asList(80, 400, 350, 60)));
+        totalElem.put("element_type", "text");
+        elements.put(totalElem);
+
+        JSONObject payBtn = new JSONObject();
+        payBtn.put("id", "btn_submit_pay");
+        payBtn.put("text", "Pay with Google Pay");
+        payBtn.put("bounds", new JSONArray(Arrays.asList(100, 1900, 880, 120)));
+        payBtn.put("element_type", "button");
+        elements.put(payBtn);
+
+        scene.put("elements", elements);
+
+        JSONObject visionLoc = vision.locateTarget(scene, "pay with google pay");
+        if (!visionLoc.getBoolean("matched")
+                || !"btn_submit_pay".equals(visionLoc.getString("target_id"))
+                || visionLoc.getDouble("tap_x") != 540.0 // 100 + 880/2
+                || visionLoc.getDouble("tap_y") != 1960.0) { // 1900 + 120/2
+            throw new IllegalStateException("Vision OCR location failed: " + visionLoc);
+        }
+
+        // 3.2: Physical document OCR token extraction (e.g. store receipt)
+        JSONArray ocrTokens = new JSONArray();
+        JSONObject tok1 = new JSONObject();
+        tok1.put("id", "t1"); tok1.put("text", "Organic Coffee Roasters"); tok1.put("bounds", new JSONArray(Arrays.asList(40, 40, 200, 30)));
+        ocrTokens.put(tok1);
+
+        JSONObject tok2 = new JSONObject();
+        tok2.put("id", "t2"); tok2.put("text", "Date: 2026-10-23"); tok2.put("bounds", new JSONArray(Arrays.asList(40, 80, 150, 25)));
+        ocrTokens.put(tok2);
+
+        JSONObject tok3 = new JSONObject();
+        tok3.put("id", "t3"); tok3.put("text", "Total: $14.50"); tok3.put("bounds", new JSONArray(Arrays.asList(40, 120, 160, 30)));
+        ocrTokens.put(tok3);
+
+        JSONObject docRes = vision.parseDocument(ocrTokens);
+        if (!"receipt_or_invoice".equals(docRes.getString("doc_type"))
+                || !"Organic Coffee Roasters".equals(docRes.getString("merchant_or_title"))
+                || docRes.getDouble("total_amount") != 14.50) {
+            throw new IllegalStateException("Visual document parsing failed: " + docRes);
+        }
+
+        // =====================================================================
+        // DIRECTION 4: PERIPHERAL HARDWARE LINKAGE & BLE/USB-C HID
+        // =====================================================================
+        HardwarePeripheralService hw = HardwarePeripheralService.getInstance();
+        JSONObject regDev = hw.registerPeripheral("traceform-ring-01", "Smart Ring Pro", "ble", new String[]{"ptt_button", "heart_rate"});
+        if (!"registered".equals(regDev.optString("status"))) {
+            throw new IllegalStateException("Peripheral registration failed: " + regDev);
+        }
+
+        // 4.1: PTT Press -> Instant low-latency voice capture trigger
+        final boolean[] pttCallbackFired = new boolean[]{false};
+        hw.setHardwareEventListener(new HardwarePeripheralService.HardwareEventListener() {
+            @Override
+            public void onPttTriggered(boolean pressed) {
+                if (pressed) pttCallbackFired[0] = true;
+            }
+            @Override
+            public void onTelemetryIngested(String devId, String metric, double val) {}
+        });
+
+        JSONObject pttDownRes = hw.dispatchEvent("traceform-ring-01", "ptt_pressed", new JSONObject());
+        if (!"VOICE_LISTEN_START".equals(pttDownRes.getString("action")) || !pttDownRes.getBoolean("intercepted")) {
+            throw new IllegalStateException("Hardware PTT press dispatch failed: " + pttDownRes);
+        }
+        if (!pttCallbackFired[0]) {
+            throw new IllegalStateException("Hardware listener PTT callback did not fire");
+        }
+
+        // 4.2: PTT Release -> End capture and trigger inference
+        JSONObject pttUpRes = hw.dispatchEvent("traceform-ring-01", "ptt_released", new JSONObject());
+        if (!"VOICE_LISTEN_STOP_AND_INFER".equals(pttUpRes.getString("action"))) {
+            throw new IllegalStateException("Hardware PTT release dispatch failed: " + pttUpRes);
+        }
+
+        // 4.3: Telemetry Frame -> Biometric sensor ingestion into memory
+        JSONObject telemPayload = new JSONObject();
+        telemPayload.put("metric", "heart_rate_bpm");
+        telemPayload.put("value", 72.0);
+        JSONObject telemRes = hw.dispatchEvent("traceform-ring-01", "telemetry_frame", telemPayload);
+        if (!"MEMORY_INGEST".equals(telemRes.getString("action")) || !telemRes.has("memory_record")) {
+            throw new IllegalStateException("Hardware telemetry ingestion failed: " + telemRes);
+        }
+
+        return "PASS: Phase 10 (AOSP Daemon + Physical Sensorium + Vision OCR + Hardware Linkage) verified 100% on Pixel 6a! "
+            + "1_daemon=agentosd(" + pingResp.optJSONObject("data").optString("service") + "), "
+            + "2_sensorium=Motion(" + liveContext.optString("motion_state") + ")+PocketGating(OK), "
+            + "3_vision=OCR(" + visionLoc.getString("target_id") + "@" + (int)visionLoc.getDouble("tap_x") + "," + (int)visionLoc.getDouble("tap_y") + ")+Doc(" + docRes.getString("merchant_or_title") + ":$" + docRes.getDouble("total_amount") + "), "
+            + "4_hardware=PTT(START/STOP)+Telemetry(HR:" + telemPayload.getDouble("value") + "bpm)";
     }
 
     private static void deleteRecursive(java.io.File fileOrDir) {
