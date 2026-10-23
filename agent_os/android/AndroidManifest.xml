@@ -25,7 +25,8 @@
         android:allowBackup="false"
         android:label="Agent OS Prototype"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
-        android:usesCleartextTraffic="true">
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="false">
         <service
             android:name=".AgentJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"
@@ -41,6 +42,7 @@
                 <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
             </intent-filter>
         </service>
+        <activity android:name=".CapabilityApprovalActivity" android:exported="false" />
         <service
             android:name=".AgentAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

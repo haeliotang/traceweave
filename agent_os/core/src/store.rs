@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, Connection, OptionalExtension, Result};
 use std::sync::{Arc, Mutex};
 use crate::memory::{self, MemoryRecord};
 use crate::plan::ExecutionPlan;
@@ -6,6 +6,12 @@ use crate::task::{Task, TaskJournalEvent, TaskStatus};
 
 pub struct AgentStore {
     conn: Arc<Mutex<Connection>>,
+}
+
+pub enum SyncedMemoryResult {
+    Inserted,
+    Updated,
+    Skipped,
 }
 
 impl AgentStore {
@@ -48,6 +54,10 @@ impl AgentStore {
                  updated_at INTEGER NOT NULL
              );
              CREATE INDEX IF NOT EXISTS idx_memories_topic ON memories (topic_key);
+             CREATE TABLE IF NOT EXISTS memory_tombstones (
+                 id TEXT PRIMARY KEY,
+                 deleted_at INTEGER NOT NULL
+             );
              CREATE TABLE IF NOT EXISTS audit_events (
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  task_id TEXT NOT NULL,
@@ -431,6 +441,80 @@ impl AgentStore {
             }
         }
         Ok(list)
+    }
+
+    pub fn upsert_synced_memory(&self, memory: &MemoryRecord) -> Result<SyncedMemoryResult> {
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        let deleted_at: Option<i64> = tx.query_row(
+            "SELECT deleted_at FROM memory_tombstones WHERE id = ?1",
+            params![memory.id],
+            |row| row.get(0),
+        ).optional()?;
+        if deleted_at.is_some_and(|timestamp| timestamp >= memory.updated_at) {
+            return Ok(SyncedMemoryResult::Skipped);
+        }
+        if deleted_at.is_some() {
+            tx.execute("DELETE FROM memory_tombstones WHERE id = ?1", params![memory.id])?;
+        }
+
+        let local_updated_at: Option<i64> = tx.query_row(
+            "SELECT updated_at FROM memories WHERE id = ?1",
+            params![memory.id],
+            |row| row.get(0),
+        ).optional()?;
+        if local_updated_at.is_some_and(|timestamp| timestamp >= memory.updated_at) {
+            tx.commit()?;
+            return Ok(SyncedMemoryResult::Skipped);
+        }
+
+        let result = if local_updated_at.is_some() {
+            tx.execute(
+                "UPDATE memories SET kind = ?1, content = ?2, source = ?3, source_reference = ?4, updated_at = ?5 WHERE id = ?6",
+                params![memory.kind, memory.content, memory.source, memory.source_reference, memory.updated_at, memory.id],
+            )?;
+            SyncedMemoryResult::Updated
+        } else {
+            tx.execute(
+                "INSERT INTO memories (id, kind, content, source, source_reference, topic_key, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                params![memory.id, memory.kind, memory.content, memory.source, memory.source_reference,
+                    format!("sync:{}", memory.id), memory.created_at, memory.updated_at],
+            )?;
+            SyncedMemoryResult::Inserted
+        };
+        tx.commit()?;
+        Ok(result)
+    }
+
+    pub fn apply_memory_tombstone(&self, id: &str, deleted_at: i64) -> Result<bool> {
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        let local_deleted_at: Option<i64> = tx.query_row(
+            "SELECT deleted_at FROM memory_tombstones WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        ).optional()?;
+        let is_newer = local_deleted_at.is_none_or(|timestamp| deleted_at > timestamp);
+        tx.execute(
+            "INSERT INTO memory_tombstones (id, deleted_at) VALUES (?1, ?2)
+             ON CONFLICT(id) DO UPDATE SET deleted_at = MAX(deleted_at, excluded.deleted_at)",
+            params![id, deleted_at],
+        )?;
+        tx.execute("DELETE FROM memories WHERE id = ?1 AND updated_at <= ?2", params![id, deleted_at])?;
+        tx.commit()?;
+        Ok(is_newer)
+    }
+
+    pub fn delete_memory(&self, id: &str, deleted_at: i64) -> Result<bool> {
+        self.apply_memory_tombstone(id, deleted_at)
+    }
+
+    pub fn list_memory_tombstones(&self) -> Result<Vec<(String, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT id, deleted_at FROM memory_tombstones ORDER BY deleted_at ASC")?;
+        let rows = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+        rows.collect()
     }
 
     pub fn select_associative_memories(

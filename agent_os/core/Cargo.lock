@@ -44,6 +44,7 @@ dependencies = [
  "aes-gcm",
  "base64",
  "boa_engine",
+ "getrandom 0.2.17",
  "jni",
  "pbkdf2",
  "regex",

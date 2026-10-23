@@ -90,6 +90,10 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
         Log.i(TAG, "Physical sensor monitoring stopped");
     }
 
+    public boolean isMonitoring() {
+        return mIsMonitoring;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event == null || event.values == null) return;

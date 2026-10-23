@@ -51,6 +51,8 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION = "org.traceform.agentos.validation.VERIFY_HYBRID_CLOUD_AND_REDACTION";
     static final String ACTION_VERIFY_SLM_AND_SYSTEM_CAPABILITIES = "org.traceform.agentos.validation.VERIFY_SLM_AND_SYSTEM_CAPABILITIES";
     static final String ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI = "org.traceform.agentos.validation.VERIFY_MEMORY_CONSOLIDATION_AND_UI";
+    static final String ACTION_VERIFY_SENSOR_OPT_IN = "org.traceform.agentos.validation.VERIFY_SENSOR_OPT_IN";
+    static final String ACTION_VERIFY_DAEMON_UNAVAILABLE = "org.traceform.agentos.validation.VERIFY_DAEMON_UNAVAILABLE";
     static final String ACTION_VERIFY_NATIVE_CORE_AND_JNI = "org.traceform.agentos.validation.VERIFY_NATIVE_CORE_AND_JNI";
     static final String ACTION_VERIFY_FULL_RUST_STORE = "org.traceform.agentos.validation.VERIFY_FULL_RUST_STORE";
     static final String ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS = "org.traceform.agentos.validation.VERIFY_ZERO_COPY_AND_EMBEDDED_JS";
@@ -122,6 +124,10 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifySlmAndSystemCapabilities();
                 } else if (ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI.equals(action)) {
                     result = verifyMemoryConsolidationAndUi();
+                } else if (ACTION_VERIFY_SENSOR_OPT_IN.equals(action)) {
+                    result = verifySensorOptIn();
+                } else if (ACTION_VERIFY_DAEMON_UNAVAILABLE.equals(action)) {
+                    result = verifyDaemonUnavailableFailsClosed();
                 } else if (ACTION_VERIFY_NATIVE_CORE_AND_JNI.equals(action)) {
                     result = verifyNativeCoreAndJni();
                 } else if (ACTION_VERIFY_FULL_RUST_STORE.equals(action)) {
@@ -157,6 +163,30 @@ public final class DeviceValidationActivity extends Activity {
                 }
             });
         }, "agent-os-validation").start();
+    }
+
+    private String verifySensorOptIn() {
+        PhysicalSensoriumManager sensorium = PhysicalSensoriumManager.getInstance(this);
+        if (sensorium.isMonitoring()) {
+            throw new IllegalStateException("Sensor monitoring remained active after the main activity paused");
+        }
+        sensorium.startMonitoring();
+        if (!sensorium.isMonitoring()) {
+            throw new IllegalStateException("Explicit sensor start did not activate monitoring");
+        }
+        sensorium.stopMonitoring();
+        if (sensorium.isMonitoring()) {
+            throw new IllegalStateException("Explicit sensor stop did not deactivate monitoring");
+        }
+        return "PASS: sensor monitoring is inactive on entry and follows explicit start/stop";
+    }
+
+    private String verifyDaemonUnavailableFailsClosed() {
+        JSONObject response = new AgentSystemBridge("127.0.0.1", 0).ping();
+        if ("ok".equals(response.optString("status")) || response.optBoolean("fallback")) {
+            throw new IllegalStateException("An unavailable daemon was reported as active");
+        }
+        return "PASS: an unreachable daemon is reported unavailable, not simulated as active";
     }
 
     private String runMigrationAndKdf() throws Exception {
@@ -261,6 +291,9 @@ public final class DeviceValidationActivity extends Activity {
 
             AgentStore.Memory source = store.createMemory(AgentStore.MEMORY_PREFERENCE,
                 "SYNTHETIC 搜索来源 and local choice", AgentStore.MEMORY_SOURCE_TRACEFORM, "provider=traceform;synthetic=true");
+            AgentStore.Memory consolidated = store.createMemory(AgentStore.MEMORY_FACT,
+                "SYNTHETIC consolidated memory archive round trip", AgentStore.MEMORY_SOURCE_CONSOLIDATION,
+                "task=synthetic-consolidation");
             MemoryIndex index = new MemoryIndex(store.listMemories());
             if (index.search("搜索来源").size() != 1 || index.search("Traceform").size() != 1
                     || !source.id.equals(index.search("Traceform").get(0).id)) {
@@ -272,12 +305,21 @@ public final class DeviceValidationActivity extends Activity {
             archiveData.memories.add(new AgentStore.Memory(source.id, source.kind,
                 "SYNTHETIC archive-selected content", AgentStore.MEMORY_SOURCE_TRACEFORM,
                 "provider=traceform;archive=synthetic", source.createdAt, source.updatedAt));
+            archiveData.memories.add(consolidated);
             char[] passphrase = TEST_PASSPHRASE.toCharArray();
             byte[] archive;
             try {
                 archive = MemoryArchive.encrypt(archiveData, passphrase);
             } finally {
                 Arrays.fill(passphrase, '\0');
+            }
+            char[] verifyPassphrase = TEST_PASSPHRASE.toCharArray();
+            try {
+                MemoryArchive.Data decoded = MemoryArchive.decrypt(new ByteArrayInputStream(archive), verifyPassphrase);
+                if (findMemory(decoded.memories, consolidated.id) == null)
+                    throw new IllegalStateException("The archive rejected its own consolidated-memory source record");
+            } finally {
+                Arrays.fill(verifyPassphrase, '\0');
             }
             AgentStore.ImportResult keepLocal = importMemoryArchive(store, archive, false);
             AgentStore.Memory afterKeep = findMemory(store.listMemories(), source.id);
@@ -1435,6 +1477,25 @@ public final class DeviceValidationActivity extends Activity {
             if (!phoneRes.hasRedactions() || phoneRes.redactionsCount != 1
                     || !phoneRes.redactedText.contains("138****5678") || phoneRes.redactedText.contains("13812345678")) {
                 throw new IllegalStateException("Phone redaction failed: " + phoneRes.redactedText);
+            }
+
+            ExecutionPlan.Step sensitiveStep = new ExecutionPlan.Step(0, "联系 13812345678", "demo.note.read",
+                "synthetic.welcome", "", ExecutionPlan.STEP_DONE, "联系 13812345678", 1L);
+            ExecutionPlan.Step sanitizedStep = HybridReasoningEngine.sanitizeSynthesisSteps(
+                Collections.singletonList(sensitiveStep)).get(0);
+            if (sanitizedStep.title.contains("13812345678") || sanitizedStep.observation.contains("13812345678"))
+                throw new IllegalStateException("Synthesis step title or observation bypassed redaction");
+            if (!CloudModelClient.isAllowedEndpointUrl("https://api.example.com/v1")
+                    || !CloudModelClient.isAllowedEndpointUrl("http://127.0.0.1:58999/v1")
+                    || CloudModelClient.isAllowedEndpointUrl("http://model.example.com/v1"))
+                throw new IllegalStateException("Cloud endpoint transport policy allowed an unsafe URL");
+            try {
+                CloudModelClient.parsePlanResponse("synthetic", "goal",
+                    "{\"steps\":[{\"capability\":\"demo.note.read\",\"scope\":\"other.task\"}]}",
+                    broker.listAvailableCapabilities("synthetic"));
+                throw new IllegalStateException("Cloud planner accepted an unadvertised capability scope");
+            } catch (SecurityException expected) {
+                // The capability name is known, but its requested scope must match exactly.
             }
 
             // Email

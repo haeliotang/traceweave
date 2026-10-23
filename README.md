@@ -5,10 +5,20 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Hardware Validation: Google Pixel 6a](https://img.shields.io/badge/Hardware-Google_Pixel_6a_(Tensor_G1)-059669.svg)]()
-[![Platform: Android 15 / AOSP](https://img.shields.io/badge/Platform-Android_15_AOSP-0284C7.svg)]()
-[![Native Core: Rust 16KB Page](https://img.shields.io/badge/Runtime-Rust_16KB_Page_Clean-0D9488.svg)]()
-[![Security: JIT Gating & E2EE](https://img.shields.io/badge/Security-Zero_Trust_JIT_%26_E2EE-475569.svg)]()
-[![Test Suite: 67 Rust Tests Passing](https://img.shields.io/badge/Tests-67_Rust_Passing-16A34A.svg)]()
+[![Platform: GrapheneOS Pixel 6a test device](https://img.shields.io/badge/Platform-GrapheneOS_Pixel_6a-0284C7.svg)]()
+[![Runtime: Rust and Android app prototype](https://img.shields.io/badge/Runtime-Rust_%2B_Android_Prototype-0D9488.svg)]()
+[![Security: Prototype, not certified](https://img.shields.io/badge/Security-Prototype_Not_Certified-475569.svg)]()
+[![Test Suite: 71 Rust unit tests passing](https://img.shields.io/badge/Tests-71_Rust_Passing-16A34A.svg)]()
+
+---
+
+## Current implementation status (2026-10-24)
+
+This repository contains Traceform research code and an Agent OS Android application prototype. The Pixel 6a test build is a regular APK running on GrapheneOS (Android 17 / API 37); this repository does not contain a fork of Android, AOSP, or GrapheneOS, and the APK is not an operating system image. The architecture sections below mix implementation details with longer-term design goals; treat them as goals unless a dated acceptance record names the exact build and device evidence.
+
+The latest Phase 1 receipt reports seven MVP gates passing in an isolated validation package. The current audit has since changed Android and Rust source; those changes have compiled and Rust tests pass, but the Android changes still need a new on-device run. The Rust `agentosd`/Magisk path is experimental and **not safe to deploy**: its loopback TCP API lacks caller authentication, several privileged actions do not require a session, its SQLite store is plaintext, and its Magisk setup makes `/data/local/tmp` world-writable. Do not treat its capability path as zero-trust or the vault as integrated storage. The Android Binder service is a separate app-level interface.
+
+The optional cloud model path stores its API key in app-private `SharedPreferences`, and pattern-based redaction is not a guarantee that all personal data is removed. Do not use production credentials or rely on redaction as a complete privacy boundary in this prototype. The audit and current test results are recorded in [`docs/agent_os_code_audit_2026-10-24.md`](docs/agent_os_code_audit_2026-10-24.md).
 
 ---
 
@@ -16,17 +26,17 @@
 
 Traceform redefines personal computing for the post-application agent era. Traditional consumer operating systems remain organized around isolated application silos and cloud platforms that fragment personal identity, memory, and agency. 
 
-Traceform introduces a sovereign, device-agnostic computing substrate. In this model, computational state, long-term memory, and task execution are decoupled from any individual piece of physical hardware, proprietary cloud vendor, or specific foundation model. Users retain absolute mathematical ownership and cryptographic control over their intelligence, context, and operational runtime.
+Traceform's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
   <img src="docs/assets/traceform_os_handheld_dashboard_en.png" alt="Traceform OS Handheld AI Dashboard on Google Pixel 6a" width="380" />
   <br />
-  <em>Traceform OS physical deployment on Google Pixel 6a (Tensor G1 silicon, Android 15 / AOSP) with single-viewport ergonomic layout, 2x3 real-time telemetry matrix, and collapsed floating HUD capsule.</em>
+  <em>Agent OS application prototype on a Google Pixel 6a running GrapheneOS (Android 17 / API 37); it is not a system-image deployment.</em>
 </p>
 
 ---
 
-## 2. Four Core Pillars
+## 2. Four Target Architecture Pillars
 
 Traceform is architected as four mutually reinforcing, decoupled layers:
 
@@ -37,7 +47,7 @@ Traceform is architected as four mutually reinforcing, decoupled layers:
 +-----------------------------------------------------------------------------------------+
 |                                                                                         |
 |  1. Traceform OS                                                                        |
-|     User-facing, Agent-native Operating System (First production deployment on AOSP)     |
+|     User-facing, Agent-native Operating System (current Android app prototype)           |
 |     - Single-viewport, zero-scrolling handheld dashboard                               |
 |     - Collapsible circular floating capsule (48dp HUD ball / multi-action console)      |
 |     - Sensorium contextual gating, hardware PTT bus, silent vision OCR, 16kHz DSP       |
@@ -77,7 +87,7 @@ Traceform is architected as four mutually reinforcing, decoupled layers:
 
 ---
 
-## 4. System Architecture
+## 4. Target System Architecture
 
 ```
 +=========================================================================================+
@@ -92,7 +102,7 @@ Traceform is architected as four mutually reinforcing, decoupled layers:
                                           | AOSP Binder IPC / WindowManager
                                           v
 +=========================================================================================+
-|                               AOSP SYSTEM SERVICE LAYER                                 |
+|                     ANDROID APPLICATION LAYER (current prototype)                        |
 |                                                                                         |
 |  - MainActivity: Viewport coordination, multi-language localization (ZH / EN)           |
 |  - AgentFloatingService: SYSTEM_ALERT_WINDOW lifecycle, gesture-drag and touch events   |
@@ -187,8 +197,8 @@ Beyond third-party bot enablement, Traceform OS implements a rich suite of nativ
 2. **Traceform Compute Engine (TCE) Heterogeneous Scheduling**
    - Unified graph partitioner distributing computational kernels dynamically across CPU (ARM NEON SIMD), GPU (Vulkan Compute Shaders), and Edge TPU (Tensor G1). Features real-time thermal throttling fallback (cooldown mode scaling gracefully when battery temperature exceeds safety thresholds), verified at 826μs total latency.
 
-3. **AOSP System-Immune Background Daemon Persistence (`agentosd`)**
-   - A standalone native C/Rust daemon operating with `-1000` OOM score priority outside the Android ART virtual machine lifecycle. Survives deep Doze mode, app force-stops, and aggressive OEM task killers, serving as the permanent substrate IPC router (Port 19898).
+3. **Experimental Background Daemon (`agentosd`)**
+   - A native Rust daemon and Magisk package exist, but the current loopback API and root packaging have unresolved security issues documented above. Persistence, OOM priority, and safe third-party IPC are not release-verified.
 
 4. **Zero-Latency Voice DSP & Acoustic Processing**
    - Native continuous 16kHz audio ingestion with energy RMS Voice Activity Detection (VAD) and Zero-Crossing Rate (ZCR) filtering. Pre-processes and isolates voice boundaries in real time, preventing hallucinated token generation on background noise.

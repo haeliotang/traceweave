@@ -70,7 +70,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
 
         // 2. Cloud Model Request with graceful fallback
         try {
-            android.util.Log.i("HybridReasoningEngine", "Initiating cloud planning with model: " + config.modelName + " for goal: " + goalRedaction.redactedText);
+            android.util.Log.i("HybridReasoningEngine", "Initiating cloud planning with model: " + config.modelName);
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_started:" + config.modelName);
             }
@@ -123,15 +123,22 @@ final class HybridReasoningEngine implements ReasoningEngine {
 
         try {
             ContextRedactor.RedactionResult goalRedaction = ContextRedactor.redact(userGoal);
-            List<ExecutionPlan.Step> sanitizedSteps = new ArrayList<>();
-            for (ExecutionPlan.Step step : executedSteps) {
-                ContextRedactor.RedactionResult obsRedaction = ContextRedactor.redact(step.observation);
-                sanitizedSteps.add(step.withStatusAndObservation(step.status, obsRedaction.redactedText, step.executedAt));
-            }
+            List<ExecutionPlan.Step> sanitizedSteps = sanitizeSynthesisSteps(executedSteps);
             return cloudClient.requestSynthesis(taskId, goalRedaction.redactedText, sanitizedSteps, config);
         } catch (Exception ex) {
             return synthesizeLocally(taskId, userGoal, executedSteps);
         }
+    }
+
+    static List<ExecutionPlan.Step> sanitizeSynthesisSteps(List<ExecutionPlan.Step> executedSteps) {
+        List<ExecutionPlan.Step> sanitizedSteps = new ArrayList<>();
+        for (ExecutionPlan.Step step : executedSteps) {
+            ContextRedactor.RedactionResult obsRedaction = ContextRedactor.redact(step.observation);
+            ContextRedactor.RedactionResult titleRedaction = ContextRedactor.redact(step.title);
+            sanitizedSteps.add(new ExecutionPlan.Step(step.index, titleRedaction.redactedText,
+                step.capability, step.scope, step.prompt, step.status, obsRedaction.redactedText, step.executedAt));
+        }
+        return sanitizedSteps;
     }
 
     private String synthesizeLocally(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {

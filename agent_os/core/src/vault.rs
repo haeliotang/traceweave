@@ -5,7 +5,6 @@ use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -14,7 +13,6 @@ const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 const SALT_LEN: usize = 16;
 
-static VAULT_NONCE_COUNTER: AtomicU64 = AtomicU64::new(1);
 static GLOBAL_VAULT: RwLock<Option<Vault>> = RwLock::new(None);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,31 +48,10 @@ fn derive_umk(passphrase: &str, salt: &[u8]) -> [u8; KEY_LEN] {
     key
 }
 
-fn generate_random_bytes(len: usize) -> Vec<u8> {
-    use std::fs::File;
-    use std::io::Read;
-
-    let mut bytes = vec![0u8; len];
-    if let Ok(mut file) = File::open("/dev/urandom") {
-        if file.read_exact(&mut bytes).is_ok() {
-            return bytes;
-        }
-    }
-
-    // High-entropy fallback mixing time, atomic counter, pid, and bit shuffling
-    let now = now_millis();
-    let counter = VAULT_NONCE_COUNTER.fetch_add(1, Ordering::Relaxed);
-    for (i, b) in now.to_le_bytes().iter().enumerate() {
-        bytes[i % len] ^= b;
-    }
-    for (i, b) in counter.to_le_bytes().iter().enumerate() {
-        bytes[(i + 4) % len] ^= b.wrapping_mul(31);
-    }
-    let pid = std::process::id();
-    for (i, b) in pid.to_le_bytes().iter().enumerate() {
-        bytes[(i + 8) % len] ^= b.wrapping_mul(17);
-    }
-    bytes
+fn generate_random_bytes<const N: usize>() -> Result<[u8; N], String> {
+    let mut bytes = [0u8; N];
+    getrandom::getrandom(&mut bytes).map_err(|e| format!("Secure random generation failed: {}", e))?;
+    Ok(bytes)
 }
 
 impl Drop for Vault {
@@ -100,13 +77,11 @@ impl Vault {
         }
 
         // 1. Generate 256-bit random DEK
-        let mut dek = [0u8; KEY_LEN];
-        let rand_dek = generate_random_bytes(KEY_LEN);
-        dek.copy_from_slice(&rand_dek);
+        let dek = generate_random_bytes::<KEY_LEN>()?;
 
         // 2. Generate random 16-byte salt and 12-byte nonce
-        let salt = generate_random_bytes(SALT_LEN);
-        let nonce_bytes = generate_random_bytes(NONCE_LEN);
+        let salt = generate_random_bytes::<SALT_LEN>()?;
+        let nonce_bytes = generate_random_bytes::<NONCE_LEN>()?;
 
         // 3. Derive UMK from user passphrase
         let umk = derive_umk(passphrase, &salt);
@@ -185,7 +160,7 @@ impl Vault {
     /// Seals (encrypts) plaintext data using the active DEK and AES-256-GCM.
     /// Format: [12-byte nonce][ciphertext + 16-byte GCM tag], matching AgentStore sealed format.
     pub fn seal(&self, aad: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, String> {
-        let nonce_bytes = generate_random_bytes(NONCE_LEN);
+        let nonce_bytes = generate_random_bytes::<NONCE_LEN>()?;
         let cipher = Aes256Gcm::new_from_slice(&self.dek)
             .map_err(|e| format!("Failed to initialize DEK cipher: {}", e))?;
         let nonce = Nonce::from_slice(&nonce_bytes);

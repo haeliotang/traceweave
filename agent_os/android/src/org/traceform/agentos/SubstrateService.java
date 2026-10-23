@@ -1,7 +1,14 @@
 package org.traceform.agentos;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -14,15 +21,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * System-facing bound service providing the Personal Agent Substrate IPC interface.
- * Allows independent third-party Agent applications to securely register, request JIT capabilities,
- * execute tools, and inspect audit trails under strict user ownership.
+ * Agent sessions are tied to the caller UID, and capability grants require user approval.
  */
 public class SubstrateService extends Service {
     private static final String TAG = "SubstrateService";
     public static final String ACTION_BIND_SUBSTRATE = "org.traceform.agentos.action.BIND_SUBSTRATE";
+    static final String ACTION_APPROVE_CAPABILITY = "org.traceform.agentos.action.APPROVE_CAPABILITY";
+    private static final String APPROVAL_CHANNEL = "agent_capability_approval";
+    private static final int APPROVAL_TIMEOUT_SECONDS = 120;
+    private static final Map<String, PendingCapabilityApproval> PENDING_APPROVALS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final AtomicBoolean APPROVAL_ACTIVE = new AtomicBoolean();
 
     private AgentStore store;
     private CapabilityBroker broker;
@@ -31,16 +45,37 @@ public class SubstrateService extends Service {
     static final class AgentSession {
         final String token;
         final String packageName;
-        final String keyHash;
+        final int callerUid;
         final String manifest;
+        final String taskId;
         final long createdAt;
 
-        AgentSession(String token, String packageName, String keyHash, String manifest, long createdAt) {
+        AgentSession(String token, String packageName, int callerUid, String manifest, String taskId, long createdAt) {
             this.token = token;
             this.packageName = packageName;
-            this.keyHash = keyHash;
+            this.callerUid = callerUid;
             this.manifest = manifest;
+            this.taskId = taskId;
             this.createdAt = createdAt;
+        }
+    }
+
+    static final class PendingCapabilityApproval {
+        final String id;
+        final String packageName;
+        final String taskTitle;
+        final String capability;
+        final String scope;
+        final CountDownLatch result = new CountDownLatch(1);
+        final AtomicBoolean resolved = new AtomicBoolean();
+        volatile boolean approved;
+
+        PendingCapabilityApproval(String id, String packageName, String taskTitle, String capability, String scope) {
+            this.id = id;
+            this.packageName = packageName;
+            this.taskTitle = taskTitle;
+            this.capability = capability;
+            this.scope = scope;
         }
     }
 
@@ -48,42 +83,61 @@ public class SubstrateService extends Service {
         @Override
         public String registerAgent(String agentPackage, String agentPublicKeyHash, String manifestJson) throws RemoteException {
             try {
-                String token = "sub_sess_" + UUID.randomUUID().toString();
-                AgentSession session = new AgentSession(token, agentPackage, agentPublicKeyHash, manifestJson, System.currentTimeMillis());
-                sessions.put(token, session);
-
-                // Record audit log of external agent registration
-                if (store != null) {
-                    store.appendTaskEvent(getOrEnsureSubstrateTask(), "agent_registered:" + agentPackage);
+                int callerUid = Binder.getCallingUid();
+                if (agentPackage == null || agentPackage.trim().isEmpty() || agentPackage.length() > 255
+                        || !packageBelongsToUid(agentPackage, callerUid)) {
+                    throw new SecurityException("Agent package does not belong to the calling application");
                 }
-                Log.i(TAG, "Registered external agent: " + agentPackage + ", session: " + token);
+                if (manifestJson == null || manifestJson.length() > 64 * 1024) {
+                    throw new IllegalArgumentException("Agent manifest is missing or too large");
+                }
+                new JSONObject(manifestJson);
 
-                JSONObject res = new JSONObject();
-                res.put("status", "ok");
-                res.put("session_token", token);
-                res.put("agent_package", agentPackage);
-                res.put("timestamp", System.currentTimeMillis());
-                return res.toString();
+                long now = System.currentTimeMillis();
+                String token = "sub_sess_" + UUID.randomUUID();
+                String taskId = null;
+                synchronized (sessions) {
+                    java.util.Iterator<Map.Entry<String, AgentSession>> iterator = sessions.entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, AgentSession> entry = iterator.next();
+                        AgentSession existing = entry.getValue();
+                        if (existing.callerUid == callerUid && agentPackage.equals(existing.packageName)) {
+                            taskId = existing.taskId;
+                            iterator.remove();
+                        }
+                    }
+                    if (taskId == null) taskId = store.createTask("Agent task: " + agentPackage).id;
+                    sessions.put(token, new AgentSession(token, agentPackage, callerUid, manifestJson, taskId, now));
+                }
+                store.appendTaskEvent(taskId, "agent_registered:" + agentPackage);
+
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("session_token", token);
+                response.put("agent_package", agentPackage);
+                response.put("default_task_id", taskId);
+                response.put("timestamp", now);
+                return response.toString();
             } catch (Exception e) {
                 Log.e(TAG, "registerAgent failed", e);
-                return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+                return errorResponse(e);
             }
         }
 
         @Override
         public String listCapabilities(String sessionToken, String taskId) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
-            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
+            String effectiveTaskId = requireOwnedTask(session, taskId);
             List<CapabilityDescriptor> list = broker.listAvailableCapabilities(effectiveTaskId);
             JSONArray arr = new JSONArray();
-            for (CapabilityDescriptor d : list) {
+            for (CapabilityDescriptor descriptor : list) {
                 try {
                     JSONObject obj = new JSONObject();
-                    obj.put("capability", d.capability);
-                    obj.put("scope", d.scope);
-                    obj.put("title", d.title);
-                    obj.put("description", d.description);
-                    obj.put("available", d.available);
+                    obj.put("capability", descriptor.capability);
+                    obj.put("scope", descriptor.scope);
+                    obj.put("title", descriptor.title);
+                    obj.put("description", descriptor.description);
+                    obj.put("available", descriptor.available);
                     arr.put(obj);
                 } catch (Exception ignored) {}
             }
@@ -93,21 +147,71 @@ public class SubstrateService extends Service {
         @Override
         public boolean requestCapability(String sessionToken, String taskId, String capability, String scope) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
-            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
-            try {
-                broker.grant(session.packageName, effectiveTaskId, capability, scope);
-                Log.i(TAG, "Granted capability " + capability + " to agent " + session.packageName);
-                return true;
-            } catch (Exception e) {
-                Log.w(TAG, "Grant rejected: " + e.getMessage());
+            String effectiveTaskId = requireOwnedTask(session, taskId);
+            if (capability == null || scope == null || capability.length() > 128 || scope.length() > 512) {
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
                 return false;
+            }
+            boolean available = false;
+            for (CapabilityDescriptor descriptor : broker.listAvailableCapabilities(effectiveTaskId)) {
+                if (descriptor.capability.equals(capability) && descriptor.scope.equals(scope) && descriptor.available) {
+                    available = true;
+                    break;
+                }
+            }
+            if (!available) {
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                return false;
+            }
+            AgentStore.Task task;
+            try {
+                task = store.getTask(effectiveTaskId);
+            } catch (Exception e) {
+                throw new RemoteException("Unable to load the Agent task: " + e.getMessage());
+            }
+            if (task == null) throw new RemoteException("Agent task does not exist");
+
+            PendingCapabilityApproval approval = new PendingCapabilityApproval(UUID.randomUUID().toString(),
+                session.packageName, task.title, capability, scope);
+            if (!APPROVAL_ACTIVE.compareAndSet(false, true)) {
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                return false;
+            }
+            PENDING_APPROVALS.put(approval.id, approval);
+            boolean approved = false;
+            try {
+                if (!postApprovalNotification(approval)) {
+                    broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                    return false;
+                }
+                approved = approval.result.await(APPROVAL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                    && approval.approved && approval.resolved.get();
+                if (approved) {
+                    broker.grant(session.packageName, effectiveTaskId, capability, scope);
+                    Log.i(TAG, "User approved capability " + capability + " for " + session.packageName);
+                    return true;
+                }
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                return false;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                return false;
+            } catch (Exception e) {
+                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                Log.w(TAG, "Capability approval failed: " + e.getMessage());
+                return false;
+            } finally {
+                PENDING_APPROVALS.remove(approval.id, approval);
+                APPROVAL_ACTIVE.set(false);
+                notificationManager().cancel(approval.id.hashCode());
             }
         }
 
         @Override
         public String invokeCapability(String sessionToken, String taskId, String capability, String scope) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
-            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
+            String effectiveTaskId = requireOwnedTask(session, taskId);
             try {
                 return broker.invoke(session.packageName, effectiveTaskId, capability, scope);
             } catch (Exception e) {
@@ -119,78 +223,133 @@ public class SubstrateService extends Service {
         @Override
         public boolean revokeCapability(String sessionToken, String taskId, String capability, String scope) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
-            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
+            String effectiveTaskId = requireOwnedTask(session, taskId);
             return broker.revoke(session.packageName, effectiveTaskId, capability, scope);
         }
 
         @Override
         public String queryAuditLog(String sessionToken, String taskId, int limit) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
-            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
+            String effectiveTaskId = requireOwnedTask(session, taskId);
             try {
-                int queryLimit = limit > 0 ? limit : 50;
+                int queryLimit = limit > 0 ? Math.min(limit, 200) : 50;
                 List<String> events = store.listAuditEvents(effectiveTaskId, queryLimit);
-                JSONObject obj = new JSONObject();
-                obj.put("status", "ok");
-                obj.put("taskId", effectiveTaskId);
-                obj.put("agent", session.packageName);
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("taskId", effectiveTaskId);
+                response.put("agent", session.packageName);
                 JSONArray arr = new JSONArray();
-                for (String ev : events) {
-                    arr.put(ev);
-                }
-                obj.put("events", arr);
-                obj.put("count", arr.length());
-                return obj.toString();
+                for (String event : events) arr.put(event);
+                response.put("events", arr);
+                response.put("count", arr.length());
+                return response.toString();
             } catch (Exception e) {
-                return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+                return errorResponse(e);
             }
         }
 
         @Override
         public String ping(String sessionToken) throws RemoteException {
-            boolean valid = false;
-            if (sessionToken != null && sessions.containsKey(sessionToken)) {
-                AgentSession sess = sessions.get(sessionToken);
-                valid = sess != null && (System.currentTimeMillis() - sess.createdAt <= SESSION_EXPIRY_MILLIS);
-            }
+            AgentSession session = requireSession(sessionToken);
             try {
-                JSONObject obj = new JSONObject();
-                obj.put("pong", true);
-                obj.put("service", "PersonalAgentSubstrate");
-                obj.put("session_valid", valid);
-                obj.put("active_agents", sessions.size());
-                obj.put("server_time_ms", System.currentTimeMillis());
-                return obj.toString();
+                JSONObject response = new JSONObject();
+                response.put("pong", true);
+                response.put("service", "PersonalAgentSubstrate");
+                response.put("session_valid", true);
+                response.put("agent_package", session.packageName);
+                response.put("server_time_ms", System.currentTimeMillis());
+                return response.toString();
             } catch (Exception e) {
-                return "{\"pong\":true}";
+                return errorResponse(e);
             }
         }
     };
 
     private static final long SESSION_EXPIRY_MILLIS = 24L * 60L * 60L * 1000L;
 
-    private AgentSession requireSession(String token) throws RemoteException {
-        if (token == null || !sessions.containsKey(token)) {
-            throw new RemoteException("Invalid substrate session token");
+    private boolean packageBelongsToUid(String packageName, int uid) {
+        String[] packages = getPackageManager().getPackagesForUid(uid);
+        if (packages == null) return false;
+        for (String candidate : packages) {
+            if (packageName.equals(candidate)) return true;
         }
-        AgentSession session = sessions.get(token);
-        if (session == null || System.currentTimeMillis() - session.createdAt > SESSION_EXPIRY_MILLIS) {
+        return false;
+    }
+
+    private AgentSession requireSession(String token) throws RemoteException {
+        int callerUid = Binder.getCallingUid();
+        AgentSession session = token == null ? null : sessions.get(token);
+        if (session == null || session.callerUid != callerUid) {
+            throw new RemoteException("Invalid substrate session token for caller");
+        }
+        if (System.currentTimeMillis() - session.createdAt > SESSION_EXPIRY_MILLIS) {
             sessions.remove(token);
             throw new RemoteException("Substrate session token has expired");
         }
         return session;
     }
 
-    private synchronized String getOrEnsureSubstrateTask() {
+    private String requireOwnedTask(AgentSession session, String taskId) throws RemoteException {
+        String effectiveTaskId = taskId == null || taskId.isEmpty() ? session.taskId : taskId;
+        if (!session.taskId.equals(effectiveTaskId)) {
+            throw new RemoteException("Agent session cannot access another task");
+        }
+        return effectiveTaskId;
+    }
+
+    private boolean postApprovalNotification(PendingCapabilityApproval approval) {
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        NotificationManager manager = notificationManager();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            manager.createNotificationChannel(new NotificationChannel(APPROVAL_CHANNEL,
+                "Agent capability requests", NotificationManager.IMPORTANCE_HIGH));
+        }
+        Intent intent = new Intent(this, CapabilityApprovalActivity.class);
+        intent.setAction(ACTION_APPROVE_CAPABILITY);
+        intent.putExtra("request_id", approval.id);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, approval.id.hashCode(), intent, flags);
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? new Notification.Builder(this, APPROVAL_CHANNEL) : new Notification.Builder(this);
+        Notification notification = builder
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle("Agent OS capability request")
+            .setContentText("Tap to review an Agent's access request")
+            .setContentIntent(pendingIntent)
+            .setVisibility(Notification.VISIBILITY_PRIVATE)
+            .setAutoCancel(true)
+            .build();
+        manager.notify(approval.id.hashCode(), notification);
+        return true;
+    }
+
+    private NotificationManager notificationManager() {
+        return (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+    }
+
+    static PendingCapabilityApproval getPendingApproval(String id) {
+        return PENDING_APPROVALS.get(id);
+    }
+
+    static void resolvePendingApproval(String id, boolean approved) {
+        PendingCapabilityApproval pending = PENDING_APPROVALS.get(id);
+        if (pending != null && pending.resolved.compareAndSet(false, true)) {
+            pending.approved = approved;
+            pending.result.countDown();
+        }
+    }
+
+    private static String errorResponse(Exception error) {
         try {
-            List<AgentStore.Task> tasks = store.listTasks();
-            if (!tasks.isEmpty()) {
-                return tasks.get(0).id;
-            }
-            AgentStore.Task newTask = store.createTask("Substrate Host Task Context");
-            return newTask.id;
-        } catch (Exception e) {
-            return "substrate-default-task";
+            return new JSONObject().put("status", "error")
+                .put("message", error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage())
+                .toString();
+        } catch (Exception ignored) {
+            return "{\"status\":\"error\"}";
         }
     }
 
@@ -204,7 +363,7 @@ public class SubstrateService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.i(TAG, "Client binding to SubstrateService: " + (intent != null ? intent.getAction() : "null"));
+        if (intent == null || !ACTION_BIND_SUBSTRATE.equals(intent.getAction())) return null;
         return binder;
     }
 }

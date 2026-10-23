@@ -76,12 +76,12 @@ public final class MainActivity extends Activity {
     private long remoteUriExpiresAtElapsed;
     private final Runnable remoteUriExpiry = this::expireRemoteUriGrant;
     private TextView sensInfo;
+    private Button sensorToggleButton;
 
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
         if (state != null) remoteUriExpiresAtElapsed = state.getLong(STATE_REMOTE_URI_EXPIRES_AT);
-        PhysicalSensoriumManager.getInstance(this).startMonitoring();
         store = new AgentStore(this);
         capabilityBroker = new CapabilityBroker(this, store);
         buildScreen();
@@ -94,8 +94,8 @@ public final class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        PhysicalSensoriumManager.getInstance(this).startMonitoring();
         updateSensorsCard();
+        updateSensorToggleButton();
         updateFloatPermStatus();
         expireRemoteUriGrant();
         try {
@@ -111,6 +111,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onPause() {
         mainHandler.removeCallbacks(taskRefresh);
+        PhysicalSensoriumManager.getInstance(this).stopMonitoring();
         super.onPause();
     }
 
@@ -124,6 +125,7 @@ public final class MainActivity extends Activity {
     protected void onDestroy() {
         destroyed = true;
         VoiceInteractionManager.getInstance(this).stopListening();
+        PhysicalSensoriumManager.getInstance(this).stopMonitoring();
         mainHandler.removeCallbacks(remoteUriExpiry);
         clearPendingExportPassphrase();
         io.execute(() -> store.close());
@@ -429,9 +431,9 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "AOSP守护", 0xFFD84315);
+        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText(en ? "agentosd · 19898\noom_adj -1000\nUnix Socket IPC" : "agentosd · 19898\noom_adj -1000 常驻\nUnix Socket IPC 就绪");
+        daemonInfo.setText(en ? "agentosd · 127.0.0.1:19898\nTap to check\nStatus unknown" : "agentosd · 127.0.0.1:19898\n点击探测\n状态未知");
         daemonInfo.setTextSize(10);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
@@ -439,17 +441,24 @@ public final class MainActivity extends Activity {
         daemonCard.addView(daemonInfo);
 
         daemonCard.setOnClickListener(v -> {
-            daemonInfo.setText(en ? "agentosd · PID 19898\nPinging Daemon...\noom_adj -1000 Locked" : "agentosd · PID 19898\n正在探活守护进程...\noom_adj -1000 锁定");
+            daemonInfo.setText(en ? "agentosd · 127.0.0.1:19898\nChecking..." : "agentosd · 127.0.0.1:19898\n正在探测…");
             new Thread(() -> {
                 long t0 = System.currentTimeMillis();
                 org.json.JSONObject pingResp = AgentSystemBridge.getInstance().ping();
                 long latencyMs = Math.max(1, System.currentTimeMillis() - t0);
                 runOnUiThread(() -> {
-                    daemonInfo.setText((en ? "agentosd · PID 19898\n" : "agentosd · PID 19898\n")
-                            + (en ? "IPC: " + latencyMs + "ms · Active\n" : "IPC: " + latencyMs + "ms · 活跃常驻\n")
-                            + (en ? "oom_adj -1000 Locked" : "oom_adj -1000 锁定"));
-                    Toast.makeText(this, (en ? "AOSP Daemon Active: agentosd (PID 19898 · Ping " + latencyMs + "ms · Isolated)"
-                            : "AOSP 守护进程运行中: agentosd (PID 19898 · 延迟 " + latencyMs + "ms · 原生常驻)"), Toast.LENGTH_SHORT).show();
+                    org.json.JSONObject data = pingResp.optJSONObject("data");
+                    boolean active = "ok".equals(pingResp.optString("status"))
+                        && data != null && data.optBoolean("pong");
+                    if (active) {
+                        daemonInfo.setText("agentosd · 127.0.0.1:19898\n"
+                                + (en ? "IPC: " + latencyMs + " ms · Active" : "IPC: " + latencyMs + " ms · 活跃"));
+                        Toast.makeText(this, en ? "agentosd responded to ping" : "agentosd 已响应探测", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String message = pingResp.optString("message", en ? "No valid daemon response" : "未收到有效守护进程响应");
+                        daemonInfo.setText((en ? "agentosd unavailable\n" : "agentosd 不可用\n") + message);
+                        Toast.makeText(this, (en ? "Daemon unavailable: " : "守护进程不可用：") + message, Toast.LENGTH_SHORT).show();
+                    }
                 });
             }).start();
         });
@@ -479,7 +488,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, en ? "Sensors" : "环境感知", 0xFF0277BD);
         sensInfo = new TextView(this);
-        sensInfo.setText(en ? "IMU + Gyro + Light\nPose: Still · Tabletop\nPocket Guard Active" : "IMU + 陀螺仪 + 光感\n姿态: 静止 · 桌面放置\n口袋防误触门禁开启");
+        sensInfo.setText(en ? "Sensor monitoring off\nTap Enable sensors to start" : "传感器采集已关闭\n点击“启用感知”后开始");
         sensInfo.setTextSize(10);
         sensInfo.setLineSpacing(dp(1), 1.0f);
         sensInfo.setTextColor(0xFF475569);
@@ -489,6 +498,10 @@ public final class MainActivity extends Activity {
         sensCard.setOnClickListener(v -> {
             try {
                 PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
+                if (!sens.isMonitoring()) {
+                    Toast.makeText(this, en ? "Enable sensors to view live context" : "请先启用感知，再查看实时状态", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 org.json.JSONObject ctx = sens.evaluateCurrentContext();
                 updateSensorsCard();
                 String motion = ctx.optString("motion_state", "Stationary");
@@ -807,7 +820,14 @@ public final class MainActivity extends Activity {
 
         Button pingDaemonBtn = createCompactActionButton(en ? "Ping Daemon" : "Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
             org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
-            runOnUiThread(() -> Toast.makeText(this, (en ? "Daemon ping: " : "守护进程响应: ") + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> {
+                org.json.JSONObject data = resp.optJSONObject("data");
+                boolean active = "ok".equals(resp.optString("status")) && data != null && data.optBoolean("pong");
+                String message = active
+                    ? (en ? "Daemon responded: " : "守护进程已响应：") + data.optString("service", "agentosd")
+                    : (en ? "Daemon unavailable: " : "守护进程不可用：") + resp.optString("message", "No valid response");
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            });
         }).start());
         LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
         pingLp.setMargins(dp(4), 0, 0, 0);
@@ -834,15 +854,25 @@ public final class MainActivity extends Activity {
         testVoiceLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(testVoiceBtn, testVoiceLp);
 
-        Button refreshSensBtn = createCompactActionButton(en ? "Sensors" : "环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
+        sensorToggleButton = createCompactActionButton(en ? "Enable sensors" : "启用感知", 0xFFF8FAFC, 0xFF475569, v -> {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
-            sens.startMonitoring();
+            if (sens.isMonitoring()) {
+                sens.stopMonitoring();
+            } else {
+                sens.startMonitoring();
+            }
+            updateSensorToggleButton();
+            updateSensorsCard();
+            if (!sens.isMonitoring()) {
+                Toast.makeText(this, en ? "Sensor monitoring stopped" : "已停止传感器采集", Toast.LENGTH_SHORT).show();
+                return;
+            }
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
             Toast.makeText(this, (en ? "Pose: " : "姿态: ") + ctx.optString("motion_state") + (en ? ", Env: " : ", 环境: ") + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
         sensLp.setMargins(dp(3), 0, 0, 0);
-        diagBtnRow.addView(refreshSensBtn, sensLp);
+        diagBtnRow.addView(sensorToggleButton, sensLp);
 
         root.addView(diagBtnRow);
 
@@ -1724,7 +1754,7 @@ public final class MainActivity extends Activity {
         fields.addView(urlInput);
 
         final EditText keyInput = new EditText(this);
-        keyInput.setHint(en ? "API Key (Optional, leave blank for local Ollama)" : "API Key（可选，局域网 Ollama 可留空）");
+        keyInput.setHint(en ? "API Key (optional)" : "API Key（可选）");
         keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         keyInput.setText(current.apiKey);
         fields.addView(keyInput);
@@ -1762,9 +1792,15 @@ public final class MainActivity extends Activity {
             .setView(fields)
             .setNegativeButton(en ? "Cancel" : "取消", null)
             .setPositiveButton(en ? "Save Config" : "保存配置", (dialog, which) -> {
+                String endpointUrl = urlInput.getText().toString();
+                if (enabledCheck.isChecked() && !CloudModelClient.isAllowedEndpointUrl(endpointUrl)) {
+                    showMessage(en ? "Use HTTPS for cloud endpoints; HTTP is allowed only on this device."
+                        : "云端端点必须使用 HTTPS；仅允许本机回环地址使用 HTTP。");
+                    return;
+                }
                 CloudModelConfig updated = new CloudModelConfig(
                     enabledCheck.isChecked(),
-                    urlInput.getText().toString(),
+                    endpointUrl,
                     keyInput.getText().toString(),
                     modelInput.getText().toString(),
                     CloudModelConfig.DEFAULT_TIMEOUT_MILLIS,
@@ -2042,6 +2078,10 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         try {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
+            if (!sens.isMonitoring()) {
+                sensInfo.setText(en ? "Sensor monitoring off\nTap Enable sensors to start" : "传感器采集已关闭\n点击“启用感知”后开始");
+                return;
+            }
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
             String motion = ctx.optString("motion_state", "Stationary");
             boolean pocket = ctx.optBoolean("in_pocket", false);
@@ -2071,6 +2111,15 @@ public final class MainActivity extends Activity {
                     + (en ? "Pose: " + motionEn + "\n" : "姿态: " + motionZh + "\n")
                     + (en ? envEn + " · " + temp + "°C" : envZh + " · " + temp + "°C"));
         } catch (Exception ignored) {}
+    }
+
+    private void updateSensorToggleButton() {
+        if (sensorToggleButton == null) return;
+        boolean en = isEnglish();
+        boolean monitoring = PhysicalSensoriumManager.getInstance(this).isMonitoring();
+        sensorToggleButton.setText(en
+                ? (monitoring ? "Stop sensors" : "Enable sensors")
+                : (monitoring ? "停止感知" : "启用感知"));
     }
 
     private void updateFloatPermStatus() {

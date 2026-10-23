@@ -1,7 +1,7 @@
 package org.traceform.agentos;
 
 interface IAgentSubstrate {
-    // Agent identity registration: returns session token
+    // Agent identity registration: the host binds package identity to the Binder caller UID.
     String registerAgent(String agentPackage, String agentPublicKeyHash, String manifestJson);
 
     // List capabilities available to this agent / task

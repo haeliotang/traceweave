@@ -1,4 +1,4 @@
-use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::aead::{Aead, KeyInit, Payload};
 use aes_gcm::{Aes256Gcm, Nonce};
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
@@ -11,8 +11,6 @@ const PBKDF2_ROUNDS: u32 = 600_000;
 const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 const SALT_LEN: usize = 16;
-
-static SYNC_NONCE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TombstoneRecord {
@@ -68,40 +66,35 @@ fn derive_key(passphrase: &str, salt: &[u8]) -> [u8; KEY_LEN] {
     key
 }
 
+fn envelope_aad(version: u32, device_id: &str, created_at: i64) -> Vec<u8> {
+    let mut aad = b"agent-os-sync-envelope".to_vec();
+    aad.extend_from_slice(&version.to_be_bytes());
+    aad.extend_from_slice(&(device_id.len() as u64).to_be_bytes());
+    aad.extend_from_slice(device_id.as_bytes());
+    aad.extend_from_slice(&created_at.to_be_bytes());
+    aad
+}
+
 /// Encrypts raw bytes using AES-256-GCM with a user-derived key.
 pub fn encrypt_payload(passphrase: &str, plaintext: &[u8], device_id: &str) -> Result<SyncEnvelope, String> {
-    // Generate deterministic yet unique salt and nonce using timestamp and device hash
     let now = now_millis();
     let mut salt = [0u8; SALT_LEN];
     let mut nonce_bytes = [0u8; NONCE_LEN];
-
-    // Seed salt and nonce from system time and device id bytes
-    for (i, b) in device_id.as_bytes().iter().enumerate() {
-        salt[i % SALT_LEN] ^= b;
-        nonce_bytes[i % NONCE_LEN] ^= b.wrapping_add(i as u8);
-    }
-    for (i, b) in now.to_le_bytes().iter().enumerate() {
-        salt[(i + 4) % SALT_LEN] ^= b;
-        nonce_bytes[i % NONCE_LEN] ^= b;
-    }
-
-    let counter = SYNC_NONCE_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    for (i, b) in counter.to_le_bytes().iter().enumerate() {
-        nonce_bytes[(i + 4) % NONCE_LEN] ^= b;
-        salt[(i + 8) % SALT_LEN] ^= b;
-    }
+    getrandom::getrandom(&mut salt).map_err(|e| format!("Failed to generate sync salt: {}", e))?;
+    getrandom::getrandom(&mut nonce_bytes).map_err(|e| format!("Failed to generate sync nonce: {}", e))?;
 
     let key = derive_key(passphrase, &salt);
     let cipher = Aes256Gcm::new_from_slice(&key)
         .map_err(|e| format!("Failed to initialize AES-GCM: {}", e))?;
     let nonce = Nonce::from_slice(&nonce_bytes);
 
+    let aad = envelope_aad(2, device_id, now);
     let ciphertext = cipher
-        .encrypt(nonce, plaintext)
+        .encrypt(nonce, Payload { msg: plaintext, aad: &aad })
         .map_err(|e| format!("AES-GCM encryption failed: {}", e))?;
 
     Ok(SyncEnvelope {
-        version: 1,
+        version: 2,
         device_id: device_id.to_string(),
         salt_b64: BASE64.encode(salt),
         nonce_b64: BASE64.encode(nonce_bytes),
@@ -112,6 +105,9 @@ pub fn encrypt_payload(passphrase: &str, plaintext: &[u8], device_id: &str) -> R
 
 /// Decrypts a SyncEnvelope using the user's passphrase.
 pub fn decrypt_payload(passphrase: &str, envelope: &SyncEnvelope) -> Result<Vec<u8>, String> {
+    if envelope.version != 1 && envelope.version != 2 {
+        return Err("Unsupported sync envelope version".to_string());
+    }
     let salt = BASE64.decode(&envelope.salt_b64)
         .map_err(|e| format!("Invalid base64 salt: {}", e))?;
     let nonce_bytes = BASE64.decode(&envelope.nonce_b64)
@@ -119,6 +115,9 @@ pub fn decrypt_payload(passphrase: &str, envelope: &SyncEnvelope) -> Result<Vec<
     let ciphertext = BASE64.decode(&envelope.ciphertext_b64)
         .map_err(|e| format!("Invalid base64 ciphertext: {}", e))?;
 
+    if salt.len() != SALT_LEN {
+        return Err("Invalid salt length".to_string());
+    }
     if nonce_bytes.len() != NONCE_LEN {
         return Err("Invalid nonce length".to_string());
     }
@@ -128,9 +127,13 @@ pub fn decrypt_payload(passphrase: &str, envelope: &SyncEnvelope) -> Result<Vec<
         .map_err(|e| format!("Failed to initialize AES-GCM: {}", e))?;
     let nonce = Nonce::from_slice(&nonce_bytes);
 
-    cipher
-        .decrypt(nonce, ciphertext.as_ref())
-        .map_err(|_| "AES-GCM decryption failed: invalid passphrase or corrupted envelope".to_string())
+    let plaintext = if envelope.version == 1 {
+        cipher.decrypt(nonce, ciphertext.as_ref())
+    } else {
+        let aad = envelope_aad(envelope.version, &envelope.device_id, envelope.created_at);
+        cipher.decrypt(nonce, Payload { msg: ciphertext.as_ref(), aad: &aad })
+    };
+    plaintext.map_err(|_| "AES-GCM decryption failed: invalid passphrase or corrupted envelope".to_string())
 }
 
 /// Exports all memories and tombstones into an encrypted sync package.
@@ -140,12 +143,16 @@ pub fn export_encrypted_sync_package(
     device_id: &str,
 ) -> Result<String, String> {
     let memories = store.list_memories().map_err(|e| e.to_string())?;
-    let tasks = store.list_tasks().unwrap_or_default();
+    let tasks = store.list_tasks().map_err(|e| e.to_string())?;
+    let tombstones = store.list_memory_tombstones().map_err(|e| e.to_string())?
+        .into_iter()
+        .map(|(id, deleted_at)| TombstoneRecord { id, deleted_at })
+        .collect();
     let payload = SyncPayload {
         device_id: device_id.to_string(),
         timestamp: now_millis(),
         memories,
-        tombstones: Vec::new(),
+        tombstones,
         tasks,
     };
 
@@ -168,30 +175,23 @@ pub fn import_encrypted_sync_package(
     let decrypted_bytes = decrypt_payload(passphrase, &envelope)?;
     let payload: SyncPayload = serde_json::from_slice(&decrypted_bytes)
         .map_err(|e| format!("Failed to deserialize decrypted payload: {}", e))?;
+    if payload.device_id != envelope.device_id {
+        return Err("Sync envelope device ID does not match its payload".to_string());
+    }
 
     let mut stats = MergeStats::default();
 
+    for tombstone in payload.tombstones {
+        if store.apply_memory_tombstone(&tombstone.id, tombstone.deleted_at).map_err(|e| e.to_string())? {
+            stats.applied_tombstones += 1;
+        }
+    }
+
     for remote_mem in payload.memories {
-        // In-place topic deduplication and update
-        let topic_key = if remote_mem.source.is_empty() {
-            "default_topic"
-        } else {
-            remote_mem.source.as_str()
-        };
-
-        let res = store.create_or_update_memory(
-            &remote_mem.kind,
-            &remote_mem.content,
-            &remote_mem.source,
-            &remote_mem.source_reference,
-            topic_key,
-            remote_mem.updated_at,
-        ).map_err(|e| e.to_string())?;
-
-        if res.id == remote_mem.id {
-            stats.imported_memories += 1;
-        } else {
-            stats.updated_memories += 1;
+        match store.upsert_synced_memory(&remote_mem).map_err(|e| e.to_string())? {
+            crate::store::SyncedMemoryResult::Inserted => stats.imported_memories += 1,
+            crate::store::SyncedMemoryResult::Updated => stats.updated_memories += 1,
+            crate::store::SyncedMemoryResult::Skipped => stats.skipped_records += 1,
         }
     }
 
@@ -312,6 +312,91 @@ mod tests {
 
         // 3. Decrypt with wrong passphrase must fail
         assert!(decrypt_payload("wrong-passphrase", &envelope).is_err());
+    }
+
+    #[test]
+    fn test_sync_envelope_authenticates_metadata() {
+        let envelope = encrypt_payload("passphrase", b"payload", "device-1").unwrap();
+        let mut modified = envelope.clone();
+        modified.device_id = "device-2".to_string();
+
+        assert!(decrypt_payload("passphrase", &modified).is_err());
+    }
+
+    #[test]
+    fn test_sync_decrypts_legacy_v1_envelope() {
+        let salt = [7u8; SALT_LEN];
+        let nonce_bytes = [9u8; NONCE_LEN];
+        let key = derive_key("passphrase", &salt);
+        let cipher = Aes256Gcm::new_from_slice(&key).unwrap();
+        let ciphertext = cipher.encrypt(Nonce::from_slice(&nonce_bytes), b"legacy-payload".as_ref()).unwrap();
+        let envelope = SyncEnvelope {
+            version: 1,
+            device_id: "legacy-device".to_string(),
+            salt_b64: BASE64.encode(salt),
+            nonce_b64: BASE64.encode(nonce_bytes),
+            ciphertext_b64: BASE64.encode(ciphertext),
+            created_at: 1,
+        };
+
+        assert_eq!(decrypt_payload("passphrase", &envelope).unwrap(), b"legacy-payload");
+    }
+
+    #[test]
+    fn test_sync_import_preserves_distinct_memories_from_same_source() {
+        let source = AgentStore::open_in_memory().unwrap();
+        let first = source.create_or_update_memory(
+            "fact", "first fact", "user", "first", "topic-first", 10,
+        ).unwrap();
+        let second = source.create_or_update_memory(
+            "preference", "second preference", "user", "second", "topic-second", 20,
+        ).unwrap();
+
+        let package = export_encrypted_sync_package(&source, "shared-passphrase", "source-device").unwrap();
+        let target = AgentStore::open_in_memory().unwrap();
+        import_encrypted_sync_package(&target, "shared-passphrase", &package).unwrap();
+
+        let memories = target.list_memories().unwrap();
+        assert_eq!(memories.len(), 2);
+        assert!(memories.iter().any(|memory| memory.id == first.id && memory.content == first.content));
+        assert!(memories.iter().any(|memory| memory.id == second.id && memory.content == second.content));
+    }
+
+    #[test]
+    fn test_sync_import_applies_memory_tombstone_before_content() {
+        let store = AgentStore::open_in_memory().unwrap();
+        let memory = store.create_or_update_memory(
+            "fact", "deleted fact", "user", "", "topic-deleted", 10,
+        ).unwrap();
+        let payload = SyncPayload {
+            device_id: "source-device".to_string(),
+            timestamp: 20,
+            memories: vec![MemoryRecord {
+                id: memory.id.clone(),
+                kind: memory.kind.clone(),
+                content: memory.content.clone(),
+                source: memory.source.clone(),
+                source_reference: memory.source_reference.clone(),
+                created_at: memory.created_at,
+                updated_at: memory.updated_at,
+            }],
+            tombstones: vec![TombstoneRecord { id: memory.id.clone(), deleted_at: 20 }],
+            tasks: Vec::new(),
+        };
+        let bytes = serde_json::to_vec(&payload).unwrap();
+        let envelope = encrypt_payload("shared-passphrase", &bytes, "source-device").unwrap();
+        let package = serde_json::to_string(&envelope).unwrap();
+
+        let stats = import_encrypted_sync_package(&store, "shared-passphrase", &package).unwrap();
+
+        assert_eq!(stats.applied_tombstones, 1);
+        assert_eq!(stats.skipped_records, 1);
+        assert!(store.list_memories().unwrap().is_empty());
+
+        let package = export_encrypted_sync_package(&store, "shared-passphrase", "target-device").unwrap();
+        let replica = AgentStore::open_in_memory().unwrap();
+        import_encrypted_sync_package(&replica, "shared-passphrase", &package).unwrap();
+        assert_eq!(replica.list_memory_tombstones().unwrap(), vec![(memory.id, 20)]);
     }
 
     #[test]

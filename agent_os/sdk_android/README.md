@@ -14,7 +14,7 @@ Third-Party Agent APK               Personal Agent Substrate (AgentOS)
 └───────────────────────┘           └──────────────────────────────────┘
 ```
 
-## Setup & Manifest Permission
+## Setup
 
 In your third-party `AndroidManifest.xml`, declare query intent and Substrate permission:
 
@@ -29,9 +29,9 @@ In your third-party `AndroidManifest.xml`, declare query intent and Substrate pe
         </intent>
     </queries>
 
-    <!-- Substrate custom binder permission -->
-    <uses-permission android:name="org.traceform.agentos.BIND_SUBSTRATE" />
 ```
+
+The current prototype verifies that the registering package belongs to the Binder caller UID; the legacy key-hash argument is retained for API compatibility and is not used as proof of identity. Each registration receives a private task context. Requesting a capability posts a system notification; the user must open it and approve the five-minute grant. Denials and notification-permission failures fail closed. Session tokens are secrets and must not be logged.
 
 ## Usage Example
 
@@ -53,18 +53,18 @@ client.connect(new SubstrateCallback.ConnectionListener() {
                 .requestCapability("demo.note.read", "synthetic.welcome", "Inspect daily notes")
                 .build();
 
-        client.registerAgent("com.example.myagent", "sha256:app_signature_hash", manifest,
+        client.registerAgent("com.example.myagent", "", manifest,
             new SubstrateCallback.ActionCallback<String>() {
                 @Override
                 public void onSuccess(String sessionToken) {
                     // 4. Request JIT Capability
-                    client.requestCapability("task-001", "demo.note.read", "synthetic.welcome",
+                    client.requestCapability(client.getActiveTaskId(), "demo.note.read", "synthetic.welcome",
                         new SubstrateCallback.ActionCallback<Boolean>() {
                             @Override
                             public void onSuccess(Boolean granted) {
                                 if (granted) {
                                     // 5. Invoke capability under grant
-                                    client.invokeCapability("task-001", "demo.note.read", "synthetic.welcome",
+                                    client.invokeCapability(client.getActiveTaskId(), "demo.note.read", "synthetic.welcome",
                                         new SubstrateCallback.ActionCallback<String>() {
                                             @Override
                                             public void onSuccess(String noteContent) {

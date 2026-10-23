@@ -131,26 +131,20 @@ public class DemoAgentActivity extends Activity {
     private void executeInteroperabilityTest() {
         new Thread(() -> {
             try {
-                // 1. Ping
-                appendLog("[Step 2] Pinging Substrate daemon bridge...");
-                String pingRes = substrate.ping(null);
-                appendLog("[Ping Response] " + pingRes);
-
-                // 2. Register Agent
+                // 1. Register Agent
                 appendLog("[Step 3] Registering Agent: org.traceform.demoagent...");
                 String regRes = substrate.registerAgent(
                     "org.traceform.demoagent",
-                    "sha256:4a38f9b2d8e0",
+                    "",
                     "{\"name\":\"DemoResearchAgent\",\"version\":\"1.0.0\",\"type\":\"external_agent\"}"
                 );
-                appendLog("[Register Response] " + regRes);
-
                 org.json.JSONObject regObj = new org.json.JSONObject(regRes);
                 String sessionToken = regObj.optString("session_token", "");
                 if (sessionToken.isEmpty()) {
                     throw new IllegalStateException("Failed to obtain session token from Substrate");
                 }
-                appendLog("[Session Token] " + sessionToken);
+                appendLog("[Register Response] status=" + regObj.optString("status")
+                    + " task=" + regObj.optString("default_task_id"));
 
                 // 3. List Capabilities
                 appendLog("[Step 4] Querying available capabilities from Substrate...");

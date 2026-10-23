@@ -3,19 +3,22 @@ package org.traceform.agentos;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 final class CloudModelClient {
+    private static final int MAX_REQUEST_BYTES = 2 * 1024 * 1024;
+    private static final int MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
     ExecutionPlan requestPlan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories, CloudModelConfig config) throws Exception {
@@ -129,7 +132,7 @@ final class CloudModelClient {
         return sb.toString();
     }
 
-    private static ExecutionPlan parsePlanResponse(String taskId, String userGoal, String responseBody,
+    static ExecutionPlan parsePlanResponse(String taskId, String userGoal, String responseBody,
                                                   List<CapabilityDescriptor> availableCaps) throws Exception {
         JSONObject root = new JSONObject(responseBody);
         JSONArray choices = root.optJSONArray("choices");
@@ -151,24 +154,30 @@ final class CloudModelClient {
             throw new IllegalStateException("Cloud model returned empty steps");
         }
 
-        Set<String> validCaps = new HashSet<>();
+        Map<String, Set<String>> validScopesByCapability = new HashMap<>();
         for (CapabilityDescriptor descriptor : availableCaps) {
-            validCaps.add(descriptor.capability);
+            if (descriptor.available) {
+                validScopesByCapability.computeIfAbsent(descriptor.capability, ignored -> new HashSet<>())
+                    .add(descriptor.scope);
+            }
         }
-        validCaps.add("builtin.synthesis");
+        validScopesByCapability.computeIfAbsent("builtin.synthesis", ignored -> new HashSet<>())
+            .add("local_inference");
 
         List<ExecutionPlan.Step> steps = new ArrayList<>();
         for (int i = 0; i < stepsArr.length(); i++) {
             JSONObject stepObj = stepsArr.getJSONObject(i);
             String cap = stepObj.getString("capability");
-            if (!validCaps.contains(cap)) {
-                throw new SecurityException("Cloud model returned unauthorized capability: " + cap);
+            String scope = stepObj.optString("scope", "default");
+            Set<String> validScopes = validScopesByCapability.get(cap);
+            if (validScopes == null || !validScopes.contains(scope)) {
+                throw new SecurityException("Cloud model returned unauthorized capability scope: " + cap);
             }
             steps.add(new ExecutionPlan.Step(
                 i,
                 stepObj.optString("title", "步骤 " + (i + 1)),
                 cap,
-                stepObj.optString("scope", "default"),
+                scope,
                 stepObj.optString("prompt", ""),
                 ExecutionPlan.STEP_PENDING,
                 "",
@@ -207,15 +216,32 @@ final class CloudModelClient {
         return clean;
     }
 
+    static boolean isAllowedEndpointUrl(String endpointUrl) {
+        try {
+            URL url = new URL(normalizeEndpointUrl(endpointUrl));
+            if (url.getUserInfo() != null) return false;
+            if ("https".equalsIgnoreCase(url.getProtocol())) return true;
+            if (!"http".equalsIgnoreCase(url.getProtocol())) return false;
+            String host = url.getHost();
+            return "127.0.0.1".equals(host) || "localhost".equalsIgnoreCase(host)
+                || "::1".equals(host) || "[::1]".equals(host);
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     private static String executePost(String endpointUrl, String apiKey, String requestBody, int timeoutMillis)
             throws Exception {
         String normalizedUrl = normalizeEndpointUrl(endpointUrl);
+        if (!isAllowedEndpointUrl(normalizedUrl)) {
+            throw new SecurityException("Cloud model endpoint must use HTTPS; HTTP is allowed only on loopback");
+        }
         int effectiveTimeout = Math.max(timeoutMillis, 15000);
-        android.util.Log.i("CloudModelClient", "Executing cloud POST to: " + normalizedUrl + " (timeout=" + effectiveTimeout + "ms)");
         URL url = new URL(normalizedUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         try {
             conn.setRequestMethod("POST");
+            conn.setInstanceFollowRedirects(false);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Accept", "application/json");
             if (apiKey != null && !apiKey.isEmpty()) {
@@ -226,6 +252,9 @@ final class CloudModelClient {
             conn.setDoOutput(true);
 
             byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
+            if (input.length > MAX_REQUEST_BYTES) {
+                throw new IllegalArgumentException("Cloud model request exceeds the 2 MiB limit");
+            }
             conn.setFixedLengthStreamingMode(input.length);
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(input);
@@ -233,25 +262,28 @@ final class CloudModelClient {
             }
 
             int statusCode = conn.getResponseCode();
-            InputStream stream = (statusCode >= 200 && statusCode < 300)
-                ? conn.getInputStream() : conn.getErrorStream();
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new IllegalStateException("Cloud model endpoint returned HTTP " + statusCode);
+            }
+            InputStream stream = conn.getInputStream();
             if (stream == null) {
                 throw new IllegalStateException("HTTP response stream is null, status=" + statusCode);
             }
 
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line).append('\n');
+            ByteArrayOutputStream response = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            try (InputStream inputStream = stream) {
+                int count;
+                while ((count = inputStream.read(buffer)) != -1) {
+                    if (response.size() + count > MAX_RESPONSE_BYTES) {
+                        throw new IllegalStateException("Cloud model response exceeds the 2 MiB limit");
+                    }
+                    response.write(buffer, 0, count);
                 }
             }
 
-            if (statusCode < 200 || statusCode >= 300) {
-                throw new IllegalStateException("Cloud model endpoint returned HTTP " + statusCode + ": " + response);
-            }
-            android.util.Log.i("CloudModelClient", "Cloud POST succeeded, response length=" + response.length());
-            return response.toString();
+            android.util.Log.i("CloudModelClient", "Cloud POST succeeded, response length=" + response.size());
+            return new String(response.toByteArray(), StandardCharsets.UTF_8);
         } finally {
             conn.disconnect();
         }

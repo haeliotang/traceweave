@@ -294,7 +294,8 @@ final class MemoryArchive {
             if (!memoryIds.add(id)) throw new IOException("The archive contains duplicate memory IDs");
             if (!validMemoryKind(kind) || content.trim().isEmpty() || content.length() > 10000 || updatedAt < createdAt
                     || (!AgentStore.MEMORY_SOURCE_USER.equals(source)
-                        && !AgentStore.MEMORY_SOURCE_TRACEFORM.equals(source)) || sourceReference.length() > 512)
+                        && !AgentStore.MEMORY_SOURCE_TRACEFORM.equals(source)
+                        && !AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(source)) || sourceReference.length() > 512)
                 throw new IOException("The archive contains an invalid memory record");
             data.memories.add(new AgentStore.Memory(id, kind, content, source, sourceReference, createdAt, updatedAt));
         }

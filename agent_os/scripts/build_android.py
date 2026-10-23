@@ -104,6 +104,16 @@ def main():
     run([tools["apksigner"], "verify", "--verbose", apk])
 
     tracked_sources = [manifest, *sources, Path(__file__).resolve()]
+
+    def source_label(path):
+        for base, label in ((root, ""), (source_dir, "custom_source/"), (build, "generated/")):
+            try:
+                relative = path.relative_to(base)
+                return label + str(relative)
+            except ValueError:
+                pass
+        return "external/" + path.name
+
     report = {
         "package": ET.parse(manifest).getroot().get("package"),
         "version": "0.1.0",
@@ -111,7 +121,7 @@ def main():
         "apk_bytes": apk.stat().st_size,
         "signing": "local_development_key",
         "source_sha256": {
-            str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
+            source_label(path): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in tracked_sources
         },
         "scope": args.scope,

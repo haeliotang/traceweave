@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const DEFAULT_SESSION_DURATION_MILLIS: i64 = 24 * 60 * 60 * 1000; // 24 hours
 
-static SESSION_TOKEN_COUNTER: AtomicU64 = AtomicU64::new(1);
 static GLOBAL_REGISTRY: RwLock<Option<AgentRegistry>> = RwLock::new(None);
 
 pub fn now_millis() -> i64 {
@@ -112,8 +110,10 @@ impl AgentRegistry {
         self.agents.insert(agent_id.to_string(), identity);
 
         // Issue new session token
-        let counter = SESSION_TOKEN_COUNTER.fetch_add(1, Ordering::SeqCst);
-        let session_token = format!("agent_sess_{}_{:x}_{}", agent_id, now, counter);
+        let mut token_bytes = [0u8; 32];
+        getrandom::getrandom(&mut token_bytes)
+            .map_err(|e| format!("Failed to generate session token: {}", e))?;
+        let session_token = token_bytes.iter().map(|byte| format!("{:02x}", byte)).collect::<String>();
 
         let session = AgentSession {
             session_token: session_token.clone(),

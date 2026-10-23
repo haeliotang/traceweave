@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 
 import org.traceform.agentos.IAgentSubstrate;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,9 +27,10 @@ public class SubstrateClient {
     private final ExecutorService executor;
     private final Handler mainHandler;
 
-    private IAgentSubstrate substrateService;
-    private boolean isBound = false;
-    private String activeSessionToken;
+    private volatile IAgentSubstrate substrateService;
+    private volatile boolean isBound = false;
+    private volatile String activeSessionToken;
+    private volatile String activeTaskId;
 
     private SubstrateCallback.ConnectionListener connectionListener;
 
@@ -47,6 +49,7 @@ public class SubstrateClient {
             substrateService = null;
             isBound = false;
             activeSessionToken = null;
+            activeTaskId = null;
             if (connectionListener != null) {
                 mainHandler.post(() -> connectionListener.onDisconnected());
             }
@@ -85,6 +88,7 @@ public class SubstrateClient {
             isBound = false;
             substrateService = null;
             activeSessionToken = null;
+            activeTaskId = null;
         }
         executor.shutdown();
     }
@@ -97,6 +101,10 @@ public class SubstrateClient {
         return activeSessionToken;
     }
 
+    public String getActiveTaskId() {
+        return activeTaskId;
+    }
+
     // =========================================================================
     // Synchronous Methods (Must run off main thread)
     // =========================================================================
@@ -104,12 +112,20 @@ public class SubstrateClient {
     public String registerAgentSync(String pkg, String keyHash, AgentManifest manifest) throws SubstrateException {
         ensureConnected();
         try {
-            String token = substrateService.registerAgent(pkg, keyHash, manifest.toJsonString());
-            if (token != null && !token.isEmpty()) {
-                this.activeSessionToken = token;
-                return token;
+            JSONObject response = new JSONObject(substrateService.registerAgent(pkg, keyHash, manifest.toJsonString()));
+            if (!"ok".equals(response.optString("status"))) {
+                throw new SubstrateException.AuthenticationException(response.optString("message", "Agent registration failed"));
             }
-            throw new SubstrateException.AuthenticationException("Failed to register agent. Null or empty token received.");
+            String token = response.optString("session_token", "");
+            String taskId = response.optString("default_task_id", "");
+            if (token.isEmpty() || taskId.isEmpty()) {
+                throw new SubstrateException.AuthenticationException("Agent registration response is incomplete");
+            }
+            this.activeSessionToken = token;
+            this.activeTaskId = taskId;
+            return token;
+        } catch (org.json.JSONException e) {
+            throw new SubstrateException.AuthenticationException("Invalid registration response from Substrate");
         } catch (RemoteException e) {
             throw new SubstrateException("IPC failure during registerAgent", e);
         }

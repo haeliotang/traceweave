@@ -79,16 +79,11 @@ public final class AgentSystemBridge {
                 }
             }
 
-            // 3. Fallback simulated response
-            JSONObject fallback = new JSONObject();
-            fallback.put("id", reqId);
-            fallback.put("status", "ok");
-            fallback.put("fallback", true);
-            JSONObject data = new JSONObject();
-            data.put("pong", true);
-            data.put("service", "agentosd-inprocess-fallback");
-            fallback.put("data", data);
-            return fallback;
+            JSONObject unavailable = new JSONObject();
+            unavailable.put("id", reqId);
+            unavailable.put("status", "error");
+            unavailable.put("message", "agentosd is unavailable; the request was not executed");
+            return unavailable;
         } catch (Exception e) {
             Log.e(TAG, "Daemon IPC request failed", e);
             JSONObject err = new JSONObject();
