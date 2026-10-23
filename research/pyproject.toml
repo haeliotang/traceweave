@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "traceform-research"
+version = "0.2.0"
+description = "Traceform Research: Latent Manifold & Representation Discovery (Inceptless)"
+authors = [{ name = "Inceptless" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["traceform*"]

@@ -15,8 +15,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public final class AgentFloatingService extends Service {
     private static final String TAG = "AgentFloatingService";
@@ -50,25 +53,37 @@ public final class AgentFloatingService extends Service {
     private View floatingView;
     private WindowManager.LayoutParams floatingParams;
 
-    // UI Elements
-    private LinearLayout rootLayout;
-    private LinearLayout pillHeader;
-    private android.widget.ImageView statusDotView;
+    // UI Structure
+    private FrameLayout rootContainer;
+    private FrameLayout ballView;
+    private ImageView ballDotView;
+    private LinearLayout expandedCard;
+
+    // Elements inside expanded card
+    private ImageView statusDotView;
     private TextView statusTextView;
-    private android.widget.ImageView micButtonView;
-    private LinearLayout expandedPanel;
     private TextView taskDetailView;
-    private TextView screenInspectorView;
+    private TextView sensoriumDetailView;
     private LinearLayout voiceWaveformBar;
     private LinearLayout jitContainer;
     private TextView jitPromptView;
     private Button btnGrant;
     private Button btnDeny;
 
+    // Action buttons inside expanded card
+    private Button btnVoice;
+    private Button btnVision;
+    private Button btnPtt;
+    private Button btnOpenApp;
+
     private boolean isExpanded = false;
     private String pendingTaskId;
     private String pendingCap;
     private String pendingScope;
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -109,39 +124,216 @@ public final class AgentFloatingService extends Service {
         );
 
         floatingParams.gravity = Gravity.TOP | Gravity.END;
-        floatingParams.x = 36;
-        floatingParams.y = 130;
+        floatingParams.x = dp(16);
+        floatingParams.y = dp(110);
 
-        rootLayout = new LinearLayout(this);
-        rootLayout.setOrientation(LinearLayout.VERTICAL);
+        rootContainer = new FrameLayout(this);
 
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.argb(235, 18, 22, 30));
-        bg.setCornerRadius(32);
-        bg.setStroke(2, Color.argb(120, 74, 246, 195));
-        rootLayout.setBackground(bg);
-        rootLayout.setPadding(24, 18, 24, 18);
+        // ==========================================
+        // 1. COLLAPSED VIEW: CIRCULAR FLOATING BALL
+        // ==========================================
+        ballView = new FrameLayout(this);
+        int ballSize = dp(48);
+        FrameLayout.LayoutParams ballLp = new FrameLayout.LayoutParams(ballSize, ballSize);
+        ballView.setLayoutParams(ballLp);
 
-        // --- 1. Compact Pill Header ---
-        pillHeader = new LinearLayout(this);
-        pillHeader.setOrientation(LinearLayout.HORIZONTAL);
-        pillHeader.setGravity(Gravity.CENTER_VERTICAL);
+        GradientDrawable ballBg = new GradientDrawable();
+        ballBg.setShape(GradientDrawable.OVAL);
+        ballBg.setColor(Color.argb(240, 15, 23, 42)); // Deep slate navy
+        ballBg.setStroke(dp(2), Color.argb(220, 74, 246, 195)); // Glowing cyan
+        ballView.setBackground(ballBg);
+
+        ImageView ballIcon = IconFactory.createIconView(this, IconFactory.IconType.BRAIN, 0xFF4AF6C3, 22);
+        FrameLayout.LayoutParams iconLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        ballView.addView(ballIcon, iconLp);
+
+        ballDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 8);
+        FrameLayout.LayoutParams dotLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+        dotLp.setMargins(0, dp(4), dp(4), 0);
+        ballView.addView(ballDotView, dotLp);
+
+        attachDragAndClickListener(ballView, this::toggleExpansion);
+        rootContainer.addView(ballView);
+
+        // ==========================================
+        // 2. EXPANDED VIEW: TRACEFORM CAPSULE CARD
+        // ==========================================
+        expandedCard = new LinearLayout(this);
+        expandedCard.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setColor(Color.argb(245, 15, 23, 42));
+        cardBg.setCornerRadius(dp(16));
+        cardBg.setStroke(dp(1), Color.argb(160, 74, 246, 195));
+        expandedCard.setBackground(cardBg);
+        expandedCard.setPadding(dp(14), dp(12), dp(14), dp(12));
+        expandedCard.setLayoutParams(new FrameLayout.LayoutParams(dp(290), FrameLayout.LayoutParams.WRAP_CONTENT));
+
+        // --- Header Row ---
+        LinearLayout headerRow = new LinearLayout(this);
+        headerRow.setOrientation(LinearLayout.HORIZONTAL);
+        headerRow.setGravity(Gravity.CENTER_VERTICAL);
 
         statusDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10);
-        pillHeader.addView(statusDotView);
+        headerRow.addView(statusDotView);
 
         statusTextView = new TextView(this);
-        statusTextView.setText(" Agent Capsule: 离线就绪");
+        statusTextView.setText(" Traceform Capsule");
         statusTextView.setTextColor(Color.parseColor("#4AF6C3"));
         statusTextView.setTextSize(13);
-        statusTextView.setPadding(8, 0, 12, 0);
-        pillHeader.addView(statusTextView);
+        statusTextView.setTypeface(null, android.graphics.Typeface.BOLD);
+        statusTextView.setPadding(dp(6), 0, 0, 0);
+        headerRow.addView(statusTextView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
-        micButtonView = IconFactory.createIconView(this, IconFactory.IconType.MIC, Color.parseColor("#4AF6C3"), 18);
-        pillHeader.addView(micButtonView);
+        TextView collapseBtn = new TextView(this);
+        collapseBtn.setText("收起 ▲");
+        collapseBtn.setTextSize(11);
+        collapseBtn.setTextColor(Color.parseColor("#94A3B8"));
+        collapseBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
+        collapseBtn.setOnClickListener(v -> toggleExpansion());
+        headerRow.addView(collapseBtn);
 
-        // Pill header handles dragging and tapping
-        pillHeader.setOnTouchListener(new View.OnTouchListener() {
+        attachDragAndClickListener(headerRow, null);
+        expandedCard.addView(headerRow);
+
+        // --- Section: Essential Alerts ---
+        // Alert 1: JIT Security Gate (hidden by default)
+        jitContainer = new LinearLayout(this);
+        jitContainer.setOrientation(LinearLayout.VERTICAL);
+        jitContainer.setVisibility(View.GONE);
+        jitContainer.setPadding(0, dp(8), 0, dp(4));
+
+        LinearLayout jitTitleRow = new LinearLayout(this);
+        jitTitleRow.setOrientation(LinearLayout.HORIZONTAL);
+        jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
+        jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 14));
+        TextView jitTitle = new TextView(this);
+        jitTitle.setText(" 跨应用 JIT 门禁请求");
+        jitTitle.setTextColor(Color.parseColor("#FFD54F"));
+        jitTitle.setTextSize(12);
+        jitTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        jitTitleRow.addView(jitTitle);
+        jitContainer.addView(jitTitleRow);
+
+        jitPromptView = new TextView(this);
+        jitPromptView.setTextColor(Color.WHITE);
+        jitPromptView.setTextSize(11);
+        jitPromptView.setPadding(0, dp(2), 0, dp(4));
+        jitContainer.addView(jitPromptView);
+
+        LinearLayout jitBtnRow = new LinearLayout(this);
+        jitBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+
+        btnGrant = createSmallButton("授权 5 分钟", Color.parseColor("#1B5E20"), Color.WHITE, v -> handleJitDecision(true));
+        jitBtnRow.addView(btnGrant, new LinearLayout.LayoutParams(0, dp(28), 1.0f));
+
+        btnDeny = createSmallButton("拒绝", Color.parseColor("#B71C1C"), Color.WHITE, v -> handleJitDecision(false));
+        LinearLayout.LayoutParams denyLp = new LinearLayout.LayoutParams(0, dp(28), 1.0f);
+        denyLp.setMargins(dp(6), 0, 0, 0);
+        jitBtnRow.addView(btnDeny, denyLp);
+
+        jitContainer.addView(jitBtnRow);
+        expandedCard.addView(jitContainer);
+
+        // Alert 2: Active Task Status
+        LinearLayout taskRow = new LinearLayout(this);
+        taskRow.setOrientation(LinearLayout.HORIZONTAL);
+        taskRow.setGravity(Gravity.CENTER_VERTICAL);
+        taskRow.setPadding(0, dp(6), 0, 0);
+        taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#94A3B8"), 13));
+        taskDetailView = new TextView(this);
+        taskDetailView.setText(" 核心运行: 离线就绪 (Qwen2.5-0.5B)");
+        taskDetailView.setTextColor(Color.parseColor("#E2E8F0"));
+        taskDetailView.setTextSize(11);
+        taskRow.addView(taskDetailView);
+        expandedCard.addView(taskRow);
+
+        // Alert 3: Physical Sensorium Context
+        LinearLayout sensRow = new LinearLayout(this);
+        sensRow.setOrientation(LinearLayout.HORIZONTAL);
+        sensRow.setGravity(Gravity.CENTER_VERTICAL);
+        sensRow.setPadding(0, dp(4), 0, 0);
+        sensRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SENSOR, Color.parseColor("#38BDF8"), 13));
+        sensoriumDetailView = new TextView(this);
+        sensoriumDetailView.setText(" 环境感知: 姿态静止 · 口袋防误触生效");
+        sensoriumDetailView.setTextColor(Color.parseColor("#38BDF8"));
+        sensoriumDetailView.setTextSize(11);
+        sensRow.addView(sensoriumDetailView);
+        expandedCard.addView(sensRow);
+
+        // Alert 4: Live Audio Waveform
+        voiceWaveformBar = new LinearLayout(this);
+        voiceWaveformBar.setOrientation(LinearLayout.HORIZONTAL);
+        voiceWaveformBar.setGravity(Gravity.CENTER_VERTICAL);
+        voiceWaveformBar.setPadding(0, dp(6), 0, dp(4));
+        for (int i = 0; i < 6; i++) {
+            View bar = new View(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(4), dp(10));
+            lp.setMargins(dp(2), 0, dp(2), 0);
+            bar.setLayoutParams(lp);
+            bar.setBackgroundColor(Color.parseColor("#4AF6C3"));
+            voiceWaveformBar.addView(bar);
+        }
+        expandedCard.addView(voiceWaveformBar);
+
+        // --- Section: Essential Function Buttons Row ---
+        LinearLayout actionRow = new LinearLayout(this);
+        actionRow.setOrientation(LinearLayout.HORIZONTAL);
+        actionRow.setPadding(0, dp(6), 0, 0);
+
+        btnVoice = createSmallButton("实时拾音", Color.argb(220, 2, 132, 199), Color.WHITE, v -> toggleVoiceListening());
+        actionRow.addView(btnVoice, new LinearLayout.LayoutParams(0, dp(30), 1.0f));
+
+        btnVision = createSmallButton("真机视觉", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerVisionInspection());
+        LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        visLp.setMargins(dp(4), 0, 0, 0);
+        actionRow.addView(btnVision, visLp);
+
+        btnPtt = createSmallButton("PTT 按键", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerPttAction());
+        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        pttLp.setMargins(dp(4), 0, 0, 0);
+        actionRow.addView(btnPtt, pttLp);
+
+        btnOpenApp = createSmallButton("主系统", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> launchMainActivity());
+        LinearLayout.LayoutParams openLp = new LinearLayout.LayoutParams(0, dp(30), 0.9f);
+        openLp.setMargins(dp(4), 0, 0, 0);
+        actionRow.addView(btnOpenApp, openLp);
+
+        expandedCard.addView(actionRow);
+
+        // Initially collapsed into the circular ball
+        expandedCard.setVisibility(View.GONE);
+        ballView.setVisibility(View.VISIBLE);
+        rootContainer.addView(expandedCard);
+
+        floatingView = rootContainer;
+        try {
+            windowManager.addView(floatingView, floatingParams);
+            Log.i(TAG, "Traceform floating capsule attached successfully");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to attach floating overlay: " + e.getMessage());
+            floatingView = null;
+        }
+    }
+
+    private Button createSmallButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
+        Button btn = new Button(this);
+        btn.setText(text);
+        btn.setTextSize(10);
+        btn.setTextColor(textColor);
+        btn.setAllCaps(false);
+        btn.setPadding(0, 0, 0, 0);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(bgColor);
+        bg.setCornerRadius(dp(8));
+        btn.setBackground(bg);
+        btn.setOnClickListener(listener);
+        return btn;
+    }
+
+    private void attachDragAndClickListener(View target, Runnable clickAction) {
+        target.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
             private boolean isMoving = false;
@@ -173,131 +365,21 @@ public final class AgentFloatingService extends Service {
                         }
                         return true;
                     case MotionEvent.ACTION_UP:
-                        if (!isMoving) {
-                            android.graphics.Rect micHit = new android.graphics.Rect();
-                            if (micButtonView != null) {
-                                micButtonView.getHitRect(micHit);
-                            }
-                            if (micButtonView != null && micHit.contains((int) event.getX(), (int) event.getY())) {
-                                toggleVoiceListening();
-                            } else {
-                                toggleExpansion();
-                            }
+                        if (!isMoving && clickAction != null) {
+                            clickAction.run();
                         }
                         return true;
                 }
                 return false;
             }
         });
-        rootLayout.addView(pillHeader);
-
-        // --- 2. Expanded Dashboard Panel ---
-        expandedPanel = new LinearLayout(this);
-        expandedPanel.setOrientation(LinearLayout.VERTICAL);
-        expandedPanel.setVisibility(View.GONE);
-        expandedPanel.setPadding(0, 16, 0, 0);
-
-        LinearLayout taskRow = new LinearLayout(this);
-        taskRow.setOrientation(LinearLayout.HORIZONTAL);
-        taskRow.setGravity(Gravity.CENTER_VERTICAL);
-        taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#E0E0E0"), 14));
-        taskDetailView = new TextView(this);
-        taskDetailView.setText(" 待命任务 · Qwen2.5-0.5B 常驻运行");
-        taskDetailView.setTextColor(Color.parseColor("#E0E0E0"));
-        taskDetailView.setTextSize(12);
-        taskRow.addView(taskDetailView);
-        expandedPanel.addView(taskRow);
-
-        LinearLayout screenRow = new LinearLayout(this);
-        screenRow.setOrientation(LinearLayout.HORIZONTAL);
-        screenRow.setGravity(Gravity.CENTER_VERTICAL);
-        screenRow.setPadding(0, 8, 0, 0);
-        screenRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SCREEN, Color.parseColor("#80D8FF"), 14));
-        screenInspectorView = new TextView(this);
-        screenInspectorView.setText(" 屏幕感知: 无障碍自动化中枢就绪");
-        screenInspectorView.setTextColor(Color.parseColor("#80D8FF"));
-        screenInspectorView.setTextSize(11);
-        screenRow.addView(screenInspectorView);
-        expandedPanel.addView(screenRow);
-
-        // Voice Waveform Visualizer
-        voiceWaveformBar = new LinearLayout(this);
-        voiceWaveformBar.setOrientation(LinearLayout.HORIZONTAL);
-        voiceWaveformBar.setGravity(Gravity.CENTER_VERTICAL);
-        voiceWaveformBar.setPadding(0, 8, 0, 0);
-        for (int i = 0; i < 5; i++) {
-            View bar = new View(this);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(8, 20);
-            lp.setMargins(4, 0, 4, 0);
-            bar.setLayoutParams(lp);
-            bar.setBackgroundColor(Color.parseColor("#4AF6C3"));
-            voiceWaveformBar.addView(bar);
-        }
-        expandedPanel.addView(voiceWaveformBar);
-
-        // --- 3. Cross-App JIT Approval Container ---
-        jitContainer = new LinearLayout(this);
-        jitContainer.setOrientation(LinearLayout.VERTICAL);
-        jitContainer.setVisibility(View.GONE);
-        jitContainer.setPadding(0, 14, 0, 0);
-
-        LinearLayout jitTitleRow = new LinearLayout(this);
-        jitTitleRow.setOrientation(LinearLayout.HORIZONTAL);
-        jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
-        jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 16));
-        TextView jitTitle = new TextView(this);
-        jitTitle.setText(" 跨应用 JIT 安全门禁");
-        jitTitle.setTextColor(Color.parseColor("#FFD54F"));
-        jitTitle.setTextSize(12);
-        jitTitle.setTypeface(null, android.graphics.Typeface.BOLD);
-        jitTitleRow.addView(jitTitle);
-        jitContainer.addView(jitTitleRow);
-
-        jitPromptView = new TextView(this);
-        jitPromptView.setTextColor(Color.WHITE);
-        jitPromptView.setTextSize(12);
-        jitPromptView.setPadding(0, 4, 0, 0);
-        jitContainer.addView(jitPromptView);
-
-        LinearLayout btnRow = new LinearLayout(this);
-        btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setPadding(0, 10, 0, 0);
-
-        btnGrant = new Button(this);
-        btnGrant.setText("授权 5 分钟");
-        btnGrant.setBackgroundColor(Color.parseColor("#1B5E20"));
-        btnGrant.setTextColor(Color.WHITE);
-        btnGrant.setTextSize(11);
-        btnGrant.setOnClickListener(v -> handleJitDecision(true));
-        btnRow.addView(btnGrant);
-
-        btnDeny = new Button(this);
-        btnDeny.setText("拒绝");
-        btnDeny.setBackgroundColor(Color.parseColor("#B71C1C"));
-        btnDeny.setTextColor(Color.WHITE);
-        btnDeny.setTextSize(11);
-        btnDeny.setOnClickListener(v -> handleJitDecision(false));
-        btnRow.addView(btnDeny);
-
-        jitContainer.addView(btnRow);
-        expandedPanel.addView(jitContainer);
-
-        rootLayout.addView(expandedPanel);
-
-        floatingView = rootLayout;
-        try {
-            windowManager.addView(floatingView, floatingParams);
-            Log.i(TAG, "Agent floating capsule 2.0 attached successfully");
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to attach floating overlay: " + e.getMessage());
-            floatingView = null;
-        }
     }
 
     private void toggleExpansion() {
         isExpanded = !isExpanded;
-        if (expandedPanel != null) {
-            expandedPanel.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        if (ballView != null && expandedCard != null) {
+            ballView.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+            expandedCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
         }
         try {
             if (floatingView != null && floatingParams != null && windowManager != null) {
@@ -311,13 +393,12 @@ public final class AgentFloatingService extends Service {
         vim.toggleListening(new VoiceInteractionManager.VoiceListener() {
             @Override
             public void onListeningStateChanged(boolean isListening) {
-                if (statusDotView != null) {
-                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
-                            isListening ? IconFactory.IconType.STATUS_DOT_BLUE : IconFactory.IconType.STATUS_DOT_GREEN,
-                            isListening ? 0xFF29B6F6 : 0xFF00E676, 10));
-                }
+                int dotColor = isListening ? 0xFF29B6F6 : 0xFF00E676;
+                IconFactory.IconType iconType = isListening ? IconFactory.IconType.STATUS_DOT_BLUE : IconFactory.IconType.STATUS_DOT_GREEN;
+                if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 10));
+                if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 8));
                 if (statusTextView != null) {
-                    statusTextView.setText(isListening ? " 语音中枢拾音中 (16kHz NEON)" : " Agent OS 待命中");
+                    statusTextView.setText(isListening ? " 拾音中 (16kHz NEON)" : " Traceform Capsule");
                 }
             }
 
@@ -326,7 +407,7 @@ public final class AgentFloatingService extends Service {
                 if (voiceWaveformBar != null && isSpeech && !isGated) {
                     for (int i = 0; i < voiceWaveformBar.getChildCount(); i++) {
                         View bar = voiceWaveformBar.getChildAt(i);
-                        int height = Math.min(60, (int) (15 + energyRms * 300.0f * (i + 1)));
+                        int height = Math.min(dp(22), (int) (dp(6) + energyRms * 200.0f * (i + 1)));
                         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
                         lp.height = height;
                         bar.setLayoutParams(lp);
@@ -336,33 +417,45 @@ public final class AgentFloatingService extends Service {
 
             @Override
             public void onSpeechStart() {
-                if (statusDotView != null) {
-                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
-                            IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
-                }
-                if (statusTextView != null) {
-                    statusTextView.setText(" 语音捕获中...");
-                }
+                if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
+                if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 8));
+                if (statusTextView != null) statusTextView.setText(" 语音捕获中...");
             }
 
             @Override
             public void onSpeechEnd(short[] speechAudio, String classifiedIntent) {
-                if (statusDotView != null) {
-                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
-                            IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10));
-                }
-                if (statusTextView != null) {
-                    statusTextView.setText(" 语音意图: " + classifiedIntent);
-                }
+                if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10));
+                if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 8));
+                if (statusTextView != null) statusTextView.setText(" 意图: " + classifiedIntent);
             }
 
             @Override
             public void onError(String message) {
-                if (statusTextView != null) {
-                    statusTextView.setText(" 麦克风异常: " + message);
-                }
+                if (statusTextView != null) statusTextView.setText(" 拾音异常: " + message);
             }
         });
+    }
+
+    private void triggerVisionInspection() {
+        try {
+            org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen("新建智能任务");
+            Toast.makeText(this, "视觉感知检测: " + (target.optBoolean("matched", false) ? "已定位焦点目标" : "全屏扫描中"), Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "视觉检测异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void triggerPttAction() {
+        HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
+        boolean nextState = !hwSvc.isPttActive();
+        org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
+        Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs)", Toast.LENGTH_SHORT).show();
+    }
+
+    private void launchMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
     }
 
     @Override
@@ -384,8 +477,6 @@ public final class AgentFloatingService extends Service {
                 floatingView.setVisibility(View.GONE);
             }
         } else if (ACTION_UPDATE_STEP.equals(action)) {
-            if (floatingView != null) floatingView.setVisibility(View.GONE);
-        } else if (ACTION_UPDATE_STEP.equals(action)) {
             String title = intent.getStringExtra(EXTRA_TASK_TITLE);
             int step = intent.getIntExtra(EXTRA_STEP_INDEX, 0);
             String stepTitle = intent.getStringExtra(EXTRA_STEP_TITLE);
@@ -406,10 +497,14 @@ public final class AgentFloatingService extends Service {
             if (statusDotView != null) {
                 statusDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
             }
+            if (ballDotView != null) {
+                ballDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 8));
+            }
             if (jitContainer != null && jitPromptView != null) {
                 jitPromptView.setText("任务: " + pendingTaskId + "\n申请权限: " + pendingCap);
                 jitContainer.setVisibility(View.VISIBLE);
-                if (expandedPanel != null) expandedPanel.setVisibility(View.VISIBLE);
+                // Auto-expand on security JIT alert so user never misses it
+                if (!isExpanded) toggleExpansion();
                 if (floatingView != null) floatingView.setVisibility(View.VISIBLE);
             }
         } else if (ACTION_UPDATE_VOICE.equals(action)) {
@@ -417,7 +512,7 @@ public final class AgentFloatingService extends Service {
             if (voiceWaveformBar != null) {
                 for (int i = 0; i < voiceWaveformBar.getChildCount(); i++) {
                     View bar = voiceWaveformBar.getChildAt(i);
-                    int height = Math.min(60, (int) (15 + energy * 300.0f * (i + 1)));
+                    int height = Math.min(dp(22), (int) (dp(6) + energy * 200.0f * (i + 1)));
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
                     lp.height = height;
                     bar.setLayoutParams(lp);
@@ -437,8 +532,13 @@ public final class AgentFloatingService extends Service {
                     granted ? IconFactory.IconType.STATUS_DOT_GREEN : IconFactory.IconType.STATUS_DOT_AMBER,
                     granted ? 0xFF00E676 : 0xFFFFB300, 10));
         }
+        if (ballDotView != null) {
+            ballDotView.setImageDrawable(IconFactory.getIcon(this,
+                    granted ? IconFactory.IconType.STATUS_DOT_GREEN : IconFactory.IconType.STATUS_DOT_AMBER,
+                    granted ? 0xFF00E676 : 0xFFFFB300, 8));
+        }
         if (statusTextView != null) {
-            statusTextView.setText(granted ? " JIT 租约已生效 (5分钟)" : " JIT 授权已拒绝");
+            statusTextView.setText(granted ? " JIT 租约生效 (5分钟)" : " JIT 授权已拒绝");
         }
         if (sJitListener != null) {
             sJitListener.onDecision(pendingTaskId, pendingCap, pendingScope, granted);

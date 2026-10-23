@@ -287,16 +287,14 @@ public final class MainActivity extends Activity {
 
     private void buildScreen() {
         persistentButtons.clear();
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(0xFFF8FAFC);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(16), dp(54), dp(16), dp(28));
-        scroll.addView(page);
+        page.setBackgroundColor(0xFFF8FAFC);
+        page.setPadding(dp(16), dp(46), dp(16), dp(16));
 
         boolean en = isEnglish();
 
-        // Top Header Row with Title and Language Switcher
+        // 1. Top Header Row: Traceform OS Title + Language Switcher
         LinearLayout topHeaderRow = new LinearLayout(this);
         topHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
         topHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -305,7 +303,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.setLayoutParams(topHeaderLp);
 
         TextView title = new TextView(this);
-        title.setText(en ? "Agent OS · Handheld AI" : "Agent OS 掌上智能系统");
+        title.setText(en ? "Traceform OS · Handheld AI" : "Traceform OS 掌上智能系统");
         title.setTextSize(20);
         title.setTextColor(0xFF0F172A);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -333,19 +331,16 @@ public final class MainActivity extends Activity {
 
         page.addView(topHeaderRow);
 
-        // Status Badges Row
+        // 2. Status Badges Row
         LinearLayout statusRow = new LinearLayout(this);
         statusRow.setOrientation(LinearLayout.HORIZONTAL);
-        statusRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        statusRow.setPadding(0, dp(4), 0, dp(10));
+        statusRow.setGravity(Gravity.CENTER_VERTICAL);
+        statusRow.setPadding(0, dp(4), 0, dp(8));
 
-        if (NativeAgentCore.isAvailable()) {
-            TextView rustBadge = IconFactory.createBadge(this, "RUST NATIVE 16KB", 0xFFDCFCE7, 0xFF166534);
-            statusRow.addView(rustBadge);
-        } else {
-            TextView fallbackBadge = IconFactory.createBadge(this, "JAVA FALLBACK", 0xFFFEF3C7, 0xFF92400E);
-            statusRow.addView(fallbackBadge);
-        }
+        TextView rustBadge = IconFactory.createBadge(this, NativeAgentCore.isAvailable() ? "RUST NATIVE 16KB" : "JAVA FALLBACK",
+                NativeAgentCore.isAvailable() ? 0xFFDCFCE7 : 0xFFFEF3C7,
+                NativeAgentCore.isAvailable() ? 0xFF166534 : 0xFF92400E);
+        statusRow.addView(rustBadge);
 
         TextView daemonBadge = IconFactory.createBadge(this, "DAEMON 19898", 0xFFEFF6FF, 0xFF1D4ED8);
         LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
@@ -361,147 +356,7 @@ public final class MainActivity extends Activity {
 
         page.addView(statusRow);
 
-        // --- COMPACT DASHBOARD CONSOLE CARD ---
-        LinearLayout consoleCard = createCard(page, IconFactory.IconType.SCREEN, en ? "Console & Interaction Center" : "交互中枢与控制台 (Console)", 0xFF00695C);
-
-        floatPermStatus = new TextView(this);
-        floatPermStatus.setTextSize(11);
-        floatPermStatus.setPadding(0, dp(2), 0, dp(4));
-        updateFloatPermStatus();
-        consoleCard.addView(floatPermStatus);
-
-        vadLiveStatus = new TextView(this);
-        vadLiveStatus.setText(en ? "Live Audio: Standby · 16kHz NEON SIMD" : "实时拾音: 待命中 · 16kHz NEON SIMD");
-        vadLiveStatus.setTextSize(11);
-        vadLiveStatus.setTextColor(0xFF0284C7);
-        vadLiveStatus.setPadding(0, 0, 0, dp(6));
-        consoleCard.addView(vadLiveStatus);
-
-        LinearLayout autoBtnRow = new LinearLayout(this);
-        autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        autoBtnRow.setPadding(0, dp(2), 0, dp(4));
-
-        Button toggleFloatingBtn = createCompactActionButton(en ? "Toggle Capsule" : "开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                new AlertDialog.Builder(this)
-                        .setTitle(en ? "Grant Floating Capsule Permission" : "开启悬浮胶囊权限")
-                        .setMessage(en ? "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'."
-                                       : "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Agent OS 并开启【在其他应用上层显示】。")
-                        .setPositiveButton(en ? "Settings" : "前往设置", (dialog, which) -> {
-                            try {
-                                Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        Uri.parse("package:" + getPackageName()));
-                                startActivity(reqIntent);
-                            } catch (Exception e) {
-                                startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
-                            }
-                        })
-                        .setNegativeButton(en ? "Cancel" : "取消", null)
-                        .show();
-                return;
-            }
-
-            Intent fIntent = new Intent(this, AgentFloatingService.class);
-            fIntent.setAction(AgentFloatingService.ACTION_TOGGLE);
-            startService(fIntent);
-            Toast.makeText(this, en ? "Floating capsule toggled" : "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
-        });
-        autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
-
-        Button hideFloatingBtn = createCompactActionButton(en ? "Hide Capsule" : "隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
-            Intent fIntent = new Intent(this, AgentFloatingService.class);
-            fIntent.setAction(AgentFloatingService.ACTION_HIDE);
-            startService(fIntent);
-            Toast.makeText(this, en ? "Floating capsule hidden" : "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
-        });
-        LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
-        hideLp.setMargins(dp(4), 0, 0, 0);
-        autoBtnRow.addView(hideFloatingBtn, hideLp);
-
-        Button pingDaemonBtn = createCompactActionButton(en ? "Ping Daemon" : "Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
-            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
-            runOnUiThread(() -> Toast.makeText(this, (en ? "Daemon ping: " : "守护进程响应: ") + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
-        }).start());
-        LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
-        pingLp.setMargins(dp(4), 0, 0, 0);
-        autoBtnRow.addView(pingDaemonBtn, pingLp);
-
-        consoleCard.addView(autoBtnRow);
-
-        LinearLayout diagBtnRow = new LinearLayout(this);
-        diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
-        diagBtnRow.setPadding(0, dp(2), 0, dp(2));
-
-        btnToggleVoice = createCompactActionButton(en ? "Live Audio" : "实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
-        diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(30), 1.1f));
-
-        Button testVoiceBtn = createCompactActionButton(en ? "Synth Test" : "合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
-            short[] testPcm = new short[640];
-            for (int i = 0; i < testPcm.length; i++) {
-                testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
-            }
-            org.json.JSONObject res = VoiceInteractionManager.processPcmFrame(testPcm);
-            Toast.makeText(this, "VAD: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
-        });
-        LinearLayout.LayoutParams testVoiceLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        testVoiceLp.setMargins(dp(3), 0, 0, 0);
-        diagBtnRow.addView(testVoiceBtn, testVoiceLp);
-
-        Button refreshSensBtn = createCompactActionButton(en ? "Sensors" : "环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
-            PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
-            sens.startMonitoring();
-            org.json.JSONObject ctx = sens.evaluateCurrentContext();
-            Toast.makeText(this, (en ? "Pose: " : "姿态: ") + ctx.optString("motion_state") + (en ? ", Env: " : ", 环境: ") + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
-        });
-        LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        sensLp.setMargins(dp(3), 0, 0, 0);
-        diagBtnRow.addView(refreshSensBtn, sensLp);
-
-        Button testVisionBtn = createCompactActionButton(en ? "Vision OCR" : "真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
-            try {
-                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "New Smart Task" : "新建智能任务");
-                if (target.optBoolean("matched", false)) {
-                    int x = (int) target.optDouble("tap_x");
-                    int y = (int) target.optDouble("tap_y");
-                    VisionAgentManager.getInstance().captureScreenBitmap(new AgentAccessibilityService.ScreenCaptureCallback() {
-                        @Override
-                        public void onBitmapCaptured(android.graphics.Bitmap bitmap) {
-                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    (en ? "Vision Target: (" : "视觉定位: (") + x + "," + y + (en ? ") · Silent Shot: " : ") · 静默截屏: ") + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    (en ? "Vision Target: (" : "真机视觉定位: (") + x + "," + y + (en ? ") [Code: " : ") [截屏码: ") + errorCode + "]", Toast.LENGTH_SHORT).show());
-                        }
-                    });
-                } else {
-                    Toast.makeText(this, (en ? "Vision mismatch: " : "视觉匹配未命中: ") + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception ex) {
-                Toast.makeText(this, (en ? "Locate error: " : "定位异常: ") + ex.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-        LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        visLp.setMargins(dp(3), 0, 0, 0);
-        diagBtnRow.addView(testVisionBtn, visLp);
-
-        Button testPttBtn = createCompactActionButton(en ? "PTT Key" : "PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
-            HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
-            boolean nextState = !hwSvc.isPttActive();
-            org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
-            ((Button) v).setText(nextState ? (en ? "Release PTT" : "松开 PTT") : (en ? "PTT Key" : "PTT 按键"));
-            ((Button) v).setTextColor(nextState ? 0xFFE11D48 : 0xFF475569);
-            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs " + (en ? "latency" : "延迟") + ")", Toast.LENGTH_SHORT).show();
-        });
-        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        pttLp.setMargins(dp(3), 0, 0, 0);
-        diagBtnRow.addView(testPttBtn, pttLp);
-
-        consoleCard.addView(diagBtnRow);
-
-        // --- 3-COLUMN TELEMETRY GRID (2 ROWS x 3 CARDS) ---
+        // 3. Telemetry 6 Cards (2 Rows x 3 Columns)
         LinearLayout gridRow1 = createGridRow(page);
         LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, en ? "Hardware" : "硬件常驻", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
@@ -582,59 +437,84 @@ public final class MainActivity extends Activity {
         visionInfo.setPadding(0, dp(4), 0, 0);
         visionCard.addView(visionInfo);
 
-        // --- TASK SECTION ---
+        // 4. Smart Task Management Section
         TextView taskHeading = new TextView(this);
         taskHeading.setText(en ? "Smart Task Management" : "智能任务管理");
-        taskHeading.setTextSize(17);
+        taskHeading.setTextSize(16);
         taskHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         taskHeading.setTextColor(0xFF0F172A);
-        taskHeading.setPadding(0, dp(14), 0, dp(4));
+        taskHeading.setPadding(0, dp(10), 0, dp(4));
         page.addView(taskHeading);
 
         LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, en ? "New Smart Task" : "新建智能任务", 0xFF0284C7);
 
         taskInput = new EditText(this);
         taskInput.setHint(en ? "Enter task goal, e.g. schedule team meeting or check weather..." : "输入任务目标，如：安排团队待办日程，或整理工作笔记");
-        taskInput.setTextSize(13);
-        taskInput.setMinLines(2);
-        taskInput.setMaxLines(3);
+        taskInput.setTextSize(12);
+        taskInput.setMinLines(1);
+        taskInput.setMaxLines(2);
         GradientDrawable inputBg = new GradientDrawable();
         inputBg.setColor(0xFFF8FAFC);
         inputBg.setCornerRadius(dp(8));
         inputBg.setStroke(dp(1), 0xFFE2E8F0);
         taskInput.setBackground(inputBg);
-        taskInput.setPadding(dp(10), dp(8), dp(10), dp(8));
+        taskInput.setPadding(dp(8), dp(6), dp(8), dp(6));
         taskInputCard.addView(taskInput);
 
         Button submitTaskBtn = createCompactActionButton(en ? "Submit & Plan Task" : "提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
         submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(submitTaskBtn);
-        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
-        subLp.setMargins(0, dp(6), 0, 0);
+        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
+        subLp.setMargins(0, dp(4), 0, 0);
         taskInputCard.addView(submitTaskBtn, subLp);
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
         page.addView(taskList);
 
-        // --- MEMORY SECTION ---
-        TextView memoryHeading = new TextView(this);
-        memoryHeading.setText(en ? "Encrypted Memory & Knowledge" : "用户记忆与知识库");
-        memoryHeading.setTextSize(17);
-        memoryHeading.setTypeface(null, android.graphics.Typeface.BOLD);
-        memoryHeading.setTextColor(0xFF0F172A);
-        memoryHeading.setPadding(0, dp(14), 0, dp(4));
-        page.addView(memoryHeading);
+        // 5. Bottom Functional Navigation Dock (3 Secondary Dialog Triggers)
+        LinearLayout dockRow = new LinearLayout(this);
+        dockRow.setOrientation(LinearLayout.HORIZONTAL);
+        dockRow.setPadding(0, dp(8), 0, 0);
 
-        LinearLayout memoryInputCard = createCard(page, IconFactory.IconType.BRAIN, en ? "Add or Search Memory" : "新增或搜索记忆", 0xFF7C3AED);
+        Button btnMemDialog = createCompactActionButton(en ? "Memory Vault" : "加密记忆库", 0xFF7C3AED, 0xFFFFFFFF, v -> showMemoryDialog());
+        btnMemDialog.setTypeface(null, android.graphics.Typeface.BOLD);
+        dockRow.addView(btnMemDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
+
+        Button btnSettingsDialog = createCompactActionButton(en ? "Settings" : "扩展与设置", 0xFF334155, 0xFFFFFFFF, v -> showSettingsDialog());
+        btnSettingsDialog.setTypeface(null, android.graphics.Typeface.BOLD);
+        LinearLayout.LayoutParams setLp = new LinearLayout.LayoutParams(0, dp(36), 1.0f);
+        setLp.setMargins(dp(6), 0, dp(6), 0);
+        dockRow.addView(btnSettingsDialog, setLp);
+
+        Button btnConsoleDialog = createCompactActionButton(en ? "Console" : "控制台与工具", 0xFF00695C, 0xFFFFFFFF, v -> showConsoleDialog());
+        btnConsoleDialog.setTypeface(null, android.graphics.Typeface.BOLD);
+        dockRow.addView(btnConsoleDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
+
+        page.addView(dockRow);
+
+        setContentView(page);
+    }
+
+    private void showMemoryDialog() {
+        boolean en = isEnglish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(dp(20), dp(16), dp(20), dp(12));
+
+        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.BRAIN,
+                en ? "Encrypted Memory Vault" : "用户记忆与知识库", 0xFF7C3AED, 16);
+        root.addView(titleRow);
 
         LinearLayout memControlsRow = new LinearLayout(this);
         memControlsRow.setOrientation(LinearLayout.HORIZONTAL);
-        memControlsRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        memControlsRow.setGravity(Gravity.CENTER_VERTICAL);
+        memControlsRow.setPadding(0, dp(10), 0, dp(6));
 
         memoryKind = new Spinner(this);
         memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-            en ? new String[]{"Preference", "Fact", "Workflow"} : new String[]{"偏好", "事实", "工作流"}));
+                en ? new String[]{"Preference", "Fact", "Workflow"} : new String[]{"偏好", "事实", "工作流"}));
         memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(110), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
@@ -656,7 +536,7 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams msLp = new LinearLayout.LayoutParams(0, dp(34), 1.0f);
         msLp.setMargins(dp(6), 0, 0, 0);
         memControlsRow.addView(memorySearch, msLp);
-        memoryInputCard.addView(memControlsRow);
+        root.addView(memControlsRow);
 
         memoryInput = new EditText(this);
         memoryInput.setHint(en ? "Record a user preference, fact, or workflow..." : "记录一条个人偏好、重要事实或固定工作流（来源标记为你提供）");
@@ -671,65 +551,233 @@ public final class MainActivity extends Activity {
         memoryInput.setPadding(dp(10), dp(8), dp(10), dp(8));
         LinearLayout.LayoutParams miLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         miLp.setMargins(0, dp(6), 0, dp(6));
-        memoryInputCard.addView(memoryInput, miLp);
+        root.addView(memoryInput, miLp);
 
         Button saveMemoryBtn = createCompactActionButton(en ? "Save Encrypted Memory" : "保存加密记忆", 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
         saveMemoryBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(saveMemoryBtn);
         LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
-        memoryInputCard.addView(saveMemoryBtn, smLp);
+        root.addView(saveMemoryBtn, smLp);
 
+        ScrollView memScroll = new ScrollView(this);
+        memScroll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
         memoryList = new LinearLayout(this);
         memoryList.setOrientation(LinearLayout.VERTICAL);
-        page.addView(memoryList);
+        memScroll.addView(memoryList);
+        root.addView(memScroll);
 
-        // --- SETTINGS & ADVANCED SECTION ---
-        TextView settingsHeading = new TextView(this);
-        settingsHeading.setText(en ? "Data Management & Providers" : "数据管理与扩展服务");
-        settingsHeading.setTextSize(17);
-        settingsHeading.setTypeface(null, android.graphics.Typeface.BOLD);
-        settingsHeading.setTextColor(0xFF0F172A);
-        settingsHeading.setPadding(0, dp(14), 0, dp(4));
-        page.addView(settingsHeading);
+        builder.setView(root);
+        builder.setPositiveButton(en ? "Close" : "关闭", null);
+        AlertDialog dlg = builder.create();
+        dlg.show();
+        refreshMemories();
+    }
 
-        LinearLayout settingsCard = createCard(page, IconFactory.IconType.SHIELD, en ? "E2EE Archive & Providers" : "E2EE 归档与可选 Provider", 0xFF334155);
+    private void showSettingsDialog() {
+        boolean en = isEnglish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(dp(20), dp(16), dp(20), dp(12));
+
+        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.SHIELD,
+                en ? "Data Management & Providers" : "数据管理与扩展服务", 0xFF334155, 16);
+        root.addView(titleRow);
 
         LinearLayout archiveActions = new LinearLayout(this);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
-        addActionButton(archiveActions, en ? "Export" : "加密导出", view -> promptExportPassphrase());
-        addActionButton(archiveActions, en ? "Import" : "导入档案", view -> chooseArchiveToImport());
-        settingsCard.addView(archiveActions);
+        archiveActions.setPadding(0, dp(10), 0, dp(6));
+        addActionButton(archiveActions, en ? "Export Archive" : "加密导出", view -> promptExportPassphrase());
+        addActionButton(archiveActions, en ? "Import Archive" : "导入档案", view -> chooseArchiveToImport());
+        root.addView(archiveActions);
 
         activityStatus = new TextView(this);
         activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
         activityStatus.setTextSize(11);
         activityStatus.setTextColor(0xFF64748B);
-        activityStatus.setPadding(0, dp(4), 0, dp(6));
-        settingsCard.addView(activityStatus);
+        activityStatus.setPadding(0, dp(4), 0, dp(8));
+        root.addView(activityStatus);
 
         traceformStatus = new TextView(this);
         traceformStatus.setTextSize(12);
-        settingsCard.addView(traceformStatus);
+        root.addView(traceformStatus);
 
         traceformToggleButton = createCompactActionButton(en ? "Configure Traceform Provider" : "配置 Traceform Provider", 0xFFF1F5F9, 0xFF334155, view -> toggleTraceformProvider());
         persistentButtons.add(traceformToggleButton);
         LinearLayout.LayoutParams tfLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
-        tfLp.setMargins(0, dp(2), 0, dp(8));
-        settingsCard.addView(traceformToggleButton, tfLp);
+        tfLp.setMargins(0, dp(4), 0, dp(10));
+        root.addView(traceformToggleButton, tfLp);
         updateTraceformProviderControls();
 
         cloudModelStatus = new TextView(this);
         cloudModelStatus.setTextSize(12);
-        settingsCard.addView(cloudModelStatus);
+        root.addView(cloudModelStatus);
 
         cloudModelConfigButton = createCompactActionButton(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推演", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
         persistentButtons.add(cloudModelConfigButton);
         LinearLayout.LayoutParams cmLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
-        cmLp.setMargins(0, dp(2), 0, dp(2));
-        settingsCard.addView(cloudModelConfigButton, cmLp);
+        cmLp.setMargins(0, dp(4), 0, dp(4));
+        root.addView(cloudModelConfigButton, cmLp);
         updateCloudModelControls();
 
-        setContentView(scroll);
+        scroll.addView(root);
+        builder.setView(scroll);
+        builder.setPositiveButton(en ? "Close" : "关闭", null);
+        builder.show();
+    }
+
+    private void showConsoleDialog() {
+        boolean en = isEnglish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(dp(20), dp(16), dp(20), dp(12));
+
+        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.SCREEN,
+                en ? "Console & Diagnostics Hub" : "交互中枢与诊断控制台", 0xFF00695C, 16);
+        root.addView(titleRow);
+
+        vadLiveStatus = new TextView(this);
+        vadLiveStatus.setText(en ? "Live Audio: Standby · 16kHz NEON SIMD" : "实时拾音: 待命中 · 16kHz NEON SIMD");
+        vadLiveStatus.setTextSize(11);
+        vadLiveStatus.setTextColor(0xFF0284C7);
+        vadLiveStatus.setPadding(0, dp(8), 0, dp(6));
+        root.addView(vadLiveStatus);
+
+        LinearLayout autoBtnRow = new LinearLayout(this);
+        autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        autoBtnRow.setPadding(0, dp(2), 0, dp(4));
+
+        Button toggleFloatingBtn = createCompactActionButton(en ? "Toggle Capsule" : "开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(en ? "Grant Floating Capsule Permission" : "开启悬浮胶囊权限")
+                        .setMessage(en ? "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'."
+                                       : "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Traceform 并开启【在其他应用上层显示】。")
+                        .setPositiveButton(en ? "Settings" : "前往设置", (dialog, which) -> {
+                            try {
+                                Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:" + getPackageName()));
+                                startActivity(reqIntent);
+                            } catch (Exception e) {
+                                startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+                            }
+                        })
+                        .setNegativeButton(en ? "Cancel" : "取消", null)
+                        .show();
+                return;
+            }
+
+            Intent fIntent = new Intent(this, AgentFloatingService.class);
+            fIntent.setAction(AgentFloatingService.ACTION_TOGGLE);
+            startService(fIntent);
+            Toast.makeText(this, en ? "Floating capsule toggled" : "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
+        });
+        autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
+
+        Button hideFloatingBtn = createCompactActionButton(en ? "Hide Capsule" : "隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
+            Intent fIntent = new Intent(this, AgentFloatingService.class);
+            fIntent.setAction(AgentFloatingService.ACTION_HIDE);
+            startService(fIntent);
+            Toast.makeText(this, en ? "Floating capsule hidden" : "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
+        });
+        LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
+        hideLp.setMargins(dp(4), 0, 0, 0);
+        autoBtnRow.addView(hideFloatingBtn, hideLp);
+
+        Button pingDaemonBtn = createCompactActionButton(en ? "Ping Daemon" : "Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
+            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
+            runOnUiThread(() -> Toast.makeText(this, (en ? "Daemon ping: " : "守护进程响应: ") + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
+        }).start());
+        LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
+        pingLp.setMargins(dp(4), 0, 0, 0);
+        autoBtnRow.addView(pingDaemonBtn, pingLp);
+
+        root.addView(autoBtnRow);
+
+        LinearLayout diagBtnRow = new LinearLayout(this);
+        diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        diagBtnRow.setPadding(0, dp(4), 0, dp(4));
+
+        btnToggleVoice = createCompactActionButton(en ? "Live Audio" : "实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
+        diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(32), 1.1f));
+
+        Button testVoiceBtn = createCompactActionButton(en ? "Synth Test" : "合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
+            short[] testPcm = new short[640];
+            for (int i = 0; i < testPcm.length; i++) {
+                testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
+            }
+            org.json.JSONObject res = VoiceInteractionManager.processPcmFrame(testPcm);
+            Toast.makeText(this, "VAD: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
+        });
+        LinearLayout.LayoutParams testVoiceLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
+        testVoiceLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(testVoiceBtn, testVoiceLp);
+
+        Button refreshSensBtn = createCompactActionButton(en ? "Sensors" : "环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
+            PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
+            sens.startMonitoring();
+            org.json.JSONObject ctx = sens.evaluateCurrentContext();
+            Toast.makeText(this, (en ? "Pose: " : "姿态: ") + ctx.optString("motion_state") + (en ? ", Env: " : ", 环境: ") + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
+        });
+        LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
+        sensLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(refreshSensBtn, sensLp);
+
+        root.addView(diagBtnRow);
+
+        LinearLayout diagBtnRow2 = new LinearLayout(this);
+        diagBtnRow2.setOrientation(LinearLayout.HORIZONTAL);
+        diagBtnRow2.setPadding(0, dp(2), 0, dp(4));
+
+        Button testVisionBtn = createCompactActionButton(en ? "Vision OCR" : "真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
+            try {
+                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "New Smart Task" : "新建智能任务");
+                if (target.optBoolean("matched", false)) {
+                    int x = (int) target.optDouble("tap_x");
+                    int y = (int) target.optDouble("tap_y");
+                    VisionAgentManager.getInstance().captureScreenBitmap(new AgentAccessibilityService.ScreenCaptureCallback() {
+                        @Override
+                        public void onBitmapCaptured(android.graphics.Bitmap bitmap) {
+                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                    (en ? "Vision Target: (" : "视觉定位: (") + x + "," + y + (en ? ") · Silent Shot: " : ") · 静默截屏: ") + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                    (en ? "Vision Target: (" : "真机视觉定位: (") + x + "," + y + (en ? ") [Code: " : ") [截屏码: ") + errorCode + "]", Toast.LENGTH_SHORT).show());
+                        }
+                    });
+                } else {
+                    Toast.makeText(this, (en ? "Vision mismatch: " : "视觉匹配未命中: ") + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception ex) {
+                Toast.makeText(this, (en ? "Locate error: " : "定位异常: ") + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        diagBtnRow2.addView(testVisionBtn, new LinearLayout.LayoutParams(0, dp(32), 1.0f));
+
+        Button testPttBtn = createCompactActionButton(en ? "PTT Key" : "PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
+            HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
+            boolean nextState = !hwSvc.isPttActive();
+            org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
+            ((Button) v).setText(nextState ? (en ? "Release PTT" : "松开 PTT") : (en ? "PTT Key" : "PTT 按键"));
+            ((Button) v).setTextColor(nextState ? 0xFFE11D48 : 0xFF475569);
+            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs " + (en ? "latency" : "延迟") + ")", Toast.LENGTH_SHORT).show();
+        });
+        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
+        pttLp.setMargins(dp(4), 0, 0, 0);
+        diagBtnRow2.addView(testPttBtn, pttLp);
+
+        root.addView(diagBtnRow2);
+
+        scroll.addView(root);
+        builder.setView(scroll);
+        builder.setPositiveButton(en ? "Close" : "关闭", null);
+        builder.show();
     }
 
     private void createTask() {
