@@ -277,7 +277,6 @@ Contributions from systems engineers, machine learning researchers, and security
 2. **Coding Standards**:
    - **Rust Runtime (`agent_os/core`)**: Adhere to `clippy` and `cargo fmt`. Maintain zero compiler warnings. Always verify 16KB page alignment on aarch64 cross-builds (`-C link-arg=-Wl,-z,max-page-size=16384`).
    - **Android Framework (`agent_os/android`)**: Ensure strict adherence to single-screen non-scrolling layouts and proper lifecycle management.
-   - **Zero Emoji Policy**: Code, commit messages, and formal documentation must not include emojis.
 3. **Verification**:
    - All unit tests must pass cleanly (`cargo test --manifest-path agent_os/core/Cargo.toml`).
    - Hardware validation should be verified on physical Android silicon (or compatible AOSP arm64 emulator).
