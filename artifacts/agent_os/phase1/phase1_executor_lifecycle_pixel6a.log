@@ -1,0 +1,1 @@
+10-23 00:35:56.798 14926 14955 I AgentOsValidation: PASS: pause preserved the step-1 checkpoint with no pending job; resume completed step 2 without repeating the capability call; cancellation removed the pending job and remained terminal. pausedTask=fc139bc7-f5bf-4da7-8d10-b884f8975f9e cancelledTask=b2d88637-64a0-4f9e-b7e8-c51b261c176a

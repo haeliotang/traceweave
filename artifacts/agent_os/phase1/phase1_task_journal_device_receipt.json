@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "device": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37
+  },
+  "package": "org.traceform.agentos.validation.target",
+  "taskJournalSurvivedForceStop": true,
+  "pauseResumeCancelJournalVerified": true,
+  "internetPermissionDeclared": false,
+  "syntheticOnly": true,
+  "tasks": [
+    {
+      "id": "41f48d5d-90a7-4914-8a63-88ae303d5ef3",
+      "statusBeforeRestart": "completed",
+      "createdAtPreserved": true,
+      "updatedAtPreserved": true,
+      "auditCountPreserved": true
+    },
+    {
+      "id": "dd8949c3-d1dd-4f59-a5c1-344e7dc6069e",
+      "statusBeforeRestart": "cancelled",
+      "createdAtPreserved": true,
+      "updatedAtPreserved": true,
+      "auditCountPreserved": true
+    },
+    {
+      "id": "fe079979-b49d-40f3-8462-8e76b3aa7517",
+      "statusBeforeRestart": "paused",
+      "createdAtPreserved": true,
+      "updatedAtPreserved": true,
+      "auditCountPreserved": true,
+      "resumedAfterRestart": true,
+      "finalStatus": "cancelled",
+      "auditCountAfterResume": 5
+    }
+  ],
+  "agentExecutionVerified": false,
+  "backgroundContinuationVerified": false,
+  "limitation": "This verifies durable task records and state\/audit transitions only. It does not verify that an Agent performed the tasks or continued work in the background."
+}

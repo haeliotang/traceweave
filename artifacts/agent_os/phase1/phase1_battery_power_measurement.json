@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-10-23T11:53:15Z",
+  "device": {
+    "model": "Google Pixel 6a (bluejay)",
+    "serial": "25161JEGR06836",
+    "os": "Android 17 / API 37 (GrapheneOS)",
+    "package": "org.traceform.agentos.validation.target",
+    "uid": "10316"
+  },
+  "measurement_conditions": {
+    "method": "dumpsys battery unplug + dumpsys batterystats --reset -> full workload execution -> dumpsys batterystats",
+    "battery_capacity_mah": 4146,
+    "standby_bucket": 10,
+    "standby_bucket_label": "ACTIVE",
+    "charging_restored": true
+  },
+  "execution_metrics": {
+    "total_jobs_launched": 4,
+    "successful_finishes": 2,
+    "canceled_jobs": 2,
+    "job_service_realtime_ms": 350,
+    "cpu_user_time_ms": 13461,
+    "cpu_system_time_ms": 392,
+    "estimated_background_power_mah": 0.00101,
+    "estimated_total_power_mah": 0.979,
+    "screen_power_mah": 0.978,
+    "gpu_power_mah": 0.00101,
+    "cellular_drain_mah": 0.0,
+    "wifi_drain_mah": 0.0,
+    "cellular_bytes": 0,
+    "wifi_bytes": 0,
+    "sensor_invocations": 0
+  },
+  "grapheneos_appops_profile": {
+    "location": "mode=ignore",
+    "camera": "mode=ignore",
+    "microphone": "mode=ignore",
+    "sensors": "mode=ignore",
+    "contacts": "mode=ignore",
+    "storage": "mode=ignore",
+    "bluetooth": "mode=ignore",
+    "network": "no internet permission declared"
+  },
+  "acceptance_verdict": "PASS"
+}

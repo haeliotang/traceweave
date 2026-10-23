@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "status": "pass_with_scope_limit",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "codename": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37,
+    "os": "GrapheneOS"
+  },
+  "validationBuild": {
+    "package": "org.traceform.agentos.validation.target",
+    "apkSha256": "efdf5248e0427ac5cfd2a294366a1c6b3c5dac51641b60f7b0d2588694b5ab10",
+    "report": "phase1_executor_active_lifecycle_validation_build_report.json",
+    "signing": "Android local debug certificate",
+    "permissions": [
+      "android.permission.RECEIVE_BOOT_COMPLETED"
+    ]
+  },
+  "deviceLogTime": "2026-10-23 00:45:44.791 Asia/Kathmandu",
+  "checks": [
+    {
+      "name": "pause_active_worker_at_committed_checkpoint",
+      "status": "PASS",
+      "result": "The JobService executor thread was held immediately after step 1 committed. Pausing the task and cancelling its job, then releasing the thread, left the task paused with no step-2 start or success audit."
+    },
+    {
+      "name": "resume_active_worker_from_checkpoint",
+      "status": "PASS",
+      "result": "After the paused worker exited, rescheduling completed step 2 from the same checkpoint. The capability invocation and step-1 checkpoint each remained at one; step 2 saved once."
+    },
+    {
+      "name": "cancel_active_worker_at_committed_checkpoint",
+      "status": "PASS",
+      "result": "The JobService executor thread was held immediately after step 1 committed. Cancelling the task and its job, then releasing the thread, left the task cancelled with no step-2 start, result, success audit, or pending job."
+    },
+    {
+      "name": "pending_job_pause_resume_cancel_regression",
+      "status": "PASS",
+      "result": "The same run repeated the prior pending-job cases: pause preserved the checkpoint, resume did not repeat the capability call, and cancellation removed the scheduled job."
+    }
+  ],
+  "scopeLimit": "The worker was gated after the step-1 checkpoint transaction committed and before step 2 began. Interruption inside a provider call or a database transaction remains untested.",
+  "isolation": {
+    "syntheticDataOnly": true,
+    "productionPackageReplaced": false,
+    "productionDatabaseWritten": false,
+    "validationPackageUninstalledAfterCapture": true
+  },
+  "rawDeviceLog": "phase1_executor_active_lifecycle_pixel6a.log"
+}

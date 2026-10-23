@@ -1,0 +1,27 @@
+{
+  "package": "org.traceform.agentos.validation.target",
+  "version": "0.1.0",
+  "apk_sha256": "b17e3c05f62c0be38e7087d2c4c9e71e3f7923eb74da94b14992f7925982c71f",
+  "apk_bytes": 65939,
+  "signing": "local_development_key",
+  "source_sha256": {
+    "agent_os/tests/android/manifest-target.xml": "088375b5988f6527826c16ec81fe3b1a1e4f664abbf79a5d6397a7d8a68042fe",
+    "agent_os/android/src/org/traceform/agentos/AgentExecutor.java": "216f2a69809f398186ca20bd1e0c7508ce1e4fc1f495fdd16f7c781eddd4d939",
+    "agent_os/android/src/org/traceform/agentos/AgentJobService.java": "81325cef61dbee650ab5820c01c2f59b4eceaf68af11ea2b755c6cfd77a30c31",
+    "agent_os/android/src/org/traceform/agentos/AgentScheduler.java": "a74eb79bf8d6d270558bc84ae55e5f8770a1e3591b23dd4938ec3f48f2f43377",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "9a1d28d273dea6d8b4da6c2a1c773b97c3ad173b128c85155cf415556f9726d6",
+    "agent_os/android/src/org/traceform/agentos/AndroidRemoteStatusProvider.java": "37ba83521e7093f37a45a84c801809bb9f8410eb4d705ca0c692740c43e6fd97",
+    "agent_os/android/src/org/traceform/agentos/CapabilityBroker.java": "2a527566d3e8b8d774763c5b8cb3499167adbd82e38c343614057fdeae476c05",
+    "agent_os/android/src/org/traceform/agentos/CapabilityProvider.java": "8059bc7c00e2691e18ec49a23fa4422afb93a75049d4ed3686fae41dfcaad8b8",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoNoteProvider.java": "2350d36e97c02dae0be0d8a07092f3b01336de46db527bccaaf09232bfdd7530",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoStatusProvider.java": "7c39f3ae05acd92163da860d943fd5cfce7761d5abbffd6ec63df151e0b8bf7d",
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "1e4d579933e6a9e4f8db0c45e4b3727d4e5e691d14752bb2beab91b4fcf28f25",
+    "agent_os/android/src/org/traceform/agentos/MemoryArchive.java": "04710390df1ddafbafcc553b91bdeda6c8ac6b7451a4a14d7f3e5cff8d8f805d",
+    "agent_os/android/src/org/traceform/agentos/MemoryIndex.java": "9079bbd0ac3832b54dbb8e7bb5943478e68d833ec48674e539e081880c2ec444",
+    "agent_os/android/src/org/traceform/agentos/RemoteUriPickerActivity.java": "f7f0e1769ae2135ce3b6bf592ecbc609edad5399ec07876e134dd84e835e0588",
+    "agent_os/android/src/org/traceform/agentos/TraceformProvider.java": "b402fd2029783d6be82bb3cd2bd1c6975b74b7107c10a34952425eddd3849c06",
+    "agent_os/tests/android/DeviceValidationActivity.java": "c87b350f13254f3b230a25fd5194c260b8077cdee4fb860cad6323071ca4c41a",
+    "agent_os/scripts/build_android.py": "8012f94be83d75b4d468d20d857f93207d34b8f931b6692ab5007f362a1538fd"
+  },
+  "scope": "active_job_reconciliation_memory_provenance_index_conflict_policy_and_traceform_provider_device_validation"
+}

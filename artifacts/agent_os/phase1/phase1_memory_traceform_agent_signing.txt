@@ -1,0 +1,4 @@
+Signer #1 certificate DN: CN=Traceform Local Development
+Signer #1 certificate SHA-256 digest: e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c
+Signer #1 certificate SHA-1 digest: 1a30ed967b00a493d77df8ed8900c77557026cbc
+Signer #1 certificate MD5 digest: 454e6af4006f07cfe3b08e22a39ecfac

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "status": "pass_with_scope_limit",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "codename": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37,
+    "os": "GrapheneOS"
+  },
+  "validationBuild": {
+    "package": "org.traceform.agentos.validation.target",
+    "apkSha256": "2b8a17188d84671cbe188dc9bc07aa00eb9fde5464edac5f92d996e71a44d9de",
+    "report": "phase1_executor_lifecycle_validation_build_report.json",
+    "signing": "Android local debug certificate",
+    "permissions": [
+      "android.permission.RECEIVE_BOOT_COMPLETED"
+    ]
+  },
+  "deviceLogTime": "2026-10-23 00:35:56.798 Asia/Kathmandu",
+  "checks": [
+    {
+      "name": "pause_after_step1_checkpoint",
+      "status": "PASS",
+      "taskId": "fc139bc7-f5bf-4da7-8d10-b884f8975f9e",
+      "result": "The task remained paused after the scheduled job minimum latency elapsed; its encrypted step-1 checkpoint remained, the pending JobScheduler job was removed, and step 2 had not started."
+    },
+    {
+      "name": "resume_from_step1_checkpoint",
+      "status": "PASS",
+      "taskId": "fc139bc7-f5bf-4da7-8d10-b884f8975f9e",
+      "result": "The resumed task completed step 2 with the original checkpoint; capability_invoked and executor_step_1_saved each remained at one, and executor_step_2_saved was recorded once."
+    },
+    {
+      "name": "cancel_after_step1_checkpoint",
+      "status": "PASS",
+      "taskId": "b2d88637-64a0-4f9e-b7e8-c51b261c176a",
+      "result": "Cancellation removed the pending JobScheduler job. The task remained cancelled with its checkpoint, no result, no step-2 start, and no task_succeeded audit."
+    }
+  ],
+  "scopeLimit": "The persisted job was pending and had not entered AgentJobService when pause or cancellation occurred. This does not verify stopping a worker inside a provider call or database checkpoint transaction.",
+  "isolation": {
+    "syntheticDataOnly": true,
+    "productionPackageReplaced": false,
+    "productionDatabaseWritten": false,
+    "validationPackageUninstalledAfterCapture": true
+  },
+  "rawDeviceLog": "phase1_executor_lifecycle_pixel6a.log"
+}

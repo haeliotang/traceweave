@@ -28,7 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 final class MemoryArchive {
     private static final String FORMAT = "org.traceform.agentos.memory";
-    private static final int SCHEMA_VERSION = 1;
+    private static final int SCHEMA_VERSION = 3;
     private static final int PBKDF2_ITERATIONS = 600000;
     private static final int SALT_BYTES = 16;
     private static final int NONCE_BYTES = 12;
@@ -92,7 +92,7 @@ final class MemoryArchive {
         }
         int version = headerBuffer.get() & 0xff;
         int iterations = headerBuffer.getInt();
-        if (version != SCHEMA_VERSION) throw new IOException("Unsupported archive encryption version");
+        if (version < 1 || version > SCHEMA_VERSION) throw new IOException("Unsupported archive encryption version");
         if (iterations != PBKDF2_ITERATIONS) throw new IOException("Unsupported archive key derivation parameters");
         byte[] salt = new byte[SALT_BYTES];
         byte[] nonce = new byte[NONCE_BYTES];
@@ -196,12 +196,15 @@ final class MemoryArchive {
         JSONArray tasks = new JSONArray();
         for (AgentStore.Task task : data.tasks) {
             tasks.put(new JSONObject().put("id", task.id).put("title", task.title).put("status", task.status)
-                .put("createdAt", task.createdAt).put("updatedAt", task.updatedAt));
+                .put("createdAt", task.createdAt).put("updatedAt", task.updatedAt)
+                .put("executionVersion", task.executionVersion).put("executionStep", task.executionStep)
+                .put("checkpointNote", task.checkpointNote).put("result", task.result));
         }
         root.put("tasks", tasks);
         JSONArray memories = new JSONArray();
         for (AgentStore.Memory memory : data.memories) {
             memories.put(new JSONObject().put("id", memory.id).put("kind", memory.kind).put("content", memory.content)
+                .put("source", memory.source).put("sourceReference", memory.sourceReference)
                 .put("createdAt", memory.createdAt).put("updatedAt", memory.updatedAt));
         }
         root.put("memories", memories);
@@ -223,7 +226,9 @@ final class MemoryArchive {
     private static Data fromJson(String json) throws Exception {
         JSONObject root = new JSONObject(json);
         if (!FORMAT.equals(root.getString("format"))) throw new IOException("Unknown Agent OS archive format");
-        if (root.getInt("schemaVersion") != SCHEMA_VERSION) throw new IOException("Unsupported archive data version");
+        int schemaVersion = root.getInt("schemaVersion");
+        if (schemaVersion < 1 || schemaVersion > SCHEMA_VERSION)
+            throw new IOException("Unsupported archive data version");
         Data data = new Data();
         data.exportedAt = nonNegative(root.getLong("exportedAt"), "exportedAt");
         JSONArray tasks = root.getJSONArray("tasks");
@@ -241,14 +246,27 @@ final class MemoryArchive {
             String status = item.getString("status");
             long createdAt = nonNegative(item.getLong("createdAt"), "task.createdAt");
             long updatedAt = nonNegative(item.getLong("updatedAt"), "task.updatedAt");
+            int executionVersion = schemaVersion >= 2 ? item.optInt("executionVersion", 0) : 0;
+            int executionStep = schemaVersion >= 2 ? item.optInt("executionStep", 0) : 0;
+            String checkpointNote = schemaVersion >= 2 ? item.optString("checkpointNote", "") : "";
+            String result = schemaVersion >= 2 ? item.optString("result", "") : "";
             if (!taskIds.add(id)) throw new IOException("The archive contains duplicate task IDs");
             if (title.trim().isEmpty() || title.length() > 2000 || updatedAt < createdAt)
                 throw new IOException("The archive contains an invalid task record");
             if (!AgentStore.QUEUED.equals(status) && !AgentStore.ACTIVE.equals(status)
-                    && !AgentStore.PAUSED.equals(status) && !AgentStore.COMPLETED.equals(status)
+                    && !AgentStore.PAUSED.equals(status) && !AgentStore.WAITING_FOR_USER.equals(status)
+                    && !AgentStore.FAILED.equals(status) && !AgentStore.COMPLETED.equals(status)
                     && !AgentStore.CANCELLED.equals(status))
                 throw new IOException("The archive contains an invalid task status");
-            data.tasks.add(new AgentStore.Task(id, title, status, createdAt, updatedAt));
+            if (executionVersion < 0 || executionVersion > AgentStore.CURRENT_EXECUTION_VERSION
+                    || executionStep < 0 || executionStep > 2 || checkpointNote.length() > 4000 || result.length() > 12000)
+                throw new IOException("The archive contains an invalid task checkpoint");
+            if ((executionVersion == 0 && (executionStep != 0 || !checkpointNote.isEmpty() || !result.isEmpty()))
+                    || (executionVersion == AgentStore.CURRENT_EXECUTION_VERSION && executionStep >= 1 && checkpointNote.isEmpty())
+                    || (executionStep == 2 && result.isEmpty()))
+                throw new IOException("The archive contains an inconsistent task checkpoint");
+            data.tasks.add(new AgentStore.Task(id, title, status, createdAt, updatedAt, 0,
+                executionVersion, executionStep, checkpointNote, result));
         }
 
         Set<String> memoryIds = new HashSet<>();
@@ -257,12 +275,17 @@ final class MemoryArchive {
             String id = validId(item.getString("id"));
             String kind = item.getString("kind");
             String content = item.getString("content");
+            String source = schemaVersion >= 3 ? item.optString("source", AgentStore.MEMORY_SOURCE_USER)
+                : AgentStore.MEMORY_SOURCE_USER;
+            String sourceReference = schemaVersion >= 3 ? item.optString("sourceReference", "") : "";
             long createdAt = nonNegative(item.getLong("createdAt"), "memory.createdAt");
             long updatedAt = nonNegative(item.getLong("updatedAt"), "memory.updatedAt");
             if (!memoryIds.add(id)) throw new IOException("The archive contains duplicate memory IDs");
-            if (!validMemoryKind(kind) || content.trim().isEmpty() || content.length() > 10000 || updatedAt < createdAt)
+            if (!validMemoryKind(kind) || content.trim().isEmpty() || content.length() > 10000 || updatedAt < createdAt
+                    || (!AgentStore.MEMORY_SOURCE_USER.equals(source)
+                        && !AgentStore.MEMORY_SOURCE_TRACEFORM.equals(source)) || sourceReference.length() > 512)
                 throw new IOException("The archive contains an invalid memory record");
-            data.memories.add(new AgentStore.Memory(id, kind, content, createdAt, updatedAt));
+            data.memories.add(new AgentStore.Memory(id, kind, content, source, sourceReference, createdAt, updatedAt));
         }
 
         Set<String> tombstoneKeys = new HashSet<>();

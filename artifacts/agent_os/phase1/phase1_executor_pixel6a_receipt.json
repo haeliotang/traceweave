@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "status": "partial_pass",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "codename": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37,
+    "securityPatch": "2026-09-01",
+    "os": "GrapheneOS"
+  },
+  "builds": {
+    "sourcePackage": {
+      "package": "org.traceform.agentos",
+      "apkSha256": "77e0d29fd7ffb88c765284deef8bc12968511de65d299707a9dfd50a3b83aba9",
+      "report": "phase1_executor_source_build_report.json",
+      "signing": "local Android debug certificate; not installed"
+    },
+    "validationPackage": {
+      "package": "org.traceform.agentos.validation.target",
+      "apkSha256": "300323b0dfd44265b43f1a61ef3d289a45c6163375ed3f21583de763a6ca36ba",
+      "report": "phase1_executor_validation_build_report.json",
+      "permissions": ["android.permission.RECEIVE_BOOT_COMPLETED"]
+    }
+  },
+  "checks": [
+    {
+      "name": "database_v1_to_v3_migration",
+      "status": "PASS",
+      "deviceLogTime": "2026-10-23 00:15:44.389 Asia/Kathmandu",
+      "result": "Encrypted task and audit history were preserved, a stable job ID was assigned, and a legacy active journal record was re-queued."
+    },
+    {
+      "name": "checkpoint_resume_after_process_crash",
+      "status": "PASS",
+      "deviceLogTime": "2026-10-23 00:17:02.390 Asia/Kathmandu",
+      "taskId": "54ba03e5-1ca3-4884-bdd5-874ca3c4b368",
+      "interruptionMethod": "Android ActivityManager VM crash injection against the isolated validation package",
+      "processIdBeforeCrash": 14172,
+      "processIdAfterResume": 14288,
+      "result": "Persisted JobScheduler work resumed at step 1, completed from the encrypted note checkpoint without rereading the provider, and the process-local capability grant was absent after restart."
+    },
+    {
+      "name": "authorized_execution_and_wait_for_user_resume",
+      "status": "PASS",
+      "deviceLogTime": "2026-10-23 00:17:58.668 Asia/Kathmandu",
+      "authorizedTaskId": "d1982a8f-cd5c-41e5-ae10-9de51eb14571",
+      "authorizationRetryTaskId": "dc8fccb1-4967-4bc5-a20f-24c49bcdac35",
+      "result": "Authorized local execution saved both steps; missing authorization moved the task to waiting_for_user and wrote a denial audit; a fresh grant allowed resume to completion."
+    },
+    {
+      "name": "pause_resume_cancel_after_checkpoint_with_pending_job",
+      "status": "PASS",
+      "deviceLogTime": "2026-10-23 00:35:56.798 Asia/Kathmandu",
+      "taskIds": {
+        "pausedThenResumed": "fc139bc7-f5bf-4da7-8d10-b884f8975f9e",
+        "cancelled": "b2d88637-64a0-4f9e-b7e8-c51b261c176a"
+      },
+      "result": "After step 1 was committed, pausing removed the pending persisted job and the task stayed paused beyond its minimum latency with the checkpoint intact and no step 2 audit. Resuming completed step 2 without another capability invocation. Cancelling a second checkpointed task removed its pending job; it remained cancelled without a result or success audit."
+    },
+    {
+      "name": "active_worker_pause_resume_cancel_after_checkpoint",
+      "status": "PASS",
+      "deviceLogTime": "2026-10-23 00:45:44.791 Asia/Kathmandu",
+      "validationBuildReport": "phase1_executor_active_lifecycle_validation_build_report.json",
+      "result": "A test-only gate held the actual JobService executor thread after the first encrypted checkpoint committed. Pause and cancel both stopped the worker before step 2; resuming the paused task completed from that checkpoint without a second capability call. No cancellation result or success audit was written."
+    }
+  ],
+  "notVerified": [
+    "Pause or cancel while the JobService worker is inside a provider call or checkpoint database transaction",
+    "AgentJobService recovery after force-stop or device reboot",
+    "Airplane-mode execution",
+    "Battery impact, long-running work, and GrapheneOS background restrictions",
+    "Cloud execution and cloud-unavailable semantics"
+  ],
+  "isolation": {
+    "validationPackageUninstalledAfterCapture": true,
+    "productionPackageReplaced": false,
+    "productionDatabaseWritten": false,
+    "syntheticDataOnly": true,
+    "rawDeviceLog": "phase1_executor_pixel6a.log"
+  }
+}

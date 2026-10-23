@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-22T23:47:03+05:45",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "device": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37,
+    "os": "GrapheneOS (existing test-device configuration)",
+    "displayBuild": "2026092501",
+    "securityPatch": "2026-09-01"
+  },
+  "productionInstall": {
+    "package": "org.traceform.agentos",
+    "installedApkSha256": "8c24d2dffd3440df8832cb8ef499491e6cf11675081720fd50c3a65f6a8621f0",
+    "sourceRebuildApkSha256": "544922b9e2a3ef3fc87f25f373122e2d77ddf5f9db3bfc6a35fc137685679762",
+    "installedDexSha256": "12fb87eb7fb5eb0bb0449825c81cba87df2e85ab0b8472acc172ef610fbe859b",
+    "sourceRebuildDexSha256": "12fb87eb7fb5eb0bb0449825c81cba87df2e85ab0b8472acc172ef610fbe859b",
+    "dexMatchesCurrentCheckout": true,
+    "currentManifestSha256": "ae9e2fd33ba74bb8fed72d48129ed7927ade254c1946a80b848fa329e270d2c0",
+    "declaredPermissionsInInstalledApk": [],
+    "packageManagerPermissionState": "dumpsys package retained android.permission.OTHER_SENSORS granted=true although the installed APK declares no permissions; no sensor operation was performed, so this state is unresolved and not counted as a tested capability.",
+    "backgroundServices": "none reported by dumpsys activity services",
+    "scheduledJobs": "none matched for org.traceform.agentos in dumpsys jobscheduler"
+  },
+  "validationRun": {
+    "package": "org.traceform.agentos.validation.target",
+    "validationApkSha256": "ec2d6acedf1ae9264d3c77d9ef4d697f0b5b740d61509ba4b4812950d9ded4b7",
+    "validationActivitySha256": "e0720121b96f59668ef8c21328ce041cfa928745a6ddbd3b6605e753e998b3e3",
+    "forceStopThenColdRelaunch": true,
+    "temporaryPackageUninstalled": true,
+    "productionPackageRetained": true,
+    "productionDatabaseTouched": false,
+    "receipt": {
+      "status": "PASS",
+      "device": {
+        "manufacturer": "Google",
+        "model": "Pixel 6a",
+        "device": "bluejay",
+        "androidRelease": "17",
+        "apiLevel": 37
+      },
+      "package": "org.traceform.agentos.validation.target",
+      "taskJournalSurvivedForceStop": true,
+      "pauseResumeCancelJournalVerified": true,
+      "internetPermissionDeclared": false,
+      "syntheticOnly": true,
+      "tasks": [
+        {
+          "id": "41f48d5d-90a7-4914-8a63-88ae303d5ef3",
+          "statusBeforeRestart": "completed",
+          "createdAtPreserved": true,
+          "updatedAtPreserved": true,
+          "auditCountPreserved": true
+        },
+        {
+          "id": "dd8949c3-d1dd-4f59-a5c1-344e7dc6069e",
+          "statusBeforeRestart": "cancelled",
+          "createdAtPreserved": true,
+          "updatedAtPreserved": true,
+          "auditCountPreserved": true
+        },
+        {
+          "id": "fe079979-b49d-40f3-8462-8e76b3aa7517",
+          "statusBeforeRestart": "paused",
+          "createdAtPreserved": true,
+          "updatedAtPreserved": true,
+          "auditCountPreserved": true,
+          "resumedAfterRestart": true,
+          "finalStatus": "cancelled",
+          "auditCountAfterResume": 5
+        }
+      ],
+      "agentExecutionVerified": false,
+      "backgroundContinuationVerified": false,
+      "limitation": "This verifies durable task records and state/audit transitions only. It does not verify that an Agent performed the tasks or continued work in the background."
+    }
+  },
+  "scope": "Synthetic task journal persistence, status transitions, audit counts, and declared network permission only. Does not demonstrate Agent execution, cloud failure handling, or energy consumption."
+}

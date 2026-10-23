@@ -1,0 +1,259 @@
+{
+  "frames": 5345,
+  "gate1_dwell_at_tipping_histogram": {
+    "0": 460,
+    "10": 106,
+    "20": 30,
+    "30": 10,
+    "60": 1
+  },
+  "gate1_dwell_threshold": 60,
+  "gate1_events_at_or_above_threshold": 1,
+  "gate1_replayed_exactly": [
+    {
+      "dwell_steps": 64,
+      "mean_jsd": 0.0164,
+      "needed_below": -5,
+      "recommended_path": "NEUTRAL",
+      "risk_count_change_of_100": 15,
+      "segment_frames": 1889,
+      "status": "ok"
+    }
+  ],
+  "gate2_frames_at_or_above_threshold": 154,
+  "gate2_ignores_gate1": "these frames were not necessarily at a CSD_TIPPING event; the question is only what the counterfactual says",
+  "gate2_results": [
+    {
+      "dwell_steps": 60,
+      "mean_jsd": 0.0324,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -6,
+      "segment_frames": 1853,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 66,
+      "mean_jsd": 0.0328,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1859,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 72,
+      "mean_jsd": 0.0309,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -8,
+      "segment_frames": 1865,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 78,
+      "mean_jsd": 0.0321,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1871,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 84,
+      "mean_jsd": 0.0315,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1877,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 90,
+      "mean_jsd": 0.0323,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1883,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 96,
+      "mean_jsd": 0.0342,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1889,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 102,
+      "mean_jsd": 0.0347,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -9,
+      "segment_frames": 1895,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 108,
+      "mean_jsd": 0.0358,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -9,
+      "segment_frames": 1901,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 114,
+      "mean_jsd": 0.0365,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -9,
+      "segment_frames": 1907,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 120,
+      "mean_jsd": 0.0365,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -9,
+      "segment_frames": 1913,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 126,
+      "mean_jsd": 0.038,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -9,
+      "segment_frames": 1919,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 132,
+      "mean_jsd": 0.039,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -8,
+      "segment_frames": 1925,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 138,
+      "mean_jsd": 0.0413,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1931,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 144,
+      "mean_jsd": 0.0402,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -8,
+      "segment_frames": 1937,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 150,
+      "mean_jsd": 0.0404,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -8,
+      "segment_frames": 1943,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 156,
+      "mean_jsd": 0.0415,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -6,
+      "segment_frames": 1949,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 162,
+      "mean_jsd": 0.0427,
+      "needed_below": -5,
+      "recommended_path": "MAINTAIN_STATUS_QUO",
+      "risk_count_change_of_100": -4,
+      "segment_frames": 1955,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 168,
+      "mean_jsd": 0.0432,
+      "needed_below": -5,
+      "recommended_path": "MAINTAIN_STATUS_QUO",
+      "risk_count_change_of_100": -5,
+      "segment_frames": 1961,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 174,
+      "mean_jsd": 0.0442,
+      "needed_below": -5,
+      "recommended_path": "MAINTAIN_STATUS_QUO",
+      "risk_count_change_of_100": -5,
+      "segment_frames": 1967,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 180,
+      "mean_jsd": 0.0442,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -8,
+      "segment_frames": 1973,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 186,
+      "mean_jsd": 0.043,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -7,
+      "segment_frames": 1979,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 192,
+      "mean_jsd": 0.0436,
+      "needed_below": -5,
+      "recommended_path": "RECOMMEND_INTERVENTION",
+      "risk_count_change_of_100": -6,
+      "segment_frames": 1985,
+      "status": "ok"
+    },
+    {
+      "dwell_steps": 198,
+      "mean_jsd": 0.0431,
+      "needed_below": -5,
+      "recommended_path": "MAINTAIN_STATUS_QUO",
+      "risk_count_change_of_100": -5,
+      "segment_frames": 1991,
+      "status": "ok"
+    }
+  ],
+  "gate2_sampled": 24,
+  "gate2_summary": {
+    "ok": 24,
+    "recommended_paths": {
+      "MAINTAIN_STATUS_QUO": 4,
+      "RECOMMEND_INTERVENTION": 20
+    },
+    "risk_count_change_of_100": {
+      "max": -4,
+      "min": -9
+    },
+    "would_recommend": 20
+  },
+  "scope": "offline_replay_of_intervention_gate_not_effect_validation",
+  "tipping_events": 951,
+  "tipping_events_matching_stored_frames": 607
+}

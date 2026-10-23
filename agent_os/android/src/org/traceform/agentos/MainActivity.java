@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -40,6 +42,7 @@ public final class MainActivity extends Activity {
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Runnable taskRefresh = this::refreshTasks;
     private final java.util.ArrayList<Button> persistentButtons = new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> taskButtons = new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> memoryButtons = new java.util.ArrayList<>();
@@ -47,10 +50,14 @@ public final class MainActivity extends Activity {
     private CapabilityBroker capabilityBroker;
     private EditText taskInput;
     private EditText memoryInput;
+    private EditText memorySearch;
     private Spinner memoryKind;
     private LinearLayout taskList;
     private LinearLayout memoryList;
     private TextView activityStatus;
+    private TextView traceformStatus;
+    private Button traceformToggleButton;
+    private MemoryIndex memoryIndex;
     private char[] pendingExportPassphrase;
     private boolean busy;
     private boolean destroyed;
@@ -74,6 +81,20 @@ public final class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         expireRemoteUriGrant();
+        try {
+            int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
+            if (recoveredJobs > 0 && activityStatus != null)
+                activityStatus.setText("已恢复 " + recoveredJobs + " 条本地任务调度；任务记录保持不变。");
+        } catch (Exception error) {
+            showError(error);
+        }
+        refreshTasks();
+    }
+
+    @Override
+    protected void onPause() {
+        mainHandler.removeCallbacks(taskRefresh);
+        super.onPause();
     }
 
     @Override
@@ -151,7 +172,7 @@ public final class MainActivity extends Activity {
         page.addView(title);
 
         TextView note = new TextView(this);
-        note.setText("本地任务与用户记忆原型。内容在本机加密保存；导出档案使用独立口令加密，便于迁移。当前不运行模型、不访问网络，也不调用 Traceform。\n\n本地能力只读取固定合成内容。跨应用能力必须先由你选择来源并接收单条内容的临时 URI 读取权，再为具体任务授权；能力授权最多 5 分钟有效，进程重启后清除。\n\n任务“进行中”只表示记录状态，不代表后台 Agent 正在执行。请先使用合成内容验证导入、导出和删除流程。");
+        note.setText("本地任务与用户记忆原型。内容在本机加密保存；导出档案使用独立口令加密，便于迁移。当前不运行模型或访问网络。Traceform 是可选来源，默认关闭。\n\n开始任务后，端侧执行器会读取固定合成便笺并保存本地演示结果；读取前需为该任务授权。Android JobScheduler 负责唤醒短任务，系统可能延后执行。能力授权最多 5 分钟有效，进程重启后清除。\n\n跨应用能力必须先由你选择来源并接收单条内容的临时 URI 读取权，再为具体任务授权。Traceform 读取还需你显式启用，并且不会启动传感器采集或访问网络。");
         note.setTextSize(15);
         note.setPadding(0, 16, 0, 16);
         page.addView(note);
@@ -163,9 +184,23 @@ public final class MainActivity extends Activity {
         page.addView(archiveActions);
 
         activityStatus = new TextView(this);
-        activityStatus.setText("本机数据仅在你选择时导出。导入会保留同 ID 的本地内容，删除墓碑优先。");
+        activityStatus.setText("本机数据仅在你选择时导出。导入前可选择同 ID 记忆冲突如何处理；删除墓碑始终优先。");
         activityStatus.setPadding(0, 4, 0, 8);
         page.addView(activityStatus);
+
+        TextView traceformHeading = new TextView(this);
+        traceformHeading.setText("Traceform 可选 Provider");
+        traceformHeading.setTextSize(20);
+        traceformHeading.setPadding(0, 20, 0, 4);
+        page.addView(traceformHeading);
+
+        traceformStatus = new TextView(this);
+        page.addView(traceformStatus);
+        traceformToggleButton = new Button(this);
+        traceformToggleButton.setOnClickListener(view -> toggleTraceformProvider());
+        persistentButtons.add(traceformToggleButton);
+        page.addView(traceformToggleButton);
+        updateTraceformProviderControls();
 
         taskInput = new EditText(this);
         taskInput.setHint("输入一条合成任务，例如：整理本地示例笔记");
@@ -196,8 +231,19 @@ public final class MainActivity extends Activity {
             new String[]{"偏好", "事实", "工作流"}));
         page.addView(memoryKind);
 
+        memorySearch = new EditText(this);
+        memorySearch.setHint("搜索记忆内容、类型和来源");
+        page.addView(memorySearch);
+        memorySearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                if (memoryIndex != null) renderMemories(memoryIndex.search(text.toString()));
+            }
+            @Override public void afterTextChanged(Editable text) {}
+        });
+
         memoryInput = new EditText(this);
-        memoryInput.setHint("写一条由你提供的记忆");
+        memoryInput.setHint("写一条由你提供的记忆（来源会标记为“你提供”）");
         memoryInput.setMinLines(2);
         memoryInput.setMaxLines(5);
         page.addView(memoryInput);
@@ -246,9 +292,16 @@ public final class MainActivity extends Activity {
             List<AgentStore.Task> tasks = store.listTasks();
             if (tasks.isEmpty()) {
                 addEmptyMessage(taskList, "还没有任务");
+                mainHandler.removeCallbacks(taskRefresh);
                 return;
             }
-            for (AgentStore.Task task : tasks) addTaskCard(task);
+            boolean hasActiveTask = false;
+            for (AgentStore.Task task : tasks) {
+                addTaskCard(task);
+                hasActiveTask |= AgentStore.ACTIVE.equals(task.status);
+            }
+            mainHandler.removeCallbacks(taskRefresh);
+            if (hasActiveTask && !destroyed) mainHandler.postDelayed(taskRefresh, 1000);
         } catch (Exception error) {
             showError(error);
         }
@@ -260,14 +313,23 @@ public final class MainActivity extends Activity {
             memoryButtons.clear();
             memoryList.removeAllViews();
             List<AgentStore.Memory> memories = store.listMemories();
-            if (memories.isEmpty()) {
-                addEmptyMessage(memoryList, "还没有记忆");
-                return;
-            }
-            for (AgentStore.Memory memory : memories) addMemoryCard(memory);
+            memoryIndex = new MemoryIndex(memories);
+            renderMemories(memoryIndex.search(memorySearch == null ? "" : memorySearch.getText().toString()));
         } catch (Exception error) {
             showError(error);
         }
+    }
+
+    private void renderMemories(List<AgentStore.Memory> memories) {
+        if (memoryList == null) return;
+        memoryButtons.clear();
+        memoryList.removeAllViews();
+            if (memories.isEmpty()) {
+                addEmptyMessage(memoryList, memorySearch != null && memorySearch.length() > 0
+                    ? "没有匹配的记忆" : "还没有记忆");
+                return;
+            }
+            for (AgentStore.Memory memory : memories) addMemoryCard(memory);
     }
 
     private void addTaskCard(AgentStore.Task task) {
@@ -286,16 +348,24 @@ public final class MainActivity extends Activity {
         metadata.setPadding(0, 4, 0, 4);
         card.addView(metadata);
 
+        if (!task.result.isEmpty()) {
+            TextView result = new TextView(this);
+            result.setText(task.result);
+            result.setTextSize(15);
+            result.setPadding(0, 4, 0, 8);
+            card.addView(result);
+        }
+
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
-        if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)) {
-            addTaskButton(actions, AgentStore.QUEUED.equals(task.status) ? "开始" : "恢复", task, AgentStore.ACTIVE);
+        if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
+                || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status)) {
+            String label = AgentStore.QUEUED.equals(task.status) ? "开始"
+                : AgentStore.FAILED.equals(task.status) ? "重试" : "继续";
+            addTaskButton(actions, label, task, AgentStore.ACTIVE);
         }
         if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, "暂停", task, AgentStore.PAUSED);
-        if (AgentStore.ACTIVE.equals(task.status) || AgentStore.PAUSED.equals(task.status)) {
-            addTaskButton(actions, "完成", task, AgentStore.COMPLETED);
-        }
-        if (AgentStore.QUEUED.equals(task.status) || AgentStore.ACTIVE.equals(task.status) || AgentStore.PAUSED.equals(task.status))
+        if (!AgentStore.COMPLETED.equals(task.status) && !AgentStore.CANCELLED.equals(task.status))
             addTaskButton(actions, "取消", task, AgentStore.CANCELLED);
         addCardActionButton(actions, "删除", view -> confirmDeleteTask(task), taskButtons);
         card.addView(actions);
@@ -324,7 +394,10 @@ public final class MainActivity extends Activity {
         card.addView(content);
 
         TextView metadata = new TextView(this);
-        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
+        String source = AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)
+            ? "Traceform 本机历史摘要" : "你提供";
+        metadata.setText(source + (memory.sourceReference.isEmpty() ? "" : " · " + memory.sourceReference)
+            + " · " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
         card.addView(metadata);
 
         LinearLayout actions = new LinearLayout(this);
@@ -339,7 +412,18 @@ public final class MainActivity extends Activity {
             if (busy) return;
             try {
                 store.transition(task.id, status);
+                if (AgentStore.ACTIVE.equals(status)) {
+                    try {
+                        AgentScheduler.scheduleTask(this, store.getTask(task.id));
+                    } catch (Exception error) {
+                        store.transition(task.id, task.status);
+                        throw error;
+                    }
+                } else {
+                    AgentScheduler.cancelTask(this, task.jobId);
+                }
                 refreshTasks();
+                if (AgentStore.ACTIVE.equals(status)) showMessage("任务已提交给 Android 后台调度");
             } catch (Exception error) {
                 showError(error);
             }
@@ -358,6 +442,16 @@ public final class MainActivity extends Activity {
         if (capabilityBroker.hasRemoteResource(task.id)) {
             addProviderControls(card, task, "跨应用状态", AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE);
+        }
+        if (capabilityBroker.isTraceformEnabled()) {
+            if (capabilityBroker.canEnableTraceform()) {
+                addProviderControls(card, task, "Traceform 本机历史摘要",
+                    CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+            } else {
+                TextView unavailable = new TextView(this);
+                unavailable.setText("Traceform Provider 不可用：未安装匹配签名的 Traceform");
+                card.addView(unavailable);
+            }
         }
     }
 
@@ -395,9 +489,12 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmCapabilityGrant(AgentStore.Task task, String label, String capability, String scope) {
+        String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
+            ? "允许此任务通过 Traceform 的签名保护接口读取本机保留历史并运行固定范围的本机模拟。结果会显示在本任务界面；不会读取 Traceform 私有数据库、启动传感器采集或访问网络。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。"
+            : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。";
         new AlertDialog.Builder(this)
             .setTitle("授权" + label + "？")
-            .setMessage("允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。")
+            .setMessage(details)
             .setNegativeButton("拒绝", (dialog, which) -> {
                 try {
                     capabilityBroker.deny(task.id, capability, scope);
@@ -419,12 +516,106 @@ public final class MainActivity extends Activity {
     }
 
     private void invokeCapability(AgentStore.Task task, String capability, String scope) {
-        try {
-            showMessage(capabilityBroker.invoke(task.id, capability, scope));
-        } catch (Exception error) {
-            showError(error);
+        if (busy) return;
+        setBusy(true, "正在读取授权的本机能力…");
+        io.execute(() -> {
+            String value = null;
+            Exception failure = null;
+            try {
+                value = capabilityBroker.invoke(task.id, capability, scope);
+            } catch (Exception error) {
+                failure = error;
+            }
+            String result = value;
+            Exception invokeFailure = failure;
+            mainHandler.post(() -> {
+                if (destroyed) return;
+                setBusy(false, invokeFailure == null ? "本机能力读取完成" : "本机能力读取失败");
+                refreshTasks();
+                if (invokeFailure != null) {
+                    showError(invokeFailure);
+                } else if (CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)) {
+                    showTraceformResult(task, result);
+                } else {
+                    showMessage(result);
+                }
+            });
+        });
+    }
+
+    private void showTraceformResult(AgentStore.Task task, String result) {
+        TextView content = new TextView(this);
+        content.setText(result + "\n\n此结果来自 Traceform 本机保留历史的模拟摘要，不是经验证的预测或因果结论。");
+        content.setTextIsSelectable(true);
+        content.setPadding(dp(20), dp(12), dp(20), dp(12));
+        ScrollView holder = new ScrollView(this);
+        holder.addView(content);
+        new AlertDialog.Builder(this)
+            .setTitle("Traceform 本机历史摘要")
+            .setView(holder)
+            .setNegativeButton("完成", null)
+            .setPositiveButton("保存为事实记忆", (dialog, which) -> {
+                try {
+                    String reference = "task=" + task.id + ";provider=traceform;read="
+                        + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
+                    store.createMemory(AgentStore.MEMORY_FACT, result,
+                        AgentStore.MEMORY_SOURCE_TRACEFORM, reference);
+                    refreshMemories();
+                    showMessage("摘要已作为 Traceform 来源的事实记忆保存");
+                } catch (Exception error) {
+                    showError(error);
+                }
+            })
+            .show();
+    }
+
+    private void toggleTraceformProvider() {
+        if (capabilityBroker.isTraceformEnabled()) {
+            new AlertDialog.Builder(this)
+                .setTitle("停用 Traceform Provider？")
+                .setMessage("停用后会撤销当前进程中的 Traceform 任务授权。已保存的 Traceform 来源记忆仍由你管理。")
+                .setNegativeButton("继续启用", null)
+                .setPositiveButton("停用", (dialog, which) -> {
+                    try {
+                        capabilityBroker.setTraceformEnabled(false);
+                        updateTraceformProviderControls();
+                        refreshTasks();
+                    } catch (Exception error) {
+                        showError(error);
+                    }
+                })
+                .show();
+            return;
         }
-        refreshTasks();
+        if (!capabilityBroker.canEnableTraceform()) {
+            showMessage("Traceform 未安装或签名不匹配；两个应用必须由同一受控签名身份签署");
+            return;
+        }
+        new AlertDialog.Builder(this)
+            .setTitle("启用可选 Traceform Provider？")
+            .setMessage("启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；读取只调用签名保护接口，不启动传感器采集、不访问私有数据库或网络。保存结果为记忆还需再次确认。")
+            .setNegativeButton("取消", null)
+            .setPositiveButton("启用", (dialog, which) -> {
+                try {
+                    capabilityBroker.setTraceformEnabled(true);
+                    updateTraceformProviderControls();
+                    refreshTasks();
+                } catch (Exception error) {
+                    showError(error);
+                }
+            })
+            .show();
+    }
+
+    private void updateTraceformProviderControls() {
+        if (traceformStatus == null || traceformToggleButton == null || capabilityBroker == null) return;
+        boolean enabled = capabilityBroker.isTraceformEnabled();
+        boolean signatureMatched = capabilityBroker.canEnableTraceform();
+        traceformToggleButton.setText(enabled ? "停用 Traceform Provider" : "启用 Traceform Provider");
+        traceformStatus.setText(enabled
+            ? signatureMatched ? "已启用；读取仍需逐任务授权，且不会启动传感器采集。"
+                : "设置已启用，但没有找到签名匹配的 Traceform 安装。"
+            : "默认关闭。启用本身不会读取数据；每次读取和保存为记忆都需单独确认。");
     }
 
     private void revokeCapability(AgentStore.Task task, String label, String capability, String scope) {
@@ -476,6 +667,7 @@ public final class MainActivity extends Activity {
             .setPositiveButton("删除", (dialog, which) -> {
                 try {
                     store.deleteTask(task.id);
+                    AgentScheduler.cancelTask(this, task.jobId);
                     refreshTasks();
                 } catch (Exception error) {
                     showError(error);
@@ -563,13 +755,26 @@ public final class MainActivity extends Activity {
     }
 
     private void promptImportPassphrase(Uri uri) {
+        new AlertDialog.Builder(this)
+            .setTitle("处理同 ID 记忆冲突")
+            .setMessage("请选择本次导入如何处理同 ID 的记忆。任务记录仍保留本机版本；任何删除墓碑始终优先。")
+            .setItems(new String[]{"保留本机记忆", "采用档案中的记忆"},
+                (dialog, which) -> promptImportPassphrase(uri, which == 1))
+            .setNegativeButton("取消", (dialog, which) -> setBusy(false, "导入已取消"))
+            .setOnCancelListener(dialog -> setBusy(false, "导入已取消"))
+            .show();
+    }
+
+    private void promptImportPassphrase(Uri uri, boolean preferArchiveMemories) {
         EditText input = passwordField("档案口令");
         LinearLayout holder = new LinearLayout(this);
         holder.setPadding(dp(24), dp(8), dp(24), 0);
         holder.addView(input);
         new AlertDialog.Builder(this)
             .setTitle("解锁并导入档案")
-            .setMessage("导入会新增本机不存在的记录；同 ID 冲突保留本机内容，档案中的删除标记优先应用。")
+            .setMessage(preferArchiveMemories
+                ? "新增本机不存在的记录；同 ID 记忆将采用档案版本；本机或档案中的删除标记始终优先。任务冲突保留本机版本。"
+                : "新增本机不存在的记录；同 ID 记忆与任务均保留本机版本；本机或档案中的删除标记始终优先。")
             .setView(holder)
             .setNegativeButton("取消", (dialog, which) -> setBusy(false, "导入已取消"))
             .setPositiveButton("导入", (dialog, which) -> {
@@ -580,7 +785,7 @@ public final class MainActivity extends Activity {
                     showMessage("请输入档案口令");
                     return;
                 }
-                importArchive(uri, passphrase);
+                importArchive(uri, passphrase, preferArchiveMemories);
             })
             .setOnCancelListener(dialog -> setBusy(false, "导入已取消"))
             .show();
@@ -621,14 +826,14 @@ public final class MainActivity extends Activity {
         });
     }
 
-    private void importArchive(Uri uri, char[] passphrase) {
+    private void importArchive(Uri uri, char[] passphrase, boolean preferArchiveMemories) {
         setBusy(true, "正在解密、校验并合并档案…");
         io.execute(() -> {
             AgentStore.ImportResult result = null;
             Exception failure = null;
             try (InputStream input = getContentResolver().openInputStream(uri)) {
                 if (input == null) throw new java.io.IOException("无法打开所选档案");
-                result = store.importArchive(input, passphrase);
+                result = store.importArchive(input, passphrase, preferArchiveMemories);
             } catch (Exception error) {
                 failure = error;
             } finally {
@@ -646,7 +851,8 @@ public final class MainActivity extends Activity {
                     refreshMemories();
                     showMessage("导入完成：任务 " + importResult.tasksImported + " 条，记忆 "
                         + importResult.memoriesImported + " 条，删除标记 " + importResult.tombstonesApplied
-                        + " 条；跳过冲突或已删除记录 " + importResult.recordsSkipped + " 条");
+                        + " 条；记忆冲突 " + importResult.memoryConflicts + " 条，采用档案 "
+                        + importResult.memoriesReplaced + " 条；跳过 " + importResult.recordsSkipped + " 条");
                 }
             });
         });
@@ -720,8 +926,10 @@ public final class MainActivity extends Activity {
 
     private String statusLabel(String status) {
         if (AgentStore.QUEUED.equals(status)) return "待处理";
-        if (AgentStore.ACTIVE.equals(status)) return "进行中（仅状态记录）";
+        if (AgentStore.ACTIVE.equals(status)) return "执行中";
         if (AgentStore.PAUSED.equals(status)) return "已暂停";
+        if (AgentStore.WAITING_FOR_USER.equals(status)) return "等待授权";
+        if (AgentStore.FAILED.equals(status)) return "执行失败";
         if (AgentStore.COMPLETED.equals(status)) return "已完成";
         if (AgentStore.CANCELLED.equals(status)) return "已取消";
         return "未知状态";

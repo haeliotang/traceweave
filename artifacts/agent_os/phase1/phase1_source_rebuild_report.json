@@ -1,0 +1,21 @@
+{
+  "package": "org.traceform.agentos",
+  "version": "0.1.0",
+  "apk_sha256": "544922b9e2a3ef3fc87f25f373122e2d77ddf5f9db3bfc6a35fc137685679762",
+  "apk_bytes": 37267,
+  "signing": "local_development_key",
+  "source_sha256": {
+    "agent_os/android/AndroidManifest.xml": "ae9e2fd33ba74bb8fed72d48129ed7927ade254c1946a80b848fa329e270d2c0",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "6f0d01b2a12c766850f827fd492c4d9c26eb27834614087fdccc1c7325b401ac",
+    "agent_os/android/src/org/traceform/agentos/AndroidRemoteStatusProvider.java": "37ba83521e7093f37a45a84c801809bb9f8410eb4d705ca0c692740c43e6fd97",
+    "agent_os/android/src/org/traceform/agentos/CapabilityBroker.java": "acade58bf408d4fef4d945dd6640143d04bc90e29673bfa5048e83b30b506678",
+    "agent_os/android/src/org/traceform/agentos/CapabilityProvider.java": "8059bc7c00e2691e18ec49a23fa4422afb93a75049d4ed3686fae41dfcaad8b8",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoNoteProvider.java": "2350d36e97c02dae0be0d8a07092f3b01336de46db527bccaaf09232bfdd7530",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoStatusProvider.java": "7c39f3ae05acd92163da860d943fd5cfce7761d5abbffd6ec63df151e0b8bf7d",
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "651a1ba0cac8295c6a7681b1b52993b9fbf623141dfa466a1f45f4dfbd51df93",
+    "agent_os/android/src/org/traceform/agentos/MemoryArchive.java": "38fee8a6a9c5da70ad1da0ee76b0757516bfa004d0c6bb5f2d099974fce21b44",
+    "agent_os/android/src/org/traceform/agentos/RemoteUriPickerActivity.java": "f7f0e1769ae2135ce3b6bf592ecbc609edad5399ec07876e134dd84e835e0588",
+    "agent_os/scripts/build_android.py": "1e80d17754634fb38a283833e787d238d975bb87f0c066f5412ece15af32e86f"
+  },
+  "scope": "phase1_source_reproducibility_check"
+}

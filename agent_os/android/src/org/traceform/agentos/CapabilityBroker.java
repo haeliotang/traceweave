@@ -10,15 +10,19 @@ final class CapabilityBroker {
     static final String DEMO_NOTE_SCOPE = "synthetic.welcome";
     static final String DEMO_STATUS_CAPABILITY = "demo.status.read";
     static final String DEMO_STATUS_SCOPE = "synthetic.device_status";
+    static final String TRACEFORM_CAPABILITY = TraceformProvider.CAPABILITY;
+    static final String TRACEFORM_SCOPE = TraceformProvider.SCOPE;
     static final String GRANTED_EVENT = auditEvent("capability_granted", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     static final String INVOKED_EVENT = auditEvent("capability_invoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     static final String DENIED_EVENT = auditEvent("capability_denied", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     static final String REVOKED_EVENT = auditEvent("capability_revoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     private static final long GRANT_DURATION_MILLIS = 5 * 60 * 1000;
+    private static final Object GRANTS_LOCK = new Object();
+    private static final Map<String, Map<String, Grant>> grants = new HashMap<>();
 
     private final AgentStore store;
     private final Map<String, CapabilityProvider> providers = new HashMap<>();
-    private final Map<String, Map<String, Grant>> grants = new HashMap<>();
+    private final TraceformProvider traceformProvider;
 
     private static final class Grant {
         final String taskId;
@@ -36,9 +40,28 @@ final class CapabilityBroker {
 
     CapabilityBroker(android.content.Context context, AgentStore store) {
         this.store = store;
+        traceformProvider = new TraceformProvider(context);
         registerProvider(new LocalDemoNoteProvider());
         registerProvider(new LocalDemoStatusProvider());
         registerProvider(new AndroidRemoteStatusProvider(context));
+        registerProvider(traceformProvider);
+    }
+
+    boolean isTraceformEnabled() {
+        return traceformProvider.isEnabled();
+    }
+
+    boolean canEnableTraceform() {
+        return traceformProvider.isSignatureMatched();
+    }
+
+    void setTraceformEnabled(boolean enabled) throws Exception {
+        traceformProvider.setEnabled(enabled);
+        if (!enabled) {
+            for (AgentStore.Task task : store.listTasks()) {
+                revoke(task.id, TRACEFORM_CAPABILITY, TRACEFORM_SCOPE);
+            }
+        }
     }
 
     static String auditEvent(String eventType, String capability, String scope) {
@@ -73,9 +96,11 @@ final class CapabilityBroker {
             throw new SecurityException("不支持此能力或数据范围");
         }
         store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope));
-        grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
-            .put(grantKey(capability, scope), new Grant(taskId, capability, scope,
-                SystemClock.elapsedRealtime() + GRANT_DURATION_MILLIS));
+        synchronized (GRANTS_LOCK) {
+            grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
+                .put(grantKey(capability, scope), new Grant(taskId, capability, scope,
+                    SystemClock.elapsedRealtime() + GRANT_DURATION_MILLIS));
+        }
     }
 
     void deny(String taskId, String capability, String scope) {
@@ -83,11 +108,18 @@ final class CapabilityBroker {
     }
 
     String invoke(String taskId, String capability, String scope) {
-        Map<String, Grant> taskGrants = grants.get(taskId);
         String key = grantKey(capability, scope);
-        Grant grant = taskGrants == null ? null : taskGrants.get(key);
+        Grant grant;
+        synchronized (GRANTS_LOCK) {
+            Map<String, Grant> taskGrants = grants.get(taskId);
+            grant = taskGrants == null ? null : taskGrants.get(key);
+            if (grant != null && grant.expiresAtElapsed <= SystemClock.elapsedRealtime()) {
+                removeGrant(taskId, key);
+                grant = null;
+            }
+        }
         CapabilityProvider provider = providers.get(capability);
-        if (grant == null || grant.expiresAtElapsed <= SystemClock.elapsedRealtime()
+        if (grant == null
                 || !taskId.equals(grant.taskId)
                 || !capability.equals(grant.capability)
                 || !scope.equals(grant.scope)
@@ -109,42 +141,53 @@ final class CapabilityBroker {
     }
 
     boolean revoke(String taskId, String capability, String scope) {
-        Map<String, Grant> taskGrants = grants.get(taskId);
         String key = grantKey(capability, scope);
-        Grant grant = taskGrants == null ? null : taskGrants.get(key);
-        if (grant == null || grant.expiresAtElapsed <= SystemClock.elapsedRealtime()) {
-            removeGrant(taskId, key);
+        Grant grant;
+        synchronized (GRANTS_LOCK) {
+            Map<String, Grant> taskGrants = grants.get(taskId);
+            grant = taskGrants == null ? null : taskGrants.get(key);
+            if (grant == null || grant.expiresAtElapsed <= SystemClock.elapsedRealtime()) {
+                removeGrant(taskId, key);
+                grant = null;
+            } else {
+                store.appendCapabilityAudit(taskId, auditEvent("capability_revoked", capability, scope));
+                removeGrant(taskId, key);
+            }
+        }
+        if (grant == null) {
             CapabilityProvider provider = providers.get(capability);
             if (provider != null) provider.releaseTask(taskId);
             return false;
         }
-        store.appendCapabilityAudit(taskId, auditEvent("capability_revoked", capability, scope));
-        removeGrant(taskId, key);
         CapabilityProvider provider = providers.get(capability);
         if (provider != null) provider.releaseTask(taskId);
         return true;
     }
 
     long remainingMillis(String taskId, String capability, String scope) {
-        Map<String, Grant> taskGrants = grants.get(taskId);
-        String key = grantKey(capability, scope);
-        Grant grant = taskGrants == null ? null : taskGrants.get(key);
-        if (grant == null) return 0;
-        long remaining = grant.expiresAtElapsed - SystemClock.elapsedRealtime();
-        if (remaining <= 0) {
-            removeGrant(taskId, key);
-            CapabilityProvider provider = providers.get(capability);
-            if (provider != null) provider.releaseTask(taskId);
-            return 0;
+        synchronized (GRANTS_LOCK) {
+            Map<String, Grant> taskGrants = grants.get(taskId);
+            String key = grantKey(capability, scope);
+            Grant grant = taskGrants == null ? null : taskGrants.get(key);
+            if (grant == null) return 0;
+            long remaining = grant.expiresAtElapsed - SystemClock.elapsedRealtime();
+            if (remaining <= 0) {
+                removeGrant(taskId, key);
+                CapabilityProvider provider = providers.get(capability);
+                if (provider != null) provider.releaseTask(taskId);
+                return 0;
+            }
+            return remaining;
         }
-        return remaining;
     }
 
     private void removeGrant(String taskId, String key) {
-        Map<String, Grant> taskGrants = grants.get(taskId);
-        if (taskGrants == null) return;
-        taskGrants.remove(key);
-        if (taskGrants.isEmpty()) grants.remove(taskId);
+        synchronized (GRANTS_LOCK) {
+            Map<String, Grant> taskGrants = grants.get(taskId);
+            if (taskGrants == null) return;
+            taskGrants.remove(key);
+            if (taskGrants.isEmpty()) grants.remove(taskId);
+        }
     }
 
     private String grantKey(String capability, String scope) {

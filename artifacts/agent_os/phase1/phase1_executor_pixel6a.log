@@ -1,0 +1,4 @@
+10-23 00:15:44.389 14172 14231 I AgentOsValidation: PASS: database v1→v3 migration preserved the encrypted task and audit history, assigned a job ID, and re-queued a legacy active journal entry.
+10-23 00:15:45.517 14172 14246 I AgentOsValidation: PREPARED: taskId=54ba03e5-1ca3-4884-bdd5-874ca3c4b368 checkpointStep=1 pid=14172; Activity will finish so its process can be stopped.
+10-23 00:17:02.390 14288 14334 I AgentOsValidation: PASS: persisted JobScheduler task resumed from step 1 after process stop; the note was not reread, and its process-local capability grant did not survive. task=54ba03e5-1ca3-4884-bdd5-874ca3c4b368 pid=14288
+10-23 00:17:58.668 14288 14352 I AgentOsValidation: PASS: scheduled local execution saved both steps; missing authorization waited and audited, then resumed after a fresh grant. task=d1982a8f-cd5c-41e5-ae10-9de51eb14571 retry=dc8fccb1-4967-4bc5-a20f-24c49bcdac35

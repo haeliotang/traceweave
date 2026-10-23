@@ -26,7 +26,7 @@ def main():
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path)
-    parser.add_argument("--scope", default="local_encrypted_task_memory_archive_and_user_confirmed_demo_capability_broker")
+    parser.add_argument("--scope", default="local_executor_job_scheduler_encrypted_checkpoint_archive_and_user_confirmed_demo_capability_broker")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[2]

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "device": {
+    "manufacturer": "Google",
+    "model": "Pixel 6a",
+    "codename": "bluejay",
+    "androidRelease": "17",
+    "apiLevel": 37,
+    "securityPatch": "2026-09-01",
+    "os": "GrapheneOS"
+  },
+  "validationPackage": {
+    "package": "org.traceform.agentos.validation.target",
+    "signingDigestSha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+    "permissions": [
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "org.traceform.edge.CANONICAL_INPUT"
+    ],
+    "queries": [
+      "org.traceform.edge"
+    ]
+  },
+  "providerPackage": {
+    "package": "org.traceform.edge",
+    "signingDigestSha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+    "signatureCheckResult": "SIGNATURE_MATCH",
+    "lastUpdateTime": "2026-10-04 19:20:51 (untouched)"
+  },
+  "productionPackage": {
+    "package": "org.traceform.agentos",
+    "lastUpdateTime": "2026-10-22 23:14:51 (untouched)"
+  },
+  "verificationFlow": {
+    "step1_toggle_enable": {
+      "status": "PASS",
+      "action": "User confirmation dialog approved",
+      "uiStatus": "已启用；读取仍需逐任务授权，且不会启动传感器采集。"
+    },
+    "step2_unauthorized_read_blocked": {
+      "status": "PASS",
+      "action": "Invoked read before grant",
+      "result": "SecurityException thrown, toast '该任务没有有效的能力授权' displayed",
+      "auditEvent": "capability_denied:traceform.local_history.read:traceform.local_history_summary_v1",
+      "timestamp": 1792734370025
+    },
+    "step3_single_task_authorization": {
+      "status": "PASS",
+      "action": "User approved 5-minute task grant",
+      "uiStatus": "Traceform 本机历史摘要授权剩余约 5 分钟",
+      "auditEvent": "capability_granted:traceform.local_history.read:traceform.local_history_summary_v1",
+      "timestamp": 1792734446515
+    },
+    "step4_authorized_binder_read": {
+      "status": "PASS",
+      "action": "Invoked read with active grant",
+      "binderTransaction": {
+        "service": "org.traceform.edge.EdgeService",
+        "interface": "org.traceform.edge.Canonical",
+        "transactionCode": 2,
+        "historyRecordsRead": 3461,
+        "eligiblePairs": 2388
+      },
+      "auditEvent": "capability_invoked:traceform.local_history.read:traceform.local_history_summary_v1",
+      "timestamp": 1792734470596,
+      "dialogTitle": "Traceform 本机历史摘要"
+    },
+    "step5_save_as_fact_memory": {
+      "status": "PASS",
+      "action": "User clicked '保存为事实记忆'",
+      "savedMemory": {
+        "id": "35cd75b8-a2f6-4b84-afea-9b154c6b1e63",
+        "kind": "fact",
+        "source": "traceform",
+        "provenance": "task=43443d25-a5fc-43de-8f05-b0f24764e027;provider=traceform",
+        "encryptedPayloadBytes": 579,
+        "timestamp": 1792734504189
+      }
+    },
+    "step6_explicit_revocation": {
+      "status": "PASS",
+      "action": "User clicked '撤销TRACEFORM 本机历史摘要授权'",
+      "uiStatus": "Traceform 本机历史摘要：未授权",
+      "auditEvent": "capability_revoked:traceform.local_history.read:traceform.local_history_summary_v1",
+      "timestamp": 1792734521155
+    }
+  }
+}

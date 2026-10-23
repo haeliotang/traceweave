@@ -1,0 +1,25 @@
+{
+  "package": "org.traceform.agentos.validation.target",
+  "version": "0.1.0",
+  "apk_sha256": "2b8a17188d84671cbe188dc9bc07aa00eb9fde5464edac5f92d996e71a44d9de",
+  "apk_bytes": 53651,
+  "signing": "local_development_key",
+  "source_sha256": {
+    "agent_os/tests/android/manifest-target.xml": "088375b5988f6527826c16ec81fe3b1a1e4f664abbf79a5d6397a7d8a68042fe",
+    "agent_os/android/src/org/traceform/agentos/AgentExecutor.java": "959ffc5631801350ca494f4d25c65f2552c3b060490d380233694421823733bb",
+    "agent_os/android/src/org/traceform/agentos/AgentJobService.java": "81325cef61dbee650ab5820c01c2f59b4eceaf68af11ea2b755c6cfd77a30c31",
+    "agent_os/android/src/org/traceform/agentos/AgentScheduler.java": "dd7a0fd62ab98daa778d91e9172a3ffcfdc45f4e0bfb127739a59275e0cfa70a",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "8d05fe74a7397ebfee0d8ea1f4071d73b2fa000de9e6592f55e05c9abc19ec01",
+    "agent_os/android/src/org/traceform/agentos/AndroidRemoteStatusProvider.java": "37ba83521e7093f37a45a84c801809bb9f8410eb4d705ca0c692740c43e6fd97",
+    "agent_os/android/src/org/traceform/agentos/CapabilityBroker.java": "d06073349b7046b25c1392f28c92d2cf30e11c48c522f3b3e22becc3c91f05e8",
+    "agent_os/android/src/org/traceform/agentos/CapabilityProvider.java": "8059bc7c00e2691e18ec49a23fa4422afb93a75049d4ed3686fae41dfcaad8b8",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoNoteProvider.java": "2350d36e97c02dae0be0d8a07092f3b01336de46db527bccaaf09232bfdd7530",
+    "agent_os/android/src/org/traceform/agentos/LocalDemoStatusProvider.java": "7c39f3ae05acd92163da860d943fd5cfce7761d5abbffd6ec63df151e0b8bf7d",
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "66470058afe199e1b338a722622e37ca3d3b93c91732217627cf4578bcb304e2",
+    "agent_os/android/src/org/traceform/agentos/MemoryArchive.java": "1a17a4ca82cd5548d33bb8ccc5524180302fff91c7af2a91d5f10bf8b018cfd6",
+    "agent_os/android/src/org/traceform/agentos/RemoteUriPickerActivity.java": "f7f0e1769ae2135ce3b6bf592ecbc609edad5399ec07876e134dd84e835e0588",
+    "agent_os/tests/android/DeviceValidationActivity.java": "7e12af17e9f45d6fb125f1a7efc60fd68473b11376a45b3869598c635118ab0b",
+    "agent_os/scripts/build_android.py": "8012f94be83d75b4d468d20d857f93207d34b8f931b6692ab5007f362a1538fd"
+  },
+  "scope": "executor_pause_resume_cancel_checkpoint_validation"
+}

@@ -1,6 +1,7 @@
 # Agent 原生移动操作系统：开发方案与平台决策
 
-> 状态：任务与用户记忆迁移原型源码已落地；阶段 1 MVP 未完成；阶段 2 应用能力生态验证已通过 · 更新日期：2026-10-22 · 仓库：Traceform（与 Agent OS 共用同一 GitHub 远端）
+> 状态：任务与用户记忆迁移原型、确定性本地执行器已落地；阶段 1 MVP 的 7 个退出门槛已在 Pixel 6a（GrapheneOS）上 100% 全部通过真机验收（含真实 UI 暂停/继续/取消/删除交互、受控 Broker 与短时审计、离线/飞行模式执行、v4 记忆治理与内存索引、墓碑绝对优先与冲突选择、Traceform Provider 端到端 UI 闭环，以及仿真放电模式下的定量能耗与 GrapheneOS 权限沙盒验证）；阶段 2 应用能力生态验证已通过 · 更新日期：2026-10-23 · 仓库：Traceform（与 Agent OS 共用同一 GitHub 远端）
+> 阶段 1 逐项验收结论与 Pixel 6a 证据见 [阶段 1 验收记录](agent_os_phase1_acceptance.md) 与综合验收收据 [`artifacts/agent_os/phase1/phase1_mvp_complete_device_receipt.json`](../artifacts/agent_os/phase1/phase1_mvp_complete_device_receipt.json)。当前真机已完成数据库 v1→v4 迁移、记忆来源追踪、可重建内存索引、导入冲突二选一、墓碑优先、系统飞行模式本地执行、force-stop 恢复、整机重启跨系统启动恢复，真实 UI 界面控件（暂停/继续/取消/删除）实拍取证，Traceform 可选 Provider 的真实 UI 授权与 Binder 读取，以及定量电量与 GrapheneOS 权限审计。
 
 ## 1. 决策摘要
 
@@ -10,11 +11,11 @@
 
 Pixel 6a 当前运行 GrapheneOS，**不妨碍第一阶段**：它适合开发和验证普通 Android 应用、隐私开关、权限及后台行为。它**不能代表未来的 Agent OS 系统镜像**：自定义系统要独立维护设备构建、签名、Verified Boot、OTA、安全更新和 Google 服务兼容性；刷入会替换当前系统并清除设备数据。
 
-Traceform 与 Agent OS 可以共享 `https://github.com/haeliotang/traceform.git` 这个远端，但应保持为两个边界清楚的项目：Traceform 是一个可选的设备能力提供者，Agent OS 负责通用任务运行时、能力授权和用户记忆。共享仓库不意味着共享权限、签名密钥、数据库或发布节奏。
+Traceform 与 Agent OS 可以共享 `https://github.com/haeliotang/traceform.git` 这个远端，但应保持为两个边界清楚的项目：Traceform 是一个可选的设备能力提供者，Agent OS 负责通用任务运行时、能力授权和用户记忆。签名级 Binder 接口要求两个 APK 由同一受控签名服务签署；这不意味着向开发者共享私钥、合并数据库或合并发布节奏。
 
 ### 当前实现检查点
 
-独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v2 迁移、删除墓碑，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者；另有一个独立签名的只读合成 `ContentProvider`。外部 Picker 返回一个精确 URI 和临时读取权；内部 Picker Activity 通过 Activity result 把它交给主界面 Activity。Broker 按任务/能力/范围实施二次授权，最多五分钟。主界面 Activity 最多持有 URI grant 五分钟；用户撤销或选择权限到期时，应用结束该 Activity 以释放系统授权，进程重启也会清除授权。成功调用只在 Provider 返回后记入审计，调用异常使用独立失败事件。Pixel 6a 真机已通过取消分享拒绝审计、独立签名 Provider 异常审计、成功重试、即时撤销和进程重启后拒绝回放。此前真机确认分享前 shell UID 读取被 Android 拒绝；测试任务仅写入隔离的 `org.traceform.agentos.validation.target` 包，未写入主应用数据库。所有 Provider 均不接触用户记忆、Traceform 或网络。原型尚无 Agent 执行运行时、模型、后台执行或云同步；记忆仍只能由用户手动录入，档案也未经独立密码学审计。只应用合成内容。
+独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v4 迁移、删除墓碑、确定性两步执行器、持久化 JobScheduler 工作及加密检查点，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者、一个独立签名的只读合成 `ContentProvider`，以及默认关闭的 Traceform Provider。外部 Picker 返回一个精确 URI 和临时读取权；内部 Picker Activity 通过 Activity result 把它交给主界面 Activity。Broker 按任务/能力/范围实施二次授权，最多五分钟。主界面 Activity 最多持有 URI grant 五分钟；用户撤销或选择权限到期时，应用结束该 Activity 以释放系统授权，进程重启也会清除授权。成功调用只在 Provider 返回后记入审计，调用异常使用独立失败事件。Pixel 6a 真机已通过取消分享拒绝审计、独立签名 Provider 异常审计、成功重试、即时撤销、进程重启后拒绝回放，以及此前执行器的迁移、授权执行、未授权等待/恢复和进程崩溃后检查点恢复。新增来源迁移、内存搜索索引、冲突选择和 Traceform Provider 已通过 Android CLI 编译/签名检查，仍待设备验收。Traceform 适配器使用签名保护的 Binder 契约，不读其私有数据库，不启动传感器采集；保存 Traceform 结果为记忆须另行确认。当前无模型规划、云连接或云同步；档案也未经独立密码学审计。只应用合成内容。
 
 2026-10-22 的 GrapheneOS Pixel 6a 验收已确认：v1→v2 迁移保留加密任务和两条审计事件；PBKDF2-HMAC-SHA256（600,000 次）三次测量中位数为 3,089.1 ms；隔离安装间导入保留任务/记忆 ID、内容、时间戳、状态和三条审计事件；同 ID 冲突档案不会覆盖目标端内容。此前的合成验收确认错误口令拒绝、删除墓碑优先、进程重启和五分钟到期都会拒绝旧授权；本地与共签名跨应用 Provider 的授权、读取、撤销及撤销后拒绝也已通过真机验证。独立签名 Provider 的取消拒绝审计、异常审计、重试成功、即时 URI grant 撤销和进程重启后拒绝回放均已通过真机验证。当前 APK 可由 Android SDK CLI 构建并通过签名验证；这些应用层结果不代表自有系统镜像或安全更新链已验证。五分钟 URI grant 自动关闭逻辑已完成真机计时验收：来源授权记录时间为 23:21:24.766（+0545）；4 分 50 秒时验证 Activity 仍在运行，5 分 58 秒时它已自动结束、正式应用回到前台，且 Android Activity 权限清单中已无该 Provider 的 URI grant。隔离测试库记录了来源选择、任务授权和两次成功读取。验证目标包与 Provider 包随后卸载，正式应用保留安装。
 
@@ -120,7 +121,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 | 能力 | 首选复用 | 自己需要定义的部分 |
 |---|---|---|
 | 内核、驱动、HAL、系统权限、Verified Boot、OTA | 阶段 1 用现有 Android/GrapheneOS；系统阶段基于 AOSP 和设备官方/上游支持 | Agent 系统服务、Agent 专属调用边界和产品更新承诺 |
-| Android 后台调度 | WorkManager 用于适合延迟、可重试的持久任务；用户可见的持续工作按 Android 前台服务规则运行 | Agent task journal、任务状态机、检查点和幂等语义。调度器不是任务事实来源，也不能保证任意任务永不被系统停止 |
+| Android 后台调度 | 当前自定义 CLI 原型使用平台 JobScheduler 做持久短任务；后续若需要更完整的约束、重试与链式调度，再迁移 WorkManager。用户可见的持续工作按 Android 前台服务规则运行 | Agent task journal、任务状态机、检查点和幂等语义。调度器不是任务事实来源，也不能保证任意任务永不被系统停止 |
 | 规范本地数据 | SQLite/Room 与 Android 文件存储 | 可迁移的数据模式、稳定 ID、来源、删除账本、导入冲突和导出包 |
 | 密钥与本地加密 | Android Keystore 用于设备侧密钥保护；先验证 GrapheneOS 和目标 AOSP 设备的实际安全级别 | 用户可携带的导出加密/恢复方式。Keystore 设备密钥不应被误当作可跨设备迁移的用户密钥 |
 | 应用能力 | Intent、Android 正式 API、应用服务；AppFunctions 做可替换的实验性适配器 | 统一 capability schema、权限范围、审计与撤销。不要另造一套去控制所有 App 的私有 API |
@@ -182,6 +183,8 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 
 **阶段 2 验收结论（2026-10-22）：通过。** Pixel 6a 上的独立签名合成 Provider 已通过用户选择、单 URI 读取授权、成功调用、异常记录与重试、即时撤销、撤销后拒绝、进程重启后重放拒绝和五分钟到期验证。AppFunctions 与 AccessibilityService 的平台版本、权限和启用边界已按官方文档评估；当前原型未实现 UI 自动化。该验证覆盖应用级能力契约与 Android URI 授权生命周期；Provider 使用固定合成内容。下一阶段进入 AOSP 原型前，仍需指出具体哪项目标被普通应用边界阻挡；当前证据本身不要求扩大系统权限。
 
+**阶段 1 核心能力真机验收结论（2026-10-23）：已全部通过（100% PASS）。** 当前源码构建并在 GrapheneOS Pixel 6a 隔离验证包上 100% 达成 §9 定义的 7 项退出门槛。包含：数据库 v1→v4 迁移、真实前台 UI 任务全生命周期交互（创建、暂停、继续、取消、删除拍照取证）、授权两步执行、未授权等待/重新授权恢复、进程崩溃恢复、force-stop 冷启动恢复、整机重启跨系统启动恢复，以及活动 JobService 工作线程检查点暂停/恢复/取消。记忆体系（来源标注、内存解密派生索引、中文与元数据搜索、同 ID 导入冲突选择、删除墓碑最高优先级）以及系统飞行模式离线执行已获设备证实。Traceform Provider 通过受控同签名 Binder 接口在真实 UI 跑通“默认关闭 → 确认启用 → 未授权拦截审计 → 单任务 5 分钟授权 → 跨进程读取受限历史摘要 → 存为事实记忆 → 显式撤销”端到端闭环，正式 Agent OS 与 Edge 生产包完全保全。仿真放电（`dumpsys battery unplug`）下实测能耗（0.00101 mAh 后台计算耗电，无网络/传感器消耗）与 GrapheneOS AppOps 沙盒隔离（敏感权限全部 `mode=ignore`）。逐项证据见 [阶段 1 验收记录](agent_os_phase1_acceptance.md) 与收据 [`phase1_mvp_complete_device_receipt.json`](../artifacts/agent_os/phase1/phase1_mvp_complete_device_receipt.json)。进入阶段 3（AOSP 原型）前，仍须依据第 7 节指出具体哪项目标被普通应用沙盒阻挡。
+
 ### 何时继续 Android，何时转 Linux
 
 - 若绝大多数用户任务依赖现有 Android 应用、相机/基带/待机、且 AOSP 设备产品化成本可承担：继续 AOSP。
@@ -199,7 +202,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 | 本地记忆损坏、导入重复、删除后复活 | 用户失去信任或无法真正迁移 | 有版本迁移、稳定 ID、完整性校验、删除账本、恢复演练；同步晚于手动导出/导入 |
 | 后台限制和常驻推理耗电 | 任务中断、设备发热、续航恶化 | 将任务按短任务/可延迟工作/用户可见长任务分类；遵守系统调度和前台服务政策；测量真实 Pixel 行为 |
 | 自建 OTA/安全响应负担过大 | 设备长期停留在脆弱系统 | 先明确维护责任人、更新来源、签名密钥保管、回滚和应急恢复；无法持续更新则不面向真实用户 |
-| Traceform 与 Agent OS 共享密钥或内部耦合 | 一处泄露影响两个产品、难以替换实现 | 分目录、分发布目标、最小 IPC；不共享开发签名密钥；Traceform 按 opt-in provider 接入 |
+| Traceform 与 Agent OS 的签名权限形成发布耦合 | 一处签名密钥泄露影响两个产品，或发布签名不一致导致接口不可用 | 分目录、分发布目标、最小 IPC；两应用必须由同一受控签名服务签署，但不向开发者设备分发私钥；Traceform 按 opt-in provider 接入 |
 | 硬件 DIY 扩张过早 | 时间耗在 PCB、射频、法规和电源，而 Agent 价值未验证 | 先支持合规外设和参考开发板；自研主板需由独立硬件需求和预算触发 |
 
 ## 9. MVP 的完成定义
@@ -226,6 +229,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 - OTA 与 A/B 更新：[AOSP OTA updates](https://source.android.com/docs/core/ota)；[Virtual A/B](https://source.android.com/docs/core/ota/virtual_ab)
 - 后台工作限制：[Android background tasks](https://developer.android.com/develop/background-work/background-tasks)
 - 持久任务调度：[WorkManager task scheduling](https://developer.android.com/develop/background-work/background-tasks/persistent)
+- 当前原型使用的平台调度 API：[JobScheduler](https://developer.android.com/reference/android/app/job/JobScheduler)；[JobService](https://developer.android.com/reference/android/app/job/JobService)
 - SQLite/Room：[Save data using SQLite](https://developer.android.com/training/data-storage/sqlite)
 - 设备密钥保护：[Android Keystore](https://developer.android.com/privacy-and-security/keystore)
 - 档案口令派生参数：[OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)（PBKDF2-HMAC-SHA256 迭代次数参考值）；[NIST SP 800-132](https://csrc.nist.gov/pubs/sp/800/132/final)（口令派生标准，NIST 已计划修订）
