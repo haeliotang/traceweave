@@ -70,15 +70,18 @@ final class HybridReasoningEngine implements ReasoningEngine {
 
         // 2. Cloud Model Request with graceful fallback
         try {
+            android.util.Log.i("HybridReasoningEngine", "Initiating cloud planning with model: " + config.modelName + " for goal: " + goalRedaction.redactedText);
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_started:" + config.modelName);
             }
             ExecutionPlan plan = cloudClient.requestPlan(taskId, goalRedaction.redactedText, availableCaps, sanitizedMemories, config);
+            android.util.Log.i("HybridReasoningEngine", "Cloud planning completed successfully with " + plan.totalSteps() + " steps");
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_completed:" + plan.totalSteps());
             }
             return plan;
         } catch (Exception ex) {
+            android.util.Log.e("HybridReasoningEngine", "Cloud planning failed: " + ex.getMessage(), ex);
             String reason = "error";
             String msg = ex.getMessage();
             if (msg != null && (msg.contains("timed out") || msg.contains("timeout"))) {

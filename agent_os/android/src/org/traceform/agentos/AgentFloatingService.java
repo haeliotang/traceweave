@@ -498,10 +498,12 @@ public final class AgentFloatingService extends Service {
 
     private void triggerVisionInspection() {
         try {
-            org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen("新建智能任务");
-            Toast.makeText(this, "视觉感知检测: " + (target.optBoolean("matched", false) ? "已定位焦点目标" : "全屏扫描中"), Toast.LENGTH_SHORT).show();
+            boolean en = isEnglish();
+            String query = en ? "New Agent Task" : "新建智能体任务";
+            org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(query);
+            Toast.makeText(this, (en ? "Vision Sense: " : "视觉感知检测: ") + (target.optBoolean("matched", false) ? (en ? "Target located" : "已定位焦点目标") : (en ? "Scanning screen" : "全屏扫描中")), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "视觉检测异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, (isEnglish() ? "Vision error: " : "视觉检测异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

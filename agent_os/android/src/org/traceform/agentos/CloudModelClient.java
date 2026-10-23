@@ -96,20 +96,22 @@ final class CloudModelClient {
         sb.append("{\n");
         sb.append("  \"totalSteps\": 3,\n");
         sb.append("  \"steps\": [\n");
-        sb.append("    {\"index\": 0, \"title\": \"读取示例便笺\", \"capability\": \"demo.note.read\", \"scope\": \"synthetic.welcome\", \"prompt\": \"读取本地便笺\"},\n");
-        sb.append("    {\"index\": 1, \"title\": \"读取设备状态\", \"capability\": \"demo.status.read\", \"scope\": \"synthetic.device_status\", \"prompt\": \"获取离线设备状态\"},\n");
-        sb.append("    {\"index\": 2, \"title\": \"端侧综合推理报告\", \"capability\": \"builtin.synthesis\", \"scope\": \"local_inference\", \"prompt\": \"端侧推理分析\"}\n");
+        sb.append("    {\"index\": 0, \"title\": \"Read Calendar Schedule\", \"capability\": \"local.calendar.read\", \"scope\": \"upcoming_events\", \"prompt\": \"Read user schedule\"},\n");
+        sb.append("    {\"index\": 1, \"title\": \"Post Task Notification\", \"capability\": \"local.notification.post\", \"scope\": \"local_push\", \"prompt\": \"Dispatch briefing notification\"},\n");
+        sb.append("    {\"index\": 2, \"title\": \"On-Device Synthesis & Report\", \"capability\": \"builtin.synthesis\", \"scope\": \"local_inference\", \"prompt\": \"Synthesize and summarize results\"}\n");
         sb.append("  ]\n");
         sb.append("}\n\n");
         sb.append("Constraints:\n");
-        sb.append("1. You must ONLY choose capabilities from the Available Capabilities list below.\n");
+        sb.append("1. You MUST choose 'capability' and 'scope' EXACTLY verbatim from the Available Capabilities list below. Do NOT invent or alter strings.\n");
         sb.append("2. The final step MUST be 'builtin.synthesis' with scope 'local_inference'.\n");
-        sb.append("3. Step indices must be sequential starting at 0.\n\n");
+        sb.append("3. Step indices must be sequential starting at 0.\n");
+        sb.append("4. Keep titles concise and in the same language as the user goal.\n\n");
         sb.append("Available Capabilities:\n");
         for (CapabilityDescriptor cap : availableCaps) {
             sb.append("- ").append(cap.capability).append(" (scope: ").append(cap.scope).append("): ")
               .append(cap.title).append(" - ").append(cap.description).append("\n");
         }
+        sb.append("- builtin.synthesis (scope: local_inference): On-Device Synthesis - Final summary report\n");
         return sb.toString();
     }
 
@@ -191,9 +193,26 @@ final class CloudModelClient {
         return new ExecutionPlan(taskId, userGoal, steps, System.currentTimeMillis(), 0);
     }
 
+    static String normalizeEndpointUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "https://api.deepseek.com/chat/completions";
+        }
+        String clean = url.trim();
+        while (clean.endsWith("/")) {
+            clean = clean.substring(0, clean.length() - 1);
+        }
+        if (!clean.endsWith("/chat/completions")) {
+            clean = clean + "/chat/completions";
+        }
+        return clean;
+    }
+
     private static String executePost(String endpointUrl, String apiKey, String requestBody, int timeoutMillis)
             throws Exception {
-        URL url = new URL(endpointUrl);
+        String normalizedUrl = normalizeEndpointUrl(endpointUrl);
+        int effectiveTimeout = Math.max(timeoutMillis, 15000);
+        android.util.Log.i("CloudModelClient", "Executing cloud POST to: " + normalizedUrl + " (timeout=" + effectiveTimeout + "ms)");
+        URL url = new URL(normalizedUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         try {
             conn.setRequestMethod("POST");
@@ -202,8 +221,8 @@ final class CloudModelClient {
             if (apiKey != null && !apiKey.isEmpty()) {
                 conn.setRequestProperty("Authorization", "Bearer " + apiKey);
             }
-            conn.setConnectTimeout(timeoutMillis);
-            conn.setReadTimeout(timeoutMillis);
+            conn.setConnectTimeout(effectiveTimeout);
+            conn.setReadTimeout(effectiveTimeout);
             conn.setDoOutput(true);
 
             byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
@@ -231,6 +250,7 @@ final class CloudModelClient {
             if (statusCode < 200 || statusCode >= 300) {
                 throw new IllegalStateException("Cloud model endpoint returned HTTP " + statusCode + ": " + response);
             }
+            android.util.Log.i("CloudModelClient", "Cloud POST succeeded, response length=" + response.length());
             return response.toString();
         } finally {
             conn.disconnect();

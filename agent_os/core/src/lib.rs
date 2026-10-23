@@ -21,3 +21,5 @@ pub mod vision;
 pub mod hardware_broker;
 pub mod vault;
 pub mod identity;
+pub mod agent_ir;
+pub mod tce;

@@ -24,7 +24,14 @@ public final class CapabilityBroker {
     public static final String INVOKED_EVENT = auditEvent("capability_invoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     public static final String DENIED_EVENT = auditEvent("capability_denied", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     public static final String REVOKED_EVENT = auditEvent("capability_revoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
-    private static final long GRANT_DURATION_MILLIS = 5 * 60 * 1000;
+    
+    // Tiered permission duration options for adaptive real-world user scenarios
+    public static final long DURATION_ONE_SHOT = -1; // Single-use: revoked immediately upon first invocation
+    public static final long DURATION_5_MINS = 5 * 60 * 1000; // Default interactive window (5 minutes)
+    public static final long DURATION_15_MINS = 15 * 60 * 1000; // Multi-step workflow (15 minutes)
+    public static final long DURATION_1_HOUR = 60 * 60 * 1000; // Long session / continuous meeting (1 hour)
+    public static final long DURATION_SESSION = Long.MAX_VALUE; // Session persistent until explicit revocation
+    private static final long GRANT_DURATION_MILLIS = DURATION_5_MINS;
     private static final Object GRANTS_LOCK = new Object();
     private static final Map<String, Map<String, Grant>> grants = new HashMap<>();
 
@@ -38,17 +45,23 @@ public final class CapabilityBroker {
         public final String capability;
         public final String scope;
         public final long expiresAtElapsed;
+        public final boolean isOneShot;
 
-        public Grant(String agentId, String taskId, String capability, String scope, long expiresAtElapsed) {
+        public Grant(String agentId, String taskId, String capability, String scope, long expiresAtElapsed, boolean isOneShot) {
             this.agentId = agentId == null ? "local_agent" : agentId;
             this.taskId = taskId;
             this.capability = capability;
             this.scope = scope;
             this.expiresAtElapsed = expiresAtElapsed;
+            this.isOneShot = isOneShot;
+        }
+
+        public Grant(String agentId, String taskId, String capability, String scope, long expiresAtElapsed) {
+            this(agentId, taskId, capability, scope, expiresAtElapsed, false);
         }
 
         public Grant(String taskId, String capability, String scope, long expiresAtElapsed) {
-            this("local_agent", taskId, capability, scope, expiresAtElapsed);
+            this("local_agent", taskId, capability, scope, expiresAtElapsed, false);
         }
     }
 
@@ -144,7 +157,7 @@ public final class CapabilityBroker {
         ((AndroidRemoteStatusProvider) providers.get(AndroidRemoteStatusProvider.CAPABILITY)).releaseTask(taskId);
     }
 
-    public void grant(String agentId, String taskId, String capability, String scope) {
+    public void grant(String agentId, String taskId, String capability, String scope, long durationMillis) {
         CapabilityProvider provider = providers.get(capability);
         if (provider == null || !provider.isAvailable(taskId, scope)) {
             deny(agentId, taskId, capability, scope);
@@ -152,16 +165,23 @@ public final class CapabilityBroker {
         }
         String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
         String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
-        store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope) + agentTag);
+        boolean isOneShot = durationMillis <= 0;
+        long durationTag = isOneShot ? 0 : durationMillis;
+        store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope) + agentTag + ":ttl=" + durationTag);
+        long expiresAt = isOneShot ? Long.MAX_VALUE : (SystemClock.elapsedRealtime() + durationMillis);
         synchronized (GRANTS_LOCK) {
             grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
                 .put(grantKey(effectiveAgent, capability, scope), new Grant(effectiveAgent, taskId, capability, scope,
-                    SystemClock.elapsedRealtime() + GRANT_DURATION_MILLIS));
+                    expiresAt, isOneShot));
         }
     }
 
+    public void grant(String agentId, String taskId, String capability, String scope) {
+        grant(agentId, taskId, capability, scope, GRANT_DURATION_MILLIS);
+    }
+
     public void grant(String taskId, String capability, String scope) {
-        grant("local_agent", taskId, capability, scope);
+        grant("local_agent", taskId, capability, scope, GRANT_DURATION_MILLIS);
     }
 
     public void deny(String agentId, String taskId, String capability, String scope) {
@@ -181,7 +201,7 @@ public final class CapabilityBroker {
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
             grant = taskGrants == null ? null : taskGrants.get(key);
-            if (grant != null && grant.expiresAtElapsed <= SystemClock.elapsedRealtime()) {
+            if (grant != null && !grant.isOneShot && grant.expiresAtElapsed <= SystemClock.elapsedRealtime()) {
                 removeGrant(taskId, key);
                 grant = null;
             }
@@ -209,6 +229,9 @@ public final class CapabilityBroker {
         }
         String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
         store.appendCapabilityAudit(taskId, auditEvent("capability_invoked", capability, scope) + agentTag);
+        if (grant.isOneShot) {
+            removeGrant(taskId, key);
+        }
         return result;
     }
 

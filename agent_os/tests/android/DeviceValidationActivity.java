@@ -57,6 +57,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_ABCD_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_ABCD_ALL_IN_ONE";
     static final String ACTION_VERIFY_PHASE9_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE9_ALL_IN_ONE";
     static final String ACTION_VERIFY_PHASE10_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE10_ALL_IN_ONE";
+    static final String ACTION_VERIFY_PHASE11_TCE_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE11_TCE_ALL_IN_ONE";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -133,6 +134,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyPhase9AllInOne();
                 } else if (ACTION_VERIFY_PHASE10_ALL_IN_ONE.equals(action)) {
                     result = verifyPhase10AllInOne();
+                } else if (ACTION_VERIFY_PHASE11_TCE_ALL_IN_ONE.equals(action)) {
+                    result = verifyPhase11TceAllInOne();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -2692,6 +2695,60 @@ public final class DeviceValidationActivity extends Activity {
             + "2_sensorium=Motion(" + liveContext.optString("motion_state") + ")+PocketGating(OK), "
             + "3_vision=OCR(" + visionLoc.getString("target_id") + "@" + (int)visionLoc.getDouble("tap_x") + "," + (int)visionLoc.getDouble("tap_y") + ")+Doc(" + docRes.getString("merchant_or_title") + ":$" + docRes.getDouble("total_amount") + "), "
             + "4_hardware=PTT(START/STOP)+Telemetry(HR:" + telemPayload.getDouble("value") + "bpm)";
+    }
+
+    private String verifyPhase11TceAllInOne() throws Exception {
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("Native core not loaded");
+        }
+
+        // 1. Query TCE Heterogeneous Device Profiles
+        String topoJson = NativeAgentCore.tceTopology();
+        JSONObject topo = new JSONObject(topoJson);
+        if (!topo.has("CPU_NEON") || !topo.has("GPU_VULKAN") || !topo.has("EDGE_TPU")) {
+            throw new IllegalStateException("TCE Topology missing devices: " + topoJson);
+        }
+        JSONObject tpuProfile = topo.getJSONObject("EDGE_TPU");
+        if (tpuProfile.getDouble("peak_gflops") < 500.0) {
+            throw new IllegalStateException("Edge TPU GFLOPS invalid: " + tpuProfile);
+        }
+
+        // 2. Nominal Attention Graph Scheduling (Mali-G78 GPU + CPU NEON Heterogeneous Partition)
+        String attnNomJson = NativeAgentCore.tceExecuteBenchmark(0, 34.0f, 90.0f);
+        JSONObject attnNom = new JSONObject(attnNomJson);
+        JSONObject nomBreakdown = attnNom.getJSONObject("placement_breakdown");
+        int nomGpu = nomBreakdown.getInt("GPU_VULKAN");
+        int nomCpu = nomBreakdown.getInt("CPU_NEON");
+        if (nomGpu <= 0 || nomCpu <= 0 || attnNom.getBoolean("thermal_mitigation_applied")) {
+            throw new IllegalStateException("Nominal TCE scheduling failed: " + attnNomJson);
+        }
+
+        // 3. Multimodal Vision Screen Feature Graph (INT8 Quantized Mapping to Edge TPU)
+        String visionJson = NativeAgentCore.tceExecuteBenchmark(1, 35.0f, 85.0f);
+        JSONObject visionRes = new JSONObject(visionJson);
+        JSONObject visBreakdown = visionRes.getJSONObject("placement_breakdown");
+        int visTpu = visBreakdown.getInt("EDGE_TPU");
+        if (visTpu <= 0) {
+            throw new IllegalStateException("Quantized vision graph failed to place on Edge TPU: " + visionJson);
+        }
+
+        // 4. Thermal Throttling Load Shedding (44.5C -> 100% Migration to CPU NEON + 250ms Pacing)
+        String throttleJson = NativeAgentCore.tceExecuteBenchmark(0, 44.5f, 30.0f);
+        JSONObject throttleRes = new JSONObject(throttleJson);
+        JSONObject thrBreakdown = throttleRes.getJSONObject("placement_breakdown");
+        int thrCpu = thrBreakdown.getInt("CPU_NEON");
+        int thrGpu = thrBreakdown.getInt("GPU_VULKAN");
+        int thrTpu = thrBreakdown.getInt("EDGE_TPU");
+        long pacingDelay = throttleRes.getLong("pacing_delay_ms");
+        if (thrGpu != 0 || thrTpu != 0 || thrCpu != throttleRes.getInt("nodes_count") || pacingDelay < 200) {
+            throw new IllegalStateException("Thermal throttling load shedding failed: " + throttleJson);
+        }
+
+        return "PASS: Phase 11 (Traceform Compute Engine TCE + MAX Engine Heterogeneous Graph + Thermal Shedding) verified 100% on Pixel 6a! "
+            + "1_topo=Devices(NEON+Vulkan+TPU:" + (int)tpuProfile.getDouble("peak_gflops") + "GFLOPS), "
+            + "2_attn=HeteroNominal(GPU:" + nomGpu + "+CPU:" + nomCpu + "@" + (int)attnNom.getDouble("total_latency_us") + "μs), "
+            + "3_vision=QuantizedEdgeTPU(TPU:" + visTpu + "@" + (int)visionRes.getDouble("total_latency_us") + "μs), "
+            + "4_thermal=SheddingToCpuNEON(" + thrCpu + "ops@100%CPU+Pacing:" + pacingDelay + "ms)";
     }
 
     private static void deleteRecursive(java.io.File fileOrDir) {

@@ -57,36 +57,41 @@ public final class AgentAccessibilityService extends AccessibilityService {
     }
 
     /**
-     * Dumps the current active window view hierarchy as a JSON array of ScreenNode objects.
+     * Dumps the current on-screen view hierarchy across all active interactive windows as a JSON array of ScreenNode objects.
      */
     public String dumpScreenHierarchyJson() {
-        AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) {
+        List<AccessibilityNodeInfo> queue = new ArrayList<>();
+        try {
             List<android.view.accessibility.AccessibilityWindowInfo> windows = getWindows();
-            if (windows != null) {
+            if (windows != null && !windows.isEmpty()) {
                 for (android.view.accessibility.AccessibilityWindowInfo w : windows) {
                     AccessibilityNodeInfo wRoot = w.getRoot();
                     if (wRoot != null) {
-                        root = wRoot;
-                        break;
+                        queue.add(wRoot);
                     }
                 }
             }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to query getWindows: " + e.getMessage());
         }
 
-        if (root == null) {
+        if (queue.isEmpty()) {
+            AccessibilityNodeInfo root = getRootInActiveWindow();
+            if (root != null) {
+                queue.add(root);
+            }
+        }
+
+        if (queue.isEmpty()) {
             Log.w(TAG, "getRootInActiveWindow() and getWindows() both returned null");
             return "[]";
         }
 
         JSONArray array = new JSONArray();
-        List<AccessibilityNodeInfo> queue = new ArrayList<>();
-        queue.add(root);
-
         int count = 0;
         Rect bounds = new Rect();
 
-        while (!queue.isEmpty() && count < 100) {
+        while (!queue.isEmpty() && count < 200) {
             AccessibilityNodeInfo node = queue.remove(0);
             count++;
 

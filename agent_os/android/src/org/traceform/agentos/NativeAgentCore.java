@@ -253,6 +253,20 @@ public final class NativeAgentCore {
     }
 
     // =========================================================================
+    // PHASE 11: TRACEFORM COMPUTE ENGINE (TCE) HETEROGENEOUS GRAPH SCHEDULER
+    // =========================================================================
+
+    public static String tceTopology() {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeTceTopology();
+    }
+
+    public static String tceExecuteBenchmark(int scenario, float temperatureC, float batteryLevel) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeTceExecuteBenchmark(scenario, temperatureC, batteryLevel);
+    }
+
+    // =========================================================================
     // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
     // =========================================================================
 
@@ -323,4 +337,7 @@ public final class NativeAgentCore {
     public static native boolean nativeVaultIsUnlocked();
     public static native byte[] nativeVaultSeal(byte[] aad, byte[] plaintext);
     public static native byte[] nativeVaultUnseal(byte[] aad, byte[] sealed);
+
+    public static native String nativeTceTopology();
+    public static native String nativeTceExecuteBenchmark(int scenario, float temperatureC, float batteryLevel);
 }

@@ -12,9 +12,9 @@ final class CloudModelConfig {
     private static final String KEY_TIMEOUT_MILLIS = "cloud_timeout_millis";
     private static final String KEY_TEMPERATURE = "cloud_temperature";
 
-    static final int DEFAULT_TIMEOUT_MILLIS = 4000;
+    static final int DEFAULT_TIMEOUT_MILLIS = 15000;
     static final double DEFAULT_TEMPERATURE = 0.1;
-    static final String DEFAULT_MODEL = "gpt-4o-mini";
+    static final String DEFAULT_MODEL = "deepseek-flash";
 
     final boolean enabled;
     final String endpointUrl;
@@ -29,7 +29,7 @@ final class CloudModelConfig {
         this.endpointUrl = endpointUrl == null ? "" : endpointUrl.trim();
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.modelName = modelName == null || modelName.trim().isEmpty() ? DEFAULT_MODEL : modelName.trim();
-        this.timeoutMillis = timeoutMillis > 0 ? timeoutMillis : DEFAULT_TIMEOUT_MILLIS;
+        this.timeoutMillis = timeoutMillis >= 10000 ? timeoutMillis : DEFAULT_TIMEOUT_MILLIS;
         this.temperature = temperature >= 0.0 && temperature <= 1.0 ? temperature : DEFAULT_TEMPERATURE;
     }
 

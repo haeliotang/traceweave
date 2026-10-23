@@ -1,5 +1,5 @@
 use jni::objects::{JByteArray, JByteBuffer, JClass, JFloatArray, JObjectArray, JShortArray, JString};
-use jni::sys::{jboolean, jbyteArray, jint, jlong, jstring, JNI_FALSE, JNI_TRUE};
+use jni::sys::{jboolean, jbyteArray, jfloat, jint, jlong, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -1175,6 +1175,59 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultUns
             Ok(arr) => arr.into_raw(),
             Err(_) => std::ptr::null_mut(),
         },
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+// =========================================================================
+// PHASE 11: TRACEFORM COMPUTE ENGINE (TCE) HETEROGENEOUS GRAPH SCHEDULER
+// =========================================================================
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeTceTopology(
+    env: JNIEnv,
+    _class: JClass,
+) -> jstring {
+    let profiles = crate::tce::DeviceProfile::default_profiles();
+    let json_resp = serde_json::to_string(&profiles).unwrap_or_else(|_| "{}".to_string());
+    match env.new_string(json_resp) {
+        Ok(s) => s.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeTceExecuteBenchmark(
+    env: JNIEnv,
+    _class: JClass,
+    scenario: jint,
+    temperature_c: jfloat,
+    battery_level: jfloat,
+) -> jstring {
+    let scheduler = crate::tce::TceScheduler::new();
+    let mut graph = match scenario {
+        1 => crate::tce::ComputeGraph::build_multimodal_vision_embed_block(16, 128),
+        _ => crate::tce::ComputeGraph::build_attention_block(64, 256),
+    };
+
+    let thermal_state = if temperature_c < 38.0 {
+        crate::physical_sensorium::ThermalState::Nominal
+    } else if temperature_c < 43.0 {
+        crate::physical_sensorium::ThermalState::Warm
+    } else {
+        crate::physical_sensorium::ThermalState::Throttling
+    };
+
+    let report = scheduler.schedule_and_execute(
+        &mut graph,
+        thermal_state,
+        temperature_c,
+        battery_level,
+    );
+
+    let json_resp = serde_json::to_string(&report).unwrap_or_else(|_| "{}".to_string());
+    match env.new_string(json_resp) {
+        Ok(s) => s.into_raw(),
         Err(_) => std::ptr::null_mut(),
     }
 }

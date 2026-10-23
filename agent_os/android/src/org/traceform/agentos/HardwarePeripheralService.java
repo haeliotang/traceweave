@@ -60,6 +60,23 @@ public final class HardwarePeripheralService {
         return mPttActive;
     }
 
+    public boolean isPeripheralConnected() {
+        return mActiveGatt != null;
+    }
+
+    public String getPeripheralStatus(boolean en) {
+        if (mActiveGatt != null) {
+            String name = "BLE Ring";
+            try {
+                if (mActiveGatt.getDevice() != null && mActiveGatt.getDevice().getName() != null) {
+                    name = mActiveGatt.getDevice().getName();
+                }
+            } catch (SecurityException ignored) {}
+            return en ? ("BLE: " + name + " (Connected)") : ("BLE指环: 已连接 (" + name + ")");
+        }
+        return en ? "BLE Ring: Disconnected" : "BLE指环: 未连接";
+    }
+
     /**
      * Executes the Push-To-Talk action: vibrates device, triggers VoiceInteractionManager,
      * and dispatches native hardware action response.
