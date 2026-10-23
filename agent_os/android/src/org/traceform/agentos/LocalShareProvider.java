@@ -35,7 +35,7 @@ final class LocalShareProvider implements CapabilityProvider {
             shareData.put("format", MIME_TYPE);
             shareData.put("intent_action", INTENT_ACTION);
             shareData.put("subject", "Agent OS 任务报告");
-            shareData.put("content", "Agent OS 离线推演报告：已完成端侧多步核对与数据治理。(Task=" + taskId + ")");
+            shareData.put("content", "Traceform OS 离线推理报告：已完成端侧多步核对与数据治理。(Task=" + taskId + ")");
             shareData.put("status", "ready_for_sharing");
             return shareData.toString();
         } catch (Exception ex) {

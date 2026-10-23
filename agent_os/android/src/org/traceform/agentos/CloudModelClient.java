@@ -98,7 +98,7 @@ final class CloudModelClient {
         sb.append("  \"steps\": [\n");
         sb.append("    {\"index\": 0, \"title\": \"读取示例便笺\", \"capability\": \"demo.note.read\", \"scope\": \"synthetic.welcome\", \"prompt\": \"读取本地便笺\"},\n");
         sb.append("    {\"index\": 1, \"title\": \"读取设备状态\", \"capability\": \"demo.status.read\", \"scope\": \"synthetic.device_status\", \"prompt\": \"获取离线设备状态\"},\n");
-        sb.append("    {\"index\": 2, \"title\": \"端侧综合推演报告\", \"capability\": \"builtin.synthesis\", \"scope\": \"local_inference\", \"prompt\": \"端侧推演分析\"}\n");
+        sb.append("    {\"index\": 2, \"title\": \"端侧综合推理报告\", \"capability\": \"builtin.synthesis\", \"scope\": \"local_inference\", \"prompt\": \"端侧推理分析\"}\n");
         sb.append("  ]\n");
         sb.append("}\n\n");
         sb.append("Constraints:\n");
@@ -178,7 +178,7 @@ final class CloudModelClient {
         if (!steps.get(steps.size() - 1).isBuiltin()) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "端侧综合推演报告",
+                "端侧综合推理报告",
                 "builtin.synthesis",
                 "local_inference",
                 "端侧综合分析报告生成",

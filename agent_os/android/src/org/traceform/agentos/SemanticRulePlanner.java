@@ -148,10 +148,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         // Always append the final synthesis step.
         steps.add(new ExecutionPlan.Step(
             steps.size(),
-            "端侧综合推演与报告生成",
+            "端侧综合推理与报告生成",
             "builtin.synthesis",
             "local_inference",
-            "整合前序步骤观察输出，进行本地确定性推演并生成最终结论",
+            "整合前序步骤观察输出，进行本地确定性推理并生成最终结论",
             ExecutionPlan.STEP_PENDING,
             "",
             0L
@@ -191,7 +191,7 @@ final class SemanticRulePlanner implements ReasoningEngine {
         }
 
         int totalExternal = (noteObservation != null ? 1 : 0) + otherSteps.size();
-        builder.append("\n端侧推演分析：已在离线保护环境下完成 ").append(totalExternal)
+        builder.append("\n端侧推理分析：已在离线保护环境下完成 ").append(totalExternal)
             .append(" 项能力的受控执行与状态核对，所有数据保存在本机，未请求网络。");
 
         return builder.toString();

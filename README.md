@@ -137,7 +137,7 @@ Traceform enforces an absolute zero-trust execution model. No capability (e.g., 
 
 ### 5.2 Zero-Network-Egress Local Context Bridge
 The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/org/traceform/agentos/TraceformProvider.java)) acts as a secure local data oracle:
-- **Signature Protection**: Bound to `android:protectionLevel="signature"`. Only applications signed by the official Inceptless certificate can query or bind to this provider.
+- **Signature Protection**: Bound to `android:protectionLevel="signature"`. In the current development stage, applications are signed by the local development keystore (`development.keystore`); for enterprise production releases, this transitions to the HSM-backed Inceptless root certificate ceremony. Only applications sharing this signature can query or bind to the provider.
 - **Local Context Extraction**: Safely queries local notes, calendars, alarms, and notifications directly into the local SLM context window.
 - **Privacy Assurance**: Sensitive user context never egresses the local hardware boundary.
 

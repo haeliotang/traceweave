@@ -30,6 +30,7 @@ public final class AgentFloatingService extends Service {
     public static final String ACTION_UPDATE_STEP = "org.traceform.agentos.floating.UPDATE_STEP";
     public static final String ACTION_REQUEST_JIT = "org.traceform.agentos.floating.REQUEST_JIT";
     public static final String ACTION_UPDATE_VOICE = "org.traceform.agentos.floating.UPDATE_VOICE";
+    public static final String ACTION_UPDATE_LOCALE = "org.traceform.agentos.floating.UPDATE_LOCALE";
 
     public static final String EXTRA_TASK_ID = "task_id";
     public static final String EXTRA_TASK_TITLE = "task_title";
@@ -62,6 +63,8 @@ public final class AgentFloatingService extends Service {
     // Elements inside expanded card
     private ImageView statusDotView;
     private TextView statusTextView;
+    private TextView collapseBtn;
+    private TextView jitTitle;
     private TextView taskDetailView;
     private TextView sensoriumDetailView;
     private LinearLayout voiceWaveformBar;
@@ -83,6 +86,59 @@ public final class AgentFloatingService extends Service {
 
     private int dp(int value) {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private boolean isEnglish() {
+        return "en".equals(getSharedPreferences("agent_os_prefs", Context.MODE_PRIVATE).getString("app_lang", "zh"));
+    }
+
+    private void updateLocaleTexts(boolean en) {
+        if (statusTextView != null) {
+            statusTextView.setText(en ? " Traceform Capsule" : " Traceform 胶囊");
+        }
+        if (collapseBtn != null) {
+            collapseBtn.setText(en ? "Collapse ▲" : "收起 ▲");
+        }
+        if (jitTitle != null) {
+            jitTitle.setText(en ? " Cross-App JIT Gate Request" : " 跨应用 JIT 门禁请求");
+        }
+        if (btnGrant != null) {
+            btnGrant.setText(en ? "Grant 5 Min" : "授权 5 分钟");
+        }
+        if (btnDeny != null) {
+            btnDeny.setText(en ? "Deny" : "拒绝");
+        }
+        if (taskDetailView != null && (pendingTaskId == null || pendingTaskId.isEmpty())) {
+            taskDetailView.setText(en ? " Core: Standby Offline (Qwen2.5-0.5B)" : " 核心运行: 离线就绪 (Qwen2.5-0.5B)");
+        }
+        if (sensoriumDetailView != null) {
+            sensoriumDetailView.setText(en ? " Ambient: Stationary · Pocket Gated" : " 环境感知: 姿态静止 · 口袋防误触生效");
+        }
+        if (btnVoice != null) {
+            btnVoice.setText(en ? "Live Audio" : "实时拾音");
+        }
+        if (btnVision != null) {
+            btnVision.setText(en ? "Vision OCR" : "真机视觉");
+        }
+        if (btnPtt != null) {
+            btnPtt.setText(en ? "PTT Key" : "PTT 按键");
+        }
+        if (btnOpenApp != null) {
+            btnOpenApp.setText(en ? "Traceform OS" : "主系统");
+        }
+        if (floatingView != null) {
+            floatingView.postInvalidate();
+            floatingView.requestLayout();
+            try {
+                if (windowManager != null && floatingParams != null) {
+                    windowManager.updateViewLayout(floatingView, floatingParams);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void updateLocaleTexts() {
+        updateLocaleTexts(isEnglish());
     }
 
     @Override
@@ -186,7 +242,7 @@ public final class AgentFloatingService extends Service {
         statusTextView.setPadding(dp(6), 0, 0, 0);
         headerRow.addView(statusTextView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
-        TextView collapseBtn = new TextView(this);
+        collapseBtn = new TextView(this);
         collapseBtn.setText("收起 ▲");
         collapseBtn.setTextSize(11);
         collapseBtn.setTextColor(Color.parseColor("#94A3B8"));
@@ -208,7 +264,7 @@ public final class AgentFloatingService extends Service {
         jitTitleRow.setOrientation(LinearLayout.HORIZONTAL);
         jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
         jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 14));
-        TextView jitTitle = new TextView(this);
+        jitTitle = new TextView(this);
         jitTitle.setText(" 跨应用 JIT 门禁请求");
         jitTitle.setTextColor(Color.parseColor("#FFD54F"));
         jitTitle.setTextSize(12);
@@ -306,6 +362,7 @@ public final class AgentFloatingService extends Service {
         expandedCard.setVisibility(View.GONE);
         ballView.setVisibility(View.VISIBLE);
         rootContainer.addView(expandedCard);
+        updateLocaleTexts();
 
         floatingView = rootContainer;
         try {
@@ -377,6 +434,9 @@ public final class AgentFloatingService extends Service {
 
     private void toggleExpansion() {
         isExpanded = !isExpanded;
+        if (isExpanded) {
+            updateLocaleTexts();
+        }
         if (ballView != null && expandedCard != null) {
             ballView.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
             expandedCard.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
@@ -462,6 +522,14 @@ public final class AgentFloatingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) return START_NOT_STICKY;
         String action = intent.getAction();
+        Log.i(TAG, "onStartCommand action=" + action);
+
+        if (ACTION_UPDATE_LOCALE.equals(action)) {
+            boolean en = intent.getBooleanExtra("is_english", isEnglish());
+            Log.i(TAG, "ACTION_UPDATE_LOCALE en=" + en);
+            updateLocaleTexts(en);
+            return START_STICKY;
+        }
 
         if (ACTION_SHOW.equals(action) || ACTION_TOGGLE.equals(action)) {
             if (floatingView == null) {

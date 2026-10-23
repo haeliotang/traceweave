@@ -28,7 +28,7 @@ final class LocalNotificationProvider implements CapabilityProvider {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT
             );
-            channel.setDescription("Agent OS 本地任务执行状态与推演结果通知");
+            channel.setDescription("Traceform OS 本地任务执行状态与推理结果通知");
             notificationManager.createNotificationChannel(channel);
         }
     }

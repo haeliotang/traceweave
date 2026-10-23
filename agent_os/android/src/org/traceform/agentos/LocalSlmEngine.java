@@ -152,7 +152,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                             if (!hasSynthesis) {
                                 steps.add(new ExecutionPlan.Step(
                                         steps.size(),
-                                        "端侧综合推演报告",
+                                        "端侧综合推理报告",
                                         "builtin.synthesis",
                                         "local_inference",
                                         "端侧 SLM 综合多步观测结果并输出结构化分析",
@@ -276,7 +276,7 @@ final class LocalSlmEngine implements ReasoningEngine {
         // 3. Final step: builtin synthesis
         steps.add(new ExecutionPlan.Step(
             steps.size(),
-            "端侧综合推演报告",
+            "端侧综合推理报告",
             "builtin.synthesis",
             "local_inference",
             "端侧 SLM 综合多步观测结果并输出结构化分析",
@@ -317,7 +317,7 @@ final class LocalSlmEngine implements ReasoningEngine {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("【端侧 SLM 离线推演报告】\n");
+        sb.append("【端侧 SLM 离线推理报告】\n");
         sb.append("任务意图目标：").append(userGoal == null ? "" : userGoal).append("\n\n");
 
         sb.append("执行观察数据：\n");
@@ -333,7 +333,7 @@ final class LocalSlmEngine implements ReasoningEngine {
             sb.append("(无前序步骤观察数据)\n");
         }
 
-        sb.append("\n本地推演结论：已通过端侧离线轻量模型完成多步意图核对，数据保留在本机安全沙盒，符合最小权限与安全审计要求。");
+        sb.append("\n本地推理结论：已通过端侧离线轻量模型完成多步意图核对，数据保留在本机安全沙盒，符合最小权限与安全审计要求。");
         return sb.toString();
     }
 

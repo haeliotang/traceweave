@@ -280,6 +280,15 @@ public final class MainActivity extends Activity {
                 .putString("app_lang", nextIsEn ? "en" : "zh")
                 .commit();
         Toast.makeText(this, nextIsEn ? "Switched to English interface" : "已切换为中文界面", Toast.LENGTH_SHORT).show();
+        try {
+            android.util.Log.i("MainActivity", "Sending ACTION_UPDATE_LOCALE nextIsEn=" + nextIsEn);
+            Intent langIntent = new Intent(this, AgentFloatingService.class);
+            langIntent.setAction(AgentFloatingService.ACTION_UPDATE_LOCALE);
+            langIntent.putExtra("is_english", nextIsEn);
+            startService(langIntent);
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Failed to send ACTION_UPDATE_LOCALE", e);
+        }
         buildScreen();
         refreshTasks();
         refreshMemories();
@@ -396,7 +405,7 @@ public final class MainActivity extends Activity {
                         + String.format(Locale.US, "%.1f", tps) + " t/s (" + latency + "ms)");
                 Toast.makeText(this, (en ? "Edge SLM planned: " : "端侧 SLM 规划完毕: ") + goal + " (" + tokens + " tokens, " + tps + " tps)", Toast.LENGTH_LONG).show();
             } catch (Exception e) {
-                Toast.makeText(this, (en ? "Edge SLM error: " : "端侧模型推演异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, (en ? "Edge SLM error: " : "端侧模型推理异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -614,7 +623,7 @@ public final class MainActivity extends Activity {
         cloudModelStatus.setTextSize(12);
         root.addView(cloudModelStatus);
 
-        cloudModelConfigButton = createCompactActionButton(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推演", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
+        cloudModelConfigButton = createCompactActionButton(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推理", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
         persistentButtons.add(cloudModelConfigButton);
         LinearLayout.LayoutParams cmLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
         cmLp.setMargins(0, dp(4), 0, dp(4));
@@ -650,7 +659,7 @@ public final class MainActivity extends Activity {
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(2), 0, dp(4));
 
-        Button toggleFloatingBtn = createCompactActionButton(en ? "Toggle Capsule" : "开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
+        Button toggleFloatingBtn = createCompactActionButton(en ? "Launch Capsule" : "开启悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
                         .setTitle(en ? "Grant Floating Capsule Permission" : "开启悬浮胶囊权限")
@@ -671,9 +680,9 @@ public final class MainActivity extends Activity {
             }
 
             Intent fIntent = new Intent(this, AgentFloatingService.class);
-            fIntent.setAction(AgentFloatingService.ACTION_TOGGLE);
+            fIntent.setAction(AgentFloatingService.ACTION_SHOW);
             startService(fIntent);
-            Toast.makeText(this, en ? "Floating capsule toggled" : "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, en ? "Floating capsule active" : "悬浮胶囊已开启", Toast.LENGTH_SHORT).show();
         });
         autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
 
@@ -1007,7 +1016,10 @@ public final class MainActivity extends Activity {
 
         if (!task.result.isEmpty()) {
             String cleanResult = task.result;
-            if (cleanResult.contains("本地推演结论：")) {
+            if (cleanResult.contains("本地推理结论：")) {
+                int idx = cleanResult.indexOf("本地推理结论：");
+                cleanResult = cleanResult.substring(idx + "本地推理结论：".length()).trim();
+            } else if (cleanResult.contains("本地推演结论：")) {
                 int idx = cleanResult.indexOf("本地推演结论：");
                 cleanResult = cleanResult.substring(idx + "本地推演结论：".length()).trim();
             } else if (cleanResult.contains("【端侧") && cleanResult.contains("任务意图目标：")) {
@@ -1469,47 +1481,70 @@ public final class MainActivity extends Activity {
         CloudModelConfig config = CloudModelConfig.load(this);
         cloudModelConfigButton.setText(config.enabled
             ? (en ? "Configure Cloud Inference" : "设置端云协同参数")
-            : (en ? "Enable Hybrid Cloud Inference" : "启用端云协同推演"));
+            : (en ? "Enable Hybrid Cloud Inference" : "启用端云协同推理"));
         cloudModelStatus.setText(config.enabled
             ? (en ? "Enabled (Model: " + config.modelName + ") · Requests sanitized on-device before egress; auto-fallback offline."
                   : "已启用（模型：" + config.modelName + "） · 请求前强制经端侧脱敏门禁过滤个人敏感数据；断网时自动降级。")
             : (en ? "Disabled by default. Pure local deterministic reasoning, zero external network connections."
-                  : "默认关闭。仅在端侧进行确定性规则推演，完全不发起外部网络连接。"));
+                  : "默认关闭。仅在端侧进行确定性规则规划与离线推理，完全不发起外部网络连接。"));
     }
 
     private void promptCloudModelConfig() {
+        boolean en = isEnglish();
         CloudModelConfig current = CloudModelConfig.load(this);
         LinearLayout fields = new LinearLayout(this);
         fields.setOrientation(LinearLayout.VERTICAL);
         fields.setPadding(dp(24), dp(8), dp(24), 0);
 
         final android.widget.CheckBox enabledCheck = new android.widget.CheckBox(this);
-        enabledCheck.setText("启用端云协同推演（OpenAI 兼容接口）");
+        enabledCheck.setText(en ? "Enable Hybrid Cloud Inference (OpenAI Compatible API)" : "启用端云协同推理（OpenAI 兼容接口）");
         enabledCheck.setChecked(current.enabled);
         fields.addView(enabledCheck);
 
         final EditText urlInput = new EditText(this);
-        urlInput.setHint("端点 URL，例如 https://api.openai.com/v1/chat/completions");
+        urlInput.setHint(en ? "Endpoint URL, e.g. https://api.openai.com/v1/chat/completions" : "端点 URL，例如 https://api.openai.com/v1/chat/completions");
         urlInput.setText(current.endpointUrl);
         fields.addView(urlInput);
 
         final EditText keyInput = new EditText(this);
-        keyInput.setHint("API Key（可选，局域网 Ollama 可留空）");
+        keyInput.setHint(en ? "API Key (Optional, leave blank for local Ollama)" : "API Key（可选，局域网 Ollama 可留空）");
         keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         keyInput.setText(current.apiKey);
         fields.addView(keyInput);
 
+        final boolean[] keyVisible = {false};
+        final Button toggleKeyVisBtn = new Button(this);
+        toggleKeyVisBtn.setText(en ? "Show API Key" : "显示 API Key");
+        toggleKeyVisBtn.setTextSize(11);
+        toggleKeyVisBtn.setTextColor(0xFF0284C7);
+        toggleKeyVisBtn.setBackgroundColor(0x00000000);
+        toggleKeyVisBtn.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        toggleKeyVisBtn.setPadding(0, dp(2), 0, dp(4));
+        toggleKeyVisBtn.setOnClickListener(v -> {
+            keyVisible[0] = !keyVisible[0];
+            if (keyVisible[0]) {
+                keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                toggleKeyVisBtn.setText(en ? "Hide API Key" : "隐藏 API Key");
+            } else {
+                keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                toggleKeyVisBtn.setText(en ? "Show API Key" : "显示 API Key");
+            }
+            keyInput.setSelection(keyInput.getText().length());
+        });
+        fields.addView(toggleKeyVisBtn);
+
         final EditText modelInput = new EditText(this);
-        modelInput.setHint("模型名称，例如 gpt-4o-mini 或 qwen2.5:7b");
+        modelInput.setHint(en ? "Model name, e.g. gpt-4o-mini or qwen2.5:7b" : "模型名称，例如 gpt-4o-mini 或 qwen2.5:7b");
         modelInput.setText(current.modelName);
         fields.addView(modelInput);
 
         new AlertDialog.Builder(this)
-            .setTitle("配置端云协同推演")
-            .setMessage("启用后，任务目标和关联记忆在离开手机前强制经过端侧脱敏门禁过滤敏感信息。断网或超时时自动无缝降级回本地规则推演。云端输出由端侧严格校验并逐步授权。")
+            .setTitle(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推理")
+            .setMessage(en ? "When enabled, task objectives and relevant memories pass through on-device redactor before egress. If offline or timed out, seamlessly falls back to local edge SLM planning. Cloud outputs are verified on-device and authorized step-by-step."
+                           : "启用后，任务目标和关联记忆在离开手机前强制经过端侧脱敏门禁过滤敏感信息。断网或超时时自动无缝降级回本地边缘模型离线推理。云端输出由端侧严格校验并逐步授权。")
             .setView(fields)
-            .setNegativeButton("取消", null)
-            .setPositiveButton("保存配置", (dialog, which) -> {
+            .setNegativeButton(en ? "Cancel" : "取消", null)
+            .setPositiveButton(en ? "Save Config" : "保存配置", (dialog, which) -> {
                 CloudModelConfig updated = new CloudModelConfig(
                     enabledCheck.isChecked(),
                     urlInput.getText().toString(),
@@ -1520,7 +1555,7 @@ public final class MainActivity extends Activity {
                 );
                 updated.save(MainActivity.this);
                 updateCloudModelControls();
-                showMessage("端云协同配置已更新");
+                showMessage(en ? "Hybrid cloud inference configuration updated" : "端云协同配置已更新");
             })
             .show();
     }
