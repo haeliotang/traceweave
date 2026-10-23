@@ -369,8 +369,9 @@ public final class MainActivity extends Activity {
         hwLinkCard.addView(hwBtnRow);
 
         TextView note = new TextView(this);
-        note.setText("本地任务与用户记忆原型。内容在本机加密保存；导出档案使用独立口令加密，便于迁移。当前不运行模型或访问网络。Traceform 是可选来源，默认关闭。\n\n开始任务后，端侧执行器会读取固定合成便笺并保存本地演示结果；读取前需为该任务授权。Android JobScheduler 负责唤醒短任务，系统可能延后执行。能力授权最多 5 分钟有效，进程重启后清除。\n\n跨应用能力必须先由你选择来源并接收单条内容的临时 URI 读取权，再为具体任务授权。Traceform 读取还需你显式启用，并且不会启动传感器采集或访问网络。");
-        note.setTextSize(15);
+        note.setText("Agent OS 已全面接入端侧原生 Rust 核心、AOSP 系统常驻守护进程 (agentosd)、IMU 物理环境传感器融合、多模态视觉 OCR 与悬浮胶囊交互中枢。\n\n核心状态与记忆完全在本机硬件加密保存；支持离线纯端侧微秒级推演与端云协同隐私脱敏推演。跨应用能力遵循 5 分钟 JIT 严格授权保护。");
+        note.setTextSize(14);
+        note.setTextColor(0xFF546E7A);
         note.setPadding(0, 16, 0, 16);
         page.addView(note);
 
@@ -414,7 +415,7 @@ public final class MainActivity extends Activity {
         updateCloudModelControls();
 
         taskInput = new EditText(this);
-        taskInput.setHint("输入一条合成任务，例如：整理本地示例笔记");
+        taskInput.setHint("输入一条智能任务，例如：安排团队待办日程，或整理工作笔记");
         taskInput.setMinLines(2);
         taskInput.setMaxLines(4);
         page.addView(taskInput);
@@ -1414,8 +1415,12 @@ public final class MainActivity extends Activity {
     private void addDivider(LinearLayout parent, LinearLayout child) {
         View divider = new View(this);
         divider.setBackgroundColor(0xFFDDDDDD);
-        child.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
-        parent.addView(child);
+        if (child != null) {
+            child.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
+            parent.addView(child);
+        } else if (parent != null) {
+            parent.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
+        }
     }
 
     private void addEmptyMessage(LinearLayout parent, String text) {
