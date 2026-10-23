@@ -1,0 +1,6 @@
+id=agentosd-substrate
+name=Personal Agent Substrate Daemon
+version=v1.0.0
+versionCode=100
+author=Traceform Team
+description=System-level daemon for Personal Agent Substrate (agentosd) providing non-custodial multi-agent JIT permissions, encrypted vault, and cross-device CRDT sync.

@@ -1,0 +1,29 @@
+#!/sbin/sh
+##########################################################################################
+# Personal Agent Substrate Magisk Module Installer Script
+##########################################################################################
+
+OUTFD=$2
+ZIPFILE=$3
+
+ui_print() {
+    echo -e "ui_print $1\nui_print" > /proc/self/fd/$OUTFD
+}
+
+ui_print "================================================="
+ui_print "Installing Personal Agent Substrate Daemon (agentosd)"
+ui_print "================================================="
+
+# Unpack module payload
+MODPATH="/data/adb/modules/agentosd-substrate"
+mkdir -p "$MODPATH"
+unzip -o "$ZIPFILE" -x "META-INF/*" -d "$MODPATH"
+
+# Set permissions
+set_perm_recursive "$MODPATH" 0 0 0755 0644
+set_perm "$MODPATH/system/bin/agentosd" 0 0 0755
+set_perm "$MODPATH/service.sh" 0 0 0755
+set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
+
+ui_print "Installation finished. System-level daemon will start on next boot."
+exit 0

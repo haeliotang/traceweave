@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>org.traceform.agentosd</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/agentosd</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>AGENTOSD_PORT</key>
+        <string>19898</string>
+        <key>AGENTOSD_SOCKET</key>
+        <string>/tmp/agentosd.sock</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/agentosd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/agentosd.stderr.log</string>
+    <key>ProcessType</key>
+    <string>Interactive</string>
+</dict>
+</plist>

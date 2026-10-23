@@ -1,0 +1,23 @@
+[Unit]
+Description=Personal Agent Substrate Daemon (agentosd)
+After=network.target local-fs.target
+Documentation=https://github.com/haeliotang/traceform
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/agentosd
+Environment="AGENTOSD_PORT=19898"
+Environment="AGENTOSD_SOCKET=/run/agentosd/agentosd.sock"
+Restart=always
+RestartSec=3s
+KillMode=mixed
+TimeoutStopSec=10s
+
+# Security and Sandboxing
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

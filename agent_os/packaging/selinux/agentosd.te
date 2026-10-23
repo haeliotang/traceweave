@@ -1,0 +1,31 @@
+# Personal Agent Substrate SELinux Policy Definition
+# Type and domain declarations
+type agentosd, domain;
+type agentosd_exec, exec_type, file_type, system_file_type;
+type agentosd_data_file, file_type, data_file_type, core_data_file_type;
+
+# Domain transition on init execution
+init_daemon_domain(agentosd)
+
+# Allow network loopback TCP socket for multi-agent dispatch
+allow agentosd self:tcp_socket create_stream_socket_perms;
+allow agentosd port:tcp_socket name_bind;
+allow agentosd node:tcp_socket node_bind;
+
+# Allow Unix domain socket for local IPC
+allow agentosd self:unix_stream_socket create_stream_socket_perms;
+allow agentosd agentosd_data_file:sock_file create_file_perms;
+
+# File permissions for persistent vault and SQLite storage
+allow agentosd agentosd_data_file:dir create_dir_perms;
+allow agentosd agentosd_data_file:file create_file_perms;
+
+# Allow communicating with AIDL Binder services
+binder_use(agentosd)
+binder_call(agentosd, system_server)
+binder_call(agentosd, appdomain)
+
+# Logging and system properties
+allow agentosd logd:unix_dgram_socket sendto;
+allow agentosd property_socket:sock_file write;
+allow agentosd init:unix_stream_socket connectto;
