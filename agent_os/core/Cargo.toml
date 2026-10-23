@@ -1,0 +1,25 @@
+[package]
+name = "agent-os-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Agent OS Authors"]
+description = "Native high-performance core engine for Agent OS: SLM inference, context redaction, and memory consolidation"
+
+[lib]
+name = "agent_os_core"
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+regex = "1.11.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.test]
+opt-level = 2

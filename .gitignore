@@ -74,6 +74,8 @@ data/.cold_statistics.json.gz.tmp
 
 # Rust proof backend build outputs
 native/zk_alignment/target/
+agent_os/core/target/
+target/
 
 # Real-device observations stay on the local machine; only source assets are tracked.
 data/raw/*
