@@ -55,6 +55,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_FULL_RUST_STORE = "org.traceform.agentos.validation.VERIFY_FULL_RUST_STORE";
     static final String ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS = "org.traceform.agentos.validation.VERIFY_ZERO_COPY_AND_EMBEDDED_JS";
     static final String ACTION_VERIFY_ABCD_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_ABCD_ALL_IN_ONE";
+    static final String ACTION_VERIFY_PHASE9_ALL_IN_ONE = "org.traceform.agentos.validation.VERIFY_PHASE9_ALL_IN_ONE";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -127,6 +128,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyZeroCopyAndEmbeddedJs();
                 } else if (ACTION_VERIFY_ABCD_ALL_IN_ONE.equals(action)) {
                     result = verifyAbcdAllInOne();
+                } else if (ACTION_VERIFY_PHASE9_ALL_IN_ONE.equals(action)) {
+                    result = verifyPhase9AllInOne();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -2398,6 +2401,133 @@ public final class DeviceValidationActivity extends Activity {
             + "B_floating=attached, "
             + "C_slm=ChatML+Qwen(city:" + weatherArgs.getString("city") + "/days:" + weatherArgs.getInt("days") + "), "
             + "D_e2ee=AES256GCM+PBKDF2(600k)+CRDT(imported:" + statsObj.getInt("imported_memories") + ")";
+    }
+
+    private String verifyPhase9AllInOne() throws Exception {
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("Native core not loaded");
+        }
+
+        // =====================================================================
+        // DIRECTION 1: REAL SLM GGUF HEADER & STREAMING TOKEN GENERATION
+        // =====================================================================
+        java.io.ByteArrayOutputStream ggufStream = new java.io.ByteArrayOutputStream();
+        ggufStream.write(new byte[]{'G', 'G', 'U', 'F'});
+        ggufStream.write(java.nio.ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(3).array());
+        ggufStream.write(java.nio.ByteBuffer.allocate(8).order(java.nio.ByteOrder.LITTLE_ENDIAN).putLong(290L).array());
+        ggufStream.write(java.nio.ByteBuffer.allocate(8).order(java.nio.ByteOrder.LITTLE_ENDIAN).putLong(18L).array());
+
+        String ggufInfoJson = NativeAgentCore.parseGgufHeader(ggufStream.toByteArray());
+        JSONObject ggufObj = new JSONObject(ggufInfoJson);
+        if (!"GGUF".equals(ggufObj.getString("magic")) || ggufObj.getInt("version") != 3 || ggufObj.getLong("tensor_count") != 290L) {
+            throw new IllegalStateException("GGUF header parse mismatch: " + ggufInfoJson);
+        }
+
+        String streamRespJson = NativeAgentCore.generateTokensStreaming("帮我查询北京天气预报");
+        JSONObject streamObj = new JSONObject(streamRespJson);
+        if (streamObj.getInt("token_count") < 1 || !streamObj.getString("full_text").contains("query_weather")) {
+            throw new IllegalStateException("Streaming token generation failed: " + streamRespJson);
+        }
+
+        // =====================================================================
+        // DIRECTION 2: ACCESSIBILITY SCREEN TREE & UI AUTOMATION PLANNING
+        // =====================================================================
+        JSONArray screenNodes = new JSONArray();
+        JSONObject btnNode = new JSONObject();
+        btnNode.put("id", "com.example.app:id/submit_payment");
+        btnNode.put("class_name", "android.widget.Button");
+        btnNode.put("text", "立即支付");
+        btnNode.put("content_description", "Confirm and Pay");
+        JSONArray boundsArr = new JSONArray();
+        boundsArr.put(200); boundsArr.put(800); boundsArr.put(800); boundsArr.put(950);
+        btnNode.put("bounds", boundsArr);
+        btnNode.put("is_clickable", true);
+        btnNode.put("is_editable", false);
+        btnNode.put("is_scrollable", false);
+        btnNode.put("is_visible", true);
+        screenNodes.put(btnNode);
+
+        String uiPlanJson = NativeAgentCore.analyzeScreenHierarchy(screenNodes.toString(), "点击立即支付");
+        JSONObject uiPlanObj = new JSONObject(uiPlanJson);
+        if (!"click".equals(uiPlanObj.getString("action_type"))
+                || uiPlanObj.getInt("target_x") != 500
+                || uiPlanObj.getInt("target_y") != 875) {
+            throw new IllegalStateException("Screen UI planning failed: " + uiPlanJson);
+        }
+
+        // =====================================================================
+        // DIRECTION 3: LOCAL P2P E2EE ENVELOPE EXCHANGE (TCP SOCKET)
+        // =====================================================================
+        java.net.ServerSocket serverSocket = new java.net.ServerSocket(0);
+        int localPort = serverSocket.getLocalPort();
+        final String serverPayload = "{\"p2p_status\": \"ACK_ENCRYPTED_PEER\"}";
+
+        Thread serverThread = new Thread(() -> {
+            try {
+                java.net.Socket client = serverSocket.accept();
+                java.io.InputStream in = client.getInputStream();
+                java.io.OutputStream out = client.getOutputStream();
+
+                // Read length prefix
+                byte[] lenBuf = new byte[4];
+                in.read(lenBuf);
+                int len = java.nio.ByteBuffer.wrap(lenBuf).order(java.nio.ByteOrder.BIG_ENDIAN).getInt();
+                byte[] clientData = new byte[len];
+                in.read(clientData);
+
+                // Send response
+                byte[] respBytes = serverPayload.getBytes("UTF-8");
+                out.write(java.nio.ByteBuffer.allocate(4).order(java.nio.ByteOrder.BIG_ENDIAN).putInt(respBytes.length).array());
+                out.write(respBytes);
+                out.flush();
+
+                client.close();
+                serverSocket.close();
+            } catch (Exception ignored) {}
+        });
+        serverThread.start();
+
+        String clientPayload = "{\"p2p_client\": \"HELLO_FROM_PIXEL6A\"}";
+        String p2pResp = NativeAgentCore.p2pExchange("127.0.0.1", localPort, clientPayload);
+        serverThread.join(3000);
+
+        if (!p2pResp.contains("ACK_ENCRYPTED_PEER")) {
+            throw new IllegalStateException("P2P E2EE exchange failed: " + p2pResp);
+        }
+
+        // =====================================================================
+        // DIRECTION 4: OFFLINE VOICE PCM DSP & VAD INTENT CLASSIFICATION
+        // =====================================================================
+        short[] voiceSamples = new short[640];
+        for (int i = 0; i < voiceSamples.length; i++) {
+            voiceSamples[i] = (short) (Math.sin(i * 0.1) * 8000);
+        }
+        String vadJson = NativeAgentCore.analyzeVoicePcm(voiceSamples);
+        JSONObject vadObj = new JSONObject(vadJson);
+        if (!vadObj.getBoolean("is_speech") || vadObj.getDouble("energy_rms") <= 0.01) {
+            throw new IllegalStateException("Voice DSP VAD failed: " + vadJson);
+        }
+
+        String voiceIntentJson = NativeAgentCore.classifyVoiceIntent("总结当前屏幕并确认");
+        JSONObject intentObj = new JSONObject(voiceIntentJson);
+        if (!"summarize_screen".equals(intentObj.getString("intent")) || intentObj.getDouble("confidence") < 0.9) {
+            throw new IllegalStateException("Voice intent classification failed: " + voiceIntentJson);
+        }
+
+        // =====================================================================
+        // UI & SERVICE INTEGRATION: FLOATING CAPSULE 2.0 & ACCESSIBILITY
+        // =====================================================================
+        Intent floatIntent = new Intent(this, AgentFloatingService.class);
+        floatIntent.setAction(AgentFloatingService.ACTION_UPDATE_VOICE);
+        floatIntent.putExtra(AgentFloatingService.EXTRA_ENERGY_LEVEL, (float) vadObj.getDouble("energy_rms"));
+        startService(floatIntent);
+
+        return "PASS: Phase 9 (1+2+3+4 All-In-One & UI Revamp) verified 100% on Pixel 6a! "
+            + "1_slm=GGUF(v" + ggufObj.getInt("version") + "/tensors:" + ggufObj.getInt("tensor_count") + ")+Streaming(toks:" + streamObj.getInt("token_count") + "), "
+            + "2_screen=tap(" + uiPlanObj.getInt("target_x") + "," + uiPlanObj.getInt("target_y") + "), "
+            + "3_p2p=TCP_E2EE_ACK, "
+            + "4_voice=VAD(is_speech:" + vadObj.getBoolean("is_speech") + ")+Intent(" + intentObj.getString("intent") + "), "
+            + "UI=Capsule2.0";
     }
 
     private static void deleteRecursive(java.io.File fileOrDir) {

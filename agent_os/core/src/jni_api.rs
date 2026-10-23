@@ -1,4 +1,4 @@
-use jni::objects::{JClass, JFloatArray, JObjectArray, JString};
+use jni::objects::{JByteArray, JClass, JFloatArray, JObjectArray, JShortArray, JString};
 use jni::sys::{jboolean, jint, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
@@ -664,3 +664,166 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeImportEn
     }
     std::ptr::null_mut()
 }
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeParseGgufHeader(
+    env: JNIEnv,
+    _class: JClass,
+    header_bytes: JByteArray,
+) -> jstring {
+    let bytes = match env.convert_byte_array(&header_bytes) {
+        Ok(b) => b,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match crate::edge_slm::EdgeSlmEngine::parse_gguf_header(&bytes) {
+        Ok(info) => {
+            let json = serde_json::to_string(&info).unwrap_or_default();
+            env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+        Err(err) => {
+            let err_json = serde_json::json!({ "error": err }).to_string();
+            env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeGenerateTokensStreaming(
+    mut env: JNIEnv,
+    _class: JClass,
+    prompt: JString,
+) -> jstring {
+    let prompt_str: String = match env.get_string(&prompt) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let mut tokens = Vec::new();
+    let full_text = engine.generate_tokens_streaming(&prompt_str, |tok| {
+        tokens.push(tok.to_string());
+    });
+
+    let resp = serde_json::json!({
+        "full_text": full_text,
+        "tokens": tokens,
+        "token_count": tokens.len(),
+        "resident_model": "Qwen2.5-0.5B-Instruct-Q4_K_M"
+    });
+
+    let json = serde_json::to_string(&resp).unwrap_or_default();
+    env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeScreenHierarchy(
+    mut env: JNIEnv,
+    _class: JClass,
+    nodes_json: JString,
+    goal: JString,
+) -> jstring {
+    let nodes_str: String = match env.get_string(&nodes_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let nodes: Vec<crate::screen_agent::ScreenNode> = match serde_json::from_str(&nodes_str) {
+        Ok(n) => n,
+        Err(e) => {
+            let err_json = serde_json::json!({ "error": format!("JSON parse error: {}", e) }).to_string();
+            return env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut());
+        }
+    };
+
+    let plan = crate::screen_agent::ScreenAgent::plan_action(&nodes, &goal_str);
+    let resp = match plan {
+        Some(p) => serde_json::to_string(&p).unwrap_or_default(),
+        None => serde_json::json!({ "status": "no_matching_node" }).to_string(),
+    };
+
+    env.new_string(resp).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeP2pExchange(
+    mut env: JNIEnv,
+    _class: JClass,
+    host: JString,
+    port: jint,
+    local_envelope_json: JString,
+) -> jstring {
+    let host_str: String = match env.get_string(&host) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let env_str: String = match env.get_string(&local_envelope_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let addr = format!("{}:{}", host_str, port);
+    let mut stream = match std::net::TcpStream::connect(&addr) {
+        Ok(s) => s,
+        Err(e) => {
+            let err_json = serde_json::json!({ "error": format!("P2P connection error: {}", e) }).to_string();
+            return env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut());
+        }
+    };
+
+    match crate::sync::P2pSyncEngine::exchange_envelopes(&mut stream, &env_str) {
+        Ok(resp) => env.new_string(resp).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut()),
+        Err(e) => {
+            let err_json = serde_json::json!({ "error": format!("P2P exchange error: {}", e) }).to_string();
+            env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeVoicePcm(
+    env: JNIEnv,
+    _class: JClass,
+    pcm_samples: JShortArray,
+) -> jstring {
+    let len = match env.get_array_length(&pcm_samples) {
+        Ok(l) => l as usize,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let mut buf = vec![0i16; len];
+    if env.get_short_array_region(&pcm_samples, 0, &mut buf).is_err() {
+        return std::ptr::null_mut();
+    }
+
+    let engine = crate::voice_dsp::VoiceDspEngine::default();
+    let res = engine.analyze_frame(&buf);
+    let json = serde_json::to_string(&res).unwrap_or_default();
+
+    env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeClassifyVoiceIntent(
+    mut env: JNIEnv,
+    _class: JClass,
+    transcript: JString,
+) -> jstring {
+    let trans_str: String = match env.get_string(&transcript) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let classified = crate::voice_dsp::VoiceDspEngine::classify_speech_intent(&trans_str);
+    let resp = match classified {
+        Some((intent, conf)) => serde_json::json!({ "intent": intent, "confidence": conf }),
+        None => serde_json::json!({ "intent": "unknown", "confidence": 0.0 }),
+    };
+
+    let json = serde_json::to_string(&resp).unwrap_or_default();
+    env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+

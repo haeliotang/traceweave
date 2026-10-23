@@ -139,6 +139,40 @@ public final class NativeAgentCore {
     }
 
     // =========================================================================
+    // PHASE 9: ADVANCED ALL-IN-ONE (GGUF STREAMING, SCREEN AGENT, P2P SYNC, VOICE DSP)
+    // =========================================================================
+
+    public static String parseGgufHeader(byte[] headerBytes) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeParseGgufHeader(headerBytes);
+    }
+
+    public static String generateTokensStreaming(String prompt) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeGenerateTokensStreaming(prompt);
+    }
+
+    public static String analyzeScreenHierarchy(String screenNodesJson, String goal) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeAnalyzeScreenHierarchy(screenNodesJson, goal);
+    }
+
+    public static String p2pExchange(String host, int port, String localEnvelopeJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeP2pExchange(host, port, localEnvelopeJson);
+    }
+
+    public static String analyzeVoicePcm(short[] pcmSamples) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeAnalyzeVoicePcm(pcmSamples);
+    }
+
+    public static String classifyVoiceIntent(String transcript) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeClassifyVoiceIntent(transcript);
+    }
+
+    // =========================================================================
     // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
     // =========================================================================
 
@@ -185,4 +219,11 @@ public final class NativeAgentCore {
 
     public static native String nativeExportEncryptedSync(String passphrase, String deviceId);
     public static native String nativeImportEncryptedSync(String passphrase, String envelopeJson);
+
+    public static native String nativeParseGgufHeader(byte[] headerBytes);
+    public static native String nativeGenerateTokensStreaming(String prompt);
+    public static native String nativeAnalyzeScreenHierarchy(String screenNodesJson, String goal);
+    public static native String nativeP2pExchange(String host, int port, String localEnvelopeJson);
+    public static native String nativeAnalyzeVoicePcm(short[] pcmSamples);
+    public static native String nativeClassifyVoiceIntent(String transcript);
 }

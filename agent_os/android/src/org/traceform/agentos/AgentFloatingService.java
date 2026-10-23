@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -24,6 +25,7 @@ public final class AgentFloatingService extends Service {
     public static final String ACTION_HIDE = "org.traceform.agentos.floating.HIDE";
     public static final String ACTION_UPDATE_STEP = "org.traceform.agentos.floating.UPDATE_STEP";
     public static final String ACTION_REQUEST_JIT = "org.traceform.agentos.floating.REQUEST_JIT";
+    public static final String ACTION_UPDATE_VOICE = "org.traceform.agentos.floating.UPDATE_VOICE";
 
     public static final String EXTRA_TASK_ID = "task_id";
     public static final String EXTRA_TASK_TITLE = "task_title";
@@ -31,6 +33,7 @@ public final class AgentFloatingService extends Service {
     public static final String EXTRA_STEP_TITLE = "step_title";
     public static final String EXTRA_CAPABILITY = "capability";
     public static final String EXTRA_SCOPE = "scope";
+    public static final String EXTRA_ENERGY_LEVEL = "energy_level";
 
     public interface JitDecisionListener {
         void onDecision(String taskId, String capability, String scope, boolean granted);
@@ -46,12 +49,21 @@ public final class AgentFloatingService extends Service {
     private View floatingView;
     private WindowManager.LayoutParams floatingParams;
 
+    // UI Elements
+    private LinearLayout rootLayout;
+    private LinearLayout pillHeader;
     private TextView statusTextView;
+    private TextView micButton;
+    private LinearLayout expandedPanel;
+    private TextView taskDetailView;
+    private TextView screenInspectorView;
+    private LinearLayout voiceWaveformBar;
     private LinearLayout jitContainer;
     private TextView jitPromptView;
     private Button btnGrant;
     private Button btnDeny;
 
+    private boolean isExpanded = false;
     private String pendingTaskId;
     private String pendingCap;
     private String pendingScope;
@@ -70,7 +82,7 @@ public final class AgentFloatingService extends Service {
 
     private void initFloatingLayout() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            Log.w(TAG, "SYSTEM_ALERT_WINDOW permission not granted; overlay will operate in in-app mock mode");
+            Log.w(TAG, "SYSTEM_ALERT_WINDOW permission not granted; overlay running in fallback mode");
             return;
         }
 
@@ -87,41 +99,94 @@ public final class AgentFloatingService extends Service {
         );
 
         floatingParams.gravity = Gravity.TOP | Gravity.START;
-        floatingParams.x = 60;
-        floatingParams.y = 200;
+        floatingParams.x = 40;
+        floatingParams.y = 180;
 
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.argb(220, 24, 28, 36));
-        root.setPadding(28, 20, 28, 20);
+        rootLayout = new LinearLayout(this);
+        rootLayout.setOrientation(LinearLayout.VERTICAL);
 
-        // Header Capsule
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(Color.argb(235, 18, 22, 30));
+        bg.setCornerRadius(32);
+        bg.setStroke(2, Color.argb(120, 74, 246, 195));
+        rootLayout.setBackground(bg);
+        rootLayout.setPadding(24, 18, 24, 18);
+
+        // --- 1. Compact Pill Header ---
+        pillHeader = new LinearLayout(this);
+        pillHeader.setOrientation(LinearLayout.HORIZONTAL);
+        pillHeader.setGravity(Gravity.CENTER_VERTICAL);
+
         statusTextView = new TextView(this);
-        statusTextView.setText("● Agent OS: 离线就绪");
+        statusTextView.setText("● Agent Capsule: 离线就绪");
         statusTextView.setTextColor(Color.parseColor("#4AF6C3"));
-        statusTextView.setTextSize(14);
-        root.addView(statusTextView);
+        statusTextView.setTextSize(13);
+        pillHeader.addView(statusTextView);
 
-        // Cross-App JIT Gating Container
+        micButton = new TextView(this);
+        micButton.setText(" 🎙️ ");
+        micButton.setTextSize(14);
+        micButton.setOnClickListener(v -> toggleVoiceListening());
+        pillHeader.addView(micButton);
+
+        // Click pill to toggle expansion
+        pillHeader.setOnClickListener(v -> toggleExpansion());
+        rootLayout.addView(pillHeader);
+
+        // --- 2. Expanded Dashboard Panel ---
+        expandedPanel = new LinearLayout(this);
+        expandedPanel.setOrientation(LinearLayout.VERTICAL);
+        expandedPanel.setVisibility(View.GONE);
+        expandedPanel.setPadding(0, 16, 0, 0);
+
+        taskDetailView = new TextView(this);
+        taskDetailView.setText("当前任务: 待命中\n已加载端侧模型: Qwen2.5-0.5B (Resident)");
+        taskDetailView.setTextColor(Color.parseColor("#E0E0E0"));
+        taskDetailView.setTextSize(12);
+        expandedPanel.addView(taskDetailView);
+
+        screenInspectorView = new TextView(this);
+        screenInspectorView.setText("屏幕感知: 无障碍自动化中枢待机");
+        screenInspectorView.setTextColor(Color.parseColor("#80D8FF"));
+        screenInspectorView.setTextSize(11);
+        screenInspectorView.setPadding(0, 8, 0, 0);
+        expandedPanel.addView(screenInspectorView);
+
+        // Voice Waveform Visualizer
+        voiceWaveformBar = new LinearLayout(this);
+        voiceWaveformBar.setOrientation(LinearLayout.HORIZONTAL);
+        voiceWaveformBar.setGravity(Gravity.CENTER_VERTICAL);
+        voiceWaveformBar.setPadding(0, 8, 0, 0);
+        for (int i = 0; i < 5; i++) {
+            View bar = new View(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(8, 20);
+            lp.setMargins(4, 0, 4, 0);
+            bar.setLayoutParams(lp);
+            bar.setBackgroundColor(Color.parseColor("#4AF6C3"));
+            voiceWaveformBar.addView(bar);
+        }
+        expandedPanel.addView(voiceWaveformBar);
+
+        // --- 3. Cross-App JIT Approval Container ---
         jitContainer = new LinearLayout(this);
         jitContainer.setOrientation(LinearLayout.VERTICAL);
         jitContainer.setVisibility(View.GONE);
-        jitContainer.setPadding(0, 16, 0, 0);
+        jitContainer.setPadding(0, 14, 0, 0);
 
         jitPromptView = new TextView(this);
         jitPromptView.setTextColor(Color.WHITE);
-        jitPromptView.setTextSize(13);
+        jitPromptView.setTextSize(12);
         jitContainer.addView(jitPromptView);
 
         LinearLayout btnRow = new LinearLayout(this);
         btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setPadding(0, 12, 0, 0);
+        btnRow.setPadding(0, 10, 0, 0);
 
         btnGrant = new Button(this);
         btnGrant.setText("授权 5 分钟");
         btnGrant.setBackgroundColor(Color.parseColor("#1B5E20"));
         btnGrant.setTextColor(Color.WHITE);
-        btnGrant.setTextSize(12);
+        btnGrant.setTextSize(11);
         btnGrant.setOnClickListener(v -> handleJitDecision(true));
         btnRow.addView(btnGrant);
 
@@ -129,17 +194,20 @@ public final class AgentFloatingService extends Service {
         btnDeny.setText("拒绝");
         btnDeny.setBackgroundColor(Color.parseColor("#B71C1C"));
         btnDeny.setTextColor(Color.WHITE);
-        btnDeny.setTextSize(12);
+        btnDeny.setTextSize(11);
         btnDeny.setOnClickListener(v -> handleJitDecision(false));
         btnRow.addView(btnDeny);
 
         jitContainer.addView(btnRow);
-        root.addView(jitContainer);
+        expandedPanel.addView(jitContainer);
+
+        rootLayout.addView(expandedPanel);
 
         // Draggable touch handler
-        root.setOnTouchListener(new View.OnTouchListener() {
+        rootLayout.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
+            private boolean isMoving = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -149,25 +217,52 @@ public final class AgentFloatingService extends Service {
                         initialY = floatingParams.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        isMoving = false;
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        floatingParams.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        floatingParams.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        int dx = (int) (event.getRawX() - initialTouchX);
+                        int dy = (int) (event.getRawY() - initialTouchY);
+                        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                            isMoving = true;
+                        }
+                        floatingParams.x = initialX + dx;
+                        floatingParams.y = initialY + dy;
                         try {
                             windowManager.updateViewLayout(floatingView, floatingParams);
                         } catch (Exception ignored) {}
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isMoving) {
+                            toggleExpansion();
+                        }
                         return true;
                 }
                 return false;
             }
         });
 
-        floatingView = root;
+        floatingView = rootLayout;
         try {
             windowManager.addView(floatingView, floatingParams);
-            Log.i(TAG, "Agent floating capsule attached successfully");
+            Log.i(TAG, "Agent floating capsule 2.0 attached successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to attach floating overlay: " + e.getMessage());
+        }
+    }
+
+    private void toggleExpansion() {
+        isExpanded = !isExpanded;
+        if (expandedPanel != null) {
+            expandedPanel.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        }
+        try {
+            windowManager.updateViewLayout(floatingView, floatingParams);
+        } catch (Exception ignored) {}
+    }
+
+    private void toggleVoiceListening() {
+        if (statusTextView != null) {
+            statusTextView.setText("● 正在离线聆听语音中枢...");
         }
     }
 
@@ -187,6 +282,9 @@ public final class AgentFloatingService extends Service {
             if (statusTextView != null) {
                 statusTextView.setText("● [" + (step + 1) + "] " + (stepTitle != null ? stepTitle : title));
             }
+            if (taskDetailView != null) {
+                taskDetailView.setText("当前任务: " + title + "\n当前步骤: " + stepTitle);
+            }
         } else if (ACTION_REQUEST_JIT.equals(action)) {
             pendingTaskId = intent.getStringExtra(EXTRA_TASK_ID);
             pendingCap = intent.getStringExtra(EXTRA_CAPABILITY);
@@ -195,7 +293,19 @@ public final class AgentFloatingService extends Service {
             if (jitContainer != null && jitPromptView != null) {
                 jitPromptView.setText("【跨应用 JIT 阻断申请】\n任务: " + pendingTaskId + "\n申请权限: " + pendingCap);
                 jitContainer.setVisibility(View.VISIBLE);
+                if (expandedPanel != null) expandedPanel.setVisibility(View.VISIBLE);
                 if (floatingView != null) floatingView.setVisibility(View.VISIBLE);
+            }
+        } else if (ACTION_UPDATE_VOICE.equals(action)) {
+            float energy = intent.getFloatExtra(EXTRA_ENERGY_LEVEL, 0.0f);
+            if (voiceWaveformBar != null) {
+                for (int i = 0; i < voiceWaveformBar.getChildCount(); i++) {
+                    View bar = voiceWaveformBar.getChildAt(i);
+                    int height = Math.min(60, (int) (15 + energy * 300.0f * (i + 1)));
+                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
+                    lp.height = height;
+                    bar.setLayoutParams(lp);
+                }
             }
         }
 

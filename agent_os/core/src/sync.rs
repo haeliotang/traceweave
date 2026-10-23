@@ -184,9 +184,71 @@ pub fn import_encrypted_sync_package(
     Ok(stats)
 }
 
+use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::time::Duration;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct P2pSyncResult {
+    pub success: bool,
+    pub bytes_sent: usize,
+    pub bytes_received: usize,
+    pub stats: MergeStats,
+    pub peer_device_id: String,
+}
+
+pub struct P2pSyncEngine;
+
+impl P2pSyncEngine {
+    /// Perform a single P2P sync session between client and server over TCP
+    pub fn exchange_envelopes(stream: &mut TcpStream, local_envelope_json: &str) -> Result<String, String> {
+        stream.set_read_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
+        stream.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
+
+        let bytes = local_envelope_json.as_bytes();
+        let len = (bytes.len() as u32).to_be_bytes();
+        stream.write_all(&len).map_err(|e| e.to_string())?;
+        stream.write_all(bytes).map_err(|e| e.to_string())?;
+        stream.flush().map_err(|e| e.to_string())?;
+
+        let mut len_buf = [0u8; 4];
+        stream.read_exact(&mut len_buf).map_err(|e| e.to_string())?;
+        let incoming_len = u32::from_be_bytes(len_buf) as usize;
+
+        if incoming_len > 10 * 1024 * 1024 {
+            return Err("Payload exceeds maximum 10MB limit".to_string());
+        }
+
+        let mut incoming_bytes = vec![0u8; incoming_len];
+        stream.read_exact(&mut incoming_bytes).map_err(|e| e.to_string())?;
+
+        String::from_utf8(incoming_bytes).map_err(|e| e.to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::net::TcpListener;
+
+    #[test]
+    fn test_p2p_socket_exchange() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        let handle = std::thread::spawn(move || {
+            let (mut server_stream, _) = listener.accept().unwrap();
+            let received = P2pSyncEngine::exchange_envelopes(&mut server_stream, "{\"server\": \"ack\"}").unwrap();
+            assert_eq!(received, "{\"client\": \"hello\"}");
+        });
+
+        let mut client_stream = TcpStream::connect(addr).unwrap();
+        let response = P2pSyncEngine::exchange_envelopes(&mut client_stream, "{\"client\": \"hello\"}").unwrap();
+        assert_eq!(response, "{\"server\": \"ack\"}");
+
+        handle.join().unwrap();
+    }
+
 
     #[test]
     fn test_e2ee_encryption_and_decryption_roundtrip() {
