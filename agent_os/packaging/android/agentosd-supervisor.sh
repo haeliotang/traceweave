@@ -10,6 +10,15 @@ PORT=19898
 SOCKET_PATH="/data/local/tmp/agentosd.sock"
 CHECK_INTERVAL_SECS=3
 
+# Check for existing supervisor instance
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE" 2>/dev/null)
+    if [ -n "$OLD_PID" ] && [ -d "/proc/$OLD_PID" ]; then
+        echo "[supervisor] Existing supervisor already running at PID $OLD_PID. Exiting duplicate." >> "$LOG_PATH"
+        exit 0
+    fi
+fi
+
 # Write supervisor PID
 echo "$$" > "$PID_FILE"
 
@@ -26,7 +35,7 @@ rotate_logs_if_needed() {
 start_daemon() {
     chmod 755 "$BIN_PATH"
     echo "[supervisor] Starting agentosd daemon at $(date)" >> "$LOG_PATH"
-    AGENTOSD_PORT="$PORT" AGENTOSD_SOCKET="$SOCKET_PATH" nohup "$BIN_PATH" </dev/null >> "$LOG_PATH" 2>&1 &
+    nohup "$BIN_PATH" --port "$PORT" --socket "$SOCKET_PATH" </dev/null >> "$LOG_PATH" 2>&1 &
     sleep 1
 }
 

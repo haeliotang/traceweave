@@ -1,0 +1,5 @@
+# Personal Agent Substrate File Contexts for AOSP
+/system/bin/agentosd            u:object_r:agentosd_exec:s0
+/data/system/agentosd(/.*)?     u:object_r:agentosd_data_file:s0
+/data/misc/agentosd(/.*)?       u:object_r:agentosd_data_file:s0
+/dev/socket/agentosd            u:object_r:agentosd_data_file:s0

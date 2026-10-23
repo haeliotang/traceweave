@@ -28,7 +28,9 @@ start_daemon() {
 
 cleanup() {
     echo "[watchdog] Received termination signal, shutting down watchdog and daemon" >> "$LOG_PATH"
-    pkill -f "$BIN_PATH"
+    for pid in $(pidof agentosd 2>/dev/null); do
+        kill -9 "$pid" 2>/dev/null || true
+    done
     exit 0
 }
 
@@ -37,7 +39,7 @@ trap cleanup TERM INT HUP
 echo "[watchdog] Personal Agent Substrate Watchdog initialized for $BIN_PATH" >> "$LOG_PATH"
 
 # Initial start if not running
-if ! pgrep -f "$BIN_PATH" >/dev/null 2>&1; then
+if [ -z "$(pidof agentosd 2>/dev/null)" ]; then
     start_daemon
 fi
 
@@ -46,7 +48,7 @@ while true; do
     rotate_logs_if_needed
 
     # Check if process exists
-    if ! pgrep -f "$BIN_PATH" >/dev/null 2>&1; then
+    if [ -z "$(pidof agentosd 2>/dev/null)" ]; then
         echo "[watchdog] ALERT: agentosd process not found. Restarting..." >> "$LOG_PATH"
         start_daemon
     fi

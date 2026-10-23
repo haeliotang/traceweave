@@ -1,9 +1,8 @@
-# Personal Agent Substrate Android init service
-service agentosd /system/bin/agentosd
+# Personal Agent Substrate Android init service definition
+service agentosd /system/bin/agentosd --port 19898 --store-path /data/agentosd/store.db
     class late_start
-    user root
-    group root system
+    user system
+    group system
     seclabel u:r:agentosd:s0
     capabilities NET_BIND_SERVICE
     writepid /dev/cpuset/system-background/tasks
-    onrestart restart agentosd-watchdog

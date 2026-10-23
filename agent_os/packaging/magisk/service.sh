@@ -18,10 +18,10 @@ done
 
 # Launch daemon loop with self-healing watchdog
 while true; do
-    if ! pgrep -f "$DAEMON_BIN" >/dev/null 2>&1; then
+    if [ -z "$(pidof agentosd 2>/dev/null)" ]; then
         echo "[agentosd-service] Starting Substrate daemon at $(date)" >> "$LOG_FILE"
         chmod 755 "$DAEMON_BIN"
-        AGENTOSD_PORT="$PORT" AGENTOSD_SOCKET="$SOCKET" nohup "$DAEMON_BIN" </dev/null >> "$LOG_FILE" 2>&1 &
+        nohup "$DAEMON_BIN" --port "$PORT" --socket "$SOCKET" </dev/null >> "$LOG_FILE" 2>&1 &
     fi
     sleep 10
 done
