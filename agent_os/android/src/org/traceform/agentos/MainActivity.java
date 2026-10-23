@@ -450,20 +450,22 @@ public final class MainActivity extends Activity {
 
         consoleCard.addView(diagBtnRow);
 
-        // --- 2-COLUMN TELEMETRY GRID ---
+        // --- 3-COLUMN TELEMETRY GRID (2 ROWS x 3 CARDS) ---
         LinearLayout gridRow1 = createGridRow(page);
-        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, "硬件常驻资源", 0xFF1565C0);
+        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, "硬件常驻", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
-        hwInfo.setText("Tensor G1 (8-core)\nRAM 常驻: 4.1MB\n16KB 对齐 NEON SIMD");
-        hwInfo.setTextSize(11);
+        hwInfo.setText("Tensor G1 · 8核\nRAM 常驻: 4.1MB\n16KB 对齐 NEON");
+        hwInfo.setTextSize(10);
+        hwInfo.setLineSpacing(dp(1), 1.0f);
         hwInfo.setTextColor(0xFF475569);
         hwInfo.setPadding(0, dp(4), 0, 0);
         hwCard.addView(hwInfo);
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, "端侧大模型", 0xFF6A1B9A);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, "端侧模型", 0xFF6A1B9A);
         TextView slmInfo = new TextView(this);
-        slmInfo.setText("Qwen2.5-0.5B-Instruct\nChatML + JSON Schema\n吞吐: ~30 tokens/s");
-        slmInfo.setTextSize(11);
+        slmInfo.setText("Qwen2.5-0.5B\nChatML + JSON\n32.0 tokens/s");
+        slmInfo.setTextSize(10);
+        slmInfo.setLineSpacing(dp(1), 1.0f);
         slmInfo.setTextColor(0xFF475569);
         slmInfo.setPadding(0, dp(4), 0, 0);
         slmCard.addView(slmInfo);
@@ -484,44 +486,47 @@ public final class MainActivity extends Activity {
                 long latency = planObj.optLong("latency_ms", 0);
 
                 slmInfo.setText(infoObj.optString("architecture", "qwen2").toUpperCase(Locale.ROOT) + " · GGUF v" + infoObj.optInt("version", 3) + "\n"
-                        + "290 Tensors · 32k Ctx\n"
-                        + String.format(Locale.US, "%.1f", tps) + " tok/s (" + latency + "ms, " + tokens + "t)");
+                        + "290 Tensors · 32k\n"
+                        + String.format(Locale.US, "%.1f", tps) + " t/s (" + latency + "ms)");
                 Toast.makeText(this, "端侧 SLM 规划完毕: " + goal + " (" + tokens + " tokens, " + tps + " tps)", Toast.LENGTH_LONG).show();
             } catch (Exception e) {
                 Toast.makeText(this, "端侧模型推演异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        LinearLayout gridRow2 = createGridRow(page);
-        LinearLayout daemonCard = createGridCard(gridRow2, IconFactory.IconType.SERVER, "AOSP 守护进程", 0xFFD84315);
+        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, "AOSP守护", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText("agentosd · 19898\noom_score -1000 免疫\n独立于 ART 运行时");
-        daemonInfo.setTextSize(11);
+        daemonInfo.setText("agentosd · 19898\noom_adj -1000\n独立原生运行");
+        daemonInfo.setTextSize(10);
+        daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
         daemonInfo.setPadding(0, dp(4), 0, 0);
         daemonCard.addView(daemonInfo);
 
-        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, "E2EE 同步节点", 0xFF2E7D32);
+        LinearLayout gridRow2 = createGridRow(page);
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, "E2EE同步", 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
-        syncInfo.setText("AES-256-GCM + PBKDF2\nVector Clock 向量时钟\nP2P 局域网零信任");
-        syncInfo.setTextSize(11);
+        syncInfo.setText("AES-256-GCM\nPBKDF2 向量时钟\nP2P 局域网无感");
+        syncInfo.setTextSize(10);
+        syncInfo.setLineSpacing(dp(1), 1.0f);
         syncInfo.setTextColor(0xFF475569);
         syncInfo.setPadding(0, dp(4), 0, 0);
         syncCard.addView(syncInfo);
 
-        LinearLayout gridRow3 = createGridRow(page);
-        LinearLayout sensCard = createGridCard(gridRow3, IconFactory.IconType.SENSOR, "环境传感器融合", 0xFF0277BD);
+        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, "环境感知", 0xFF0277BD);
         TextView sensInfo = new TextView(this);
-        sensInfo.setText("IMU + 陀螺仪 + 光感\n姿态判定 (行走/车载)\n口袋检测防误触");
-        sensInfo.setTextSize(11);
+        sensInfo.setText("IMU + 陀螺仪 + 光感\n姿态监测 (静止/行进)\n口袋防误触门禁");
+        sensInfo.setTextSize(10);
+        sensInfo.setLineSpacing(dp(1), 1.0f);
         sensInfo.setTextColor(0xFF475569);
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
-        LinearLayout visionCard = createGridCard(gridRow3, IconFactory.IconType.EYE, "视觉 OCR / PTT", 0xFF4527A0);
+        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, "视觉/PTT", 0xFF4527A0);
         TextView visionInfo = new TextView(this);
-        visionInfo.setText("无障碍破障意图匹配\nBLE 指环外设联动\n物理 PTT 瞬时激活");
-        visionInfo.setTextSize(11);
+        visionInfo.setText("无障碍破障定位\nBLE 指环硬件联动\n物理按键微秒唤醒");
+        visionInfo.setTextSize(10);
+        visionInfo.setLineSpacing(dp(1), 1.0f);
         visionInfo.setTextColor(0xFF475569);
         visionInfo.setPadding(0, dp(4), 0, 0);
         visionCard.addView(visionInfo);
@@ -1812,16 +1817,16 @@ public final class MainActivity extends Activity {
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(0xFFFFFFFF);
-        bg.setCornerRadius(dp(12));
+        bg.setCornerRadius(dp(10));
         bg.setStroke(dp(1), 0xFFE2E8F0);
         card.setBackground(bg);
-        card.setPadding(dp(10), dp(10), dp(10), dp(10));
+        card.setPadding(dp(7), dp(8), dp(7), dp(8));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
-        lp.setMargins(dp(3), dp(3), dp(3), dp(3));
+        lp.setMargins(dp(2), dp(2), dp(2), dp(2));
         card.setLayoutParams(lp);
 
-        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 14);
+        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 12, 11);
         card.addView(headerRow);
 
         rowParent.addView(card);
@@ -1831,6 +1836,7 @@ public final class MainActivity extends Activity {
     private LinearLayout createGridRow(LinearLayout page) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setBaselineAligned(false);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(0, dp(1), 0, dp(2));

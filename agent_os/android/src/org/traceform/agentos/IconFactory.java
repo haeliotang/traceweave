@@ -59,6 +59,10 @@ public final class IconFactory {
     }
 
     public static LinearLayout createHeaderWithIcon(Context context, IconType type, String title, int color, int dpIconSize) {
+        return createHeaderWithIcon(context, type, title, color, dpIconSize, 15);
+    }
+
+    public static LinearLayout createHeaderWithIcon(Context context, IconType type, String title, int color, int dpIconSize, int titleTextSizeSp) {
         float density = context.getResources().getDisplayMetrics().density;
         LinearLayout row = new LinearLayout(context);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -70,9 +74,11 @@ public final class IconFactory {
         TextView tv = new TextView(context);
         tv.setText(" " + title);
         tv.setTextColor(color);
-        tv.setTextSize(15);
+        tv.setTextSize(titleTextSizeSp);
         tv.setTypeface(null, android.graphics.Typeface.BOLD);
-        tv.setPadding((int) (6 * density), 0, 0, 0);
+        tv.setSingleLine(true);
+        tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        tv.setPadding((int) (4 * density), 0, 0, 0);
         row.addView(tv);
 
         return row;
