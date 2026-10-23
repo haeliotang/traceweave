@@ -1,5 +1,5 @@
 use jni::objects::{JByteArray, JByteBuffer, JClass, JFloatArray, JObjectArray, JShortArray, JString};
-use jni::sys::{jboolean, jbyteArray, jint, jstring, JNI_FALSE, JNI_TRUE};
+use jni::sys::{jboolean, jbyteArray, jint, jlong, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -606,6 +606,91 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmB
     let prompt = engine.build_chatml_prompt(&goal_str);
 
     env.new_string(prompt).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmPlan(
+    mut env: JNIEnv,
+    _class: JClass,
+    task_id: JString,
+    goal: JString,
+    memories_json: JString,
+    capabilities_json: JString,
+    pacing_ms: jlong,
+) -> jstring {
+    let task_id_str: String = match env.get_string(&task_id) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let mems_str: String = if !memories_json.is_null() {
+        env.get_string(&memories_json).map(|s| s.into()).unwrap_or_default()
+    } else {
+        String::new()
+    };
+    let caps_str: String = if !capabilities_json.is_null() {
+        env.get_string(&capabilities_json).map(|s| s.into()).unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    let memories: Vec<String> = serde_json::from_str(&mems_str).unwrap_or_default();
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let plan_output = engine.plan_structured(
+        &task_id_str,
+        &goal_str,
+        &memories,
+        &caps_str,
+        pacing_ms.max(0) as u64,
+    );
+
+    let output_json = serde_json::to_string(&plan_output).unwrap_or_default();
+    env.new_string(output_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmSynthesize(
+    mut env: JNIEnv,
+    _class: JClass,
+    goal: JString,
+    observations_json: JString,
+) -> jstring {
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let obs_str: String = if !observations_json.is_null() {
+        env.get_string(&observations_json).map(|s| s.into()).unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let report = engine.synthesize_structured(&goal_str, &obs_str);
+
+    env.new_string(report).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmModelInfo(
+    mut env: JNIEnv,
+    _class: JClass,
+    model_path: JString,
+) -> jstring {
+    let path_opt: Option<String> = if !model_path.is_null() {
+        env.get_string(&model_path).map(|s| s.into()).ok()
+    } else {
+        None
+    };
+
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let info = engine.inspect_model(path_opt.as_deref());
+
+    let json = serde_json::to_string(&info).unwrap_or_default();
+    env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
 }
 
 #[no_mangle]

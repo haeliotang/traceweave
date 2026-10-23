@@ -128,6 +128,21 @@ public final class NativeAgentCore {
         return nativeEdgeSlmBuildPrompt(goal);
     }
 
+    public static String edgeSlmPlan(String taskId, String goal, String memoriesJson, String capabilitiesJson, long pacingMs) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeEdgeSlmPlan(taskId, goal, memoriesJson, capabilitiesJson, pacingMs);
+    }
+
+    public static String edgeSlmSynthesize(String goal, String observationsJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeEdgeSlmSynthesize(goal, observationsJson);
+    }
+
+    public static String edgeSlmModelInfo(String modelPath) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeEdgeSlmModelInfo(modelPath);
+    }
+
     public static String exportEncryptedSync(String passphrase, String deviceId) {
         if (!IS_LOADED) throw new IllegalStateException("Native core not available");
         return nativeExportEncryptedSync(passphrase, deviceId);
@@ -281,6 +296,9 @@ public final class NativeAgentCore {
 
     public static native String nativeEdgeSlmExtract(String goal, String memoriesJson);
     public static native String nativeEdgeSlmBuildPrompt(String goal);
+    public static native String nativeEdgeSlmPlan(String taskId, String goal, String memoriesJson, String capabilitiesJson, long pacingMs);
+    public static native String nativeEdgeSlmSynthesize(String goal, String observationsJson);
+    public static native String nativeEdgeSlmModelInfo(String modelPath);
 
     public static native String nativeExportEncryptedSync(String passphrase, String deviceId);
     public static native String nativeImportEncryptedSync(String passphrase, String envelopeJson);

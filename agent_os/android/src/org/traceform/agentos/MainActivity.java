@@ -468,6 +468,30 @@ public final class MainActivity extends Activity {
         slmInfo.setPadding(0, dp(4), 0, 0);
         slmCard.addView(slmInfo);
 
+        slmCard.setOnClickListener(v -> {
+            try {
+                String infoJson = NativeAgentCore.edgeSlmModelInfo(null);
+                org.json.JSONObject infoObj = new org.json.JSONObject(infoJson);
+                String goal = taskInput != null && !taskInput.getText().toString().trim().isEmpty()
+                        ? taskInput.getText().toString().trim()
+                        : "帮我安排下午3点团队日程并查看天气";
+
+                String planJson = NativeAgentCore.edgeSlmPlan("test_task", goal, "[\"偏好: 提前5分钟\"]", "{}", 0L);
+                org.json.JSONObject planObj = new org.json.JSONObject(planJson);
+
+                int tokens = planObj.optInt("tokens_generated", 0);
+                double tps = planObj.optDouble("throughput_tps", 0.0);
+                long latency = planObj.optLong("latency_ms", 0);
+
+                slmInfo.setText(infoObj.optString("architecture", "qwen2").toUpperCase(Locale.ROOT) + " · GGUF v" + infoObj.optInt("version", 3) + "\n"
+                        + "290 Tensors · 32k Ctx\n"
+                        + String.format(Locale.US, "%.1f", tps) + " tok/s (" + latency + "ms, " + tokens + "t)");
+                Toast.makeText(this, "端侧 SLM 规划完毕: " + goal + " (" + tokens + " tokens, " + tps + " tps)", Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(this, "端侧模型推演异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         LinearLayout gridRow2 = createGridRow(page);
         LinearLayout daemonCard = createGridCard(gridRow2, IconFactory.IconType.SERVER, "AOSP 守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);

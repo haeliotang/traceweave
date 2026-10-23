@@ -78,6 +78,85 @@ final class LocalSlmEngine implements ReasoningEngine {
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories) {
         String goal = userGoal == null ? "" : userGoal.trim();
+
+        if (NativeAgentCore.isAvailable()) {
+            try {
+                org.json.JSONArray memArr = new org.json.JSONArray();
+                if (memories != null) {
+                    for (AgentStore.Memory m : memories) {
+                        if (m != null && m.content != null && !m.content.isEmpty()) {
+                            memArr.put(m.content);
+                        }
+                    }
+                }
+
+                org.json.JSONArray capsArr = new org.json.JSONArray();
+                if (availableCaps != null) {
+                    for (CapabilityDescriptor desc : availableCaps) {
+                        org.json.JSONObject capObj = new org.json.JSONObject();
+                        capObj.put("capability", desc.capability);
+                        capObj.put("scope", desc.scope);
+                        capObj.put("description", desc.description);
+                        capsArr.put(capObj);
+                    }
+                }
+
+                String planJson = NativeAgentCore.edgeSlmPlan(
+                        taskId,
+                        goal,
+                        memArr.toString(),
+                        capsArr.toString(),
+                        0L
+                );
+
+                if (planJson != null && !planJson.isEmpty()) {
+                    org.json.JSONObject outObj = new org.json.JSONObject(planJson);
+                    org.json.JSONObject planObj = outObj.optJSONObject("plan");
+                    if (planObj != null) {
+                        org.json.JSONArray stepsArr = planObj.optJSONArray("steps");
+                        if (stepsArr != null && stepsArr.length() > 0) {
+                            List<ExecutionPlan.Step> steps = new ArrayList<>();
+                            for (int i = 0; i < stepsArr.length(); i++) {
+                                org.json.JSONObject sObj = stepsArr.getJSONObject(i);
+                                steps.add(new ExecutionPlan.Step(
+                                        sObj.optInt("index", i),
+                                        sObj.optString("title", "步骤 " + (i + 1)),
+                                        sObj.optString("capability", CapabilityBroker.DEMO_NOTE_CAPABILITY),
+                                        sObj.optString("scope", CapabilityBroker.DEMO_NOTE_SCOPE),
+                                        sObj.optString("prompt", ""),
+                                        ExecutionPlan.STEP_PENDING,
+                                        "",
+                                        0L
+                                ));
+                            }
+                            boolean hasSynthesis = false;
+                            for (ExecutionPlan.Step s : steps) {
+                                if ("builtin.synthesis".equals(s.capability)) {
+                                    hasSynthesis = true;
+                                    break;
+                                }
+                            }
+                            if (!hasSynthesis) {
+                                steps.add(new ExecutionPlan.Step(
+                                        steps.size(),
+                                        "端侧综合推演报告",
+                                        "builtin.synthesis",
+                                        "local_inference",
+                                        "端侧 SLM 综合多步观测结果并输出结构化分析",
+                                        ExecutionPlan.STEP_PENDING,
+                                        "",
+                                        0L
+                                ));
+                            }
+                            return new ExecutionPlan(taskId, goal, steps, System.currentTimeMillis(), 0);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Fallback to Java heuristic on failure
+            }
+        }
+
         float[] logits = inferIntentLogits(goal, memories);
 
         Set<String> supportedCaps = new HashSet<>();
@@ -198,6 +277,32 @@ final class LocalSlmEngine implements ReasoningEngine {
 
     @Override
     public String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
+        if (NativeAgentCore.isAvailable()) {
+            try {
+                org.json.JSONArray stepsArr = new org.json.JSONArray();
+                if (executedSteps != null) {
+                    for (ExecutionPlan.Step s : executedSteps) {
+                        org.json.JSONObject sObj = new org.json.JSONObject();
+                        sObj.put("index", s.index);
+                        sObj.put("title", s.title);
+                        sObj.put("capability", s.capability);
+                        sObj.put("scope", s.scope);
+                        sObj.put("prompt", s.prompt);
+                        sObj.put("status", s.status);
+                        sObj.put("observation", s.observation == null ? "" : s.observation);
+                        sObj.put("executed_at", s.executedAt);
+                        stepsArr.put(sObj);
+                    }
+                }
+                String rep = NativeAgentCore.edgeSlmSynthesize(userGoal == null ? "" : userGoal, stepsArr.toString());
+                if (rep != null && !rep.isEmpty()) {
+                    return rep;
+                }
+            } catch (Exception e) {
+                // Fallback to Java formatting
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("【端侧 SLM 离线推演报告】\n");
         sb.append("任务意图目标：").append(userGoal == null ? "" : userGoal).append("\n\n");

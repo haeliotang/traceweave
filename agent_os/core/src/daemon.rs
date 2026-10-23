@@ -379,6 +379,35 @@ pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
                 }),
             )
         }
+        "slm.plan" => {
+            let task_id = req.payload.get("task_id").and_then(|v| v.as_str()).unwrap_or("daemon_task");
+            let goal = req.payload.get("goal").and_then(|v| v.as_str()).unwrap_or("");
+            let memories: Vec<String> = req.payload.get("memories")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect())
+                .unwrap_or_default();
+            let caps_json = req.payload.get("capabilities_json").and_then(|v| v.as_str()).unwrap_or("{}");
+            let pacing_ms = req.payload.get("pacing_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+
+            let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+            let plan_output = engine.plan_structured(task_id, goal, &memories, caps_json, pacing_ms);
+            let val = serde_json::to_value(&plan_output).unwrap_or_default();
+            ("ok".to_string(), val)
+        }
+        "slm.synthesize" => {
+            let goal = req.payload.get("goal").and_then(|v| v.as_str()).unwrap_or("");
+            let obs_json = req.payload.get("observations_json").and_then(|v| v.as_str()).unwrap_or("[]");
+            let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+            let report = engine.synthesize_structured(goal, obs_json);
+            ("ok".to_string(), serde_json::json!({ "report": report }))
+        }
+        "slm.model_info" => {
+            let model_path = req.payload.get("model_path").and_then(|v| v.as_str());
+            let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+            let info = engine.inspect_model(model_path);
+            let val = serde_json::to_value(&info).unwrap_or_default();
+            ("ok".to_string(), val)
+        }
         unknown => {
             (
                 "error".to_string(),
@@ -746,5 +775,53 @@ mod tests {
         assert_eq!(decrypted_bytes, b"My private note inside substrate vault");
 
         let _ = std::fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn test_daemon_slm_plan_and_model_info() {
+        // Test slm.model_info
+        let resp_info = process_daemon_message(DaemonRequest {
+            id: "slm-info-1".to_string(),
+            action: "slm.model_info".to_string(),
+            agent_id: None,
+            session_token: None,
+            payload: serde_json::json!({}),
+        });
+        assert_eq!(resp_info.status, "ok");
+        assert_eq!(resp_info.data["magic"], "GGUF");
+        assert_eq!(resp_info.data["architecture"], "qwen2");
+
+        // Test slm.plan
+        let resp_plan = process_daemon_message(DaemonRequest {
+            id: "slm-plan-1".to_string(),
+            action: "slm.plan".to_string(),
+            agent_id: None,
+            session_token: None,
+            payload: serde_json::json!({
+                "task_id": "daemon_slm_task",
+                "goal": "帮我查询北京天气预报",
+                "memories": ["偏好: 摄氏度"],
+                "capabilities_json": "{}",
+                "pacing_ms": 0
+            }),
+        });
+        assert_eq!(resp_plan.status, "ok");
+        assert_eq!(resp_plan.data["model_name"], "Qwen2.5-0.5B-Instruct-Q4_K_M");
+        assert!(resp_plan.data["chatml_prompt"].as_str().unwrap().contains("<|im_start|>system"));
+        assert!(resp_plan.data["tokens_generated"].as_u64().unwrap() > 0);
+
+        // Test slm.synthesize
+        let resp_synth = process_daemon_message(DaemonRequest {
+            id: "slm-synth-1".to_string(),
+            action: "slm.synthesize".to_string(),
+            agent_id: None,
+            session_token: None,
+            payload: serde_json::json!({
+                "goal": "帮我查询北京天气预报",
+                "observations_json": "[]"
+            }),
+        });
+        assert_eq!(resp_synth.status, "ok");
+        assert!(resp_synth.data["report"].as_str().unwrap().contains("离线推演报告"));
     }
 }
