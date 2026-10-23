@@ -898,7 +898,25 @@ final class AgentStore extends SQLiteOpenHelper {
         database.insertOrThrow("audit", null, values);
     }
 
+    public static boolean initVault(String vaultPath, String passphrase) {
+        return NativeAgentCore.vaultInit(vaultPath, passphrase);
+    }
+
+    public static boolean unlockVault(String vaultPath, String passphrase) {
+        return NativeAgentCore.vaultUnlock(vaultPath, passphrase);
+    }
+
+    public static boolean isVaultUnlocked() {
+        return NativeAgentCore.vaultIsUnlocked();
+    }
+
     private byte[] seal(String taskId, byte[] plaintext) throws Exception {
+        if (NativeAgentCore.isAvailable() && NativeAgentCore.vaultIsUnlocked()) {
+            byte[] sealed = NativeAgentCore.vaultSeal(taskId.getBytes(StandardCharsets.UTF_8), plaintext);
+            if (sealed != null && sealed.length > GCM_NONCE_BYTES) {
+                return sealed;
+            }
+        }
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, localKey());
         cipher.updateAAD(taskId.getBytes(StandardCharsets.UTF_8));
@@ -910,6 +928,16 @@ final class AgentStore extends SQLiteOpenHelper {
 
     private byte[] unseal(String taskId, byte[] sealed) throws Exception {
         if (sealed == null || sealed.length <= GCM_NONCE_BYTES) throw new SecurityException("Invalid encrypted task payload");
+        if (NativeAgentCore.isAvailable() && NativeAgentCore.vaultIsUnlocked()) {
+            try {
+                byte[] unsealed = NativeAgentCore.vaultUnseal(taskId.getBytes(StandardCharsets.UTF_8), sealed);
+                if (unsealed != null) {
+                    return unsealed;
+                }
+            } catch (Exception ignored) {
+                // Fallback to local Android Keystore if sealed with Keystore key
+            }
+        }
         ByteBuffer buffer = ByteBuffer.wrap(sealed);
         byte[] nonce = new byte[GCM_NONCE_BYTES];
         buffer.get(nonce);

@@ -1,5 +1,5 @@
 use jni::objects::{JByteArray, JClass, JFloatArray, JObjectArray, JShortArray, JString};
-use jni::sys::{jboolean, jint, jstring, JNI_FALSE, JNI_TRUE};
+use jni::sys::{jboolean, jbyteArray, jint, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -941,5 +941,111 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeDispatch
         .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
 
     env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultInit(
+    mut env: JNIEnv,
+    _class: JClass,
+    path: JString,
+    passphrase: JString,
+) -> jboolean {
+    let path_str: String = match env.get_string(&path) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+    let pass_str: String = match env.get_string(&passphrase) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+    if crate::vault::global_vault_init(&path_str, &pass_str).is_ok() {
+        JNI_TRUE
+    } else {
+        JNI_FALSE
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultUnlock(
+    mut env: JNIEnv,
+    _class: JClass,
+    path: JString,
+    passphrase: JString,
+) -> jboolean {
+    let path_str: String = match env.get_string(&path) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+    let pass_str: String = match env.get_string(&passphrase) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+    if crate::vault::global_vault_unlock(&path_str, &pass_str).is_ok() {
+        JNI_TRUE
+    } else {
+        JNI_FALSE
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultIsUnlocked(
+    _env: JNIEnv,
+    _class: JClass,
+) -> jboolean {
+    if crate::vault::is_global_vault_unlocked() {
+        JNI_TRUE
+    } else {
+        JNI_FALSE
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultSeal(
+    env: JNIEnv,
+    _class: JClass,
+    aad: JByteArray,
+    plaintext: JByteArray,
+) -> jbyteArray {
+    let aad_vec = match env.convert_byte_array(&aad) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let pt_vec = match env.convert_byte_array(&plaintext) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match crate::vault::global_vault_seal(&aad_vec, &pt_vec) {
+        Ok(sealed) => match env.byte_array_from_slice(&sealed) {
+            Ok(arr) => arr.into_raw(),
+            Err(_) => std::ptr::null_mut(),
+        },
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeVaultUnseal(
+    env: JNIEnv,
+    _class: JClass,
+    aad: JByteArray,
+    sealed: JByteArray,
+) -> jbyteArray {
+    let aad_vec = match env.convert_byte_array(&aad) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let sealed_vec = match env.convert_byte_array(&sealed) {
+        Ok(v) => v,
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match crate::vault::global_vault_unseal(&aad_vec, &sealed_vec) {
+        Ok(unsealed) => match env.byte_array_from_slice(&unsealed) {
+            Ok(arr) => arr.into_raw(),
+            Err(_) => std::ptr::null_mut(),
+        },
+        Err(_) => std::ptr::null_mut(),
+    }
 }
 

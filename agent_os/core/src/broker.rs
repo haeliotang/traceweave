@@ -33,6 +33,7 @@ pub trait CapabilityProvider: Send + Sync {
 
 #[derive(Debug, Clone)]
 pub struct Grant {
+    pub agent_id: String,
     pub task_id: String,
     pub capability: String,
     pub scope: String,
@@ -85,46 +86,73 @@ impl CapabilityBroker {
         self.remaining_millis(task_id, capability, scope, now) > 0
     }
 
-    pub fn grant(&mut self, task_id: &str, capability: &str, scope: &str, now: i64) -> Result<(), SecurityError> {
+    pub fn grant_for_agent(
+        &mut self,
+        agent_id: &str,
+        task_id: &str,
+        capability: &str,
+        scope: &str,
+        now: i64,
+    ) -> Result<(), SecurityError> {
         let provider = match self.providers.get(capability) {
             Some(p) => p,
             None => {
-                self.deny(task_id, capability, scope);
+                self.deny_for_agent(agent_id, task_id, capability, scope);
                 return Err(SecurityError::ProviderNotFound(capability.to_string()));
             }
         };
 
         if !provider.is_available(task_id, scope) {
-            self.deny(task_id, capability, scope);
+            self.deny_for_agent(agent_id, task_id, capability, scope);
             return Err(SecurityError::UnsupportedScope(scope.to_string()));
         }
 
         let key = Self::grant_key(task_id, capability, scope);
         let grant = Grant {
+            agent_id: agent_id.to_string(),
             task_id: task_id.to_string(),
             capability: capability.to_string(),
             scope: scope.to_string(),
             expires_at: now + GRANT_DURATION_MILLIS,
         };
         self.grants.insert(key, grant);
-        self.record_audit("capability_granted", capability, scope);
+        self.record_audit_for_agent(agent_id, "capability_granted", capability, scope);
         Ok(())
     }
 
-    pub fn revoke(&mut self, task_id: &str, capability: &str, scope: &str) {
+    pub fn grant(&mut self, task_id: &str, capability: &str, scope: &str, now: i64) -> Result<(), SecurityError> {
+        self.grant_for_agent("local_agent", task_id, capability, scope, now)
+    }
+
+    pub fn revoke_for_agent(&mut self, agent_id: &str, task_id: &str, capability: &str, scope: &str) {
         let key = Self::grant_key(task_id, capability, scope);
         if self.grants.remove(&key).is_some() {
-            self.record_audit("capability_revoked", capability, scope);
+            self.record_audit_for_agent(agent_id, "capability_revoked", capability, scope);
         }
     }
 
-    pub fn deny(&mut self, _task_id: &str, capability: &str, scope: &str) {
-        self.record_audit("capability_denied", capability, scope);
+    pub fn revoke(&mut self, task_id: &str, capability: &str, scope: &str) {
+        self.revoke_for_agent("local_agent", task_id, capability, scope);
     }
 
-    pub fn invoke(&mut self, task_id: &str, capability: &str, scope: &str, now: i64) -> Result<String, SecurityError> {
+    pub fn deny_for_agent(&mut self, agent_id: &str, _task_id: &str, capability: &str, scope: &str) {
+        self.record_audit_for_agent(agent_id, "capability_denied", capability, scope);
+    }
+
+    pub fn deny(&mut self, task_id: &str, capability: &str, scope: &str) {
+        self.deny_for_agent("local_agent", task_id, capability, scope);
+    }
+
+    pub fn invoke_for_agent(
+        &mut self,
+        agent_id: &str,
+        task_id: &str,
+        capability: &str,
+        scope: &str,
+        now: i64,
+    ) -> Result<String, SecurityError> {
         if !self.is_granted(task_id, capability, scope, now) {
-            self.deny(task_id, capability, scope);
+            self.deny_for_agent(agent_id, task_id, capability, scope);
             return Err(SecurityError::Unauthorized(format!("能力未授权或已过期: {}", capability)));
         }
 
@@ -135,18 +163,72 @@ impl CapabilityBroker {
 
         match provider.invoke(task_id, scope) {
             Ok(result) => {
-                self.record_audit("capability_invoked", capability, scope);
+                self.record_audit_for_agent(agent_id, "capability_invoked", capability, scope);
                 Ok(result)
             }
             Err(err) => {
-                self.record_audit("capability_failed", capability, scope);
+                self.record_audit_for_agent(agent_id, "capability_failed", capability, scope);
                 Err(SecurityError::ExecutionFailed(err))
             }
         }
     }
 
+    pub fn invoke(&mut self, task_id: &str, capability: &str, scope: &str, now: i64) -> Result<String, SecurityError> {
+        self.invoke_for_agent("local_agent", task_id, capability, scope, now)
+    }
+
+    pub fn record_audit_for_agent(&mut self, agent_id: &str, event_type: &str, capability: &str, scope: &str) {
+        let suffix = if agent_id.is_empty() || agent_id == "local_agent" {
+            String::new()
+        } else {
+            format!(":{}", agent_id)
+        };
+        self.audit_events.push(format!("{}:{}:{}{}", event_type, capability, scope, suffix));
+    }
+
+    #[allow(dead_code)]
     fn record_audit(&mut self, event_type: &str, capability: &str, scope: &str) {
-        self.audit_events.push(format!("{}:{}:{}", event_type, capability, scope));
+        self.record_audit_for_agent("local_agent", event_type, capability, scope);
+    }
+
+    pub fn list_available_capabilities(&self) -> Vec<serde_json::Value> {
+        vec![
+            serde_json::json!({
+                "capability": "demo.note.read",
+                "scope": "synthetic.welcome",
+                "title": "示例便笺",
+                "description": "读取本地固定的合成便笺内容",
+                "available": true
+            }),
+            serde_json::json!({
+                "capability": "demo.status.read",
+                "scope": "synthetic.device_status",
+                "title": "合成状态",
+                "description": "读取本地设备合成运行状态",
+                "available": true
+            }),
+            serde_json::json!({
+                "capability": "system.notification.post",
+                "scope": "system.notify",
+                "title": "任务通知推送",
+                "description": "在系统通知栏发送本地任务状态与提醒",
+                "available": true
+            }),
+            serde_json::json!({
+                "capability": "system.calendar.create",
+                "scope": "system.calendar_event",
+                "title": "日历日程待办",
+                "description": "生成规范的系统日历日程事项",
+                "available": true
+            }),
+            serde_json::json!({
+                "capability": "system.share.export",
+                "scope": "system.share_text",
+                "title": "文本分享导出",
+                "description": "打包任务输出为可供系统分享的文本摘要",
+                "available": true
+            }),
+        ]
     }
 
     pub fn audit_event_count(&self, event_str: &str) -> usize {

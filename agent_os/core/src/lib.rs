@@ -19,3 +19,5 @@ pub mod daemon;
 pub mod physical_sensorium;
 pub mod vision;
 pub mod hardware_broker;
+pub mod vault;
+pub mod identity;

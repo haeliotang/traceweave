@@ -207,6 +207,32 @@ public final class NativeAgentCore {
     }
 
     // =========================================================================
+    // PHASE 2: DECOUPLED PERSISTENT VAULT (TWO-TIER KEY LIFECYCLE)
+    // =========================================================================
+
+    public static boolean vaultInit(String vaultPath, String passphrase) {
+        return IS_LOADED && nativeVaultInit(vaultPath, passphrase);
+    }
+
+    public static boolean vaultUnlock(String vaultPath, String passphrase) {
+        return IS_LOADED && nativeVaultUnlock(vaultPath, passphrase);
+    }
+
+    public static boolean vaultIsUnlocked() {
+        return IS_LOADED && nativeVaultIsUnlocked();
+    }
+
+    public static byte[] vaultSeal(byte[] aad, byte[] plaintext) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeVaultSeal(aad, plaintext);
+    }
+
+    public static byte[] vaultUnseal(byte[] aad, byte[] sealed) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeVaultUnseal(aad, sealed);
+    }
+
+    // =========================================================================
     // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
     // =========================================================================
 
@@ -267,4 +293,10 @@ public final class NativeAgentCore {
     public static native String nativeParseVisualDocument(String ocrJson);
     public static native String nativeRegisterPeripheral(String peripheralJson);
     public static native String nativeDispatchHardwareEvent(String eventJson);
+
+    public static native boolean nativeVaultInit(String vaultPath, String passphrase);
+    public static native boolean nativeVaultUnlock(String vaultPath, String passphrase);
+    public static native boolean nativeVaultIsUnlocked();
+    public static native byte[] nativeVaultSeal(byte[] aad, byte[] plaintext);
+    public static native byte[] nativeVaultUnseal(byte[] aad, byte[] sealed);
 }
