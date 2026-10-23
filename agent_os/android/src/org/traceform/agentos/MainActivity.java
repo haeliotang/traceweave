@@ -3,6 +3,7 @@ package org.traceform.agentos;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -267,21 +269,69 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private boolean isEnglish() {
+        return "en".equals(getSharedPreferences("agent_os_prefs", Context.MODE_PRIVATE).getString("app_lang", "zh"));
+    }
+
+    private void toggleLanguage() {
+        boolean nextIsEn = !isEnglish();
+        getSharedPreferences("agent_os_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("app_lang", nextIsEn ? "en" : "zh")
+                .commit();
+        Toast.makeText(this, nextIsEn ? "Switched to English interface" : "已切换为中文界面", Toast.LENGTH_SHORT).show();
+        buildScreen();
+        refreshTasks();
+        refreshMemories();
+    }
+
     private void buildScreen() {
+        persistentButtons.clear();
         ScrollView scroll = new ScrollView(this);
         scroll.setBackgroundColor(0xFFF8FAFC);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(16), dp(40), dp(16), dp(28));
+        page.setPadding(dp(16), dp(54), dp(16), dp(28));
         scroll.addView(page);
 
-        // Header Title
+        boolean en = isEnglish();
+
+        // Top Header Row with Title and Language Switcher
+        LinearLayout topHeaderRow = new LinearLayout(this);
+        topHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
+        topHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams topHeaderLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        topHeaderRow.setLayoutParams(topHeaderLp);
+
         TextView title = new TextView(this);
-        title.setText("Agent OS 掌上智能系统");
-        title.setTextSize(22);
+        title.setText(en ? "Agent OS · Handheld AI" : "Agent OS 掌上智能系统");
+        title.setTextSize(20);
         title.setTextColor(0xFF0F172A);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
-        page.addView(title);
+        LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+        title.setLayoutParams(titleLp);
+        topHeaderRow.addView(title);
+
+        Button langBtn = new Button(this);
+        langBtn.setText(en ? "EN / 中" : "中 / EN");
+        langBtn.setTextSize(12);
+        langBtn.setTypeface(null, android.graphics.Typeface.BOLD);
+        langBtn.setTextColor(0xFF0284C7);
+        langBtn.setAllCaps(false);
+        GradientDrawable langBg = new GradientDrawable();
+        langBg.setColor(0xFFF0F9FF);
+        langBg.setCornerRadius(dp(14));
+        langBg.setStroke(dp(1), 0xFFBAE6FD);
+        langBtn.setBackground(langBg);
+        langBtn.setPadding(dp(12), dp(2), dp(12), dp(2));
+        langBtn.setOnClickListener(v -> toggleLanguage());
+        LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, dp(32));
+        topHeaderRow.addView(langBtn, btnLp);
+
+        page.addView(topHeaderRow);
 
         // Status Badges Row
         LinearLayout statusRow = new LinearLayout(this);
@@ -312,7 +362,7 @@ public final class MainActivity extends Activity {
         page.addView(statusRow);
 
         // --- COMPACT DASHBOARD CONSOLE CARD ---
-        LinearLayout consoleCard = createCard(page, IconFactory.IconType.SCREEN, "交互中枢与控制台 (Console)", 0xFF00695C);
+        LinearLayout consoleCard = createCard(page, IconFactory.IconType.SCREEN, en ? "Console & Interaction Center" : "交互中枢与控制台 (Console)", 0xFF00695C);
 
         floatPermStatus = new TextView(this);
         floatPermStatus.setTextSize(11);
@@ -321,7 +371,7 @@ public final class MainActivity extends Activity {
         consoleCard.addView(floatPermStatus);
 
         vadLiveStatus = new TextView(this);
-        vadLiveStatus.setText("实时拾音: 待命中 · 16kHz NEON SIMD");
+        vadLiveStatus.setText(en ? "Live Audio: Standby · 16kHz NEON SIMD" : "实时拾音: 待命中 · 16kHz NEON SIMD");
         vadLiveStatus.setTextSize(11);
         vadLiveStatus.setTextColor(0xFF0284C7);
         vadLiveStatus.setPadding(0, 0, 0, dp(6));
@@ -331,12 +381,13 @@ public final class MainActivity extends Activity {
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(2), 0, dp(4));
 
-        Button toggleFloatingBtn = createCompactActionButton("开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
+        Button toggleFloatingBtn = createCompactActionButton(en ? "Toggle Capsule" : "开启/切换悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
-                        .setTitle("开启悬浮胶囊权限")
-                        .setMessage("悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Agent OS 并开启【在其他应用上层显示】。")
-                        .setPositiveButton("前往设置", (dialog, which) -> {
+                        .setTitle(en ? "Grant Floating Capsule Permission" : "开启悬浮胶囊权限")
+                        .setMessage(en ? "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'."
+                                       : "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Agent OS 并开启【在其他应用上层显示】。")
+                        .setPositiveButton(en ? "Settings" : "前往设置", (dialog, which) -> {
                             try {
                                 Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                         Uri.parse("package:" + getPackageName()));
@@ -345,7 +396,7 @@ public final class MainActivity extends Activity {
                                 startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
                             }
                         })
-                        .setNegativeButton("取消", null)
+                        .setNegativeButton(en ? "Cancel" : "取消", null)
                         .show();
                 return;
             }
@@ -353,23 +404,23 @@ public final class MainActivity extends Activity {
             Intent fIntent = new Intent(this, AgentFloatingService.class);
             fIntent.setAction(AgentFloatingService.ACTION_TOGGLE);
             startService(fIntent);
-            Toast.makeText(this, "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, en ? "Floating capsule toggled" : "悬浮胶囊已切换显示状态", Toast.LENGTH_SHORT).show();
         });
         autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
 
-        Button hideFloatingBtn = createCompactActionButton("隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
+        Button hideFloatingBtn = createCompactActionButton(en ? "Hide Capsule" : "隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
             Intent fIntent = new Intent(this, AgentFloatingService.class);
             fIntent.setAction(AgentFloatingService.ACTION_HIDE);
             startService(fIntent);
-            Toast.makeText(this, "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, en ? "Floating capsule hidden" : "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
         hideLp.setMargins(dp(4), 0, 0, 0);
         autoBtnRow.addView(hideFloatingBtn, hideLp);
 
-        Button pingDaemonBtn = createCompactActionButton("Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
+        Button pingDaemonBtn = createCompactActionButton(en ? "Ping Daemon" : "Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
             org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
-            runOnUiThread(() -> Toast.makeText(this, "守护进程响应: " + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(this, (en ? "Daemon ping: " : "守护进程响应: ") + resp.optJSONObject("data").optString("service") + " (Ping OK)", Toast.LENGTH_SHORT).show());
         }).start());
         LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
         pingLp.setMargins(dp(4), 0, 0, 0);
@@ -381,34 +432,34 @@ public final class MainActivity extends Activity {
         diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow.setPadding(0, dp(2), 0, dp(2));
 
-        btnToggleVoice = createCompactActionButton("实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
+        btnToggleVoice = createCompactActionButton(en ? "Live Audio" : "实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
         diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(30), 1.1f));
 
-        Button testVoiceBtn = createCompactActionButton("合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testVoiceBtn = createCompactActionButton(en ? "Synth Test" : "合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
             short[] testPcm = new short[640];
             for (int i = 0; i < testPcm.length; i++) {
                 testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
             }
             org.json.JSONObject res = VoiceInteractionManager.processPcmFrame(testPcm);
-            Toast.makeText(this, "VAD 压测: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "VAD: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams testVoiceLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         testVoiceLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(testVoiceBtn, testVoiceLp);
 
-        Button refreshSensBtn = createCompactActionButton("环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button refreshSensBtn = createCompactActionButton(en ? "Sensors" : "环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
             sens.startMonitoring();
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
-            Toast.makeText(this, "姿态: " + ctx.optString("motion_state") + ", 环境: " + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, (en ? "Pose: " : "姿态: ") + ctx.optString("motion_state") + (en ? ", Env: " : ", 环境: ") + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         sensLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(refreshSensBtn, sensLp);
 
-        Button testVisionBtn = createCompactActionButton("真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testVisionBtn = createCompactActionButton(en ? "Vision OCR" : "真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
             try {
-                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen("新建智能任务");
+                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "New Smart Task" : "新建智能任务");
                 if (target.optBoolean("matched", false)) {
                     int x = (int) target.optDouble("tap_x");
                     int y = (int) target.optDouble("tap_y");
@@ -416,33 +467,33 @@ public final class MainActivity extends Activity {
                         @Override
                         public void onBitmapCaptured(android.graphics.Bitmap bitmap) {
                             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    "视觉定位: (" + x + "," + y + ") · 静默截屏: " + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
+                                    (en ? "Vision Target: (" : "视觉定位: (") + x + "," + y + (en ? ") · Silent Shot: " : ") · 静默截屏: ") + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
                         }
 
                         @Override
                         public void onError(int errorCode) {
                             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    "真机视觉定位: (" + x + "," + y + ") [截屏码: " + errorCode + "]", Toast.LENGTH_SHORT).show());
+                                    (en ? "Vision Target: (" : "真机视觉定位: (") + x + "," + y + (en ? ") [Code: " : ") [截屏码: ") + errorCode + "]", Toast.LENGTH_SHORT).show());
                         }
                     });
                 } else {
-                    Toast.makeText(this, "视觉匹配未命中: " + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, (en ? "Vision mismatch: " : "视觉匹配未命中: ") + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception ex) {
-                Toast.makeText(this, "定位异常: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, (en ? "Locate error: " : "定位异常: ") + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
         LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         visLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(testVisionBtn, visLp);
 
-        Button testPttBtn = createCompactActionButton("PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testPttBtn = createCompactActionButton(en ? "PTT Key" : "PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
             HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
             boolean nextState = !hwSvc.isPttActive();
             org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
-            ((Button) v).setText(nextState ? "松开 PTT" : "PTT 按键");
+            ((Button) v).setText(nextState ? (en ? "Release PTT" : "松开 PTT") : (en ? "PTT Key" : "PTT 按键"));
             ((Button) v).setTextColor(nextState ? 0xFFE11D48 : 0xFF475569);
-            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs 延迟)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs " + (en ? "latency" : "延迟") + ")", Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         pttLp.setMargins(dp(3), 0, 0, 0);
@@ -452,18 +503,18 @@ public final class MainActivity extends Activity {
 
         // --- 3-COLUMN TELEMETRY GRID (2 ROWS x 3 CARDS) ---
         LinearLayout gridRow1 = createGridRow(page);
-        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, "硬件常驻", 0xFF1565C0);
+        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, en ? "Hardware" : "硬件常驻", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
-        hwInfo.setText("Tensor G1 · 8核\nRAM 常驻: 4.1MB\n16KB 对齐 NEON");
+        hwInfo.setText(en ? "Tensor G1 · 8-core\nRAM Resident: 4.1MB\n16KB Aligned NEON" : "Tensor G1 · 8核\nRAM 常驻: 4.1MB\n16KB 对齐 NEON");
         hwInfo.setTextSize(10);
         hwInfo.setLineSpacing(dp(1), 1.0f);
         hwInfo.setTextColor(0xFF475569);
         hwInfo.setPadding(0, dp(4), 0, 0);
         hwCard.addView(hwInfo);
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, "端侧模型", 0xFF6A1B9A);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, en ? "Edge SLM" : "端侧模型", 0xFF6A1B9A);
         TextView slmInfo = new TextView(this);
-        slmInfo.setText("Qwen2.5-0.5B\nChatML + JSON\n32.0 tokens/s");
+        slmInfo.setText(en ? "Qwen2.5-0.5B\nChatML + JSON\n32.0 tokens/s" : "Qwen2.5-0.5B\nChatML + JSON\n32.0 tokens/s");
         slmInfo.setTextSize(10);
         slmInfo.setLineSpacing(dp(1), 1.0f);
         slmInfo.setTextColor(0xFF475569);
@@ -476,9 +527,9 @@ public final class MainActivity extends Activity {
                 org.json.JSONObject infoObj = new org.json.JSONObject(infoJson);
                 String goal = taskInput != null && !taskInput.getText().toString().trim().isEmpty()
                         ? taskInput.getText().toString().trim()
-                        : "帮我安排下午3点团队日程并查看天气";
+                        : (en ? "Schedule team meeting at 3pm and check weather" : "帮我安排下午3点团队日程并查看天气");
 
-                String planJson = NativeAgentCore.edgeSlmPlan("test_task", goal, "[\"偏好: 提前5分钟\"]", "{}", 0L);
+                String planJson = NativeAgentCore.edgeSlmPlan("test_task", goal, en ? "[\"Preference: 5min early\"]" : "[\"偏好: 提前5分钟\"]", "{}", 0L);
                 org.json.JSONObject planObj = new org.json.JSONObject(planJson);
 
                 int tokens = planObj.optInt("tokens_generated", 0);
@@ -488,15 +539,15 @@ public final class MainActivity extends Activity {
                 slmInfo.setText(infoObj.optString("architecture", "qwen2").toUpperCase(Locale.ROOT) + " · GGUF v" + infoObj.optInt("version", 3) + "\n"
                         + "290 Tensors · 32k\n"
                         + String.format(Locale.US, "%.1f", tps) + " t/s (" + latency + "ms)");
-                Toast.makeText(this, "端侧 SLM 规划完毕: " + goal + " (" + tokens + " tokens, " + tps + " tps)", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, (en ? "Edge SLM planned: " : "端侧 SLM 规划完毕: ") + goal + " (" + tokens + " tokens, " + tps + " tps)", Toast.LENGTH_LONG).show();
             } catch (Exception e) {
-                Toast.makeText(this, "端侧模型推演异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, (en ? "Edge SLM error: " : "端侧模型推演异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, "AOSP守护", 0xFFD84315);
+        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "AOSP守护", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText("agentosd · 19898\noom_adj -1000\n独立原生运行");
+        daemonInfo.setText(en ? "agentosd · 19898\noom_adj -1000\nNative Isolated" : "agentosd · 19898\noom_adj -1000\n独立原生运行");
         daemonInfo.setTextSize(10);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
@@ -504,27 +555,27 @@ public final class MainActivity extends Activity {
         daemonCard.addView(daemonInfo);
 
         LinearLayout gridRow2 = createGridRow(page);
-        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, "E2EE同步", 0xFF2E7D32);
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "E2EE Sync" : "E2EE同步", 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
-        syncInfo.setText("AES-256-GCM\nPBKDF2 向量时钟\nP2P 局域网无感");
+        syncInfo.setText(en ? "AES-256-GCM\nPBKDF2 Vector Clock\nP2P Zero-Trust" : "AES-256-GCM\nPBKDF2 向量时钟\nP2P 局域网无感");
         syncInfo.setTextSize(10);
         syncInfo.setLineSpacing(dp(1), 1.0f);
         syncInfo.setTextColor(0xFF475569);
         syncInfo.setPadding(0, dp(4), 0, 0);
         syncCard.addView(syncInfo);
 
-        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, "环境感知", 0xFF0277BD);
+        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, en ? "Sensors" : "环境感知", 0xFF0277BD);
         TextView sensInfo = new TextView(this);
-        sensInfo.setText("IMU + 陀螺仪 + 光感\n姿态监测 (静止/行进)\n口袋防误触门禁");
+        sensInfo.setText(en ? "IMU + Gyro + Light\nPose (Still/Moving)\nPocket Guard Active" : "IMU + 陀螺仪 + 光感\n姿态监测 (静止/行进)\n口袋防误触门禁");
         sensInfo.setTextSize(10);
         sensInfo.setLineSpacing(dp(1), 1.0f);
         sensInfo.setTextColor(0xFF475569);
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
-        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, "视觉/PTT", 0xFF4527A0);
+        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, en ? "Vision/PTT" : "视觉/PTT", 0xFF4527A0);
         TextView visionInfo = new TextView(this);
-        visionInfo.setText("无障碍破障定位\nBLE 指环硬件联动\n物理按键微秒唤醒");
+        visionInfo.setText(en ? "Accessibility OCR\nBLE Ring Peripheral\nInstant Physical Wake" : "无障碍破障定位\nBLE 指环硬件联动\n物理按键微秒唤醒");
         visionInfo.setTextSize(10);
         visionInfo.setLineSpacing(dp(1), 1.0f);
         visionInfo.setTextColor(0xFF475569);
@@ -533,17 +584,17 @@ public final class MainActivity extends Activity {
 
         // --- TASK SECTION ---
         TextView taskHeading = new TextView(this);
-        taskHeading.setText("智能任务管理");
+        taskHeading.setText(en ? "Smart Task Management" : "智能任务管理");
         taskHeading.setTextSize(17);
         taskHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         taskHeading.setTextColor(0xFF0F172A);
         taskHeading.setPadding(0, dp(14), 0, dp(4));
         page.addView(taskHeading);
 
-        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, "新建智能任务", 0xFF0284C7);
+        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, en ? "New Smart Task" : "新建智能任务", 0xFF0284C7);
 
         taskInput = new EditText(this);
-        taskInput.setHint("输入任务目标，如：安排团队待办日程，或整理工作笔记");
+        taskInput.setHint(en ? "Enter task goal, e.g. schedule team meeting or check weather..." : "输入任务目标，如：安排团队待办日程，或整理工作笔记");
         taskInput.setTextSize(13);
         taskInput.setMinLines(2);
         taskInput.setMaxLines(3);
@@ -555,7 +606,7 @@ public final class MainActivity extends Activity {
         taskInput.setPadding(dp(10), dp(8), dp(10), dp(8));
         taskInputCard.addView(taskInput);
 
-        Button submitTaskBtn = createCompactActionButton("提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
+        Button submitTaskBtn = createCompactActionButton(en ? "Submit & Plan Task" : "提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
         submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(submitTaskBtn);
         LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
@@ -568,14 +619,14 @@ public final class MainActivity extends Activity {
 
         // --- MEMORY SECTION ---
         TextView memoryHeading = new TextView(this);
-        memoryHeading.setText("用户记忆与知识库");
+        memoryHeading.setText(en ? "Encrypted Memory & Knowledge" : "用户记忆与知识库");
         memoryHeading.setTextSize(17);
         memoryHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         memoryHeading.setTextColor(0xFF0F172A);
         memoryHeading.setPadding(0, dp(14), 0, dp(4));
         page.addView(memoryHeading);
 
-        LinearLayout memoryInputCard = createCard(page, IconFactory.IconType.BRAIN, "新增或搜索记忆", 0xFF7C3AED);
+        LinearLayout memoryInputCard = createCard(page, IconFactory.IconType.BRAIN, en ? "Add or Search Memory" : "新增或搜索记忆", 0xFF7C3AED);
 
         LinearLayout memControlsRow = new LinearLayout(this);
         memControlsRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -583,11 +634,11 @@ public final class MainActivity extends Activity {
 
         memoryKind = new Spinner(this);
         memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-            new String[]{"偏好", "事实", "工作流"}));
-        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(100), LinearLayout.LayoutParams.WRAP_CONTENT));
+            en ? new String[]{"Preference", "Fact", "Workflow"} : new String[]{"偏好", "事实", "工作流"}));
+        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(110), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
-        memorySearch.setHint("搜索记忆内容...");
+        memorySearch.setHint(en ? "Search memories..." : "搜索记忆内容...");
         memorySearch.setTextSize(12);
         GradientDrawable searchBg = new GradientDrawable();
         searchBg.setColor(0xFFF8FAFC);
@@ -608,7 +659,7 @@ public final class MainActivity extends Activity {
         memoryInputCard.addView(memControlsRow);
 
         memoryInput = new EditText(this);
-        memoryInput.setHint("记录一条个人偏好、重要事实或固定工作流（来源标记为你提供）");
+        memoryInput.setHint(en ? "Record a user preference, fact, or workflow..." : "记录一条个人偏好、重要事实或固定工作流（来源标记为你提供）");
         memoryInput.setTextSize(13);
         memoryInput.setMinLines(2);
         memoryInput.setMaxLines(3);
@@ -622,7 +673,7 @@ public final class MainActivity extends Activity {
         miLp.setMargins(0, dp(6), 0, dp(6));
         memoryInputCard.addView(memoryInput, miLp);
 
-        Button saveMemoryBtn = createCompactActionButton("保存加密记忆", 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
+        Button saveMemoryBtn = createCompactActionButton(en ? "Save Encrypted Memory" : "保存加密记忆", 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
         saveMemoryBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(saveMemoryBtn);
         LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
@@ -634,23 +685,23 @@ public final class MainActivity extends Activity {
 
         // --- SETTINGS & ADVANCED SECTION ---
         TextView settingsHeading = new TextView(this);
-        settingsHeading.setText("数据管理与扩展服务");
+        settingsHeading.setText(en ? "Data Management & Providers" : "数据管理与扩展服务");
         settingsHeading.setTextSize(17);
         settingsHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         settingsHeading.setTextColor(0xFF0F172A);
         settingsHeading.setPadding(0, dp(14), 0, dp(4));
         page.addView(settingsHeading);
 
-        LinearLayout settingsCard = createCard(page, IconFactory.IconType.SHIELD, "E2EE 归档与可选 Provider", 0xFF334155);
+        LinearLayout settingsCard = createCard(page, IconFactory.IconType.SHIELD, en ? "E2EE Archive & Providers" : "E2EE 归档与可选 Provider", 0xFF334155);
 
         LinearLayout archiveActions = new LinearLayout(this);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
-        addActionButton(archiveActions, "加密导出", view -> promptExportPassphrase());
-        addActionButton(archiveActions, "导入档案", view -> chooseArchiveToImport());
+        addActionButton(archiveActions, en ? "Export" : "加密导出", view -> promptExportPassphrase());
+        addActionButton(archiveActions, en ? "Import" : "导入档案", view -> chooseArchiveToImport());
         settingsCard.addView(archiveActions);
 
         activityStatus = new TextView(this);
-        activityStatus.setText("本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
+        activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
         activityStatus.setTextSize(11);
         activityStatus.setTextColor(0xFF64748B);
         activityStatus.setPadding(0, dp(4), 0, dp(6));
@@ -660,7 +711,7 @@ public final class MainActivity extends Activity {
         traceformStatus.setTextSize(12);
         settingsCard.addView(traceformStatus);
 
-        traceformToggleButton = createCompactActionButton("配置 Traceform Provider", 0xFFF1F5F9, 0xFF334155, view -> toggleTraceformProvider());
+        traceformToggleButton = createCompactActionButton(en ? "Configure Traceform Provider" : "配置 Traceform Provider", 0xFFF1F5F9, 0xFF334155, view -> toggleTraceformProvider());
         persistentButtons.add(traceformToggleButton);
         LinearLayout.LayoutParams tfLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
         tfLp.setMargins(0, dp(2), 0, dp(8));
@@ -671,7 +722,7 @@ public final class MainActivity extends Activity {
         cloudModelStatus.setTextSize(12);
         settingsCard.addView(cloudModelStatus);
 
-        cloudModelConfigButton = createCompactActionButton("配置端云协同推演", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
+        cloudModelConfigButton = createCompactActionButton(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推演", 0xFFF1F5F9, 0xFF334155, view -> promptCloudModelConfig());
         persistentButtons.add(cloudModelConfigButton);
         LinearLayout.LayoutParams cmLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
         cmLp.setMargins(0, dp(2), 0, dp(2));
@@ -722,7 +773,7 @@ public final class MainActivity extends Activity {
             taskList.removeAllViews();
             List<AgentStore.Task> tasks = store.listTasks();
             if (tasks.isEmpty()) {
-                addEmptyMessage(taskList, "还没有任务");
+                addEmptyMessage(taskList, isEnglish() ? "No active tasks" : "还没有任务");
                 mainHandler.removeCallbacks(taskRefresh);
                 return;
             }
@@ -826,7 +877,8 @@ public final class MainActivity extends Activity {
         memoryList.removeAllViews();
             if (memories.isEmpty()) {
                 addEmptyMessage(memoryList, memorySearch != null && memorySearch.length() > 0
-                    ? "没有匹配的记忆" : "还没有记忆");
+                    ? (isEnglish() ? "No matching memories" : "没有匹配的记忆")
+                    : (isEnglish() ? "No memories yet" : "还没有记忆"));
                 return;
             }
             for (AgentStore.Memory memory : memories) addMemoryCard(memory);
@@ -869,6 +921,7 @@ public final class MainActivity extends Activity {
         metadata.setPadding(0, dp(2), 0, dp(4));
         card.addView(metadata);
 
+        boolean en = isEnglish();
         boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status);
         final LinearLayout detailContainer = new LinearLayout(this);
         detailContainer.setOrientation(LinearLayout.VERTICAL);
@@ -883,8 +936,10 @@ public final class MainActivity extends Activity {
 
             final TextView toggleBtn = new TextView(this);
             int stepCount = (task.plan != null) ? task.plan.totalSteps() : 0;
-            String statusText = AgentStore.COMPLETED.equals(task.status) ? "已完成" : "已取消";
-            toggleBtn.setText(statusText + "（共 " + stepCount + " 步） · 点击展开详细内容 ▼");
+            String statusText = AgentStore.COMPLETED.equals(task.status)
+                    ? (en ? "Completed" : "已完成")
+                    : (en ? "Cancelled" : "已取消");
+            toggleBtn.setText(statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
             toggleBtn.setTextSize(12);
             toggleBtn.setTextColor(0xFF0284C7);
             toggleRow.addView(toggleBtn);
@@ -893,8 +948,8 @@ public final class MainActivity extends Activity {
                 boolean willExpand = detailContainer.getVisibility() != View.VISIBLE;
                 detailContainer.setVisibility(willExpand ? View.VISIBLE : View.GONE);
                 toggleBtn.setText(willExpand
-                    ? statusText + "（共 " + stepCount + " 步） · 点击收起详细内容 ▲"
-                    : statusText + "（共 " + stepCount + " 步） · 点击展开详细内容 ▼");
+                    ? statusText + (en ? " (" + stepCount + " steps) · Click to collapse ▲" : "（共 " + stepCount + " 步） · 点击收起详细内容 ▲")
+                    : statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
             };
             toggleRow.setOnClickListener(toggleClick);
             toggleBtn.setOnClickListener(toggleClick);
@@ -908,10 +963,10 @@ public final class MainActivity extends Activity {
                 int idx = cleanResult.indexOf("本地推演结论：");
                 cleanResult = cleanResult.substring(idx + "本地推演结论：".length()).trim();
             } else if (cleanResult.contains("【端侧") && cleanResult.contains("任务意图目标：")) {
-                cleanResult = "端侧多步核对通过，数据 100% 保留在本机安全沙盒。";
+                cleanResult = en ? "Edge verification passed, 100% data remains in sandbox." : "端侧多步核对通过，数据 100% 保留在本机安全沙盒。";
             }
             TextView result = new TextView(this);
-            result.setText("执行结果：" + cleanResult);
+            result.setText((en ? "Result: " : "执行结果：") + cleanResult);
             result.setTextSize(12);
             result.setTextColor(0xFF1E293B);
             GradientDrawable resBg = new GradientDrawable();
@@ -932,14 +987,14 @@ public final class MainActivity extends Activity {
 
         if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
                 || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status)) {
-            String label = AgentStore.QUEUED.equals(task.status) ? "开始"
-                : AgentStore.FAILED.equals(task.status) ? "重试" : "继续";
+            String label = AgentStore.QUEUED.equals(task.status) ? (en ? "Start" : "开始")
+                : AgentStore.FAILED.equals(task.status) ? (en ? "Retry" : "重试") : (en ? "Resume" : "继续");
             addTaskButton(actions, label, task, AgentStore.ACTIVE);
         }
-        if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, "暂停", task, AgentStore.PAUSED);
+        if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, en ? "Pause" : "暂停", task, AgentStore.PAUSED);
         if (!isTerminal)
-            addTaskButton(actions, "取消", task, AgentStore.CANCELLED);
-        addCardActionButton(actions, "删除", view -> confirmDeleteTask(task), taskButtons);
+            addTaskButton(actions, en ? "Cancel" : "取消", task, AgentStore.CANCELLED);
+        addCardActionButton(actions, en ? "Delete" : "删除", view -> confirmDeleteTask(task), taskButtons);
         detailContainer.addView(actions);
 
         if (!isTerminal) {
@@ -1107,13 +1162,14 @@ public final class MainActivity extends Activity {
         topRow.addView(getMemoryKindBadge(memory.kind));
 
         TextView srcTv = new TextView(this);
+        boolean en = isEnglish();
         String source;
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            source = "系统自主提取";
+            source = en ? "Auto Consolidated" : "系统自主提取";
         } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
             source = "Traceform";
         } else {
-            source = "你提供";
+            source = en ? "User Provided" : "你提供";
         }
         srcTv.setText(" · " + source);
         srcTv.setTextSize(11);
@@ -1122,7 +1178,7 @@ public final class MainActivity extends Activity {
         topRow.addView(srcTv, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         TextView delBtn = new TextView(this);
-        delBtn.setText("删除");
+        delBtn.setText(en ? "Delete" : "删除");
         delBtn.setTextSize(12);
         delBtn.setTextColor(0xFFEF4444);
         delBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
@@ -1349,22 +1405,28 @@ public final class MainActivity extends Activity {
 
     private void updateTraceformProviderControls() {
         if (traceformStatus == null || traceformToggleButton == null || capabilityBroker == null) return;
+        boolean en = isEnglish();
         boolean enabled = capabilityBroker.isTraceformEnabled();
         boolean signatureMatched = capabilityBroker.canEnableTraceform();
-        traceformToggleButton.setText(enabled ? "停用 Traceform Provider" : "启用 Traceform Provider");
+        traceformToggleButton.setText(enabled ? (en ? "Disable Traceform Provider" : "停用 Traceform Provider") : (en ? "Enable Traceform Provider" : "启用 Traceform Provider"));
         traceformStatus.setText(enabled
-            ? signatureMatched ? "已启用；读取仍需逐任务授权，且不会启动传感器采集。"
-                : "设置已启用，但没有找到签名匹配的 Traceform 安装。"
-            : "默认关闭。启用本身不会读取数据；每次读取和保存为记忆都需单独确认。");
+            ? signatureMatched ? (en ? "Enabled; each read requires per-task auth, zero passive sensor capture." : "已启用；读取仍需逐任务授权，且不会启动传感器采集。")
+                : (en ? "Enabled in settings, but no signature-matched Traceform install found." : "设置已启用，但没有找到签名匹配的 Traceform 安装。")
+            : (en ? "Disabled by default. Reads/saves always require explicit user confirmation." : "默认关闭。启用本身不会读取数据；每次读取和保存为记忆都需单独确认。"));
     }
 
     private void updateCloudModelControls() {
         if (cloudModelStatus == null || cloudModelConfigButton == null) return;
+        boolean en = isEnglish();
         CloudModelConfig config = CloudModelConfig.load(this);
-        cloudModelConfigButton.setText(config.enabled ? "设置端云协同参数" : "启用端云协同推演");
+        cloudModelConfigButton.setText(config.enabled
+            ? (en ? "Configure Cloud Inference" : "设置端云协同参数")
+            : (en ? "Enable Hybrid Cloud Inference" : "启用端云协同推演"));
         cloudModelStatus.setText(config.enabled
-            ? "已启用（模型：" + config.modelName + "） · 请求前强制经端侧脱敏门禁过滤个人敏感数据；断网时自动降级。"
-            : "默认关闭。仅在端侧进行确定性规则推演，完全不发起外部网络连接。");
+            ? (en ? "Enabled (Model: " + config.modelName + ") · Requests sanitized on-device before egress; auto-fallback offline."
+                  : "已启用（模型：" + config.modelName + "） · 请求前强制经端侧脱敏门禁过滤个人敏感数据；断网时自动降级。")
+            : (en ? "Disabled by default. Pure local deterministic reasoning, zero external network connections."
+                  : "默认关闭。仅在端侧进行确定性规则推演，完全不发起外部网络连接。"));
     }
 
     private void promptCloudModelConfig() {
@@ -1678,11 +1740,12 @@ public final class MainActivity extends Activity {
     private void updateFloatPermStatus() {
         if (floatPermStatus == null) return;
         boolean canDraw = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this);
+        boolean en = isEnglish();
         if (canDraw) {
-            floatPermStatus.setText("悬浮窗权限状态：已授权 (可在任意应用顶层呼出)");
+            floatPermStatus.setText(en ? "Overlay Permission: Granted (Can display over any app)" : "悬浮窗权限状态：已授权 (可在任意应用顶层呼出)");
             floatPermStatus.setTextColor(0xFF00796B);
         } else {
-            floatPermStatus.setText("悬浮窗权限状态：未授权 (点击下方按钮前往系统设置开启)");
+            floatPermStatus.setText(en ? "Overlay Permission: Not Granted (Click below to grant in Settings)" : "悬浮窗权限状态：未授权 (点击下方按钮前往系统设置开启)");
             floatPermStatus.setTextColor(0xFFD32F2F);
         }
     }
@@ -1846,27 +1909,29 @@ public final class MainActivity extends Activity {
     }
 
     private TextView getStatusBadge(String status) {
+        boolean en = isEnglish();
         if (AgentStore.COMPLETED.equals(status)) {
-            return IconFactory.createBadge(this, "已完成", 0xFFDCFCE7, 0xFF166534);
+            return IconFactory.createBadge(this, en ? "Completed" : "已完成", 0xFFDCFCE7, 0xFF166534);
         } else if (AgentStore.ACTIVE.equals(status)) {
-            return IconFactory.createBadge(this, "执行中", 0xFFDBEAFE, 0xFF1E40AF);
+            return IconFactory.createBadge(this, en ? "Active" : "执行中", 0xFFDBEAFE, 0xFF1E40AF);
         } else if (AgentStore.WAITING_FOR_USER.equals(status)) {
-            return IconFactory.createBadge(this, "等待授权", 0xFFFEF3C7, 0xFF92400E);
+            return IconFactory.createBadge(this, en ? "Need Auth" : "等待授权", 0xFFFEF3C7, 0xFF92400E);
         } else if (AgentStore.PAUSED.equals(status)) {
-            return IconFactory.createBadge(this, "已暂停", 0xFFF1F5F9, 0xFF475569);
+            return IconFactory.createBadge(this, en ? "Paused" : "已暂停", 0xFFF1F5F9, 0xFF475569);
         } else if (AgentStore.CANCELLED.equals(status)) {
-            return IconFactory.createBadge(this, "已取消", 0xFFFEE2E2, 0xFF991B1B);
+            return IconFactory.createBadge(this, en ? "Cancelled" : "已取消", 0xFFFEE2E2, 0xFF991B1B);
         }
-        return IconFactory.createBadge(this, "待处理", 0xFFE0E7FF, 0xFF3730A3);
+        return IconFactory.createBadge(this, en ? "Pending" : "待处理", 0xFFE0E7FF, 0xFF3730A3);
     }
 
     private TextView getMemoryKindBadge(String kind) {
+        boolean en = isEnglish();
         if (AgentStore.MEMORY_PREFERENCE.equals(kind)) {
-            return IconFactory.createBadge(this, "偏好", 0xFFEDE9FE, 0xFF5B21B6);
+            return IconFactory.createBadge(this, en ? "Preference" : "偏好", 0xFFEDE9FE, 0xFF5B21B6);
         } else if (AgentStore.MEMORY_FACT.equals(kind)) {
-            return IconFactory.createBadge(this, "事实", 0xFFDBEAFE, 0xFF1E40AF);
+            return IconFactory.createBadge(this, en ? "Fact" : "事实", 0xFFDBEAFE, 0xFF1E40AF);
         }
-        return IconFactory.createBadge(this, "工作流", 0xFFCCFBF1, 0xFF115E59);
+        return IconFactory.createBadge(this, en ? "Workflow" : "工作流", 0xFFCCFBF1, 0xFF115E59);
     }
 
     private Button createCompactActionButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
