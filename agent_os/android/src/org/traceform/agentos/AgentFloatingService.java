@@ -52,8 +52,9 @@ public final class AgentFloatingService extends Service {
     // UI Elements
     private LinearLayout rootLayout;
     private LinearLayout pillHeader;
+    private android.widget.ImageView statusDotView;
     private TextView statusTextView;
-    private TextView micButton;
+    private android.widget.ImageView micButtonView;
     private LinearLayout expandedPanel;
     private TextView taskDetailView;
     private TextView screenInspectorView;
@@ -98,9 +99,9 @@ public final class AgentFloatingService extends Service {
                 PixelFormat.TRANSLUCENT
         );
 
-        floatingParams.gravity = Gravity.TOP | Gravity.START;
-        floatingParams.x = 40;
-        floatingParams.y = 180;
+        floatingParams.gravity = Gravity.TOP | Gravity.END;
+        floatingParams.x = 36;
+        floatingParams.y = 130;
 
         rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
@@ -117,17 +118,19 @@ public final class AgentFloatingService extends Service {
         pillHeader.setOrientation(LinearLayout.HORIZONTAL);
         pillHeader.setGravity(Gravity.CENTER_VERTICAL);
 
+        statusDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10);
+        pillHeader.addView(statusDotView);
+
         statusTextView = new TextView(this);
-        statusTextView.setText("● Agent Capsule: 离线就绪");
+        statusTextView.setText(" Agent Capsule: 离线就绪");
         statusTextView.setTextColor(Color.parseColor("#4AF6C3"));
         statusTextView.setTextSize(13);
+        statusTextView.setPadding(8, 0, 12, 0);
         pillHeader.addView(statusTextView);
 
-        micButton = new TextView(this);
-        micButton.setText(" 🎙️ ");
-        micButton.setTextSize(14);
-        micButton.setOnClickListener(v -> toggleVoiceListening());
-        pillHeader.addView(micButton);
+        micButtonView = IconFactory.createIconView(this, IconFactory.IconType.MIC, Color.parseColor("#4AF6C3"), 18);
+        micButtonView.setOnClickListener(v -> toggleVoiceListening());
+        pillHeader.addView(micButtonView);
 
         // Click pill to toggle expansion
         pillHeader.setOnClickListener(v -> toggleExpansion());
@@ -139,18 +142,28 @@ public final class AgentFloatingService extends Service {
         expandedPanel.setVisibility(View.GONE);
         expandedPanel.setPadding(0, 16, 0, 0);
 
+        LinearLayout taskRow = new LinearLayout(this);
+        taskRow.setOrientation(LinearLayout.HORIZONTAL);
+        taskRow.setGravity(Gravity.CENTER_VERTICAL);
+        taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#E0E0E0"), 14));
         taskDetailView = new TextView(this);
-        taskDetailView.setText("当前任务: 待命中\n已加载端侧模型: Qwen2.5-0.5B (Resident)");
+        taskDetailView.setText(" 待命任务 · Qwen2.5-0.5B 常驻运行");
         taskDetailView.setTextColor(Color.parseColor("#E0E0E0"));
         taskDetailView.setTextSize(12);
-        expandedPanel.addView(taskDetailView);
+        taskRow.addView(taskDetailView);
+        expandedPanel.addView(taskRow);
 
+        LinearLayout screenRow = new LinearLayout(this);
+        screenRow.setOrientation(LinearLayout.HORIZONTAL);
+        screenRow.setGravity(Gravity.CENTER_VERTICAL);
+        screenRow.setPadding(0, 8, 0, 0);
+        screenRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SCREEN, Color.parseColor("#80D8FF"), 14));
         screenInspectorView = new TextView(this);
-        screenInspectorView.setText("屏幕感知: 无障碍自动化中枢待机");
+        screenInspectorView.setText(" 屏幕感知: 无障碍自动化中枢就绪");
         screenInspectorView.setTextColor(Color.parseColor("#80D8FF"));
         screenInspectorView.setTextSize(11);
-        screenInspectorView.setPadding(0, 8, 0, 0);
-        expandedPanel.addView(screenInspectorView);
+        screenRow.addView(screenInspectorView);
+        expandedPanel.addView(screenRow);
 
         // Voice Waveform Visualizer
         voiceWaveformBar = new LinearLayout(this);
@@ -173,9 +186,22 @@ public final class AgentFloatingService extends Service {
         jitContainer.setVisibility(View.GONE);
         jitContainer.setPadding(0, 14, 0, 0);
 
+        LinearLayout jitTitleRow = new LinearLayout(this);
+        jitTitleRow.setOrientation(LinearLayout.HORIZONTAL);
+        jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
+        jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 16));
+        TextView jitTitle = new TextView(this);
+        jitTitle.setText(" 跨应用 JIT 安全门禁");
+        jitTitle.setTextColor(Color.parseColor("#FFD54F"));
+        jitTitle.setTextSize(12);
+        jitTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        jitTitleRow.addView(jitTitle);
+        jitContainer.addView(jitTitleRow);
+
         jitPromptView = new TextView(this);
         jitPromptView.setTextColor(Color.WHITE);
         jitPromptView.setTextSize(12);
+        jitPromptView.setPadding(0, 4, 0, 0);
         jitContainer.addView(jitPromptView);
 
         LinearLayout btnRow = new LinearLayout(this);
@@ -261,8 +287,11 @@ public final class AgentFloatingService extends Service {
     }
 
     private void toggleVoiceListening() {
+        if (statusDotView != null) {
+            statusDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_BLUE, 0xFF29B6F6, 10));
+        }
         if (statusTextView != null) {
-            statusTextView.setText("● 正在离线聆听语音中枢...");
+            statusTextView.setText(" 语音中枢聆听中 (16kHz PCM)");
         }
     }
 
@@ -279,8 +308,11 @@ public final class AgentFloatingService extends Service {
             String title = intent.getStringExtra(EXTRA_TASK_TITLE);
             int step = intent.getIntExtra(EXTRA_STEP_INDEX, 0);
             String stepTitle = intent.getStringExtra(EXTRA_STEP_TITLE);
+            if (statusDotView != null) {
+                statusDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10));
+            }
             if (statusTextView != null) {
-                statusTextView.setText("● [" + (step + 1) + "] " + (stepTitle != null ? stepTitle : title));
+                statusTextView.setText(" [" + (step + 1) + "] " + (stepTitle != null ? stepTitle : title));
             }
             if (taskDetailView != null) {
                 taskDetailView.setText("当前任务: " + title + "\n当前步骤: " + stepTitle);
@@ -290,8 +322,11 @@ public final class AgentFloatingService extends Service {
             pendingCap = intent.getStringExtra(EXTRA_CAPABILITY);
             pendingScope = intent.getStringExtra(EXTRA_SCOPE);
 
+            if (statusDotView != null) {
+                statusDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
+            }
             if (jitContainer != null && jitPromptView != null) {
-                jitPromptView.setText("【跨应用 JIT 阻断申请】\n任务: " + pendingTaskId + "\n申请权限: " + pendingCap);
+                jitPromptView.setText("任务: " + pendingTaskId + "\n申请权限: " + pendingCap);
                 jitContainer.setVisibility(View.VISIBLE);
                 if (expandedPanel != null) expandedPanel.setVisibility(View.VISIBLE);
                 if (floatingView != null) floatingView.setVisibility(View.VISIBLE);
@@ -316,8 +351,13 @@ public final class AgentFloatingService extends Service {
         if (jitContainer != null) {
             jitContainer.setVisibility(View.GONE);
         }
+        if (statusDotView != null) {
+            statusDotView.setImageDrawable(IconFactory.getIcon(this,
+                    granted ? IconFactory.IconType.STATUS_DOT_GREEN : IconFactory.IconType.STATUS_DOT_AMBER,
+                    granted ? 0xFF00E676 : 0xFFFFB300, 10));
+        }
         if (statusTextView != null) {
-            statusTextView.setText(granted ? "● JIT 租约已生效 (5分钟)" : "● JIT 授权已拒绝");
+            statusTextView.setText(granted ? " JIT 租约已生效 (5分钟)" : " JIT 授权已拒绝");
         }
         if (sJitListener != null) {
             sJitListener.onDecision(pendingTaskId, pendingCap, pendingScope, granted);

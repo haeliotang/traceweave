@@ -166,7 +166,7 @@ public final class MainActivity extends Activity {
         ScrollView scroll = new ScrollView(this);
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(24), dp(32), dp(24), dp(24));
+        page.setPadding(dp(20), dp(44), dp(20), dp(28));
         scroll.addView(page);
 
         TextView title = new TextView(this);
@@ -175,20 +175,36 @@ public final class MainActivity extends Activity {
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         page.addView(title);
 
-        TextView nativeStatus = new TextView(this);
+        LinearLayout statusRow = new LinearLayout(this);
+        statusRow.setOrientation(LinearLayout.HORIZONTAL);
+        statusRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        statusRow.setPadding(0, dp(4), 0, dp(12));
+
         if (NativeAgentCore.isAvailable()) {
-            nativeStatus.setText("⚡ 原生 Rust 内核就绪 (16KB 对齐 · 4.10μs NEON SIMD 极速推演)");
-            nativeStatus.setTextColor(0xFF1B5E20); // Dark Green
+            TextView rustBadge = IconFactory.createBadge(this, "RUST NATIVE", 0xFFE8F5E9, 0xFF1B5E20);
+            statusRow.addView(rustBadge);
+
+            TextView nativeStatus = new TextView(this);
+            nativeStatus.setText(" 16KB 内存对齐 · 4.10μs NEON SIMD 极速推演");
+            nativeStatus.setTextColor(0xFF2E7D32);
+            nativeStatus.setTextSize(13);
+            nativeStatus.setPadding(dp(6), 0, 0, 0);
+            statusRow.addView(nativeStatus);
         } else {
-            nativeStatus.setText("⚠️ Java 回退模式 (Native 核心未加载)");
-            nativeStatus.setTextColor(0xFFE65100); // Orange
+            TextView fallbackBadge = IconFactory.createBadge(this, "JAVA FALLBACK", 0xFFFFF3E0, 0xFFE65100);
+            statusRow.addView(fallbackBadge);
+
+            TextView nativeStatus = new TextView(this);
+            nativeStatus.setText(" Native 核心未加载");
+            nativeStatus.setTextColor(0xFFE65100);
+            nativeStatus.setTextSize(13);
+            nativeStatus.setPadding(dp(6), 0, 0, 0);
+            statusRow.addView(nativeStatus);
         }
-        nativeStatus.setTextSize(13);
-        nativeStatus.setPadding(0, 4, 0, 12);
-        page.addView(nativeStatus);
+        page.addView(statusRow);
 
         // --- DASHBOARD CARD 1: SYSTEM HEALTH & HARDWARE ---
-        LinearLayout hwCard = createCard(page, "📱 硬件与端侧常驻资源 (Pixel 6a)", 0xFF1565C0);
+        LinearLayout hwCard = createCard(page, IconFactory.IconType.CHIP, "硬件与端侧常驻资源 (Pixel 6a)", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
         hwInfo.setText("SoC: Google Tensor G1 (8-core ARMv8.2-A)\n系统: GrapheneOS Android 17 / API 37\n常驻 SLM 内存配额: ~500MB (安全上限 800MB)");
         hwInfo.setTextSize(13);
@@ -197,7 +213,7 @@ public final class MainActivity extends Activity {
         hwCard.addView(hwInfo);
 
         // --- DASHBOARD CARD 2: COGNITIVE ENGINE ---
-        LinearLayout slmCard = createCard(page, "🧠 端侧离线大模型认知引擎", 0xFF6A1B9A);
+        LinearLayout slmCard = createCard(page, IconFactory.IconType.BRAIN, "端侧离线大模型认知引擎", 0xFF6A1B9A);
         TextView slmInfo = new TextView(this);
         slmInfo.setText("常驻模型: Qwen2.5-0.5B-Instruct (GGUF Q4_K_M)\n格式: ChatML + JSON Schema 原生工具参数抽取\n生成吞吐: ~25-35 tokens/s (Cortex-X1 加速)");
         slmInfo.setTextSize(13);
@@ -206,7 +222,7 @@ public final class MainActivity extends Activity {
         slmCard.addView(slmInfo);
 
         // --- DASHBOARD CARD 3: AUTOMATION & CONTROLS ---
-        LinearLayout autoCard = createCard(page, "⚡ 跨应用悬浮胶囊与语音中枢", 0xFF00695C);
+        LinearLayout autoCard = createCard(page, IconFactory.IconType.SCREEN, "跨应用悬浮胶囊与语音中枢", 0xFF00695C);
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(8), 0, 0);
@@ -237,7 +253,7 @@ public final class MainActivity extends Activity {
         autoCard.addView(autoBtnRow);
 
         // --- DASHBOARD CARD 4: P2P & E2EE SYNC ---
-        LinearLayout syncCard = createCard(page, "🔐 零知识 E2EE 同步与 CRDT 节点", 0xFF2E7D32);
+        LinearLayout syncCard = createCard(page, IconFactory.IconType.SHIELD, "零知识 E2EE 同步与 CRDT 节点", 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
         syncInfo.setText("加密信封: PBKDF2-HMAC-SHA256 (600,000次) + AES-256-GCM\n冲突合并: Vector Clock 向量时钟 + 墓碑优先\n局域网互联: P2P TCP/mDNS 零信任数据同步");
         syncInfo.setTextSize(13);
@@ -300,17 +316,25 @@ public final class MainActivity extends Activity {
         pillsLayout.setOrientation(LinearLayout.HORIZONTAL);
         pillsLayout.setPadding(0, dp(4), 0, dp(8));
 
-        String[] quickPrompts = {
-            "📋 整理便笺与状态",
-            "📅 安排团队待办日程",
-            "🔔 发送通知并导出分享"
+        IconFactory.IconType[] quickIcons = {
+            IconFactory.IconType.TASK,
+            IconFactory.IconType.CALENDAR,
+            IconFactory.IconType.BELL
         };
-        for (String qp : quickPrompts) {
+        String[] quickPrompts = {
+            "整理便笺与状态",
+            "安排团队待办日程",
+            "发送通知并导出分享"
+        };
+        for (int i = 0; i < quickPrompts.length; i++) {
+            final String promptText = quickPrompts[i];
             Button pill = new Button(this);
-            pill.setText(qp);
+            pill.setText(promptText);
             pill.setTextSize(12);
+            pill.setCompoundDrawablesWithIntrinsicBounds(
+                IconFactory.getIcon(this, quickIcons[i], 0xFF37474F, 14), null, null, null);
+            pill.setCompoundDrawablePadding(dp(4));
             pill.setOnClickListener(v -> {
-                String promptText = qp.substring(qp.indexOf(' ') + 1);
                 taskInput.setText(promptText);
                 taskInput.setSelection(promptText.length());
             });
@@ -438,12 +462,8 @@ public final class MainActivity extends Activity {
         banner.setPadding(dp(16), dp(14), dp(16), dp(14));
         banner.setBackgroundColor(0xFFFFF8E1); // Soft amber accent
 
-        TextView title = new TextView(this);
-        title.setText("⚠️ 待办授权提醒（JIT 安全门禁）");
-        title.setTextSize(16);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setTextColor(0xFFE65100);
-        banner.addView(title);
+        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.ALERT, "待办授权提醒（JIT 安全门禁）", 0xFFE65100, 18);
+        banner.addView(titleRow);
 
         String stepInfo = "任务：「" + task.title + "」在步骤 " + (task.executionStep + 1) + " 请求受控系统能力。";
         if (task.plan != null && task.executionStep >= 0 && task.executionStep < task.plan.totalSteps()) {
@@ -614,20 +634,37 @@ public final class MainActivity extends Activity {
                 || (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status));
             boolean isStepRunning = (isCurrentStep && AgentStore.ACTIVE.equals(task.status));
 
+            IconFactory.IconType dotType;
+            int textColor;
+            String statusTag;
+
             if (isStepDone) {
-                stepHeader.setText("🟢 [已完成] 步骤 " + (i + 1) + "：" + step.title);
-                stepHeader.setTextColor(0xFF1B5E20);
+                statusTag = "[已完成]";
+                textColor = 0xFF1B5E20;
+                dotType = IconFactory.IconType.STATUS_DOT_GREEN;
             } else if (isStepWaiting) {
-                stepHeader.setText("🟡 [等待授权] 步骤 " + (i + 1) + "：" + step.title);
-                stepHeader.setTextColor(0xFFB78103);
+                statusTag = "[等待授权]";
+                textColor = 0xFFB78103;
+                dotType = IconFactory.IconType.STATUS_DOT_AMBER;
             } else if (isStepRunning) {
-                stepHeader.setText("🔵 [执行中] 步骤 " + (i + 1) + "：" + step.title);
-                stepHeader.setTextColor(0xFF0D47A1);
+                statusTag = "[执行中]";
+                textColor = 0xFF0D47A1;
+                dotType = IconFactory.IconType.STATUS_DOT_BLUE;
             } else {
-                stepHeader.setText("⚪ [待执行] 步骤 " + (i + 1) + "：" + step.title);
-                stepHeader.setTextColor(0xFF555555);
+                statusTag = "[待执行]";
+                textColor = 0xFF555555;
+                dotType = IconFactory.IconType.STATUS_DOT_GRAY;
             }
-            stepRow.addView(stepHeader);
+
+            LinearLayout headerLine = new LinearLayout(this);
+            headerLine.setOrientation(LinearLayout.HORIZONTAL);
+            headerLine.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            headerLine.addView(IconFactory.createIconView(this, dotType, textColor, 10));
+
+            stepHeader.setText(" " + statusTag + " 步骤 " + (i + 1) + "：" + step.title);
+            stepHeader.setTextColor(textColor);
+            headerLine.addView(stepHeader);
+            stepRow.addView(headerLine);
 
             if (step.isBuiltin()) {
                 if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
@@ -696,7 +733,7 @@ public final class MainActivity extends Activity {
         TextView kind = new TextView(this);
         String kindTag = memoryKindLabel(memory.kind);
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            kind.setText(kindTag + " · 🤖 自主提取");
+            kind.setText(kindTag + " · [系统自主提取]");
             kind.setTextColor(0xFF1B5E20);
         } else {
             kind.setText(kindTag);
@@ -714,11 +751,11 @@ public final class MainActivity extends Activity {
         TextView metadata = new TextView(this);
         String source;
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            source = "🤖 系统自主沉淀";
+            source = "[系统沉淀]";
         } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
-            source = "🛰️ Traceform 本机历史";
+            source = "[Traceform 历史]";
         } else {
-            source = "👤 你提供";
+            source = "[用户提供]";
         }
         metadata.setText(source + (memory.sourceReference.isEmpty() ? "" : " · " + memory.sourceReference)
             + " · " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
@@ -1325,7 +1362,7 @@ public final class MainActivity extends Activity {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    private LinearLayout createCard(LinearLayout parent, String title, int titleColor) {
+    private LinearLayout createCard(LinearLayout parent, IconFactory.IconType iconType, String title, int titleColor) {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
@@ -1339,12 +1376,8 @@ public final class MainActivity extends Activity {
         lp.setMargins(0, dp(8), 0, dp(12));
         card.setLayoutParams(lp);
 
-        TextView tv = new TextView(this);
-        tv.setText(title);
-        tv.setTextSize(15);
-        tv.setTypeface(null, android.graphics.Typeface.BOLD);
-        tv.setTextColor(titleColor);
-        card.addView(tv);
+        LinearLayout headerRow = IconFactory.createHeaderWithIcon(this, iconType, title, titleColor, 18);
+        card.addView(headerRow);
 
         parent.addView(card);
         return card;
