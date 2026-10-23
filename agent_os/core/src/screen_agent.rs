@@ -35,7 +35,10 @@ impl ScreenAgent {
 
     /// Match a node based on search term in text, description, or id
     pub fn find_node<'a>(nodes: &'a [ScreenNode], query: &str) -> Option<&'a ScreenNode> {
-        let q = query.to_lowercase();
+        let q = query.trim().to_lowercase();
+        if q.is_empty() {
+            return None;
+        }
         // 1. Direct exact or substring match in text
         for node in nodes {
             if let Some(ref text) = node.text {
@@ -76,21 +79,31 @@ impl ScreenAgent {
                 .trim()
                 .to_string();
 
-            if let Some(node) = Self::find_node(nodes, &target_keyword) {
-                let (cx, cy) = Self::get_node_center(&node.bounds);
-                return Some(UiActionPlan {
-                    action_type: "click".to_string(),
-                    target_x: cx,
-                    target_y: cy,
-                    target_node_id: Some(node.id.clone()),
-                    text_payload: None,
-                    reason: format!("Located target node '{}' at ({}, {})", target_keyword, cx, cy),
-                });
+            if !target_keyword.is_empty() {
+                if let Some(node) = Self::find_node(nodes, &target_keyword) {
+                    let (cx, cy) = Self::get_node_center(&node.bounds);
+                    return Some(UiActionPlan {
+                        action_type: "click".to_string(),
+                        target_x: cx,
+                        target_y: cy,
+                        target_node_id: Some(node.id.clone()),
+                        text_payload: None,
+                        reason: format!("Located target node '{}' at ({}, {})", target_keyword, cx, cy),
+                    });
+                }
             }
         }
 
         // Check if goal specifies entering text
         if goal_lower.contains("输入") || goal_lower.contains("type") || goal_lower.contains("enter") {
+            let text_to_enter = goal_lower
+                .replace("输入", "")
+                .replace("type", "")
+                .replace("enter", "")
+                .trim()
+                .to_string();
+            let payload = if text_to_enter.is_empty() { goal.to_string() } else { text_to_enter };
+
             for node in nodes {
                 if node.is_editable {
                     let (cx, cy) = Self::get_node_center(&node.bounds);
@@ -99,7 +112,7 @@ impl ScreenAgent {
                         target_x: cx,
                         target_y: cy,
                         target_node_id: Some(node.id.clone()),
-                        text_payload: Some(goal.to_string()),
+                        text_payload: Some(payload),
                         reason: format!("Found editable input field at ({}, {})", cx, cy),
                     });
                 }

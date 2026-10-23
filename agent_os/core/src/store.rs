@@ -293,19 +293,19 @@ impl AgentStore {
         let conn = self.conn.lock().unwrap();
 
         // Check if matching topic_key exists -> in-place update
-        let mut existing_id: Option<String> = None;
+        let mut existing_info: Option<(String, i64)> = None;
         if !topic_key.is_empty() {
-            let mut stmt = conn.prepare("SELECT id FROM memories WHERE topic_key = ?1 LIMIT 1")?;
+            let mut stmt = conn.prepare("SELECT id, created_at FROM memories WHERE topic_key = ?1 LIMIT 1")?;
             let mut rows = stmt.query(params![topic_key])?;
             if let Some(r) = rows.next()? {
-                existing_id = Some(r.get(0)?);
+                existing_info = Some((r.get(0)?, r.get(1)?));
             }
         }
 
-        if let Some(id) = existing_id {
+        if let Some((id, original_created_at)) = existing_info {
             conn.execute(
-                "UPDATE memories SET content = ?1, updated_at = ?2 WHERE id = ?3",
-                params![content, now, id],
+                "UPDATE memories SET kind = ?1, content = ?2, source = ?3, source_reference = ?4, updated_at = ?5 WHERE id = ?6",
+                params![kind, content, source, source_reference, now, id],
             )?;
             Ok(MemoryRecord {
                 id,
@@ -313,7 +313,7 @@ impl AgentStore {
                 content: content.to_string(),
                 source: source.to_string(),
                 source_reference: source_reference.to_string(),
-                created_at: now,
+                created_at: original_created_at,
                 updated_at: now,
             })
         } else {

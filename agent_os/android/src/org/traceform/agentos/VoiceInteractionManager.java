@@ -89,6 +89,12 @@ public final class VoiceInteractionManager {
                                 callback.onSpeechDetected(isSpeech, (float) energy);
                             }
                         } catch (Exception ignored) {}
+                    } else if (read < 0) {
+                        Log.e(TAG, "Audio hardware read error: " + read);
+                        if (callback != null) {
+                            callback.onError("Audio hardware read error: " + read);
+                        }
+                        break;
                     }
                 }
             });

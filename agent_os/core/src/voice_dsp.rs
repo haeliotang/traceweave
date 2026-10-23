@@ -99,7 +99,8 @@ impl VoiceDspEngine {
         let energy_rms = (sum_squares / n).sqrt();
         let zcr = zero_crossings as f32 / n;
 
-        let is_speech = energy_rms > self.energy_threshold && zcr > self.zcr_threshold;
+        let is_speech = (energy_rms > self.energy_threshold && zcr >= self.zcr_threshold)
+            || (energy_rms > self.energy_threshold * 2.5);
 
         VoiceAnalysisResult {
             is_speech,
@@ -115,14 +116,14 @@ impl VoiceDspEngine {
         let text = transcript.trim().to_lowercase();
         if text.contains("天气") || text.contains("weather") {
             Some(("query_weather".to_string(), 0.98))
-        } else if text.contains("任务") || text.contains("task") || text.contains("创建") {
-            Some(("create_task".to_string(), 0.96))
         } else if text.contains("屏幕") || text.contains("screen") || text.contains("总结") {
             Some(("summarize_screen".to_string(), 0.97))
+        } else if text.contains("任务") || text.contains("task") || text.contains("创建") {
+            Some(("create_task".to_string(), 0.96))
+        } else if text.contains("取消") || text.contains("cancel") || text.contains("拒绝") || text.contains("不要") {
+            Some(("cancel_action".to_string(), 0.99))
         } else if text.contains("确认") || text.contains("confirm") || text.contains("同意") {
             Some(("confirm_action".to_string(), 0.99))
-        } else if text.contains("取消") || text.contains("cancel") || text.contains("拒绝") {
-            Some(("cancel_action".to_string(), 0.99))
         } else {
             None
         }
@@ -168,6 +169,14 @@ mod tests {
         assert_eq!(
             VoiceDspEngine::classify_speech_intent("确认执行这个步骤"),
             Some(("confirm_action".to_string(), 0.99))
+        );
+        assert_eq!(
+            VoiceDspEngine::classify_speech_intent("取消确认这个操作"),
+            Some(("cancel_action".to_string(), 0.99))
+        );
+        assert_eq!(
+            VoiceDspEngine::classify_speech_intent("不要同意"),
+            Some(("cancel_action".to_string(), 0.99))
         );
     }
 }

@@ -147,7 +147,11 @@ impl PluginManager {
         let mut registered_count = 0;
 
         for p_info in plugins {
-            let code_path = base_dir.join(&p_info.manifest.id).join("plugin.js");
+            let safe_id = match Self::sanitize_plugin_id(&p_info.manifest.id) {
+                Ok(id) => id,
+                Err(_) => continue,
+            };
+            let code_path = base_dir.join(safe_id).join("plugin.js");
             if let Ok(js_code) = fs::read_to_string(&code_path) {
                 for cap in p_info.manifest.capabilities {
                     let tool = McpTool {

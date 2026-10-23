@@ -12,6 +12,8 @@ const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 const SALT_LEN: usize = 16;
 
+static SYNC_NONCE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TombstoneRecord {
     pub id: String,
@@ -77,6 +79,12 @@ pub fn encrypt_payload(passphrase: &str, plaintext: &[u8], device_id: &str) -> R
     for (i, b) in now.to_le_bytes().iter().enumerate() {
         salt[(i + 4) % SALT_LEN] ^= b;
         nonce_bytes[i % NONCE_LEN] ^= b;
+    }
+
+    let counter = SYNC_NONCE_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    for (i, b) in counter.to_le_bytes().iter().enumerate() {
+        nonce_bytes[(i + 4) % NONCE_LEN] ^= b;
+        salt[(i + 8) % SALT_LEN] ^= b;
     }
 
     let key = derive_key(passphrase, &salt);

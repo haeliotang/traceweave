@@ -107,6 +107,16 @@ public final class AgentAccessibilityService extends AccessibilityService {
                 }
             } catch (Exception e) {
                 Log.w(TAG, "Error serializing accessibility node: " + e.getMessage());
+            } finally {
+                node.recycle();
+            }
+        }
+
+        // Recycle any remaining queued nodes
+        while (!queue.isEmpty()) {
+            AccessibilityNodeInfo leftover = queue.remove(0);
+            if (leftover != null) {
+                leftover.recycle();
             }
         }
 

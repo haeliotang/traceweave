@@ -88,7 +88,14 @@ impl EdgeSlmEngine {
         }
 
         let version = u32::from_le_bytes(bytes[4..8].try_into().unwrap());
+        if version != 2 && version != 3 {
+            return Err(format!("Unsupported GGUF version: {} (supported: 2, 3)", version));
+        }
+
         let tensor_count = u64::from_le_bytes(bytes[8..16].try_into().unwrap());
+        if tensor_count > 100_000 {
+            return Err(format!("Absurd tensor count: {} (exceeds 100k safety threshold)", tensor_count));
+        }
         let metadata_kv_count = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
 
         Ok(GgufModelInfo {
