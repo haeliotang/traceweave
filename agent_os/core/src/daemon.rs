@@ -183,7 +183,9 @@ pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
                     serde_json::json!({
                         "result": res,
                         "task_id": task_id,
-                        "capability": cap
+                        "capability": cap,
+                        "scope": scope,
+                        "agent_id": agent_id
                     }),
                 ),
                 Err(e) => ("error".to_string(), serde_json::json!({ "message": e.to_string() })),
@@ -381,7 +383,9 @@ pub fn run_tcp_server(port: u16, running: Arc<AtomicBool>) -> std::io::Result<()
         match listener.accept() {
             Ok((stream, _)) => {
                 let _ = stream.set_nonblocking(false);
-                let _ = handle_generic_stream(stream);
+                std::thread::spawn(move || {
+                    let _ = handle_generic_stream(stream);
+                });
             }
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 std::thread::sleep(std::time::Duration::from_millis(50));
@@ -409,7 +413,9 @@ pub fn run_uds_server(socket_path: &str, running: Arc<AtomicBool>) -> std::io::R
         match listener.accept() {
             Ok((stream, _)) => {
                 let _ = stream.set_nonblocking(false);
-                let _ = handle_generic_stream(stream);
+                std::thread::spawn(move || {
+                    let _ = handle_generic_stream(stream);
+                });
             }
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 std::thread::sleep(std::time::Duration::from_millis(50));

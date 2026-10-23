@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "traceform-substrate"
+version = "1.0.0"
+authors = [
+  { name="Traceform Team" },
+]
+description = "Official Python SDK for Personal Agent Substrate"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+dependencies = []
+
+[project.urls]
+"Homepage" = "https://github.com/haeliotang/traceform"

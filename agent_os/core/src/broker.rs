@@ -69,12 +69,12 @@ impl CapabilityBroker {
         self.providers.insert(provider.capability().to_string(), provider);
     }
 
-    fn grant_key(task_id: &str, capability: &str, scope: &str) -> String {
-        format!("{}:{}:{}", task_id, capability, scope)
+    fn grant_key(agent_id: &str, task_id: &str, capability: &str, scope: &str) -> String {
+        format!("{}:{}:{}:{}", agent_id, task_id, capability, scope)
     }
 
-    pub fn remaining_millis(&self, task_id: &str, capability: &str, scope: &str, now: i64) -> i64 {
-        let key = Self::grant_key(task_id, capability, scope);
+    pub fn remaining_millis_for_agent(&self, agent_id: &str, task_id: &str, capability: &str, scope: &str, now: i64) -> i64 {
+        let key = Self::grant_key(agent_id, task_id, capability, scope);
         if let Some(grant) = self.grants.get(&key) {
             (grant.expires_at - now).max(0)
         } else {
@@ -82,8 +82,22 @@ impl CapabilityBroker {
         }
     }
 
+    pub fn is_granted_for_agent(&self, agent_id: &str, task_id: &str, capability: &str, scope: &str, now: i64) -> bool {
+        self.remaining_millis_for_agent(agent_id, task_id, capability, scope, now) > 0
+    }
+
+    pub fn remaining_millis(&self, task_id: &str, capability: &str, scope: &str, now: i64) -> i64 {
+        self.grants.values()
+            .filter(|g| g.task_id == task_id && g.capability == capability && g.scope == scope)
+            .map(|g| (g.expires_at - now).max(0))
+            .max()
+            .unwrap_or(0)
+    }
+
     pub fn is_granted(&self, task_id: &str, capability: &str, scope: &str, now: i64) -> bool {
-        self.remaining_millis(task_id, capability, scope, now) > 0
+        self.grants.values().any(|g| {
+            g.task_id == task_id && g.capability == capability && g.scope == scope && g.expires_at > now
+        })
     }
 
     pub fn grant_for_agent(
@@ -107,7 +121,7 @@ impl CapabilityBroker {
             return Err(SecurityError::UnsupportedScope(scope.to_string()));
         }
 
-        let key = Self::grant_key(task_id, capability, scope);
+        let key = Self::grant_key(agent_id, task_id, capability, scope);
         let grant = Grant {
             agent_id: agent_id.to_string(),
             task_id: task_id.to_string(),
@@ -125,7 +139,7 @@ impl CapabilityBroker {
     }
 
     pub fn revoke_for_agent(&mut self, agent_id: &str, task_id: &str, capability: &str, scope: &str) {
-        let key = Self::grant_key(task_id, capability, scope);
+        let key = Self::grant_key(agent_id, task_id, capability, scope);
         if self.grants.remove(&key).is_some() {
             self.record_audit_for_agent(agent_id, "capability_revoked", capability, scope);
         }
@@ -151,7 +165,7 @@ impl CapabilityBroker {
         scope: &str,
         now: i64,
     ) -> Result<String, SecurityError> {
-        if !self.is_granted(task_id, capability, scope, now) {
+        if !self.is_granted_for_agent(agent_id, task_id, capability, scope, now) {
             self.deny_for_agent(agent_id, task_id, capability, scope);
             return Err(SecurityError::Unauthorized(format!("能力未授权或已过期: {}", capability)));
         }

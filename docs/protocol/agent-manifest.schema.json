@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SubstrateAgentManifest",
+  "description": "Schema definition for third-party AI Agent manifests connecting to Personal Agent Substrate.",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "agent",
+    "capabilities_requested"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1,
+      "description": "Version of the manifest specification format. Must be 1."
+    },
+    "agent": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.-]+$",
+          "description": "Reverse-DNS identifier for the agent (e.g. org.agent.researcher)."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Human-readable display name of the agent."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+.*$",
+          "description": "Semantic version of the agent software."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Brief description of the agent's responsibilities and capabilities."
+        },
+        "author": {
+          "type": "string",
+          "description": "Author, organization, or developer key."
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the agent's homepage or repository."
+        }
+      }
+    },
+    "capabilities_requested": {
+      "type": "array",
+      "description": "List of capabilities declared by the agent requiring user permission.",
+      "items": {
+        "type": "object",
+        "required": [
+          "capability",
+          "scope",
+          "reason"
+        ],
+        "properties": {
+          "capability": {
+            "type": "string",
+            "description": "Capability identifier string, e.g. demo.note.read, memory.read, system.notify."
+          },
+          "scope": {
+            "type": "string",
+            "description": "Scope delimiter for capability constraint, e.g. synthetic.welcome, agent_owned, *."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 256,
+            "description": "Human-readable explanation shown to the user on authorization prompt."
+          },
+          "required": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the agent requires this capability to operate."
+          }
+        }
+      }
+    },
+    "max_concurrent_tasks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64,
+      "default": 1,
+      "description": "Maximum number of simultaneous tasks the agent requests to process."
+    },
+    "data_retention_policy": {
+      "type": "string",
+      "enum": [
+        "session_only",
+        "ephemeral_task",
+        "substrate_managed"
+      ],
+      "default": "session_only",
+      "description": "Policy describing agent-side caching or retention of decrypted personal data."
+    }
+  }
+}
