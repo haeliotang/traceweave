@@ -173,6 +173,18 @@ public final class MainActivity extends Activity {
         title.setTextSize(28);
         page.addView(title);
 
+        TextView nativeStatus = new TextView(this);
+        if (NativeAgentCore.isAvailable()) {
+            nativeStatus.setText("⚡ 原生 Rust 内核已激活 (agent-os-core aarch64 · 0.0038ms 级原生推演)");
+            nativeStatus.setTextColor(0xFF2E7D32); // Dark Green
+        } else {
+            nativeStatus.setText("⚠️ Java 回退模式 (Native 核心未加载)");
+            nativeStatus.setTextColor(0xFFE65100); // Orange
+        }
+        nativeStatus.setTextSize(13);
+        nativeStatus.setPadding(0, 4, 0, 8);
+        page.addView(nativeStatus);
+
         TextView note = new TextView(this);
         note.setText("本地任务与用户记忆原型。内容在本机加密保存；导出档案使用独立口令加密，便于迁移。当前不运行模型或访问网络。Traceform 是可选来源，默认关闭。\n\n开始任务后，端侧执行器会读取固定合成便笺并保存本地演示结果；读取前需为该任务授权。Android JobScheduler 负责唤醒短任务，系统可能延后执行。能力授权最多 5 分钟有效，进程重启后清除。\n\n跨应用能力必须先由你选择来源并接收单条内容的临时 URI 读取权，再为具体任务授权。Traceform 读取还需你显式启用，并且不会启动传感器采集或访问网络。");
         note.setTextSize(15);

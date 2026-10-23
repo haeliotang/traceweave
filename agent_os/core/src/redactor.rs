@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 use regex::Regex;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RedactionResult {
     pub redacted_text: String,
     pub redactions_count: usize,
@@ -90,7 +91,7 @@ pub fn redact(input: &str) -> RedactionResult {
     let id_matches = id_re.find_iter(&current).count();
     if id_matches > 0 {
         count += id_matches;
-        current = id_re.replace_all(&current, "${1}${2}**********${3}${4}").to_string();
+        current = id_re.replace_all(&current, "${1}${2}********${3}${4}").to_string();
     }
 
     // 5. Bank cards (16-19 digits)
@@ -135,7 +136,7 @@ mod tests {
     #[test]
     fn test_id_and_bank_card() {
         let res = redact("身份证 110101199003072345 绑定卡号 6222021234567890123");
-        assert_eq!(res.redacted_text, "身份证 1101**********2345 绑定卡号 6222********0123");
+        assert_eq!(res.redacted_text, "身份证 1101********2345 绑定卡号 6222********0123");
         assert_eq!(res.redactions_count, 2);
     }
 

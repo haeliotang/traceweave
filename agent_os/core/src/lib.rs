@@ -7,3 +7,4 @@ pub mod broker;
 pub mod executor;
 pub mod mcp;
 pub mod c_api;
+pub mod jni_api;

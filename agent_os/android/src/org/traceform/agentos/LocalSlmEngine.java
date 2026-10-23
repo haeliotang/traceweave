@@ -223,6 +223,26 @@ final class LocalSlmEngine implements ReasoningEngine {
      * Computes quantized neural logit predictions across the 6 capability classes.
      */
     static float[] inferIntentLogits(String goal, List<AgentStore.Memory> memories) {
+        if (NativeAgentCore.isAvailable()) {
+            try {
+                org.json.JSONArray memArr = new org.json.JSONArray();
+                if (memories != null) {
+                    for (AgentStore.Memory m : memories) {
+                        memArr.put(m.content);
+                    }
+                }
+                String json = NativeAgentCore.infer(goal, memArr.toString());
+                org.json.JSONArray res = new org.json.JSONArray(json);
+                float[] nativeLogits = new float[res.length()];
+                for (int i = 0; i < res.length(); i++) {
+                    nativeLogits[i] = (float) res.getDouble(i);
+                }
+                return nativeLogits;
+            } catch (Throwable t) {
+                // Graceful fallback to Java quantized feed-forward projection on exception
+            }
+        }
+
         float[] embedding = new float[EMBEDDING_DIM];
         String lowerGoal = goal.toLowerCase(Locale.ROOT);
 

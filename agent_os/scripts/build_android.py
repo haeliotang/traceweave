@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--password-env", default="AGENT_OS_KEYSTORE_PASSWORD")
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
+    parser.add_argument("--native-lib", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--scope", default="local_executor_job_scheduler_encrypted_checkpoint_archive_and_user_confirmed_demo_capability_broker")
     args = parser.parse_args()
@@ -73,6 +74,10 @@ def main():
     run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-o", unsigned])
     with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(dex / "classes.dex", "classes.dex")
+        for lib in args.native_lib:
+            lib_path = lib.resolve()
+            if lib_path.is_file():
+                archive.write(lib_path, f"lib/arm64-v8a/{lib_path.name}")
     run([tools["zipalign"], "-f", "-p", "4", unsigned, aligned])
     run([tools["apksigner"], "sign", "--ks", keystore, "--ks-key-alias", args.key_alias,
          "--ks-pass", "env:" + args.password_env, "--out", apk, aligned])

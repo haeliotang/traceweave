@@ -61,6 +61,22 @@ final class ContextRedactor {
             return new RedactionResult(input, "", 0, Collections.emptyList());
         }
 
+        if (NativeAgentCore.isAvailable()) {
+            try {
+                String json = NativeAgentCore.redact(input);
+                org.json.JSONObject obj = new org.json.JSONObject(json);
+                String redacted = obj.getString("redacted_text");
+                int count = obj.getInt("redactions_count");
+                List<String> categories = new ArrayList<>();
+                if (count > 0) {
+                    categories.add("native_redacted");
+                }
+                return new RedactionResult(input, redacted, count, categories);
+            } catch (Throwable t) {
+                // Graceful fallback to pure Java regex pipeline on exception
+            }
+        }
+
         String text = input;
         int totalCount = 0;
         List<String> matchedCategories = new ArrayList<>();

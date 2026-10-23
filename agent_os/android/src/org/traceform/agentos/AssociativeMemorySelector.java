@@ -29,6 +29,42 @@ final class AssociativeMemorySelector {
             return Collections.emptyList();
         }
 
+        if (NativeAgentCore.isAvailable()) {
+            try {
+                org.json.JSONArray memArr = new org.json.JSONArray();
+                for (AgentStore.Memory m : memories) {
+                    org.json.JSONObject obj = new org.json.JSONObject();
+                    obj.put("id", m.id);
+                    obj.put("kind", m.kind);
+                    obj.put("content", m.content);
+                    obj.put("source", m.source);
+                    obj.put("source_reference", m.sourceReference);
+                    obj.put("created_at", m.createdAt);
+                    obj.put("updated_at", m.updatedAt);
+                    memArr.put(obj);
+                }
+                String json = NativeAgentCore.rankMemories(goal, memArr.toString(), topK);
+                org.json.JSONArray res = new org.json.JSONArray(json);
+                java.util.Map<String, AgentStore.Memory> map = new java.util.HashMap<>();
+                for (AgentStore.Memory m : memories) {
+                    map.put(m.id, m);
+                }
+                List<AgentStore.Memory> ranked = new ArrayList<>();
+                for (int i = 0; i < res.length(); i++) {
+                    String id = res.getJSONObject(i).getString("id");
+                    AgentStore.Memory m = map.get(id);
+                    if (m != null) {
+                        ranked.add(m);
+                    }
+                }
+                if (!ranked.isEmpty()) {
+                    return ranked;
+                }
+            } catch (Throwable t) {
+                // Graceful fallback to pure Java associative ranking on exception
+            }
+        }
+
         String targetGoal = goal == null ? "" : goal.toLowerCase(Locale.ROOT);
         Set<String> goalTokens = extractTokens(targetGoal);
         long now = System.currentTimeMillis();

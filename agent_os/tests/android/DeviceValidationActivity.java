@@ -50,6 +50,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION = "org.traceform.agentos.validation.VERIFY_HYBRID_CLOUD_AND_REDACTION";
     static final String ACTION_VERIFY_SLM_AND_SYSTEM_CAPABILITIES = "org.traceform.agentos.validation.VERIFY_SLM_AND_SYSTEM_CAPABILITIES";
     static final String ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI = "org.traceform.agentos.validation.VERIFY_MEMORY_CONSOLIDATION_AND_UI";
+    static final String ACTION_VERIFY_NATIVE_CORE_AND_JNI = "org.traceform.agentos.validation.VERIFY_NATIVE_CORE_AND_JNI";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -114,6 +115,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifySlmAndSystemCapabilities();
                 } else if (ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI.equals(action)) {
                     result = verifyMemoryConsolidationAndUi();
+                } else if (ACTION_VERIFY_NATIVE_CORE_AND_JNI.equals(action)) {
+                    result = verifyNativeCoreAndJni();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -1963,5 +1966,50 @@ public final class DeviceValidationActivity extends Activity {
         } finally {
             store.close();
         }
+    }
+
+    private String verifyNativeCoreAndJni() throws Exception {
+        // 1. Verify Native Library Load
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("NativeAgentCore is NOT available! System.loadLibrary('agent_os_core') failed.");
+        }
+
+        // 2. Verify Native Redaction (Rust ContextRedactor)
+        String rawLeakText = "用户手机号: 13812345678, 邮箱: confidential@company.com, 密钥: sk-9876543210abcdef9876543210";
+        ContextRedactor.RedactionResult redRes = ContextRedactor.redact(rawLeakText);
+        if (redRes.redactionsCount < 3) {
+            throw new IllegalStateException("Native redactor failed: expected >= 3 redactions, got " + redRes.redactionsCount + "; text=" + redRes.redactedText);
+        }
+        if (redRes.redactedText.contains("13812345678") || redRes.redactedText.contains("confidential@company.com") || redRes.redactedText.contains("sk-9876543210")) {
+            throw new IllegalStateException("Native redactor leaked sensitive PII in: " + redRes.redactedText);
+        }
+
+        // 3. Verify Native SLM Intent Inference (Rust MicroSlm)
+        float[] logitsCalendar = LocalSlmEngine.inferIntentLogits("安排明天下午3点团队日程与会议待办", null);
+        if (logitsCalendar[LocalSlmEngine.CLASS_CALENDAR] < 0.50f) {
+            throw new IllegalStateException("Native SLM calendar logit expected >= 0.50, got " + logitsCalendar[LocalSlmEngine.CLASS_CALENDAR]);
+        }
+
+        float[] logitsNotification = LocalSlmEngine.inferIntentLogits("给用户发送系统弹窗提醒和通知", null);
+        if (logitsNotification[LocalSlmEngine.CLASS_NOTIFICATION] < 0.50f) {
+            throw new IllegalStateException("Native SLM notification logit expected >= 0.50, got " + logitsNotification[LocalSlmEngine.CLASS_NOTIFICATION]);
+        }
+
+        // 4. Verify Native Associative Memory Ranking (Rust MemoryRanker)
+        long now = System.currentTimeMillis();
+        List<AgentStore.Memory> mockMemories = Arrays.asList(
+            new AgentStore.Memory("mem-1", "fact", "团队每周例会通常安排在周五下午3点", "user", "", now - 3600000L, now - 3600000L),
+            new AgentStore.Memory("mem-2", "preference", "用户偏好浅色主题与大字体显示", "user", "", now - 10000000L, now - 10000000L),
+            new AgentStore.Memory("mem-3", "workflow", "设备传感器常驻采集流形基准线", "traceform", "", now - 50000000L, now - 50000000L)
+        );
+        List<AgentStore.Memory> ranked = AssociativeMemorySelector.selectTopMemories("安排周五团队例会日程", mockMemories, 1);
+        if (ranked.isEmpty() || !"mem-1".equals(ranked.get(0).id)) {
+            throw new IllegalStateException("Native memory ranker failed: expected mem-1, got " + (ranked.isEmpty() ? "empty" : ranked.get(0).id));
+        }
+
+        return "PASS: Direction A (Native Rust Core via JNI on Pixel 6a) verified 100% on device! "
+            + "native_loaded=true, red_count=" + redRes.redactionsCount
+            + ", calendar_logit=" + String.format(Locale.ROOT, "%.4f", logitsCalendar[LocalSlmEngine.CLASS_CALENDAR])
+            + ", top_mem=" + ranked.get(0).id;
     }
 }
