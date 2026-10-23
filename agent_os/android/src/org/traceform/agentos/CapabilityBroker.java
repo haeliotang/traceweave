@@ -7,23 +7,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-final class CapabilityBroker {
-    static final String DEMO_NOTE_CAPABILITY = "demo.note.read";
-    static final String DEMO_NOTE_SCOPE = "synthetic.welcome";
-    static final String DEMO_STATUS_CAPABILITY = "demo.status.read";
-    static final String DEMO_STATUS_SCOPE = "synthetic.device_status";
-    static final String TRACEFORM_CAPABILITY = TraceformProvider.CAPABILITY;
-    static final String TRACEFORM_SCOPE = TraceformProvider.SCOPE;
-    static final String NOTIFICATION_CAPABILITY = LocalNotificationProvider.CAPABILITY;
-    static final String NOTIFICATION_SCOPE = LocalNotificationProvider.SCOPE;
-    static final String CALENDAR_CAPABILITY = LocalCalendarProvider.CAPABILITY;
-    static final String CALENDAR_SCOPE = LocalCalendarProvider.SCOPE;
-    static final String SHARE_CAPABILITY = LocalShareProvider.CAPABILITY;
-    static final String SHARE_SCOPE = LocalShareProvider.SCOPE;
-    static final String GRANTED_EVENT = auditEvent("capability_granted", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
-    static final String INVOKED_EVENT = auditEvent("capability_invoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
-    static final String DENIED_EVENT = auditEvent("capability_denied", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
-    static final String REVOKED_EVENT = auditEvent("capability_revoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
+public final class CapabilityBroker {
+    public static final String DEMO_NOTE_CAPABILITY = "demo.note.read";
+    public static final String DEMO_NOTE_SCOPE = "synthetic.welcome";
+    public static final String DEMO_STATUS_CAPABILITY = "demo.status.read";
+    public static final String DEMO_STATUS_SCOPE = "synthetic.device_status";
+    public static final String TRACEFORM_CAPABILITY = TraceformProvider.CAPABILITY;
+    public static final String TRACEFORM_SCOPE = TraceformProvider.SCOPE;
+    public static final String NOTIFICATION_CAPABILITY = LocalNotificationProvider.CAPABILITY;
+    public static final String NOTIFICATION_SCOPE = LocalNotificationProvider.SCOPE;
+    public static final String CALENDAR_CAPABILITY = LocalCalendarProvider.CAPABILITY;
+    public static final String CALENDAR_SCOPE = LocalCalendarProvider.SCOPE;
+    public static final String SHARE_CAPABILITY = LocalShareProvider.CAPABILITY;
+    public static final String SHARE_SCOPE = LocalShareProvider.SCOPE;
+    public static final String GRANTED_EVENT = auditEvent("capability_granted", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
+    public static final String INVOKED_EVENT = auditEvent("capability_invoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
+    public static final String DENIED_EVENT = auditEvent("capability_denied", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
+    public static final String REVOKED_EVENT = auditEvent("capability_revoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     private static final long GRANT_DURATION_MILLIS = 5 * 60 * 1000;
     private static final Object GRANTS_LOCK = new Object();
     private static final Map<String, Map<String, Grant>> grants = new HashMap<>();
@@ -32,21 +32,27 @@ final class CapabilityBroker {
     private final Map<String, CapabilityProvider> providers = new HashMap<>();
     private final TraceformProvider traceformProvider;
 
-    private static final class Grant {
-        final String taskId;
-        final String capability;
-        final String scope;
-        final long expiresAtElapsed;
+    public static final class Grant {
+        public final String agentId;
+        public final String taskId;
+        public final String capability;
+        public final String scope;
+        public final long expiresAtElapsed;
 
-        Grant(String taskId, String capability, String scope, long expiresAtElapsed) {
+        public Grant(String agentId, String taskId, String capability, String scope, long expiresAtElapsed) {
+            this.agentId = agentId == null ? "local_agent" : agentId;
             this.taskId = taskId;
             this.capability = capability;
             this.scope = scope;
             this.expiresAtElapsed = expiresAtElapsed;
         }
+
+        public Grant(String taskId, String capability, String scope, long expiresAtElapsed) {
+            this("local_agent", taskId, capability, scope, expiresAtElapsed);
+        }
     }
 
-    CapabilityBroker(android.content.Context context, AgentStore store) {
+    public CapabilityBroker(android.content.Context context, AgentStore store) {
         this.store = store;
         traceformProvider = new TraceformProvider(context);
         registerProvider(new LocalDemoNoteProvider());
@@ -103,7 +109,7 @@ final class CapabilityBroker {
         return remainingMillis(taskId, capability, scope) > 0;
     }
 
-    List<CapabilityDescriptor> listAvailableCapabilities(String taskId) {
+    public List<CapabilityDescriptor> listAvailableCapabilities(String taskId) {
         List<CapabilityDescriptor> descriptors = new ArrayList<>();
         descriptors.add(new CapabilityDescriptor(DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE,
             "示例便笺", "读取本地固定的合成便笺内容", true));
@@ -138,25 +144,35 @@ final class CapabilityBroker {
         ((AndroidRemoteStatusProvider) providers.get(AndroidRemoteStatusProvider.CAPABILITY)).releaseTask(taskId);
     }
 
-    void grant(String taskId, String capability, String scope) {
+    public void grant(String agentId, String taskId, String capability, String scope) {
         CapabilityProvider provider = providers.get(capability);
         if (provider == null || !provider.isAvailable(taskId, scope)) {
-            deny(taskId, capability, scope);
+            deny(agentId, taskId, capability, scope);
             throw new SecurityException("不支持此能力或数据范围");
         }
-        store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope));
+        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope) + agentTag);
         synchronized (GRANTS_LOCK) {
             grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
-                .put(grantKey(capability, scope), new Grant(taskId, capability, scope,
+                .put(grantKey(capability, scope), new Grant(agentId, taskId, capability, scope,
                     SystemClock.elapsedRealtime() + GRANT_DURATION_MILLIS));
         }
     }
 
-    void deny(String taskId, String capability, String scope) {
-        store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope));
+    public void grant(String taskId, String capability, String scope) {
+        grant("local_agent", taskId, capability, scope);
     }
 
-    String invoke(String taskId, String capability, String scope) {
+    public void deny(String agentId, String taskId, String capability, String scope) {
+        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope) + agentTag);
+    }
+
+    public void deny(String taskId, String capability, String scope) {
+        deny("local_agent", taskId, capability, scope);
+    }
+
+    public String invoke(String agentId, String taskId, String capability, String scope) {
         String key = grantKey(capability, scope);
         Grant grant;
         synchronized (GRANTS_LOCK) {
@@ -175,21 +191,28 @@ final class CapabilityBroker {
                 || provider == null || !provider.isAvailable(taskId, scope)) {
             removeGrant(taskId, key);
             if (provider != null) provider.releaseTask(taskId);
-            store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope));
+            String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+            store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope) + agentTag);
             throw new SecurityException("该任务没有有效的能力授权");
         }
         String result;
         try {
             result = provider.read(taskId, scope);
         } catch (RuntimeException error) {
-            store.appendCapabilityAudit(taskId, auditEvent("capability_failed", capability, scope));
+            String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+            store.appendCapabilityAudit(taskId, auditEvent("capability_failed", capability, scope) + agentTag);
             throw error;
         }
-        store.appendCapabilityAudit(taskId, auditEvent("capability_invoked", capability, scope));
+        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        store.appendCapabilityAudit(taskId, auditEvent("capability_invoked", capability, scope) + agentTag);
         return result;
     }
 
-    boolean revoke(String taskId, String capability, String scope) {
+    public String invoke(String taskId, String capability, String scope) {
+        return invoke("local_agent", taskId, capability, scope);
+    }
+
+    public boolean revoke(String agentId, String taskId, String capability, String scope) {
         String key = grantKey(capability, scope);
         Grant grant;
         synchronized (GRANTS_LOCK) {
@@ -199,7 +222,8 @@ final class CapabilityBroker {
                 removeGrant(taskId, key);
                 grant = null;
             } else {
-                store.appendCapabilityAudit(taskId, auditEvent("capability_revoked", capability, scope));
+                String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+                store.appendCapabilityAudit(taskId, auditEvent("capability_revoked", capability, scope) + agentTag);
                 removeGrant(taskId, key);
             }
         }
@@ -211,6 +235,10 @@ final class CapabilityBroker {
         CapabilityProvider provider = providers.get(capability);
         if (provider != null) provider.releaseTask(taskId);
         return true;
+    }
+
+    public boolean revoke(String taskId, String capability, String scope) {
+        return revoke("local_agent", taskId, capability, scope);
     }
 
     long remainingMillis(String taskId, String capability, String scope) {

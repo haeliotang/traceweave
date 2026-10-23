@@ -1,13 +1,13 @@
 package org.traceform.agentos;
 
-final class CapabilityDescriptor {
-    final String capability;
-    final String scope;
-    final String title;
-    final String description;
-    final boolean available;
+public final class CapabilityDescriptor {
+    public final String capability;
+    public final String scope;
+    public final String title;
+    public final String description;
+    public final boolean available;
 
-    CapabilityDescriptor(String capability, String scope, String title, String description, boolean available) {
+    public CapabilityDescriptor(String capability, String scope, String title, String description, boolean available) {
         this.capability = capability;
         this.scope = scope;
         this.title = title == null ? "" : title;

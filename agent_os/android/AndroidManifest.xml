@@ -27,6 +27,13 @@
             android:name=".AgentFloatingService"
             android:exported="false" />
         <service
+            android:name=".SubstrateService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
+            </intent-filter>
+        </service>
+        <service
             android:name=".AgentAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">

@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--key-alias", required=True)
     parser.add_argument("--password-env", default="AGENT_OS_KEYSTORE_PASSWORD")
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
     parser.add_argument("--native-lib", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path)
@@ -32,7 +33,8 @@ def main():
 
     root = Path(__file__).resolve().parents[2]
     manifest = (args.manifest or root / "agent_os/android/AndroidManifest.xml").resolve()
-    sources = sorted((root / "agent_os/android/src").rglob("*.java"))
+    source_dir = (args.source_dir or root / "agent_os/android/src").resolve()
+    sources = sorted(source_dir.rglob("*.java"))
     sources.extend(path.resolve() for path in args.extra_source)
     android_jar = args.android_jar.resolve()
     build_tools = args.build_tools.resolve()
@@ -41,8 +43,8 @@ def main():
     password = os.environ.get(args.password_env)
     if not android_jar.is_file():
         parser.error("--android-jar must point to an installed Android platform android.jar")
-    if not manifest.is_file() or not sources:
-        parser.error("Agent OS Android sources or manifest are missing")
+    if not manifest.is_file():
+        parser.error("Manifest is missing: " + str(manifest))
     if any(not source.is_file() for source in sources):
         parser.error("--extra-source must point to existing Java files")
     if not keystore.is_file():
@@ -55,14 +57,25 @@ def main():
         if not path.is_file():
             parser.error("Missing Android build tool: " + str(path))
 
+    aidl_tool = build_tools / "aidl"
     build = output_dir
     classes = build / "classes"
     dex = build / "dex"
+    gen = build / "gen"
     build.mkdir(parents=True, exist_ok=True)
-    for directory in (classes, dex):
+    for directory in (classes, dex, gen):
         if directory.exists():
             shutil.rmtree(directory)
         directory.mkdir(parents=True)
+
+    aidl_files = sorted(source_dir.rglob("*.aidl"))
+    if aidl_files and aidl_tool.is_file():
+        for aidl_file in aidl_files:
+            run([aidl_tool, "--lang=java", "-I", str(source_dir), "-o", str(gen), str(aidl_file)])
+        sources.extend(sorted(gen.rglob("*.java")))
+
+    if not sources:
+        parser.error("No Java or AIDL sources found in " + str(source_dir))
 
     run(["javac", "--release", "8", "-classpath", android_jar, "-d", classes, *sources])
     class_files = sorted(classes.rglob("*.class"))
