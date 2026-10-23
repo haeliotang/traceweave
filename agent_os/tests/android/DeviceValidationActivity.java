@@ -51,6 +51,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_SLM_AND_SYSTEM_CAPABILITIES = "org.traceform.agentos.validation.VERIFY_SLM_AND_SYSTEM_CAPABILITIES";
     static final String ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI = "org.traceform.agentos.validation.VERIFY_MEMORY_CONSOLIDATION_AND_UI";
     static final String ACTION_VERIFY_NATIVE_CORE_AND_JNI = "org.traceform.agentos.validation.VERIFY_NATIVE_CORE_AND_JNI";
+    static final String ACTION_VERIFY_FULL_RUST_STORE = "org.traceform.agentos.validation.VERIFY_FULL_RUST_STORE";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -117,6 +118,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyMemoryConsolidationAndUi();
                 } else if (ACTION_VERIFY_NATIVE_CORE_AND_JNI.equals(action)) {
                     result = verifyNativeCoreAndJni();
+                } else if (ACTION_VERIFY_FULL_RUST_STORE.equals(action)) {
+                    result = verifyFullRustStore();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -2011,5 +2014,93 @@ public final class DeviceValidationActivity extends Activity {
             + "native_loaded=true, red_count=" + redRes.redactionsCount
             + ", calendar_logit=" + String.format(Locale.ROOT, "%.4f", logitsCalendar[LocalSlmEngine.CLASS_CALENDAR])
             + ", top_mem=" + ranked.get(0).id;
+    }
+
+    private String verifyFullRustStore() throws Exception {
+        if (!NativeAgentCore.isAvailable()) {
+            throw new IllegalStateException("NativeAgentCore is NOT available!");
+        }
+
+        // 1. Initialize Rust SQLite Store in app data dir
+        java.io.File dbFile = new java.io.File(getFilesDir(), "rust_agent_os_test.db");
+        if (dbFile.exists()) {
+            dbFile.delete();
+        }
+        boolean opened = NativeAgentCore.storeOpen(dbFile.getAbsolutePath());
+        if (!opened) {
+            throw new IllegalStateException("Failed to open Rust SQLite store at: " + dbFile.getAbsolutePath());
+        }
+
+        // 2. Create Task 100% inside Rust SQLite
+        String taskJson = NativeAgentCore.storeCreateTask("完全由 Rust 内核管理的生命周期任务");
+        if (taskJson == null || taskJson.isEmpty()) {
+            throw new IllegalStateException("Rust storeCreateTask returned null");
+        }
+        JSONObject taskObj = new JSONObject(taskJson);
+        String taskId = taskObj.getString("id");
+        if (!taskObj.getString("status").equals("queued")) {
+            throw new IllegalStateException("Task status expected queued, got " + taskObj.getString("status"));
+        }
+
+        // 3. Transition Task Status in Rust SQLite
+        boolean transitioned = NativeAgentCore.storeTransitionTask(taskId, "active");
+        if (!transitioned) {
+            throw new IllegalStateException("Failed to transition task to active in Rust store");
+        }
+
+        // 4. Save Step Checkpoint in Rust SQLite
+        boolean checkpointSaved = NativeAgentCore.storeSaveStepCheckpoint(taskId, 0, "Rust 独占存储：步骤0已完成观察数据记录");
+        if (!checkpointSaved) {
+            throw new IllegalStateException("Failed to save step checkpoint in Rust store");
+        }
+
+        // 5. In-place Deduplicated Memory Consolidation in Rust SQLite
+        String mem1Json = NativeAgentCore.storeCreateOrUpdateMemory("fact", "团队每周例会通常安排在周五下午3点", "agent_consolidation", taskId, "topic_weekly_meeting");
+        JSONObject mem1Obj = new JSONObject(mem1Json);
+        String mem1Id = mem1Obj.getString("id");
+
+        // Insert duplicate topic memory with updated content -> must update in-place in SQLite!
+        String mem2Json = NativeAgentCore.storeCreateOrUpdateMemory("fact", "团队每周例会调整为周五下午4点", "agent_consolidation", taskId, "topic_weekly_meeting");
+        JSONObject mem2Obj = new JSONObject(mem2Json);
+        String mem2Id = mem2Obj.getString("id");
+
+        if (!mem1Id.equals(mem2Id)) {
+            throw new IllegalStateException("Rust SQLite in-place deduplication failed: " + mem1Id + " vs " + mem2Id);
+        }
+
+        String allMemJson = NativeAgentCore.storeListMemories();
+        JSONArray allMemArr = new JSONArray(allMemJson);
+        if (allMemArr.length() != 1) {
+            throw new IllegalStateException("Rust SQLite memories should have count 1, got " + allMemArr.length());
+        }
+        if (!allMemArr.getJSONObject(0).getString("content").contains("4点")) {
+            throw new IllegalStateException("Rust SQLite memory in-place update content mismatch: " + allMemArr.getJSONObject(0).getString("content"));
+        }
+
+        // 6. Complete Task in Rust SQLite
+        boolean completed = NativeAgentCore.storeCompleteTask(taskId, "Rust 内核完成任务全流程演算与持久化");
+        if (!completed) {
+            throw new IllegalStateException("Failed to complete task in Rust store");
+        }
+
+        // 7. Verify Task state loaded back from Rust SQLite
+        String reloadedJson = NativeAgentCore.storeGetTask(taskId);
+        JSONObject reloadedObj = new JSONObject(reloadedJson);
+        if (!reloadedObj.getString("status").equals("completed")) {
+            throw new IllegalStateException("Reloaded task status expected completed, got " + reloadedObj.getString("status"));
+        }
+        if (reloadedObj.getInt("execution_step") != 1) {
+            throw new IllegalStateException("Reloaded task execution_step expected 1, got " + reloadedObj.getInt("execution_step"));
+        }
+
+        // 8. Associative Memory Selection directly from Rust SQLite
+        String rankedJson = NativeAgentCore.storeSelectMemories("安排周五团队例会", 1);
+        JSONArray rankedArr = new JSONArray(rankedJson);
+        if (rankedArr.length() != 1 || !rankedArr.getJSONObject(0).getString("id").equals(mem1Id)) {
+            throw new IllegalStateException("Rust SQLite select associative memory failed");
+        }
+
+        return "PASS: Route 1 (Full Rust Sinking: SQLite store, task state machine, in-place deduplication, and checkpoints owned 100% by agent-os-core) verified on Pixel 6a! taskId="
+            + taskId + " memId=" + mem1Id + " db=" + dbFile.getName();
     }
 }

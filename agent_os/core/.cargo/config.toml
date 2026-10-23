@@ -1,3 +1,7 @@
 [target.aarch64-linux-android]
 linker = "Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang"
 rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]
+
+[env]
+CC_aarch64_linux_android = "Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang"
+AR_aarch64_linux_android = "Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
