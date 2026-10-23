@@ -26,6 +26,8 @@ pub struct SyncPayload {
     pub timestamp: i64,
     pub memories: Vec<MemoryRecord>,
     pub tombstones: Vec<TombstoneRecord>,
+    #[serde(default)]
+    pub tasks: Vec<crate::task::Task>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,6 +46,8 @@ pub struct MergeStats {
     pub updated_memories: usize,
     pub applied_tombstones: usize,
     pub skipped_records: usize,
+    pub imported_tasks: usize,
+    pub updated_tasks: usize,
 }
 
 fn now_millis() -> i64 {
@@ -136,11 +140,13 @@ pub fn export_encrypted_sync_package(
     device_id: &str,
 ) -> Result<String, String> {
     let memories = store.list_memories().map_err(|e| e.to_string())?;
+    let tasks = store.list_tasks().unwrap_or_default();
     let payload = SyncPayload {
         device_id: device_id.to_string(),
         timestamp: now_millis(),
         memories,
         tombstones: Vec::new(),
+        tasks,
     };
 
     let payload_bytes = serde_json::to_vec(&payload)
@@ -186,6 +192,14 @@ pub fn import_encrypted_sync_package(
             stats.imported_memories += 1;
         } else {
             stats.updated_memories += 1;
+        }
+    }
+
+    for remote_task in payload.tasks {
+        match store.upsert_synced_task(&remote_task) {
+            Ok(true) => stats.imported_tasks += 1,
+            Ok(false) => stats.skipped_records += 1,
+            Err(_) => stats.skipped_records += 1,
         }
     }
 
@@ -282,6 +296,7 @@ mod tests {
                     deleted_at: 900,
                 }
             ],
+            tasks: Vec::new(),
         };
 
         let raw_bytes = serde_json::to_vec(&payload).unwrap();
@@ -297,5 +312,86 @@ mod tests {
 
         // 3. Decrypt with wrong passphrase must fail
         assert!(decrypt_payload("wrong-passphrase", &envelope).is_err());
+    }
+
+    #[test]
+    fn test_cross_device_task_state_migration() {
+        use crate::plan::{ExecutionPlan, Step};
+        use crate::task::TaskStatus;
+
+        let temp1 = std::env::temp_dir().join(format!("store_dev1_{}", now_millis()));
+        let temp2 = std::env::temp_dir().join(format!("store_dev2_{}", now_millis()));
+        let store1 = AgentStore::open(temp1.to_str().unwrap()).unwrap();
+        let store2 = AgentStore::open(temp2.to_str().unwrap()).unwrap();
+
+        let passphrase = "cross-device-shared-secret";
+        let now = 10_000;
+
+        // 1. Device 1 (phone) creates task "撰写周报"
+        let task = store1.create_task("撰写周报", now).unwrap();
+        let plan = ExecutionPlan::new(
+            &task.id,
+            "撰写本周研发进展报告",
+            vec![
+                Step {
+                    index: 0,
+                    title: "收集代码提交记录".to_string(),
+                    capability: "demo.note.read".to_string(),
+                    scope: "synthetic.welcome".to_string(),
+                    prompt: "".to_string(),
+                    status: "done".to_string(),
+                    observation: "已提取本周 12 次提交".to_string(),
+                    executed_at: now + 10,
+                },
+                Step {
+                    index: 1,
+                    title: "格式化 Markdown 摘要".to_string(),
+                    capability: "demo.status.read".to_string(),
+                    scope: "synthetic.device_status".to_string(),
+                    prompt: "".to_string(),
+                    status: "pending".to_string(),
+                    observation: "".to_string(),
+                    executed_at: 0,
+                },
+            ],
+        );
+        store1.save_plan(&task.id, &plan, now + 10).unwrap();
+        store1.save_step_checkpoint(&task.id, 0, "已提取本周 12 次提交", now + 10).unwrap();
+        store1.transition_task(&task.id, TaskStatus::Paused, now + 20).unwrap();
+
+        // 2. Export from Device 1 (phone)
+        let sync_pkg = export_encrypted_sync_package(&store1, passphrase, "pixel6a-device").unwrap();
+
+        // 3. Import into Device 2 (desktop)
+        let stats = import_encrypted_sync_package(&store2, passphrase, &sync_pkg).unwrap();
+        assert_eq!(stats.imported_tasks, 1);
+
+        // 4. Verify task state on Device 2
+        let dev2_task = store2.get_task(&task.id).unwrap().expect("Task must exist on dev2");
+        assert_eq!(dev2_task.title, "撰写周报");
+        assert_eq!(dev2_task.status, TaskStatus::Paused);
+        assert_eq!(dev2_task.execution_step, 1);
+        assert_eq!(dev2_task.plan.as_ref().unwrap().steps[0].status, "done");
+
+        // 5. Device 2 continues execution: execute step 1 and complete task
+        store2.transition_task(&task.id, TaskStatus::Active, now + 100).unwrap();
+        store2.save_step_checkpoint(&task.id, 1, "Markdown 报告已生成", now + 110).unwrap();
+        store2.complete_task(&task.id, "周报撰写完成并已归档", now + 120).unwrap();
+
+        let completed_task = store2.get_task(&task.id).unwrap().unwrap();
+        assert_eq!(completed_task.status, TaskStatus::Completed);
+        assert_eq!(completed_task.result, "周报撰写完成并已归档");
+
+        // 6. Sync back to Device 1
+        let dev2_sync_pkg = export_encrypted_sync_package(&store2, passphrase, "desktop-device").unwrap();
+        let stats_back = import_encrypted_sync_package(&store1, passphrase, &dev2_sync_pkg).unwrap();
+        assert_eq!(stats_back.imported_tasks, 1); // updated via LWW
+
+        let synced_back = store1.get_task(&task.id).unwrap().unwrap();
+        assert_eq!(synced_back.status, TaskStatus::Completed);
+        assert_eq!(synced_back.result, "周报撰写完成并已归档");
+
+        let _ = std::fs::remove_dir_all(&temp1);
+        let _ = std::fs::remove_dir_all(&temp2);
     }
 }

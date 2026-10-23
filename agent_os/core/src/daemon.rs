@@ -260,6 +260,53 @@ pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
                 }),
             )
         }
+        "sync.export" => {
+            let pass = req.payload.get("passphrase").and_then(|v| v.as_str()).unwrap_or("");
+            let device_id = req.payload.get("device_id").and_then(|v| v.as_str()).unwrap_or("agentos-daemon");
+            let res = crate::store::with_global_store(|store| {
+                crate::sync::export_encrypted_sync_package(store, pass, device_id)
+            });
+            match res {
+                Ok(pkg) => ("ok".to_string(), serde_json::json!({ "sync_package": pkg })),
+                Err(e) => ("error".to_string(), serde_json::json!({ "message": e })),
+            }
+        }
+        "sync.import" => {
+            let pass = req.payload.get("passphrase").and_then(|v| v.as_str()).unwrap_or("");
+            let pkg = req.payload.get("sync_package").and_then(|v| v.as_str()).unwrap_or("");
+            let res = crate::store::with_global_store(|store| {
+                crate::sync::import_encrypted_sync_package(store, pass, pkg)
+            });
+            match res {
+                Ok(stats) => ("ok".to_string(), serde_json::json!({
+                    "imported_memories": stats.imported_memories,
+                    "updated_memories": stats.updated_memories,
+                    "imported_tasks": stats.imported_tasks,
+                    "updated_tasks": stats.updated_tasks,
+                    "skipped_records": stats.skipped_records
+                })),
+                Err(e) => ("error".to_string(), serde_json::json!({ "message": e })),
+            }
+        }
+        "task.list" => {
+            let res = crate::store::with_global_store(|store| {
+                store.list_tasks().map_err(|e| e.to_string())
+            });
+            match res {
+                Ok(tasks) => ("ok".to_string(), serde_json::json!({ "tasks": tasks, "count": tasks.len() })),
+                Err(e) => ("error".to_string(), serde_json::json!({ "message": e })),
+            }
+        }
+        "task.create" => {
+            let title = req.payload.get("title").and_then(|v| v.as_str()).unwrap_or("Untitled Task");
+            let res = crate::store::with_global_store(|store| {
+                store.create_task(title, ts as i64).map_err(|e| e.to_string())
+            });
+            match res {
+                Ok(task) => ("ok".to_string(), serde_json::json!({ "task": task })),
+                Err(e) => ("error".to_string(), serde_json::json!({ "message": e })),
+            }
+        }
         "memory_sync" => {
             let count = req.payload.get("memories")
                 .and_then(|v| v.as_array())

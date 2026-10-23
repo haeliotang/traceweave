@@ -36,6 +36,8 @@ venv.bak/
 *.mp3
 
 # Runtime streaming dumps
+*.db
+*.db-*
 data/realtime_state_stream.jsonl
 data/resonance_events.jsonl
 data/realtime_manifold_stream.jsonl

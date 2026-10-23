@@ -65,6 +65,42 @@ impl AgentStore {
     pub fn open_in_memory() -> Result<Self> {
         Self::open(":memory:")
     }
+}
+
+static GLOBAL_STORE_SINGLETON: std::sync::RwLock<Option<AgentStore>> = std::sync::RwLock::new(None);
+
+pub fn init_global_store(path: &str) -> Result<()> {
+    let store = AgentStore::open(path)?;
+    let mut lock = GLOBAL_STORE_SINGLETON.write().unwrap();
+    *lock = Some(store);
+    Ok(())
+}
+
+pub fn with_global_store<F, R>(f: F) -> std::result::Result<R, String>
+where
+    F: FnOnce(&AgentStore) -> std::result::Result<R, String>,
+{
+    let lock = GLOBAL_STORE_SINGLETON.read().unwrap();
+    if let Some(s) = lock.as_ref() {
+        return f(s);
+    }
+    drop(lock);
+
+    let default_path = if cfg!(target_os = "android") {
+        "/data/local/tmp/agent_os_core.db"
+    } else {
+        "agent_os_core.db"
+    };
+
+    let mut write_lock = GLOBAL_STORE_SINGLETON.write().unwrap();
+    if write_lock.is_none() {
+        let s = AgentStore::open(default_path).map_err(|e| e.to_string())?;
+        *write_lock = Some(s);
+    }
+    f(write_lock.as_ref().unwrap())
+}
+
+impl AgentStore {
 
     // =========================================================================
     // TASK OPERATIONS
@@ -238,6 +274,40 @@ impl AgentStore {
             params![task_id, format!("status_{}", next_status.as_str()), now],
         )?;
         Ok(())
+    }
+
+    pub fn upsert_synced_task(&self, task: &Task) -> Result<bool> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT updated_at FROM tasks WHERE id = ?1")?;
+        let mut rows = stmt.query(params![task.id])?;
+        if let Some(row) = rows.next()? {
+            let local_updated: i64 = row.get(0)?;
+            if local_updated >= task.updated_at {
+                return Ok(false);
+            }
+            let plan_json = task.plan.as_ref().and_then(|p| serde_json::to_string(p).ok());
+            conn.execute(
+                "UPDATE tasks SET title = ?1, status = ?2, execution_step = ?3, result = ?4, plan_json = ?5, updated_at = ?6 WHERE id = ?7",
+                params![task.title, task.status.as_str(), task.execution_step as i64, task.result, plan_json, task.updated_at, task.id],
+            )?;
+            conn.execute(
+                "INSERT INTO task_journal (task_id, event_type, timestamp) VALUES (?1, 'synced_lww_update', ?2)",
+                params![task.id, task.updated_at],
+            )?;
+            Ok(true)
+        } else {
+            let plan_json = task.plan.as_ref().and_then(|p| serde_json::to_string(p).ok());
+            conn.execute(
+                "INSERT INTO tasks (id, title, status, execution_step, result, plan_json, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                params![task.id, task.title, task.status.as_str(), task.execution_step as i64, task.result, plan_json, task.created_at, task.updated_at],
+            )?;
+            conn.execute(
+                "INSERT INTO task_journal (task_id, event_type, timestamp) VALUES (?1, 'synced_insert', ?2)",
+                params![task.id, task.updated_at],
+            )?;
+            Ok(true)
+        }
     }
 
     pub fn save_step_checkpoint(
