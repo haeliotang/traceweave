@@ -150,11 +150,12 @@ public final class CapabilityBroker {
             deny(agentId, taskId, capability, scope);
             throw new SecurityException("不支持此能力或数据范围");
         }
-        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
+        String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
         store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope) + agentTag);
         synchronized (GRANTS_LOCK) {
             grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
-                .put(grantKey(capability, scope), new Grant(agentId, taskId, capability, scope,
+                .put(grantKey(effectiveAgent, capability, scope), new Grant(effectiveAgent, taskId, capability, scope,
                     SystemClock.elapsedRealtime() + GRANT_DURATION_MILLIS));
         }
     }
@@ -164,7 +165,8 @@ public final class CapabilityBroker {
     }
 
     public void deny(String agentId, String taskId, String capability, String scope) {
-        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
+        String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
         store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope) + agentTag);
     }
 
@@ -173,7 +175,8 @@ public final class CapabilityBroker {
     }
 
     public String invoke(String agentId, String taskId, String capability, String scope) {
-        String key = grantKey(capability, scope);
+        String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
+        String key = grantKey(effectiveAgent, capability, scope);
         Grant grant;
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
@@ -185,25 +188,26 @@ public final class CapabilityBroker {
         }
         CapabilityProvider provider = providers.get(capability);
         if (grant == null
+                || (grant.agentId != null && !grant.agentId.equals(effectiveAgent))
                 || !taskId.equals(grant.taskId)
                 || !capability.equals(grant.capability)
                 || !scope.equals(grant.scope)
                 || provider == null || !provider.isAvailable(taskId, scope)) {
             removeGrant(taskId, key);
             if (provider != null) provider.releaseTask(taskId);
-            String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+            String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
             store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope) + agentTag);
-            throw new SecurityException("该任务没有有效的能力授权");
+            throw new SecurityException("该任务没有针对此 Agent 的有效能力授权");
         }
         String result;
         try {
             result = provider.read(taskId, scope);
         } catch (RuntimeException error) {
-            String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+            String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
             store.appendCapabilityAudit(taskId, auditEvent("capability_failed", capability, scope) + agentTag);
             throw error;
         }
-        String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+        String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
         store.appendCapabilityAudit(taskId, auditEvent("capability_invoked", capability, scope) + agentTag);
         return result;
     }
@@ -213,7 +217,8 @@ public final class CapabilityBroker {
     }
 
     public boolean revoke(String agentId, String taskId, String capability, String scope) {
-        String key = grantKey(capability, scope);
+        String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
+        String key = grantKey(effectiveAgent, capability, scope);
         Grant grant;
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
@@ -222,7 +227,7 @@ public final class CapabilityBroker {
                 removeGrant(taskId, key);
                 grant = null;
             } else {
-                String agentTag = (agentId != null && !agentId.isEmpty() && !"local_agent".equals(agentId)) ? ":" + agentId : "";
+                String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
                 store.appendCapabilityAudit(taskId, auditEvent("capability_revoked", capability, scope) + agentTag);
                 removeGrant(taskId, key);
             }
@@ -241,11 +246,13 @@ public final class CapabilityBroker {
         return revoke("local_agent", taskId, capability, scope);
     }
 
-    long remainingMillis(String taskId, String capability, String scope) {
+    long remainingMillis(String agentId, String taskId, String capability, String scope) {
+        String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
-            String key = grantKey(capability, scope);
-            Grant grant = taskGrants == null ? null : taskGrants.get(key);
+            if (taskGrants == null) return 0;
+            String key = grantKey(effectiveAgent, capability, scope);
+            Grant grant = taskGrants.get(key);
             if (grant == null) return 0;
             long remaining = grant.expiresAtElapsed - SystemClock.elapsedRealtime();
             if (remaining <= 0) {
@@ -258,6 +265,10 @@ public final class CapabilityBroker {
         }
     }
 
+    long remainingMillis(String taskId, String capability, String scope) {
+        return remainingMillis("local_agent", taskId, capability, scope);
+    }
+
     private void removeGrant(String taskId, String key) {
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
@@ -267,7 +278,7 @@ public final class CapabilityBroker {
         }
     }
 
-    private String grantKey(String capability, String scope) {
-        return capability + "\n" + scope;
+    private String grantKey(String agentId, String capability, String scope) {
+        return agentId + "\n" + capability + "\n" + scope;
     }
 }

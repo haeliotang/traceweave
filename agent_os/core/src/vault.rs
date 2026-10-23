@@ -51,7 +51,17 @@ fn derive_umk(passphrase: &str, salt: &[u8]) -> [u8; KEY_LEN] {
 }
 
 fn generate_random_bytes(len: usize) -> Vec<u8> {
+    use std::fs::File;
+    use std::io::Read;
+
     let mut bytes = vec![0u8; len];
+    if let Ok(mut file) = File::open("/dev/urandom") {
+        if file.read_exact(&mut bytes).is_ok() {
+            return bytes;
+        }
+    }
+
+    // High-entropy fallback mixing time, atomic counter, pid, and bit shuffling
     let now = now_millis();
     let counter = VAULT_NONCE_COUNTER.fetch_add(1, Ordering::Relaxed);
     for (i, b) in now.to_le_bytes().iter().enumerate() {
@@ -60,12 +70,21 @@ fn generate_random_bytes(len: usize) -> Vec<u8> {
     for (i, b) in counter.to_le_bytes().iter().enumerate() {
         bytes[(i + 4) % len] ^= b.wrapping_mul(31);
     }
-    // Mix with process id and pointer addresses for entropy
     let pid = std::process::id();
     for (i, b) in pid.to_le_bytes().iter().enumerate() {
         bytes[(i + 8) % len] ^= b.wrapping_mul(17);
     }
     bytes
+}
+
+impl Drop for Vault {
+    fn drop(&mut self) {
+        for byte in self.dek.iter_mut() {
+            unsafe {
+                std::ptr::write_volatile(byte, 0);
+            }
+        }
+    }
 }
 
 impl Vault {

@@ -70,6 +70,24 @@ fn current_timestamp_ms() -> u64 {
         .as_millis() as u64
 }
 
+fn resolve_effective_agent(req: &DaemonRequest, ts: i64) -> Result<String, String> {
+    if let Some(token) = req.session_token.as_deref() {
+        if let Some(agent) = with_registry(|reg| reg.verify_session(token, ts).cloned()) {
+            return Ok(agent.agent_id);
+        } else {
+            return Err("Security Unauthorized: Invalid or expired session token".to_string());
+        }
+    }
+
+    if let Some(claimed) = req.agent_id.as_deref() {
+        if claimed != "local_system" && claimed != "anonymous_agent" {
+            return Err(format!("Security Unauthorized: Agent '{}' must provide a valid session_token", claimed));
+        }
+    }
+
+    Ok("local_system".to_string())
+}
+
 /// Dispatches a daemon action and produces a response.
 pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
     let req_count = REQUEST_COUNTER.fetch_add(1, Ordering::SeqCst) + 1;
@@ -148,56 +166,93 @@ pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
         }
         "capability.list" => {
             let caps = with_broker(|b| b.list_available_capabilities());
-            ("ok".to_string(), serde_json::json!({ "capabilities": caps }))
+            let task_id = req.payload.get("task_id").and_then(|v| v.as_str()).unwrap_or("");
+            let active_grants = match req.session_token.as_deref() {
+                Some(token) => match with_registry(|reg| reg.verify_session(token, ts as i64).cloned()) {
+                    Some(agent) => with_broker(|b| {
+                        b.list_active_grants_for_agent(&agent.agent_id, task_id, ts as i64)
+                            .into_iter()
+                            .map(|g| serde_json::json!({
+                                "agent_id": g.agent_id,
+                                "task_id": g.task_id,
+                                "capability": g.capability,
+                                "scope": g.scope,
+                                "expires_in_secs": (g.expires_at - ts as i64).max(0) / 1000
+                            }))
+                            .collect::<Vec<_>>()
+                    }),
+                    None => vec![],
+                },
+                None => vec![],
+            };
+            ("ok".to_string(), serde_json::json!({
+                "capabilities": caps,
+                "active_grants": active_grants
+            }))
         }
         "capability.request" => {
             let task_id = req.payload.get("task_id").and_then(|v| v.as_str()).unwrap_or("default_task");
             let cap = req.payload.get("capability").and_then(|v| v.as_str()).unwrap_or("");
             let scope = req.payload.get("scope").and_then(|v| v.as_str()).unwrap_or("");
-            let agent_id = req.agent_id.as_deref().unwrap_or("anonymous_agent");
-            let grant_res = with_broker(|b| b.grant_for_agent(agent_id, task_id, cap, scope, ts as i64));
-            match grant_res {
-                Ok(()) => (
-                    "ok".to_string(),
-                    serde_json::json!({
-                        "granted": true,
-                        "agent_id": agent_id,
-                        "task_id": task_id,
-                        "capability": cap,
-                        "scope": scope,
-                        "expires_at": ts + 300_000
-                    }),
-                ),
-                Err(e) => ("error".to_string(), serde_json::json!({ "granted": false, "message": e.to_string() })),
+            
+            match resolve_effective_agent(&req, ts as i64) {
+                Ok(effective_agent_id) => {
+                    let grant_res = with_broker(|b| b.grant_for_agent(&effective_agent_id, task_id, cap, scope, ts as i64));
+                    match grant_res {
+                        Ok(()) => (
+                            "ok".to_string(),
+                            serde_json::json!({
+                                "granted": true,
+                                "agent_id": effective_agent_id,
+                                "task_id": task_id,
+                                "capability": cap,
+                                "scope": scope,
+                                "expires_at": ts + 300_000
+                            }),
+                        ),
+                        Err(e) => ("error".to_string(), serde_json::json!({ "granted": false, "message": e.to_string() })),
+                    }
+                }
+                Err(err) => ("error".to_string(), serde_json::json!({ "granted": false, "message": err })),
             }
         }
         "capability.invoke" => {
             let task_id = req.payload.get("task_id").and_then(|v| v.as_str()).unwrap_or("default_task");
             let cap = req.payload.get("capability").and_then(|v| v.as_str()).unwrap_or("");
             let scope = req.payload.get("scope").and_then(|v| v.as_str()).unwrap_or("");
-            let agent_id = req.agent_id.as_deref().unwrap_or("anonymous_agent");
-            let inv_res = with_broker(|b| b.invoke_for_agent(agent_id, task_id, cap, scope, ts as i64));
-            match inv_res {
-                Ok(res) => (
-                    "ok".to_string(),
-                    serde_json::json!({
-                        "result": res,
-                        "task_id": task_id,
-                        "capability": cap,
-                        "scope": scope,
-                        "agent_id": agent_id
-                    }),
-                ),
-                Err(e) => ("error".to_string(), serde_json::json!({ "message": e.to_string() })),
+            
+            match resolve_effective_agent(&req, ts as i64) {
+                Ok(effective_agent_id) => {
+                    let inv_res = with_broker(|b| b.invoke_for_agent(&effective_agent_id, task_id, cap, scope, ts as i64));
+                    match inv_res {
+                        Ok(res) => (
+                            "ok".to_string(),
+                            serde_json::json!({
+                                "result": res,
+                                "task_id": task_id,
+                                "capability": cap,
+                                "scope": scope,
+                                "agent_id": effective_agent_id
+                            }),
+                        ),
+                        Err(e) => ("error".to_string(), serde_json::json!({ "message": e.to_string() })),
+                    }
+                }
+                Err(err) => ("error".to_string(), serde_json::json!({ "message": err })),
             }
         }
         "capability.revoke" => {
             let task_id = req.payload.get("task_id").and_then(|v| v.as_str()).unwrap_or("default_task");
             let cap = req.payload.get("capability").and_then(|v| v.as_str()).unwrap_or("");
             let scope = req.payload.get("scope").and_then(|v| v.as_str()).unwrap_or("");
-            let agent_id = req.agent_id.as_deref().unwrap_or("anonymous_agent");
-            with_broker(|b| b.revoke_for_agent(agent_id, task_id, cap, scope));
-            ("ok".to_string(), serde_json::json!({ "revoked": true }))
+            
+            match resolve_effective_agent(&req, ts as i64) {
+                Ok(effective_agent_id) => {
+                    with_broker(|b| b.revoke_for_agent(&effective_agent_id, task_id, cap, scope));
+                    ("ok".to_string(), serde_json::json!({ "revoked": true, "agent_id": effective_agent_id }))
+                }
+                Err(err) => ("error".to_string(), serde_json::json!({ "message": err })),
+            }
         }
         "audit.query" => {
             let events = with_broker(|b| b.audit_events().to_vec());

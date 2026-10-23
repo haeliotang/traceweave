@@ -45,6 +45,7 @@ class SubstrateClient:
         self.active_agent_id: Optional[str] = None
         self.active_session_token: Optional[str] = None
         self._sock: Optional[socket.socket] = None
+        self._file_reader = None
 
     def __enter__(self) -> "SubstrateClient":
         self.connect()
@@ -57,6 +58,7 @@ class SubstrateClient:
         """Establish TCP connection to the Substrate daemon."""
         try:
             self._sock = socket.create_connection((self.host, self.port), timeout=self.timeout)
+            self._file_reader = self._sock.makefile("r", encoding="utf-8")
         except OSError as e:
             raise SubstrateConnectionError(
                 f"Failed to connect to Substrate hub at {self.host}:{self.port}: {e}"
@@ -64,6 +66,13 @@ class SubstrateClient:
 
     def close(self) -> None:
         """Close TCP connection."""
+        if self._file_reader:
+            try:
+                self._file_reader.close()
+            except Exception:
+                pass
+            finally:
+                self._file_reader = None
         if self._sock:
             try:
                 self._sock.close()
@@ -105,17 +114,12 @@ class SubstrateClient:
         sock = self._ensure_connected()
         try:
             sock.sendall(wire_bytes)
-            # Read single line
-            buf = bytearray()
-            while True:
-                chunk = sock.recv(4096)
-                if not chunk:
-                    raise SubstrateConnectionError("Substrate daemon closed connection unexpectedly")
-                buf.extend(chunk)
-                if b"\n" in chunk:
-                    break
-
-            line = buf.split(b"\n")[0].decode("utf-8").strip()
+            if self._file_reader is None:
+                self._file_reader = sock.makefile("r", encoding="utf-8")
+            line = self._file_reader.readline()
+            if not line:
+                raise SubstrateConnectionError("Substrate daemon closed connection unexpectedly")
+            line = line.strip()
             if not line:
                 raise SubstrateProtocolError("Received empty response from Substrate hub")
 

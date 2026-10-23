@@ -89,6 +89,8 @@ impl AgentRegistry {
             return Err("agent_id cannot be empty".to_string());
         }
 
+        self.prune_expired_sessions(now);
+
         let manifest: AgentManifest = serde_json::from_str(manifest_json)
             .unwrap_or_else(|_| AgentManifest {
                 name: agent_id.to_string(),
@@ -164,6 +166,11 @@ impl AgentRegistry {
     /// Total active sessions count.
     pub fn active_sessions_count(&self, now: i64) -> usize {
         self.sessions.values().filter(|s| s.is_valid(now)).count()
+    }
+
+    /// Prunes expired sessions to prevent unbounded memory growth.
+    pub fn prune_expired_sessions(&mut self, now: i64) {
+        self.sessions.retain(|_, sess| sess.is_valid(now));
     }
 }
 

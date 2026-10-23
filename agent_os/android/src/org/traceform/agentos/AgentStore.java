@@ -584,6 +584,21 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    public List<String> listAuditEvents(String taskId, int limit) {
+        SQLiteDatabase database = getReadableDatabase();
+        List<String> list = new ArrayList<>();
+        String selection = (taskId != null && !taskId.isEmpty()) ? "task_id=?" : null;
+        String[] selectionArgs = (taskId != null && !taskId.isEmpty()) ? new String[]{taskId} : null;
+        String limitStr = limit > 0 ? String.valueOf(limit) : "50";
+        try (Cursor cursor = database.query("audit", new String[]{"occurred_at", "event"},
+                selection, selectionArgs, null, null, "occurred_at DESC", limitStr)) {
+            while (cursor.moveToNext()) {
+                list.add(cursor.getLong(0) + ":" + cursor.getString(1));
+            }
+        }
+        return list;
+    }
+
     void deleteTask(String taskId) {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();

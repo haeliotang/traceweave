@@ -245,6 +245,13 @@ impl CapabilityBroker {
         ]
     }
 
+    pub fn list_active_grants_for_agent(&self, agent_id: &str, task_id: &str, now: i64) -> Vec<Grant> {
+        self.grants.values()
+            .filter(|g| g.agent_id == agent_id && (task_id.is_empty() || g.task_id == task_id) && g.expires_at > now)
+            .cloned()
+            .collect()
+    }
+
     pub fn audit_event_count(&self, event_str: &str) -> usize {
         self.audit_events.iter().filter(|e| *e == event_str).count()
     }

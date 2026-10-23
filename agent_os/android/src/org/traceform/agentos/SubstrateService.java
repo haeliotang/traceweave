@@ -125,21 +125,34 @@ public class SubstrateService extends Service {
 
         @Override
         public String queryAuditLog(String sessionToken, String taskId, int limit) throws RemoteException {
-            requireSession(sessionToken);
+            AgentSession session = requireSession(sessionToken);
+            String effectiveTaskId = (taskId == null || taskId.isEmpty()) ? getOrEnsureSubstrateTask() : taskId;
             try {
+                int queryLimit = limit > 0 ? limit : 50;
+                List<String> events = store.listAuditEvents(effectiveTaskId, queryLimit);
                 JSONObject obj = new JSONObject();
                 obj.put("status", "ok");
-                obj.put("taskId", taskId);
-                obj.put("total_sessions", sessions.size());
+                obj.put("taskId", effectiveTaskId);
+                obj.put("agent", session.packageName);
+                JSONArray arr = new JSONArray();
+                for (String ev : events) {
+                    arr.put(ev);
+                }
+                obj.put("events", arr);
+                obj.put("count", arr.length());
                 return obj.toString();
             } catch (Exception e) {
-                return "{}";
+                return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
             }
         }
 
         @Override
         public String ping(String sessionToken) throws RemoteException {
-            boolean valid = sessionToken != null && sessions.containsKey(sessionToken);
+            boolean valid = false;
+            if (sessionToken != null && sessions.containsKey(sessionToken)) {
+                AgentSession sess = sessions.get(sessionToken);
+                valid = sess != null && (System.currentTimeMillis() - sess.createdAt <= SESSION_EXPIRY_MILLIS);
+            }
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("pong", true);
@@ -154,11 +167,18 @@ public class SubstrateService extends Service {
         }
     };
 
+    private static final long SESSION_EXPIRY_MILLIS = 24L * 60L * 60L * 1000L;
+
     private AgentSession requireSession(String token) throws RemoteException {
         if (token == null || !sessions.containsKey(token)) {
-            throw new RemoteException("Invalid or expired substrate session token");
+            throw new RemoteException("Invalid substrate session token");
         }
-        return sessions.get(token);
+        AgentSession session = sessions.get(token);
+        if (session == null || System.currentTimeMillis() - session.createdAt > SESSION_EXPIRY_MILLIS) {
+            sessions.remove(token);
+            throw new RemoteException("Substrate session token has expired");
+        }
+        return session;
     }
 
     private synchronized String getOrEnsureSubstrateTask() {
