@@ -10,3 +10,6 @@ pub mod c_api;
 pub mod jni_api;
 pub mod store;
 pub mod js_engine;
+pub mod plugin_manager;
+pub mod edge_slm;
+pub mod sync;

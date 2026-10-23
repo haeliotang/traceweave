@@ -437,3 +437,230 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeStoreSel
     }
     std::ptr::null_mut()
 }
+
+// =============================================================================
+// PHASE 8: DIRECTION A (PLUGINS), DIRECTION C (EDGE SLM), DIRECTION D (E2EE SYNC)
+// =============================================================================
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeInstallPlugin(
+    mut env: JNIEnv,
+    _class: JClass,
+    base_dir: JString,
+    manifest_json: JString,
+    js_code: JString,
+) -> jstring {
+    let dir_str: String = match env.get_string(&base_dir) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let manifest_str: String = match env.get_string(&manifest_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let code_str: String = match env.get_string(&js_code) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match crate::plugin_manager::PluginManager::install_plugin(
+        std::path::Path::new(&dir_str),
+        &manifest_str,
+        &code_str,
+    ) {
+        Ok(manifest) => {
+            let json = serde_json::to_string(&manifest).unwrap_or_default();
+            env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+        Err(err) => {
+            let err_json = serde_json::json!({ "error": err }).to_string();
+            env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeListPlugins(
+    mut env: JNIEnv,
+    _class: JClass,
+    base_dir: JString,
+) -> jstring {
+    let dir_str: String = match env.get_string(&base_dir) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    match crate::plugin_manager::PluginManager::list_plugins(std::path::Path::new(&dir_str)) {
+        Ok(plugins) => {
+            let json = serde_json::to_string(&plugins).unwrap_or_default();
+            env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+        }
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeInvokePluginTool(
+    mut env: JNIEnv,
+    _class: JClass,
+    base_dir: JString,
+    plugin_id: JString,
+    tool_name: JString,
+    args_json: JString,
+) -> jstring {
+    let dir_str: String = match env.get_string(&base_dir) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let id_str: String = match env.get_string(&plugin_id) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let tool_str: String = match env.get_string(&tool_name) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let args_str: String = if !args_json.is_null() {
+        env.get_string(&args_json).map(|s| s.into()).unwrap_or_else(|_| "{}".to_string())
+    } else {
+        "{}".to_string()
+    };
+
+    let result = crate::plugin_manager::PluginManager::invoke_plugin_tool(
+        std::path::Path::new(&dir_str),
+        &id_str,
+        &tool_str,
+        &args_str,
+    );
+
+    let output_json = match result {
+        Ok(res) => serde_json::to_string(&res).unwrap_or_default(),
+        Err(err) => serde_json::json!({
+            "content": [{ "type": "text", "text": format!("Plugin invocation error: {}", err) }],
+            "isError": true
+        }).to_string(),
+    };
+
+    env.new_string(output_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeUninstallPlugin(
+    mut env: JNIEnv,
+    _class: JClass,
+    base_dir: JString,
+    plugin_id: JString,
+) -> jboolean {
+    let dir_str: String = match env.get_string(&base_dir) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+    let id_str: String = match env.get_string(&plugin_id) {
+        Ok(s) => s.into(),
+        Err(_) => return JNI_FALSE,
+    };
+
+    if crate::plugin_manager::PluginManager::uninstall_plugin(std::path::Path::new(&dir_str), &id_str).unwrap_or(false) {
+        JNI_TRUE
+    } else {
+        JNI_FALSE
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmExtract(
+    mut env: JNIEnv,
+    _class: JClass,
+    goal: JString,
+    memories_json: JString,
+) -> jstring {
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let mems_str: String = if !memories_json.is_null() {
+        env.get_string(&memories_json).map(|s| s.into()).unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    let memories: Vec<String> = serde_json::from_str(&mems_str).unwrap_or_default();
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let params = engine.extract_parameters(&goal_str, &memories);
+    let output_json = serde_json::to_string(&params).unwrap_or_default();
+
+    env.new_string(output_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeEdgeSlmBuildPrompt(
+    mut env: JNIEnv,
+    _class: JClass,
+    goal: JString,
+) -> jstring {
+    let goal_str: String = match env.get_string(&goal) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let engine = crate::edge_slm::EdgeSlmEngine::new(crate::edge_slm::EdgeSlmConfig::default());
+    let prompt = engine.build_chatml_prompt(&goal_str);
+
+    env.new_string(prompt).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeExportEncryptedSync(
+    mut env: JNIEnv,
+    _class: JClass,
+    passphrase: JString,
+    device_id: JString,
+) -> jstring {
+    let pass_str: String = match env.get_string(&passphrase) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let dev_str: String = match env.get_string(&device_id) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let global = GLOBAL_STORE.read().unwrap();
+    if let Some(ref store) = *global {
+        if let Ok(envelope_json) = crate::sync::export_encrypted_sync_package(store, &pass_str, &dev_str) {
+            return env.new_string(envelope_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut());
+        }
+    }
+    std::ptr::null_mut()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeImportEncryptedSync(
+    mut env: JNIEnv,
+    _class: JClass,
+    passphrase: JString,
+    envelope_json: JString,
+) -> jstring {
+    let pass_str: String = match env.get_string(&passphrase) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let env_str: String = match env.get_string(&envelope_json) {
+        Ok(s) => s.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+
+    let global = GLOBAL_STORE.read().unwrap();
+    if let Some(ref store) = *global {
+        match crate::sync::import_encrypted_sync_package(store, &pass_str, &env_str) {
+            Ok(stats) => {
+                let json = serde_json::to_string(&stats).unwrap_or_default();
+                return env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut());
+            }
+            Err(err) => {
+                let err_json = serde_json::json!({ "error": err }).to_string();
+                return env.new_string(err_json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut());
+            }
+        }
+    }
+    std::ptr::null_mut()
+}

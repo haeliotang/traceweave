@@ -96,6 +96,49 @@ public final class NativeAgentCore {
     }
 
     // =========================================================================
+    // PHASE 8: DIRECTION A (PLUGINS), DIRECTION C (EDGE SLM), DIRECTION D (E2EE SYNC)
+    // =========================================================================
+
+    public static String installPlugin(String baseDir, String manifestJson, String jsCode) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeInstallPlugin(baseDir, manifestJson, jsCode);
+    }
+
+    public static String listPlugins(String baseDir) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeListPlugins(baseDir);
+    }
+
+    public static String invokePluginTool(String baseDir, String pluginId, String toolName, String argsJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeInvokePluginTool(baseDir, pluginId, toolName, argsJson);
+    }
+
+    public static boolean uninstallPlugin(String baseDir, String pluginId) {
+        return IS_LOADED && nativeUninstallPlugin(baseDir, pluginId);
+    }
+
+    public static String edgeSlmExtract(String goal, String memoriesJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeEdgeSlmExtract(goal, memoriesJson);
+    }
+
+    public static String edgeSlmBuildPrompt(String goal) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeEdgeSlmBuildPrompt(goal);
+    }
+
+    public static String exportEncryptedSync(String passphrase, String deviceId) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeExportEncryptedSync(passphrase, deviceId);
+    }
+
+    public static String importEncryptedSync(String passphrase, String envelopeJson) {
+        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
+        return nativeImportEncryptedSync(passphrase, envelopeJson);
+    }
+
+    // =========================================================================
     // OPTION 1 & 2: ZERO-COPY SLM INFERENCE & EMBEDDED IN-PROCESS JS MCP TOOLS
     // =========================================================================
 
@@ -131,4 +174,15 @@ public final class NativeAgentCore {
     public static native String nativeStoreCreateOrUpdateMemory(String kind, String content, String source, String refId, String topicKey);
     public static native String nativeStoreListMemories();
     public static native String nativeStoreSelectMemories(String goal, int topK);
+
+    public static native String nativeInstallPlugin(String baseDir, String manifestJson, String jsCode);
+    public static native String nativeListPlugins(String baseDir);
+    public static native String nativeInvokePluginTool(String baseDir, String pluginId, String toolName, String argsJson);
+    public static native boolean nativeUninstallPlugin(String baseDir, String pluginId);
+
+    public static native String nativeEdgeSlmExtract(String goal, String memoriesJson);
+    public static native String nativeEdgeSlmBuildPrompt(String goal);
+
+    public static native String nativeExportEncryptedSync(String passphrase, String deviceId);
+    public static native String nativeImportEncryptedSync(String passphrase, String envelopeJson);
 }
