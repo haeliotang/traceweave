@@ -195,10 +195,14 @@ final class MemoryArchive {
         root.put("exportedAt", data.exportedAt);
         JSONArray tasks = new JSONArray();
         for (AgentStore.Task task : data.tasks) {
-            tasks.put(new JSONObject().put("id", task.id).put("title", task.title).put("status", task.status)
+            JSONObject taskJson = new JSONObject().put("id", task.id).put("title", task.title).put("status", task.status)
                 .put("createdAt", task.createdAt).put("updatedAt", task.updatedAt)
                 .put("executionVersion", task.executionVersion).put("executionStep", task.executionStep)
-                .put("checkpointNote", task.checkpointNote).put("result", task.result));
+                .put("checkpointNote", task.checkpointNote).put("result", task.result);
+            if (task.plan != null) {
+                taskJson.put("plan", task.plan.toJson());
+            }
+            tasks.put(taskJson);
         }
         root.put("tasks", tasks);
         JSONArray memories = new JSONArray();
@@ -258,15 +262,22 @@ final class MemoryArchive {
                     && !AgentStore.FAILED.equals(status) && !AgentStore.COMPLETED.equals(status)
                     && !AgentStore.CANCELLED.equals(status))
                 throw new IOException("The archive contains an invalid task status");
+            int maxStep = executionVersion >= 2 ? AgentStore.MAX_DYNAMIC_STEPS : 2;
             if (executionVersion < 0 || executionVersion > AgentStore.CURRENT_EXECUTION_VERSION
-                    || executionStep < 0 || executionStep > 2 || checkpointNote.length() > 4000 || result.length() > 12000)
+                    || executionStep < 0 || executionStep > maxStep || checkpointNote.length() > 4000 || result.length() > 12000)
                 throw new IOException("The archive contains an invalid task checkpoint");
-            if ((executionVersion == 0 && (executionStep != 0 || !checkpointNote.isEmpty() || !result.isEmpty()))
-                    || (executionVersion == AgentStore.CURRENT_EXECUTION_VERSION && executionStep >= 1 && checkpointNote.isEmpty())
-                    || (executionStep == 2 && result.isEmpty()))
+            if (executionVersion == 0 && (executionStep != 0 || !checkpointNote.isEmpty() || !result.isEmpty()))
                 throw new IOException("The archive contains an inconsistent task checkpoint");
+            if (executionVersion == 1) {
+                if ((executionStep >= 1 && checkpointNote.isEmpty()) || (executionStep == 2 && result.isEmpty()))
+                    throw new IOException("The archive contains an inconsistent task checkpoint");
+            } else if (executionVersion == 2) {
+                if (AgentStore.COMPLETED.equals(status) && result.isEmpty())
+                    throw new IOException("The archive contains an inconsistent task checkpoint");
+            }
+            ExecutionPlan plan = item.has("plan") ? ExecutionPlan.fromJson(item.getJSONObject("plan")) : null;
             data.tasks.add(new AgentStore.Task(id, title, status, createdAt, updatedAt, 0,
-                executionVersion, executionStep, checkpointNote, result));
+                executionVersion, executionStep, checkpointNote, result, plan));
         }
 
         Set<String> memoryIds = new HashSet<>();

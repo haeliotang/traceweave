@@ -258,7 +258,12 @@ public final class MainActivity extends Activity {
     private void createTask() {
         if (busy) return;
         try {
-            store.createTask(taskInput.getText().toString());
+            String title = taskInput.getText().toString();
+            AgentStore.Task task = store.createTask(title);
+            ReasoningEngine planner = new SemanticRulePlanner();
+            ExecutionPlan plan = planner.plan(task.id, task.title,
+                capabilityBroker.listAvailableCapabilities(task.id), store.listMemories());
+            store.savePlan(task.id, plan);
             taskInput.setText("");
             refreshTasks();
         } catch (Exception error) {
@@ -356,6 +361,10 @@ public final class MainActivity extends Activity {
             card.addView(result);
         }
 
+        if (task.plan != null && !task.plan.steps.isEmpty()) {
+            addPlanStepTree(card, task);
+        }
+
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
@@ -375,6 +384,111 @@ public final class MainActivity extends Activity {
         }
 
         addDivider(taskList, card);
+    }
+
+    private void addPlanStepTree(LinearLayout card, AgentStore.Task task) {
+        if (task.plan == null || task.plan.steps.isEmpty()) return;
+
+        LinearLayout planContainer = new LinearLayout(this);
+        planContainer.setOrientation(LinearLayout.VERTICAL);
+        planContainer.setPadding(dp(12), dp(10), dp(12), dp(10));
+        planContainer.setBackgroundColor(0xFFF3F4F6);
+
+        TextView planHeading = new TextView(this);
+        planHeading.setText("动态执行计划（共 " + task.plan.totalSteps() + " 步）");
+        planHeading.setTextSize(15);
+        planHeading.setTypeface(null, android.graphics.Typeface.BOLD);
+        planHeading.setTextColor(0xFF222222);
+        planHeading.setPadding(0, 0, 0, dp(6));
+        planContainer.addView(planHeading);
+
+        for (int i = 0; i < task.plan.steps.size(); i++) {
+            ExecutionPlan.Step step = task.plan.steps.get(i);
+            LinearLayout stepRow = new LinearLayout(this);
+            stepRow.setOrientation(LinearLayout.VERTICAL);
+            stepRow.setPadding(0, dp(4), 0, dp(6));
+
+            TextView stepHeader = new TextView(this);
+            stepHeader.setTextSize(14);
+
+            boolean isCurrentStep = (task.executionStep == i);
+            boolean isStepDone = ExecutionPlan.STEP_DONE.equals(step.status);
+            boolean isStepWaiting = ExecutionPlan.STEP_AWAITING_GRANT.equals(step.status)
+                || (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status));
+            boolean isStepRunning = (isCurrentStep && AgentStore.ACTIVE.equals(task.status));
+
+            if (isStepDone) {
+                stepHeader.setText("🟢 [已完成] 步骤 " + (i + 1) + "：" + step.title);
+                stepHeader.setTextColor(0xFF1B5E20);
+            } else if (isStepWaiting) {
+                stepHeader.setText("🟡 [等待授权] 步骤 " + (i + 1) + "：" + step.title);
+                stepHeader.setTextColor(0xFFB78103);
+            } else if (isStepRunning) {
+                stepHeader.setText("🔵 [执行中] 步骤 " + (i + 1) + "：" + step.title);
+                stepHeader.setTextColor(0xFF0D47A1);
+            } else {
+                stepHeader.setText("⚪ [待执行] 步骤 " + (i + 1) + "：" + step.title);
+                stepHeader.setTextColor(0xFF555555);
+            }
+            stepRow.addView(stepHeader);
+
+            if (step.isBuiltin()) {
+                if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
+                    TextView obsView = new TextView(this);
+                    obsView.setText("端侧推演分析：\n" + step.observation);
+                    obsView.setTextSize(13);
+                    obsView.setTextColor(0xFF1B5E20);
+                    obsView.setPadding(dp(16), dp(2), 0, 0);
+                    stepRow.addView(obsView);
+                } else {
+                    TextView hint = new TextView(this);
+                    hint.setText("端侧内置逻辑推演（无需外部权限）");
+                    hint.setTextSize(12);
+                    hint.setTextColor(0xFF777777);
+                    hint.setPadding(dp(16), dp(2), 0, 0);
+                    stepRow.addView(hint);
+                }
+            } else {
+                if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
+                    TextView obsView = new TextView(this);
+                    obsView.setText("观察结果：" + step.observation);
+                    obsView.setTextSize(13);
+                    obsView.setTextColor(0xFF1B5E20);
+                    obsView.setPadding(dp(16), dp(2), 0, 0);
+                    stepRow.addView(obsView);
+                } else {
+                    long grantRemaining = capabilityBroker.remainingMillis(task.id, step.capability, step.scope);
+                    TextView capView = new TextView(this);
+                    capView.setText("能力标识：" + step.capability + (grantRemaining > 0
+                        ? " · 授权剩余约 " + ((grantRemaining + 59_999) / 60_000) + " 分钟"
+                        : " · 尚未授权"));
+                    capView.setTextSize(12);
+                    capView.setTextColor(grantRemaining > 0 ? 0xFF1B5E20 : 0xFF777777);
+                    capView.setPadding(dp(16), dp(2), 0, 0);
+                    stepRow.addView(capView);
+
+                    if (!AgentStore.COMPLETED.equals(task.status) && !AgentStore.CANCELLED.equals(task.status)) {
+                        LinearLayout authRow = new LinearLayout(this);
+                        authRow.setOrientation(LinearLayout.HORIZONTAL);
+                        authRow.setPadding(dp(16), dp(4), 0, 0);
+
+                        if (grantRemaining <= 0) {
+                            String btnLabel = isStepWaiting ? "为此步骤授权" : "预先授权此步骤";
+                            addCardActionButton(authRow, btnLabel, view ->
+                                confirmCapabilityGrant(task, step.title, step.capability, step.scope), taskButtons);
+                        } else {
+                            addCardActionButton(authRow, "撤销此步骤授权", view ->
+                                revokeCapability(task, step.title, step.capability, step.scope), taskButtons);
+                        }
+                        stepRow.addView(authRow);
+                    }
+                }
+            }
+
+            planContainer.addView(stepRow);
+        }
+
+        card.addView(planContainer);
     }
 
     private void addMemoryCard(AgentStore.Memory memory) {

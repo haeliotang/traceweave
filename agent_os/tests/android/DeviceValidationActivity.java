@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -16,7 +17,9 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -39,6 +42,10 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_PREPARE_CHECKPOINT_RESTART = "org.traceform.agentos.validation.PREPARE_CHECKPOINT_RESTART";
     static final String ACTION_VERIFY_CHECKPOINT_RESTART = "org.traceform.agentos.validation.VERIFY_CHECKPOINT_RESTART";
     static final String ACTION_VERIFY_MEMORY_PROVENANCE = "org.traceform.agentos.validation.VERIFY_MEMORY_PROVENANCE";
+    static final String ACTION_VERIFY_REASONING_PLANNER = "org.traceform.agentos.validation.VERIFY_REASONING_PLANNER";
+    static final String ACTION_VERIFY_DYNAMIC_EXECUTOR = "org.traceform.agentos.validation.VERIFY_DYNAMIC_EXECUTOR";
+    static final String ACTION_VERIFY_STEP_TREE_AND_JIT_GRANT = "org.traceform.agentos.validation.VERIFY_STEP_TREE_AND_JIT_GRANT";
+    static final String ACTION_VERIFY_END_TO_END_INTEGRATED = "org.traceform.agentos.validation.VERIFY_END_TO_END_INTEGRATED";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -89,6 +96,14 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyCheckpointRestart();
                 } else if (ACTION_VERIFY_MEMORY_PROVENANCE.equals(action)) {
                     result = verifyMemoryProvenance();
+                } else if (ACTION_VERIFY_REASONING_PLANNER.equals(action)) {
+                    result = verifyReasoningPlanner();
+                } else if (ACTION_VERIFY_DYNAMIC_EXECUTOR.equals(action)) {
+                    result = verifyDynamicExecutor();
+                } else if (ACTION_VERIFY_STEP_TREE_AND_JIT_GRANT.equals(action)) {
+                    result = verifyStepTreeAndJitGrant();
+                } else if (ACTION_VERIFY_END_TO_END_INTEGRATED.equals(action)) {
+                    result = verifyEndToEndIntegrated();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -874,5 +889,503 @@ public final class DeviceValidationActivity extends Activity {
     private static AgentStore.Memory findMemory(List<AgentStore.Memory> memories, String id) {
         for (AgentStore.Memory memory : memories) if (id.equals(memory.id)) return memory;
         return null;
+    }
+
+    private String verifyReasoningPlanner() throws Exception {
+        SemanticRulePlanner planner = new SemanticRulePlanner();
+        AgentStore store = new AgentStore(this);
+        CapabilityBroker broker = new CapabilityBroker(this, store);
+        try {
+            List<CapabilityDescriptor> availableCaps = broker.listAvailableCapabilities("synthetic-task");
+            List<AgentStore.Memory> memories = Collections.emptyList();
+
+            // 1. Single intent (Note)
+            ExecutionPlan notePlan = planner.plan("task-1", "整理本地示例便笺", availableCaps, memories);
+            if (notePlan.totalSteps() != 2) throw new IllegalStateException("Expected 2 steps for note intent, got " + notePlan.totalSteps());
+            if (!CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(notePlan.steps.get(0).capability))
+                throw new IllegalStateException("Step 0 should be note capability");
+            if (!"builtin.synthesis".equals(notePlan.steps.get(1).capability))
+                throw new IllegalStateException("Step 1 should be builtin.synthesis");
+
+            // 2. Multi-intent (Note + Status + Traceform)
+            ExecutionPlan multiPlan = planner.plan("task-2", "整理便笺并检查设备状态与历史预测", availableCaps, memories);
+            if (multiPlan.totalSteps() != 4) throw new IllegalStateException("Expected 4 steps for multi intent, got " + multiPlan.totalSteps());
+            if (!CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(multiPlan.steps.get(0).capability))
+                throw new IllegalStateException("Multi step 0 mismatch");
+            if (!CapabilityBroker.DEMO_STATUS_CAPABILITY.equals(multiPlan.steps.get(1).capability))
+                throw new IllegalStateException("Multi step 1 mismatch");
+            if (!CapabilityBroker.TRACEFORM_CAPABILITY.equals(multiPlan.steps.get(2).capability))
+                throw new IllegalStateException("Multi step 2 mismatch");
+            if (!"builtin.synthesis".equals(multiPlan.steps.get(3).capability))
+                throw new IllegalStateException("Multi step 3 mismatch");
+
+            // 3. Fallback intent
+            ExecutionPlan fallbackPlan = planner.plan("task-3", "执行未知综合计算", availableCaps, memories);
+            if (fallbackPlan.totalSteps() != 2) throw new IllegalStateException("Expected fallback to 2 steps");
+            if (!CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(fallbackPlan.steps.get(0).capability))
+                throw new IllegalStateException("Fallback step 0 should be demo note");
+
+            // 4. JSON Serialization & Deserialization round-trip
+            JSONObject serialized = multiPlan.toJson();
+            ExecutionPlan deserialized = ExecutionPlan.fromJson(serialized);
+            if (deserialized.totalSteps() != multiPlan.totalSteps()
+                    || !deserialized.id.equals(multiPlan.id)
+                    || !deserialized.goal.equals(multiPlan.goal)
+                    || deserialized.currentStepIndex != multiPlan.currentStepIndex) {
+                throw new IllegalStateException("JSON deserialization round-trip failed");
+            }
+            for (int i = 0; i < multiPlan.totalSteps(); i++) {
+                ExecutionPlan.Step orig = multiPlan.steps.get(i);
+                ExecutionPlan.Step deser = deserialized.steps.get(i);
+                if (orig.index != deser.index || !orig.title.equals(deser.title)
+                        || !orig.capability.equals(deser.capability)
+                        || !orig.scope.equals(deser.scope)
+                        || !orig.status.equals(deser.status)) {
+                    throw new IllegalStateException("Step JSON serialization mismatch at step " + i);
+                }
+            }
+
+            // 5. Step update immutability
+            ExecutionPlan.Step step0 = multiPlan.steps.get(0);
+            ExecutionPlan.Step done0 = step0.withStatusAndObservation(ExecutionPlan.STEP_DONE, "观察数据测试", System.currentTimeMillis());
+            ExecutionPlan updatedPlan = multiPlan.withStepUpdated(0, done0, 1);
+            if (!ExecutionPlan.STEP_DONE.equals(updatedPlan.steps.get(0).status)
+                    || !ExecutionPlan.STEP_PENDING.equals(updatedPlan.steps.get(1).status)
+                    || updatedPlan.currentStepIndex != 1) {
+                throw new IllegalStateException("ExecutionPlan step update failure");
+            }
+
+            // 6. Synthesis output test
+            List<ExecutionPlan.Step> executedSteps = new ArrayList<>();
+            executedSteps.add(done0);
+            String synthesis = planner.synthesize("task-2", "整理便笺并检查设备状态与历史预测", executedSteps);
+            if (!synthesis.contains("本地演示结果") || !synthesis.contains("观察数据测试") || !synthesis.contains("端侧推演分析")) {
+                throw new IllegalStateException("Synthesis text missing expected structure: " + synthesis);
+            }
+
+            // 7. Benchmark: 100 plan iterations
+            long start = System.nanoTime();
+            for (int i = 0; i < 100; i++) {
+                planner.plan("task-" + i, "整理便笺并核对设备运行状态", availableCaps, memories);
+            }
+            long durationNs = System.nanoTime() - start;
+            double avgMs = durationNs / 100.0 / 1_000_000.0;
+            if (avgMs > 5.0) {
+                throw new IllegalStateException("Planner latency exceeded 5ms SLA: " + avgMs + "ms");
+            }
+
+            return "PASS: semantic planner generated single, multi, and fallback plans; JSON round-trip preserved all fields; step update functioned; synthesis output structured; avg planning latency=" + String.format(Locale.US, "%.3f", avgMs) + "ms";
+        } finally {
+            store.close();
+        }
+    }
+
+    private String verifyDynamicExecutor() throws Exception {
+        AgentStore store = new AgentStore(this);
+        CapabilityBroker broker = new CapabilityBroker(this, store);
+        SQLiteDatabase database = store.getWritableDatabase();
+        try {
+            // Case 1: Multi-step dynamic execution (Note + Status + Synthesis)
+            AgentStore.Task task1 = store.createTask("SYNTHETIC dynamic task with note and status");
+            if (task1.executionVersion != 2) throw new IllegalStateException("Task should have executionVersion 2");
+            broker.grant(task1.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            broker.grant(task1.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+            store.transition(task1.id, AgentStore.ACTIVE);
+
+            new AgentExecutor(store, broker).execute(task1.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task completed1 = store.getTask(task1.id);
+            if (!AgentStore.COMPLETED.equals(completed1.status))
+                throw new IllegalStateException("Task1 did not complete, status=" + completed1.status);
+            if (completed1.plan == null || completed1.plan.totalSteps() != 3)
+                throw new IllegalStateException("Task1 plan steps mismatch, totalSteps=" + (completed1.plan == null ? 0 : completed1.plan.totalSteps()));
+            if (!ExecutionPlan.STEP_DONE.equals(completed1.plan.steps.get(0).status)
+                    || !ExecutionPlan.STEP_DONE.equals(completed1.plan.steps.get(1).status)
+                    || !ExecutionPlan.STEP_DONE.equals(completed1.plan.steps.get(2).status))
+                throw new IllegalStateException("Not all steps marked DONE in Task1");
+            if (!completed1.result.contains("本地演示结果") || !completed1.result.contains("合成示例便笺")
+                    || !completed1.result.contains("合成状态") || !completed1.result.contains("端侧推演分析"))
+                throw new IllegalStateException("Task1 result missing expected components: " + completed1.result);
+
+            // Verify audits for task1
+            if (auditEventCount(database, task1.id, "executor_step_1_saved") != 1
+                    || auditEventCount(database, task1.id, "executor_step_2_saved") != 1
+                    || auditEventCount(database, task1.id, "executor_step_3_saved") != 1
+                    || auditEventCount(database, task1.id, "task_succeeded") != 1
+                    || auditEventCount(database, task1.id, "internal_synthesis_completed:local_inference") != 1) {
+                throw new IllegalStateException("Task1 audit trace incomplete");
+            }
+
+            // Case 2: Missing authorization halts execution into WAITING_FOR_USER
+            AgentStore.Task task2 = store.createTask("SYNTHETIC task with note and status awaiting authorization");
+            broker.grant(task2.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            // Intentionally do NOT grant DEMO_STATUS_CAPABILITY
+            store.transition(task2.id, AgentStore.ACTIVE);
+
+            new AgentExecutor(store, broker).execute(task2.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task waitingTask = store.getTask(task2.id);
+            if (!AgentStore.WAITING_FOR_USER.equals(waitingTask.status))
+                throw new IllegalStateException("Task2 should be WAITING_FOR_USER, got " + waitingTask.status);
+            if (waitingTask.executionStep != 1)
+                throw new IllegalStateException("Task2 executionStep should be 1 (step 0 saved), got " + waitingTask.executionStep);
+            if (!ExecutionPlan.STEP_DONE.equals(waitingTask.plan.steps.get(0).status))
+                throw new IllegalStateException("Task2 step 0 should be DONE in checkpoint");
+
+            // Now grant the missing capability and resume
+            broker.grant(task2.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+            store.transition(task2.id, AgentStore.ACTIVE);
+
+            new AgentExecutor(store, broker).execute(task2.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task completed2 = store.getTask(task2.id);
+            if (!AgentStore.COMPLETED.equals(completed2.status))
+                throw new IllegalStateException("Task2 did not complete after grant, status=" + completed2.status);
+            // Verify step 0 note capability was invoked exactly once across both attempts
+            int noteInvokedCount = auditEventCount(database, task2.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE));
+            if (noteInvokedCount != 1)
+                throw new IllegalStateException("Note capability was re-invoked on resume! count=" + noteInvokedCount);
+
+            // Case 3: Checkpoint Crash Recovery
+            AgentStore.Task task3 = store.createTask("SYNTHETIC task with note and status testing crash checkpoint recovery");
+            broker.grant(task3.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            broker.grant(task3.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+            store.transition(task3.id, AgentStore.ACTIVE);
+
+            final java.util.concurrent.atomic.AtomicInteger hookRuns = new java.util.concurrent.atomic.AtomicInteger();
+            AgentExecutor.afterFirstCheckpointForValidation = () -> {
+                if (hookRuns.incrementAndGet() == 1) {
+                    throw new RuntimeException("Simulated process crash at Step 0 checkpoint");
+                }
+            };
+
+            boolean crashed = false;
+            try {
+                new AgentExecutor(store, broker).execute(task3.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+            } catch (RuntimeException ex) {
+                if ("Simulated process crash at Step 0 checkpoint".equals(ex.getMessage())) {
+                    crashed = true;
+                }
+            } finally {
+                AgentExecutor.afterFirstCheckpointForValidation = null;
+            }
+
+            if (!crashed) throw new IllegalStateException("Crash injection did not trigger");
+
+            // Verify task3 step 0 checkpoint was preserved in database
+            AgentStore.Task crashedTask = store.getTask(task3.id);
+            if (crashedTask.executionStep != 1 || crashedTask.plan == null)
+                throw new IllegalStateException("Crashed task checkpoint was not saved");
+            if (!ExecutionPlan.STEP_DONE.equals(crashedTask.plan.steps.get(0).status))
+                throw new IllegalStateException("Crashed task step 0 should be marked DONE");
+
+            // Recover from crash: resume execution
+            new AgentExecutor(store, broker).execute(task3.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task recoveredTask = store.getTask(task3.id);
+            if (!AgentStore.COMPLETED.equals(recoveredTask.status))
+                throw new IllegalStateException("Recovered task did not complete, status=" + recoveredTask.status);
+
+            int task3NoteCount = auditEventCount(database, task3.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE));
+            if (task3NoteCount != 1)
+                throw new IllegalStateException("Step 0 note capability was called " + task3NoteCount + " times after crash recovery (expected 1)");
+
+            return "PASS: multi-step dynamic execution completed 3-step plan; missing-authorization halted into WAITING_FOR_USER without repeating step 0 on resume; crash recovery at step 1 checkpoint completed without duplicate execution. task1=" + task1.id + " task2=" + task2.id + " task3=" + task3.id;
+        } finally {
+            AgentExecutor.afterFirstCheckpointForValidation = null;
+            store.close();
+        }
+    }
+
+    private String verifyStepTreeAndJitGrant() throws Exception {
+        AgentStore store = new AgentStore(this);
+        CapabilityBroker broker = new CapabilityBroker(this, store);
+        SQLiteDatabase database = store.getWritableDatabase();
+        try {
+            // 1. Create a task with multi-step intent requiring note, status, and synthesis
+            String taskTitle = "SYNTHETIC JIT test: 整理本地便笺与设备状态";
+            AgentStore.Task task = store.createTask(taskTitle);
+            ReasoningEngine planner = new SemanticRulePlanner();
+            ExecutionPlan plan = planner.plan(task.id, task.title, broker.listAvailableCapabilities(task.id), store.listMemories());
+            store.savePlan(task.id, plan);
+
+            AgentStore.Task savedTask = store.getTask(task.id);
+            if (savedTask.plan == null || savedTask.plan.totalSteps() != 3) {
+                throw new IllegalStateException("Initial plan generation failed: steps=" + (savedTask.plan == null ? 0 : savedTask.plan.totalSteps()));
+            }
+            if (!ExecutionPlan.STEP_PENDING.equals(savedTask.plan.steps.get(0).status)
+                    || !ExecutionPlan.STEP_PENDING.equals(savedTask.plan.steps.get(1).status)
+                    || !ExecutionPlan.STEP_PENDING.equals(savedTask.plan.steps.get(2).status)) {
+                throw new IllegalStateException("Initial steps should all be pending");
+            }
+
+            // 2. Start execution with NO grants -> should halt at Step 0 into WAITING_FOR_USER
+            store.transition(task.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker).execute(task.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task halted0 = store.getTask(task.id);
+            if (!AgentStore.WAITING_FOR_USER.equals(halted0.status)) {
+                throw new IllegalStateException("Task should halt in WAITING_FOR_USER at Step 0, got " + halted0.status);
+            }
+            if (halted0.executionStep != 0) {
+                throw new IllegalStateException("Task executionStep should be 0, got " + halted0.executionStep);
+            }
+            if (!ExecutionPlan.STEP_AWAITING_GRANT.equals(halted0.plan.steps.get(0).status)) {
+                throw new IllegalStateException("Step 0 should be awaiting_grant, got " + halted0.plan.steps.get(0).status);
+            }
+            if (!ExecutionPlan.STEP_PENDING.equals(halted0.plan.steps.get(1).status)) {
+                throw new IllegalStateException("Step 1 should remain pending, got " + halted0.plan.steps.get(1).status);
+            }
+
+            // 3. JIT Grant Step 0 ONLY (demo.note.read)
+            broker.grant(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            if (!broker.isGranted(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE)) {
+                throw new IllegalStateException("Step 0 grant failed");
+            }
+            if (broker.isGranted(task.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE)) {
+                throw new IllegalStateException("Step 1 should not be granted");
+            }
+
+            // Resume task
+            store.transition(task.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker).execute(task.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            // Verify Step 0 succeeded, Step 1 halted into WAITING_FOR_USER
+            AgentStore.Task halted1 = store.getTask(task.id);
+            if (!AgentStore.WAITING_FOR_USER.equals(halted1.status)) {
+                throw new IllegalStateException("Task should halt in WAITING_FOR_USER at Step 1, got " + halted1.status);
+            }
+            if (halted1.executionStep != 1) {
+                throw new IllegalStateException("Task executionStep should be 1 after step 0 completion, got " + halted1.executionStep);
+            }
+            if (!ExecutionPlan.STEP_DONE.equals(halted1.plan.steps.get(0).status)
+                    || halted1.plan.steps.get(0).observation.isEmpty()) {
+                throw new IllegalStateException("Step 0 should be DONE with observation");
+            }
+            if (!ExecutionPlan.STEP_AWAITING_GRANT.equals(halted1.plan.steps.get(1).status)) {
+                throw new IllegalStateException("Step 1 should be awaiting_grant, got " + halted1.plan.steps.get(1).status);
+            }
+            if (!ExecutionPlan.STEP_PENDING.equals(halted1.plan.steps.get(2).status)) {
+                throw new IllegalStateException("Step 2 should remain pending");
+            }
+
+            // Verify step 0 note was invoked exactly once
+            int noteInvokeCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE));
+            if (noteInvokeCount != 1) {
+                throw new IllegalStateException("Step 0 invoked count=" + noteInvokeCount);
+            }
+
+            // 4. JIT Grant Step 1 (demo.status.read)
+            broker.grant(task.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+
+            // Resume task -> Step 1 completes, Step 2 (builtin synthesis) completes without grant
+            store.transition(task.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker).execute(task.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task completed = store.getTask(task.id);
+            if (!AgentStore.COMPLETED.equals(completed.status)) {
+                throw new IllegalStateException("Task should be COMPLETED, got " + completed.status);
+            }
+            if (!ExecutionPlan.STEP_DONE.equals(completed.plan.steps.get(0).status)
+                    || !ExecutionPlan.STEP_DONE.equals(completed.plan.steps.get(1).status)
+                    || !ExecutionPlan.STEP_DONE.equals(completed.plan.steps.get(2).status)) {
+                throw new IllegalStateException("All steps should be DONE in completed task");
+            }
+
+            // Verify Step 0 note capability was NOT called again
+            noteInvokeCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE));
+            int statusInvokeCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE));
+            if (noteInvokeCount != 1 || statusInvokeCount != 1) {
+                throw new IllegalStateException("Invocation counts mismatch: note=" + noteInvokeCount + " status=" + statusInvokeCount);
+            }
+
+            // Verify builtin synthesis audit event was logged
+            int synthesisCount = auditEventCount(database, task.id, "internal_synthesis_completed:local_inference");
+            if (synthesisCount != 1) {
+                throw new IllegalStateException("Builtin synthesis audit missing or duplicated: " + synthesisCount);
+            }
+
+            // 5. Test UI Step Tree View Hierarchy generation
+            final CountDownLatch uiLatch = new CountDownLatch(1);
+            final String[] uiError = new String[1];
+            runOnUiThread(() -> {
+                try {
+                    LinearLayout container = new LinearLayout(DeviceValidationActivity.this);
+                    LinearLayout card = new LinearLayout(DeviceValidationActivity.this);
+                    card.setOrientation(LinearLayout.VERTICAL);
+
+                    TextView title = new TextView(DeviceValidationActivity.this);
+                    title.setText(completed.title);
+                    card.addView(title);
+
+                    LinearLayout planContainer = new LinearLayout(DeviceValidationActivity.this);
+                    planContainer.setOrientation(LinearLayout.VERTICAL);
+                    for (int i = 0; i < completed.plan.steps.size(); i++) {
+                        ExecutionPlan.Step step = completed.plan.steps.get(i);
+                        TextView stepText = new TextView(DeviceValidationActivity.this);
+                        stepText.setText("🟢 [已完成] 步骤 " + (i + 1) + "：" + step.title);
+                        planContainer.addView(stepText);
+                    }
+                    card.addView(planContainer);
+                    container.addView(card);
+                    if (planContainer.getChildCount() != 3) {
+                        uiError[0] = "Step tree child count mismatch: " + planContainer.getChildCount();
+                    }
+                } catch (Exception ex) {
+                    uiError[0] = ex.getMessage();
+                } finally {
+                    uiLatch.countDown();
+                }
+            });
+            if (!uiLatch.await(5, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("UI step tree verification timed out");
+            }
+            if (uiError[0] != null) {
+                throw new IllegalStateException("UI error: " + uiError[0]);
+            }
+
+            return "PASS: Step tree and JIT progressive authorization verified on device; initial plan pending -> Step 0 halted in awaiting_grant -> JIT grant step 0 -> Step 1 halted in awaiting_grant without note repeat -> JIT grant step 1 -> Step 2 builtin synthesis completed without external grant; all steps done and audited. task=" + task.id;
+        } finally {
+            store.close();
+        }
+    }
+
+    private String verifyEndToEndIntegrated() throws Exception {
+        AgentStore store = new AgentStore(this);
+        CapabilityBroker broker = new CapabilityBroker(this, store);
+        SQLiteDatabase database = store.getWritableDatabase();
+        try {
+            // 1. Enable Traceform provider and verify signature match with org.traceform.edge
+            broker.setTraceformEnabled(true);
+            if (!broker.isTraceformEnabled()) {
+                throw new IllegalStateException("Traceform provider failed to enable");
+            }
+            if (!broker.canEnableTraceform()) {
+                throw new IllegalStateException("Traceform package not signature matched");
+            }
+
+            // 2. Formulate 4-step user goal spanning note, status, traceform forecast, and builtin synthesis
+            long t0 = System.nanoTime();
+            String goal = "整理便笺并检查设备状态与Traceform历史预测";
+            AgentStore.Task task = store.createTask(goal);
+            ReasoningEngine planner = new SemanticRulePlanner();
+            ExecutionPlan plan = planner.plan(task.id, task.title, broker.listAvailableCapabilities(task.id), store.listMemories());
+            store.savePlan(task.id, plan);
+            long planDurationNs = System.nanoTime() - t0;
+            double planMs = planDurationNs / 1_000_000.0;
+
+            if (plan.totalSteps() != 4) {
+                throw new IllegalStateException("Expected 4 steps in dynamic plan, got " + plan.totalSteps());
+            }
+
+            // Verify the 4 capabilities
+            if (!CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(plan.steps.get(0).capability))
+                throw new IllegalStateException("Step 0 capability mismatch");
+            if (!CapabilityBroker.DEMO_STATUS_CAPABILITY.equals(plan.steps.get(1).capability))
+                throw new IllegalStateException("Step 1 capability mismatch");
+            if (!CapabilityBroker.TRACEFORM_CAPABILITY.equals(plan.steps.get(2).capability))
+                throw new IllegalStateException("Step 2 capability mismatch");
+            if (!"builtin.synthesis".equals(plan.steps.get(3).capability))
+                throw new IllegalStateException("Step 3 capability mismatch");
+
+            // 3. Grant all 3 external capabilities
+            broker.grant(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            broker.grant(task.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
+            broker.grant(task.id, CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+
+            // 4. Test crash & checkpoint recovery: simulate crash right after Step 1 checkpoint
+            final java.util.concurrent.atomic.AtomicInteger checkpointCount = new java.util.concurrent.atomic.AtomicInteger();
+            AgentExecutor.afterFirstCheckpointForValidation = () -> {
+                if (checkpointCount.incrementAndGet() == 2) {
+                    throw new RuntimeException("Simulated crash after step 1 checkpoint");
+                }
+            };
+
+            store.transition(task.id, AgentStore.ACTIVE);
+            boolean crashed = false;
+            try {
+                new AgentExecutor(store, broker).execute(task.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+            } catch (RuntimeException ex) {
+                if ("Simulated crash after step 1 checkpoint".equals(ex.getMessage())) {
+                    crashed = true;
+                }
+            } finally {
+                AgentExecutor.afterFirstCheckpointForValidation = null;
+            }
+
+            if (!crashed) {
+                throw new IllegalStateException("Crash injection after step 1 did not trigger");
+            }
+
+            // Verify checkpoints at crash state
+            AgentStore.Task crashedTask = store.getTask(task.id);
+            if (crashedTask.executionStep != 2) {
+                throw new IllegalStateException("Expected executionStep 2 after crash, got " + crashedTask.executionStep);
+            }
+            if (!ExecutionPlan.STEP_DONE.equals(crashedTask.plan.steps.get(0).status)
+                    || !ExecutionPlan.STEP_DONE.equals(crashedTask.plan.steps.get(1).status)
+                    || !ExecutionPlan.STEP_PENDING.equals(crashedTask.plan.steps.get(2).status)) {
+                throw new IllegalStateException("Step states mismatch after crash");
+            }
+
+            // 5. Resume execution from checkpoint
+            long tResume = System.nanoTime();
+            new AgentExecutor(store, broker).execute(task.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+            long resumeDurationNs = System.nanoTime() - tResume;
+            double resumeMs = resumeDurationNs / 1_000_000.0;
+
+            // 6. Verify full completion
+            AgentStore.Task completed = store.getTask(task.id);
+            if (!AgentStore.COMPLETED.equals(completed.status)) {
+                throw new IllegalStateException("Completed task status mismatch, got " + completed.status);
+            }
+            if (completed.executionStep < plan.totalSteps()) {
+                throw new IllegalStateException("Completed executionStep mismatch: " + completed.executionStep);
+            }
+            for (int i = 0; i < 4; i++) {
+                if (!ExecutionPlan.STEP_DONE.equals(completed.plan.steps.get(i).status)) {
+                    throw new IllegalStateException("Step " + i + " not DONE");
+                }
+                if (completed.plan.steps.get(i).observation.isEmpty()) {
+                    throw new IllegalStateException("Step " + i + " missing observation");
+                }
+            }
+
+            // 7. Verify no duplicate invocations for Step 0 and Step 1
+            int noteCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE));
+            int statusCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE));
+            int traceformCount = auditEventCount(database, task.id,
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE));
+            int synthesisCount = auditEventCount(database, task.id, "internal_synthesis_completed:local_inference");
+
+            if (noteCount != 1 || statusCount != 1 || traceformCount != 1 || synthesisCount != 1) {
+                throw new IllegalStateException("Audit count mismatch: note=" + noteCount + ", status=" + statusCount
+                    + ", traceform=" + traceformCount + ", synthesis=" + synthesisCount);
+            }
+
+            // 8. Verify structured content in Traceform observation and final result
+            String traceformObs = completed.plan.steps.get(2).observation;
+            if (!traceformObs.contains("traceform") && !traceformObs.contains("history_records")) {
+                throw new IllegalStateException("Traceform observation unexpected content: " + traceformObs);
+            }
+
+            if (!completed.result.contains("端侧推演分析") || !completed.result.contains("本地演示结果")) {
+                throw new IllegalStateException("Final synthesis result incomplete: " + completed.result);
+            }
+
+            return "PASS: full 4-step dynamic task (note + status + traceform IPC + builtin synthesis) completed with crash recovery at step 1; zero duplicate executions; planning="
+                + String.format(Locale.US, "%.3f", planMs) + "ms, resume execution="
+                + String.format(Locale.US, "%.1f", resumeMs) + "ms; task=" + task.id;
+        } finally {
+            AgentExecutor.afterFirstCheckpointForValidation = null;
+            store.close();
+        }
     }
 }

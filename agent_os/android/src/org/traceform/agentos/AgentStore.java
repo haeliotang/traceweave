@@ -39,7 +39,8 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String FAILED = "failed";
     static final String COMPLETED = "completed";
     static final String CANCELLED = "cancelled";
-    static final int CURRENT_EXECUTION_VERSION = 1;
+    static final int CURRENT_EXECUTION_VERSION = 2;
+    static final int MAX_DYNAMIC_STEPS = 10;
     static final String MEMORY_PREFERENCE = "preference";
     static final String MEMORY_FACT = "fact";
     static final String MEMORY_WORKFLOW = "workflow";
@@ -57,9 +58,11 @@ final class AgentStore extends SQLiteOpenHelper {
         final int executionStep;
         final String checkpointNote;
         final String result;
+        final ExecutionPlan plan;
 
         Task(String id, String title, String status, long createdAt, long updatedAt, int jobId,
-                int executionVersion, int executionStep, String checkpointNote, String result) {
+                int executionVersion, int executionStep, String checkpointNote, String result,
+                ExecutionPlan plan) {
             this.id = id;
             this.title = title;
             this.status = status;
@@ -70,10 +73,16 @@ final class AgentStore extends SQLiteOpenHelper {
             this.executionStep = executionStep;
             this.checkpointNote = checkpointNote;
             this.result = result;
+            this.plan = plan;
+        }
+
+        Task(String id, String title, String status, long createdAt, long updatedAt, int jobId,
+                int executionVersion, int executionStep, String checkpointNote, String result) {
+            this(id, title, status, createdAt, updatedAt, jobId, executionVersion, executionStep, checkpointNote, result, null);
         }
 
         Task(String id, String title, String status, long createdAt, long updatedAt) {
-            this(id, title, status, createdAt, updatedAt, 0, 0, 0, "", "");
+            this(id, title, status, createdAt, updatedAt, 0, 0, 0, "", "", null);
         }
     }
 
@@ -325,9 +334,10 @@ final class AgentStore extends SQLiteOpenHelper {
     private Task taskFromCursor(Cursor cursor) throws Exception {
         String id = cursor.getString(0);
         JSONObject payload = new JSONObject(new String(unseal(id, cursor.getBlob(4)), StandardCharsets.UTF_8));
+        ExecutionPlan plan = payload.has("plan") ? ExecutionPlan.fromJson(payload.getJSONObject("plan")) : null;
         return new Task(id, payload.getString("title"), cursor.getString(3), cursor.getLong(1), cursor.getLong(2),
             cursor.getInt(5), cursor.getInt(6), cursor.getInt(7), payload.optString("checkpointNote", ""),
-            payload.optString("result", ""));
+            payload.optString("result", ""), plan);
     }
 
     void transition(String taskId, String targetStatus) throws Exception {
@@ -360,6 +370,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 if (sealed == null) throw new IllegalArgumentException("Task no longer exists");
                 JSONObject payload = new JSONObject(new String(unseal(taskId, sealed), StandardCharsets.UTF_8));
                 payload.put("checkpointNote", "").put("result", "");
+                payload.remove("plan");
                 values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
                 values.put("execution_version", CURRENT_EXECUTION_VERSION);
                 values.put("execution_step", 0);
@@ -384,25 +395,60 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
-    void saveNoteCheckpoint(String taskId, String note) throws Exception {
-        if (note == null || note.trim().isEmpty() || note.length() > 4000)
-            throw new IllegalArgumentException("The local note provider returned invalid content");
+    void savePlan(String taskId, ExecutionPlan plan) throws Exception {
+        if (plan == null) throw new IllegalArgumentException("Plan cannot be null");
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
-            requireActiveStep(database, taskId, 0);
             JSONObject payload = taskPayload(database, taskId);
-            payload.put("checkpointNote", note);
+            payload.put("plan", plan.toJson());
             ContentValues values = new ContentValues();
-            values.put("execution_step", 1);
             values.put("updated_at", System.currentTimeMillis());
             values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
             database.update("tasks", values, "id=?", new String[]{taskId});
-            appendAudit(database, taskId, "executor_step_1_saved", System.currentTimeMillis());
+            appendAudit(database, taskId, "plan_generated:" + plan.totalSteps(), System.currentTimeMillis());
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
         }
+    }
+
+    void saveStepCheckpoint(String taskId, int stepIndex, String observation) throws Exception {
+        if (observation == null) observation = "";
+        if (observation.length() > 12000)
+            throw new IllegalArgumentException("Step observation exceeded size limit");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            requireActiveStep(database, taskId, stepIndex);
+            JSONObject payload = taskPayload(database, taskId);
+            ExecutionPlan plan = payload.has("plan") ? ExecutionPlan.fromJson(payload.getJSONObject("plan")) : null;
+            if (plan != null && stepIndex < plan.totalSteps()) {
+                ExecutionPlan.Step current = plan.steps.get(stepIndex);
+                long now = System.currentTimeMillis();
+                ExecutionPlan.Step updated = current.withStatusAndObservation(ExecutionPlan.STEP_DONE, observation, now);
+                plan = plan.withStepUpdated(stepIndex, updated, stepIndex + 1);
+                payload.put("plan", plan.toJson());
+                if (stepIndex == 0 && CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(current.capability)) {
+                    payload.put("checkpointNote", observation);
+                }
+            } else {
+                payload.put("checkpointNote", observation);
+            }
+            ContentValues values = new ContentValues();
+            values.put("execution_step", stepIndex + 1);
+            values.put("updated_at", System.currentTimeMillis());
+            values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
+            database.update("tasks", values, "id=?", new String[]{taskId});
+            appendAudit(database, taskId, "executor_step_" + (stepIndex + 1) + "_saved", System.currentTimeMillis());
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    void saveNoteCheckpoint(String taskId, String note) throws Exception {
+        saveStepCheckpoint(taskId, 0, note);
     }
 
     void completeExecution(String taskId, String result) throws Exception {
@@ -411,19 +457,28 @@ final class AgentStore extends SQLiteOpenHelper {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
-            requireActiveStep(database, taskId, 1);
+            int currentStep = 0;
+            int execVersion = 1;
+            try (Cursor cursor = database.query("tasks", new String[]{"execution_step", "execution_version"}, "id=?",
+                    new String[]{taskId}, null, null, null)) {
+                if (cursor.moveToFirst()) {
+                    currentStep = cursor.getInt(0);
+                    execVersion = cursor.getInt(1);
+                }
+            }
+            requireActiveStep(database, taskId, currentStep);
             JSONObject payload = taskPayload(database, taskId);
-            if (payload.optString("checkpointNote", "").isEmpty())
+            if (execVersion == 1 && payload.optString("checkpointNote", "").isEmpty())
                 throw new IllegalStateException("The local note checkpoint is missing");
             payload.put("result", result);
             long now = System.currentTimeMillis();
             ContentValues values = new ContentValues();
             values.put("status", COMPLETED);
-            values.put("execution_step", 2);
+            values.put("execution_step", currentStep + 1);
             values.put("updated_at", now);
             values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
             database.update("tasks", values, "id=?", new String[]{taskId});
-            appendAudit(database, taskId, "executor_step_2_saved", now);
+            appendAudit(database, taskId, "executor_step_" + (currentStep + 1) + "_saved", now);
             appendAudit(database, taskId, "task_succeeded", now);
             database.setTransactionSuccessful();
         } finally {
@@ -431,8 +486,40 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    void markWaitingForUser(String taskId, int stepIndex) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            JSONObject payload = taskPayload(database, taskId);
+            ExecutionPlan plan = payload.has("plan") ? ExecutionPlan.fromJson(payload.getJSONObject("plan")) : null;
+            if (plan != null && stepIndex >= 0 && stepIndex < plan.totalSteps()) {
+                ExecutionPlan.Step current = plan.steps.get(stepIndex);
+                ExecutionPlan.Step updated = current.withStatusAndObservation(
+                    ExecutionPlan.STEP_AWAITING_GRANT, current.observation, System.currentTimeMillis());
+                plan = plan.withStepUpdated(stepIndex, updated, stepIndex);
+                payload.put("plan", plan.toJson());
+                ContentValues values = new ContentValues();
+                values.put("status", WAITING_FOR_USER);
+                values.put("updated_at", System.currentTimeMillis());
+                values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
+                database.update("tasks", values, "id=?", new String[]{taskId});
+            } else {
+                ContentValues values = new ContentValues();
+                values.put("status", WAITING_FOR_USER);
+                values.put("updated_at", System.currentTimeMillis());
+                database.update("tasks", values, "id=?", new String[]{taskId});
+            }
+            appendAudit(database, taskId, "task_waiting_for_user:step_" + (stepIndex + 1), System.currentTimeMillis());
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
+    }
+
     void markWaitingForUser(String taskId) throws Exception {
-        transition(taskId, WAITING_FOR_USER);
+        Task task = getTask(taskId);
+        int step = task != null ? task.executionStep : 0;
+        markWaitingForUser(taskId, step);
     }
 
     void markExecutionFailed(String taskId) {
@@ -639,6 +726,9 @@ final class AgentStore extends SQLiteOpenHelper {
                 int jobId = allocateJobId(database, task.id);
                 JSONObject payload = new JSONObject().put("title", task.title)
                     .put("checkpointNote", task.checkpointNote).put("result", task.result);
+                if (task.plan != null) {
+                    payload.put("plan", task.plan.toJson());
+                }
                 ContentValues values = new ContentValues();
                 values.put("id", task.id);
                 values.put("created_at", task.createdAt);

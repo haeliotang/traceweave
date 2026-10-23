@@ -2,7 +2,9 @@ package org.traceform.agentos;
 
 import android.os.SystemClock;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 final class CapabilityBroker {
@@ -75,6 +77,35 @@ final class CapabilityBroker {
     boolean hasRemoteResource(String taskId) {
         return ((AndroidRemoteStatusProvider) providers.get(AndroidRemoteStatusProvider.CAPABILITY))
             .hasResource(taskId);
+    }
+
+    static String friendlyCapabilityName(String capability) {
+        if (DEMO_NOTE_CAPABILITY.equals(capability)) return "示例便笺";
+        if (DEMO_STATUS_CAPABILITY.equals(capability)) return "设备运行状态";
+        if (TRACEFORM_CAPABILITY.equals(capability)) return "Traceform 本机历史摘要";
+        if (AndroidRemoteStatusProvider.CAPABILITY.equals(capability)) return "跨应用状态";
+        return capability == null ? "未知能力" : capability;
+    }
+
+    boolean isGranted(String taskId, String capability, String scope) {
+        return remainingMillis(taskId, capability, scope) > 0;
+    }
+
+    List<CapabilityDescriptor> listAvailableCapabilities(String taskId) {
+        List<CapabilityDescriptor> descriptors = new ArrayList<>();
+        descriptors.add(new CapabilityDescriptor(DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE,
+            "示例便笺", "读取本地固定的合成便笺内容", true));
+        descriptors.add(new CapabilityDescriptor(DEMO_STATUS_CAPABILITY, DEMO_STATUS_SCOPE,
+            "合成状态", "读取本地设备合成运行状态", true));
+        if (hasRemoteResource(taskId)) {
+            descriptors.add(new CapabilityDescriptor(AndroidRemoteStatusProvider.CAPABILITY,
+                AndroidRemoteStatusProvider.SCOPE, "跨应用状态", "从外部应用授权 URI 读取状态", true));
+        }
+        if (isTraceformEnabled()) {
+            descriptors.add(new CapabilityDescriptor(TRACEFORM_CAPABILITY, TRACEFORM_SCOPE,
+                "Traceform 本机历史摘要", "通过受控签名 Binder 读取 Traceform 本机历史与模拟摘要", canEnableTraceform()));
+        }
+        return descriptors;
     }
 
     boolean acceptRemoteUri(String taskId, android.net.Uri uri) {
