@@ -1,6 +1,6 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
-use crate::{redactor, slm};
+use crate::{redactor, slm, task};
 
 /// Redacts sensitive PII from a C string.
 /// The returned string must be freed using `agent_os_string_free`.
@@ -79,6 +79,47 @@ pub unsafe extern "C" fn agent_os_plan(
     }
 }
 
+/// Creates a native Rust Task and returns an opaque pointer.
+/// Must be freed using `agent_os_task_free`.
+#[no_mangle]
+pub unsafe extern "C" fn agent_os_task_create(
+    id: *const c_char,
+    title: *const c_char,
+    now: i64,
+) -> *mut task::Task {
+    if id.is_null() || title.is_null() {
+        return std::ptr::null_mut();
+    }
+    let id_str = match CStr::from_ptr(id).to_str() {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let title_str = match CStr::from_ptr(title).to_str() {
+        Ok(s) => s,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    Box::into_raw(Box::new(task::Task::new(id_str, title_str, now)))
+}
+
+/// Frees an opaque Task pointer.
+#[no_mangle]
+pub unsafe extern "C" fn agent_os_task_free(task_ptr: *mut task::Task) {
+    if !task_ptr.is_null() {
+        let _ = Box::from_raw(task_ptr);
+    }
+}
+
+/// Returns the status string of a task.
+/// Returned string must be freed with `agent_os_string_free`.
+#[no_mangle]
+pub unsafe extern "C" fn agent_os_task_get_status(task_ptr: *const task::Task) -> *mut c_char {
+    if task_ptr.is_null() {
+        return std::ptr::null_mut();
+    }
+    let t = &*task_ptr;
+    CString::new(t.status.as_str()).map(|c| c.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
 /// Frees a C string allocated by `agent_os_core`.
 #[no_mangle]
 pub unsafe extern "C" fn agent_os_string_free(ptr: *mut c_char) {
@@ -129,4 +170,23 @@ mod tests {
             agent_os_string_free(ptr);
         }
     }
+
+    #[test]
+    fn test_c_api_task_lifecycle() {
+        unsafe {
+            let task_id = CString::new("t-c-002").unwrap();
+            let title = CString::new("测试原生任务").unwrap();
+            let task_ptr = agent_os_task_create(task_id.as_ptr(), title.as_ptr(), 1000);
+            assert!(!task_ptr.is_null());
+
+            let status_ptr = agent_os_task_get_status(task_ptr);
+            assert!(!status_ptr.is_null());
+            let status_str = CStr::from_ptr(status_ptr).to_str().unwrap();
+            assert_eq!(status_str, "queued");
+
+            agent_os_string_free(status_ptr);
+            agent_os_task_free(task_ptr);
+        }
+    }
 }
+
