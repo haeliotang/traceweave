@@ -62,6 +62,20 @@ public final class AgentAccessibilityService extends AccessibilityService {
     public String dumpScreenHierarchyJson() {
         AccessibilityNodeInfo root = getRootInActiveWindow();
         if (root == null) {
+            List<android.view.accessibility.AccessibilityWindowInfo> windows = getWindows();
+            if (windows != null) {
+                for (android.view.accessibility.AccessibilityWindowInfo w : windows) {
+                    AccessibilityNodeInfo wRoot = w.getRoot();
+                    if (wRoot != null) {
+                        root = wRoot;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (root == null) {
+            Log.w(TAG, "getRootInActiveWindow() and getWindows() both returned null");
             return "[]";
         }
 
@@ -151,5 +165,45 @@ public final class AgentAccessibilityService extends AccessibilityService {
                 Log.w(TAG, "Gesture tap cancelled at (" + x + ", " + y + ")");
             }
         }, null);
+    }
+
+    public interface ScreenCaptureCallback {
+        void onBitmapCaptured(android.graphics.Bitmap bitmap);
+        void onError(int errorCode);
+    }
+
+    /**
+     * Programmatically captures the current active screen frame without prompt dialogs.
+     */
+    public void takeScreenBitmap(ScreenCaptureCallback callback) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            takeScreenshot(
+                android.view.Display.DEFAULT_DISPLAY,
+                getMainExecutor(),
+                new TakeScreenshotCallback() {
+                    @Override
+                    public void onSuccess(ScreenshotResult result) {
+                        try {
+                            android.hardware.HardwareBuffer hb = result.getHardwareBuffer();
+                            android.graphics.Bitmap hwBitmap = android.graphics.Bitmap.wrapHardwareBuffer(hb, result.getColorSpace());
+                            android.graphics.Bitmap copy = hwBitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, false);
+                            hb.close();
+                            if (callback != null) callback.onBitmapCaptured(copy);
+                        } catch (Exception e) {
+                            Log.e(TAG, "HardwareBuffer conversion error: " + e.getMessage());
+                            if (callback != null) callback.onError(-1);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode) {
+                        Log.w(TAG, "Accessibility takeScreenshot failed with code: " + errorCode);
+                        if (callback != null) callback.onError(errorCode);
+                    }
+                }
+            );
+        } else {
+            if (callback != null) callback.onError(-2);
+        }
     }
 }

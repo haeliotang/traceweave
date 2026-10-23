@@ -167,6 +167,11 @@ public final class NativeAgentCore {
         return nativeAnalyzeVoicePcm(pcmSamples);
     }
 
+    public static boolean analyzeVoiceDirect(java.nio.ByteBuffer directBuffer, int sampleOffset, int sampleCount, float[] outMetrics) {
+        if (!IS_LOADED) return false;
+        return nativeAnalyzeVoiceDirect(directBuffer, sampleOffset, sampleCount, outMetrics);
+    }
+
     public static String classifyVoiceIntent(String transcript) {
         if (!IS_LOADED) throw new IllegalStateException("Native core not available");
         return nativeClassifyVoiceIntent(transcript);
@@ -285,6 +290,7 @@ public final class NativeAgentCore {
     public static native String nativeAnalyzeScreenHierarchy(String screenNodesJson, String goal);
     public static native String nativeP2pExchange(String host, int port, String localEnvelopeJson);
     public static native String nativeAnalyzeVoicePcm(short[] pcmSamples);
+    public static native boolean nativeAnalyzeVoiceDirect(java.nio.ByteBuffer directBuffer, int sampleOffset, int sampleCount, float[] outMetrics);
     public static native String nativeClassifyVoiceIntent(String transcript);
 
     public static native String nativeQueryDaemon(String socketPath, String requestJson);

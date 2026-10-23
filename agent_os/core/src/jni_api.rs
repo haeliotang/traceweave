@@ -1,4 +1,4 @@
-use jni::objects::{JByteArray, JClass, JFloatArray, JObjectArray, JShortArray, JString};
+use jni::objects::{JByteArray, JByteBuffer, JClass, JFloatArray, JObjectArray, JShortArray, JString};
 use jni::sys::{jboolean, jbyteArray, jint, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
 use std::sync::RwLock;
@@ -804,6 +804,43 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeV
     let json = serde_json::to_string(&res).unwrap_or_default();
 
     env.new_string(json).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeAnalyzeVoiceDirect<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    direct_buffer: JByteBuffer<'local>,
+    sample_offset: jint,
+    sample_count: jint,
+    out_metrics: JFloatArray<'local>,
+) -> jboolean {
+    let ptr = match env.get_direct_buffer_address(&direct_buffer) {
+        Ok(p) => p,
+        Err(_) => return JNI_FALSE,
+    };
+    if ptr.is_null() || sample_count <= 0 || sample_offset < 0 {
+        return JNI_FALSE;
+    }
+    let samples: &[i16] = unsafe {
+        let short_ptr = (ptr as *const i16).offset(sample_offset as isize);
+        std::slice::from_raw_parts(short_ptr, sample_count as usize)
+    };
+
+    let engine = crate::voice_dsp::VoiceDspEngine::default();
+    let res = engine.analyze_frame(samples);
+
+    let metrics = [
+        if res.is_speech { 1.0f32 } else { 0.0f32 },
+        res.energy_rms,
+        res.zero_crossing_rate,
+    ];
+
+    if env.set_float_array_region(&out_metrics, 0, &metrics).is_err() {
+        return JNI_FALSE;
+    }
+
+    JNI_TRUE
 }
 
 #[no_mangle]

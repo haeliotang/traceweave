@@ -307,12 +307,62 @@ public final class AgentFloatingService extends Service {
     }
 
     private void toggleVoiceListening() {
-        if (statusDotView != null) {
-            statusDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_BLUE, 0xFF29B6F6, 10));
-        }
-        if (statusTextView != null) {
-            statusTextView.setText(" 语音中枢聆听中 (16kHz PCM)");
-        }
+        VoiceInteractionManager vim = VoiceInteractionManager.getInstance(this);
+        vim.toggleListening(new VoiceInteractionManager.VoiceListener() {
+            @Override
+            public void onListeningStateChanged(boolean isListening) {
+                if (statusDotView != null) {
+                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
+                            isListening ? IconFactory.IconType.STATUS_DOT_BLUE : IconFactory.IconType.STATUS_DOT_GREEN,
+                            isListening ? 0xFF29B6F6 : 0xFF00E676, 10));
+                }
+                if (statusTextView != null) {
+                    statusTextView.setText(isListening ? " 语音中枢拾音中 (16kHz NEON)" : " Agent OS 待命中");
+                }
+            }
+
+            @Override
+            public void onVoiceMetrics(float energyRms, float zcr, boolean isSpeech, boolean isGated) {
+                if (voiceWaveformBar != null && isSpeech && !isGated) {
+                    for (int i = 0; i < voiceWaveformBar.getChildCount(); i++) {
+                        View bar = voiceWaveformBar.getChildAt(i);
+                        int height = Math.min(60, (int) (15 + energyRms * 300.0f * (i + 1)));
+                        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) bar.getLayoutParams();
+                        lp.height = height;
+                        bar.setLayoutParams(lp);
+                    }
+                }
+            }
+
+            @Override
+            public void onSpeechStart() {
+                if (statusDotView != null) {
+                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
+                            IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
+                }
+                if (statusTextView != null) {
+                    statusTextView.setText(" 语音捕获中...");
+                }
+            }
+
+            @Override
+            public void onSpeechEnd(short[] speechAudio, String classifiedIntent) {
+                if (statusDotView != null) {
+                    statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this,
+                            IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10));
+                }
+                if (statusTextView != null) {
+                    statusTextView.setText(" 语音意图: " + classifiedIntent);
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                if (statusTextView != null) {
+                    statusTextView.setText(" 麦克风异常: " + message);
+                }
+            }
+        });
     }
 
     @Override

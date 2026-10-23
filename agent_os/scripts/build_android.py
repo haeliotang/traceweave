@@ -84,7 +84,14 @@ def main():
     unsigned = build / "agent-os-unsigned.apk"
     aligned = build / "agent-os-aligned.apk"
     apk = build / "agent-os.apk"
-    run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-o", unsigned])
+
+    res_dir = root / "agent_os/android/res"
+    if res_dir.is_dir():
+        compiled_res = build / "compiled_res.zip"
+        run([tools["aapt2"], "compile", "--dir", res_dir, "-o", compiled_res])
+        run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-R", compiled_res, "--auto-add-overlay", "-o", unsigned])
+    else:
+        run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-o", unsigned])
     with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(dex / "classes.dex", "classes.dex")
         for lib in args.native_lib:

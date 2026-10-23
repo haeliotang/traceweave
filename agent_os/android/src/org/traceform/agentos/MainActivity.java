@@ -59,7 +59,10 @@ public final class MainActivity extends Activity {
     private LinearLayout memoryList;
     private TextView activityStatus;
     private TextView floatPermStatus;
+    private TextView vadLiveStatus;
+    private Button btnToggleVoice;
     private TextView traceformStatus;
+    private static final int REQ_RECORD_AUDIO = 2001;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
@@ -113,11 +116,109 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         destroyed = true;
+        VoiceInteractionManager.getInstance(this).stopListening();
         mainHandler.removeCallbacks(remoteUriExpiry);
         clearPendingExportPassphrase();
         io.execute(() -> store.close());
         io.shutdown();
         super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQ_RECORD_AUDIO) {
+            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "麦克风录音权限已授予", Toast.LENGTH_SHORT).show();
+                startContinuousVoice();
+            } else {
+                Toast.makeText(this, "需要麦克风权限以启用实时 VAD 拾音", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private boolean checkAudioPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+        }
+        return true;
+    }
+
+    private void toggleContinuousVoice() {
+        VoiceInteractionManager vim = VoiceInteractionManager.getInstance(this);
+        if (vim.isListening()) {
+            vim.stopListening();
+            if (btnToggleVoice != null) {
+                btnToggleVoice.setText("实时拾音");
+                btnToggleVoice.setTextColor(0xFF0284C7);
+            }
+            if (vadLiveStatus != null) {
+                vadLiveStatus.setText("拾音已停止 · 16kHz NEON SIMD 待命");
+            }
+        } else {
+            if (!checkAudioPermission()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, REQ_RECORD_AUDIO);
+                }
+            } else {
+                startContinuousVoice();
+            }
+        }
+    }
+
+    private void startContinuousVoice() {
+        VoiceInteractionManager vim = VoiceInteractionManager.getInstance(this);
+        vim.startListening(new VoiceInteractionManager.VoiceListener() {
+            @Override
+            public void onListeningStateChanged(boolean isListening) {
+                if (btnToggleVoice != null) {
+                    btnToggleVoice.setText(isListening ? "停止拾音" : "实时拾音");
+                    btnToggleVoice.setTextColor(isListening ? 0xFFE11D48 : 0xFF0284C7);
+                }
+                if (vadLiveStatus != null) {
+                    vadLiveStatus.setText(isListening ? "实时拾音中 · 16kHz NEON 持续监听" : "拾音已停止");
+                }
+            }
+
+            @Override
+            public void onVoiceMetrics(float energyRms, float zcr, boolean isSpeech, boolean isGated) {
+                if (vadLiveStatus != null) {
+                    if (isGated) {
+                        vadLiveStatus.setText(String.format(java.util.Locale.US,
+                                "RMS: %.3f | 口袋静音保护 (遮挡防误触)", energyRms));
+                    } else if (isSpeech) {
+                        vadLiveStatus.setText(String.format(java.util.Locale.US,
+                                "RMS: %.3f | ZCR: %.3f [检测到语音]", energyRms, zcr));
+                    } else {
+                        vadLiveStatus.setText(String.format(java.util.Locale.US,
+                                "RMS: %.3f | 环境底噪静音 (ZCR: %.3f)", energyRms, zcr));
+                    }
+                }
+            }
+
+            @Override
+            public void onSpeechStart() {
+                if (vadLiveStatus != null) {
+                    vadLiveStatus.setText("正在讲话 · 正在捕获语音片段...");
+                }
+            }
+
+            @Override
+            public void onSpeechEnd(short[] speechAudio, String classifiedIntent) {
+                if (vadLiveStatus != null) {
+                    vadLiveStatus.setText(String.format(java.util.Locale.US,
+                            "语音结束 (%d 采样) · 识别意图: %s", speechAudio.length, classifiedIntent));
+                }
+                Toast.makeText(MainActivity.this, "识别语音意图: " + classifiedIntent, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String message) {
+                if (vadLiveStatus != null) {
+                    vadLiveStatus.setText("拾音错误: " + message);
+                }
+            }
+        });
     }
 
     @Override
@@ -215,9 +316,16 @@ public final class MainActivity extends Activity {
 
         floatPermStatus = new TextView(this);
         floatPermStatus.setTextSize(11);
-        floatPermStatus.setPadding(0, dp(2), 0, dp(6));
+        floatPermStatus.setPadding(0, dp(2), 0, dp(4));
         updateFloatPermStatus();
         consoleCard.addView(floatPermStatus);
+
+        vadLiveStatus = new TextView(this);
+        vadLiveStatus.setText("实时拾音: 待命中 · 16kHz NEON SIMD");
+        vadLiveStatus.setTextSize(11);
+        vadLiveStatus.setTextColor(0xFF0284C7);
+        vadLiveStatus.setPadding(0, 0, 0, dp(6));
+        consoleCard.addView(vadLiveStatus);
 
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -273,15 +381,20 @@ public final class MainActivity extends Activity {
         diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow.setPadding(0, dp(2), 0, dp(2));
 
-        Button testVoiceBtn = createCompactActionButton("离线 VAD", 0xFFF8FAFC, 0xFF475569, v -> {
+        btnToggleVoice = createCompactActionButton("实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
+        diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(30), 1.1f));
+
+        Button testVoiceBtn = createCompactActionButton("合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
             short[] testPcm = new short[640];
             for (int i = 0; i < testPcm.length; i++) {
                 testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
             }
             org.json.JSONObject res = VoiceInteractionManager.processPcmFrame(testPcm);
-            Toast.makeText(this, "VAD 激活: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "VAD 压测: " + res.optBoolean("is_speech") + " (RMS: " + String.format(java.util.Locale.US, "%.3f", res.optDouble("energy_rms")) + ")", Toast.LENGTH_SHORT).show();
         });
-        diagBtnRow.addView(testVoiceBtn, new LinearLayout.LayoutParams(0, dp(30), 1.0f));
+        LinearLayout.LayoutParams testVoiceLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
+        testVoiceLp.setMargins(dp(3), 0, 0, 0);
+        diagBtnRow.addView(testVoiceBtn, testVoiceLp);
 
         Button refreshSensBtn = createCompactActionButton("环境遥测", 0xFFF8FAFC, 0xFF475569, v -> {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
@@ -293,21 +406,28 @@ public final class MainActivity extends Activity {
         sensLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(refreshSensBtn, sensLp);
 
-        Button testVisionBtn = createCompactActionButton("OCR 定位", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testVisionBtn = createCompactActionButton("真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
             try {
-                org.json.JSONObject scene = new org.json.JSONObject();
-                scene.put("screen_width", 1080);
-                scene.put("screen_height", 2400);
-                org.json.JSONArray elems = new org.json.JSONArray();
-                org.json.JSONObject btn = new org.json.JSONObject();
-                btn.put("id", "btn_confirm");
-                btn.put("text", "确认支付 $68.00");
-                btn.put("bounds", new org.json.JSONArray(java.util.Arrays.asList(100, 1800, 880, 120)));
-                btn.put("element_type", "button");
-                elems.put(btn);
-                scene.put("elements", elems);
-                org.json.JSONObject target = VisionAgentManager.getInstance().locateTarget(scene, "确认支付");
-                Toast.makeText(this, "OCR 定位成功: (" + (int)target.optDouble("tap_x") + "," + (int)target.optDouble("tap_y") + ")", Toast.LENGTH_SHORT).show();
+                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen("新建智能任务");
+                if (target.optBoolean("matched", false)) {
+                    int x = (int) target.optDouble("tap_x");
+                    int y = (int) target.optDouble("tap_y");
+                    VisionAgentManager.getInstance().captureScreenBitmap(new AgentAccessibilityService.ScreenCaptureCallback() {
+                        @Override
+                        public void onBitmapCaptured(android.graphics.Bitmap bitmap) {
+                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                    "视觉定位: (" + x + "," + y + ") · 静默截屏: " + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                    "真机视觉定位: (" + x + "," + y + ") [截屏码: " + errorCode + "]", Toast.LENGTH_SHORT).show());
+                        }
+                    });
+                } else {
+                    Toast.makeText(this, "视觉匹配未命中: " + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
+                }
             } catch (Exception ex) {
                 Toast.makeText(this, "定位异常: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -318,9 +438,11 @@ public final class MainActivity extends Activity {
 
         Button testPttBtn = createCompactActionButton("PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
             HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
-            hwSvc.registerPeripheral("ring-01", "Traceform Ring", "ble", new String[]{"ptt_button", "heart_rate"});
-            org.json.JSONObject pttRes = hwSvc.dispatchEvent("ring-01", "ptt_pressed", new org.json.JSONObject());
-            Toast.makeText(this, "PTT 动作: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs)", Toast.LENGTH_SHORT).show();
+            boolean nextState = !hwSvc.isPttActive();
+            org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
+            ((Button) v).setText(nextState ? "松开 PTT" : "PTT 按键");
+            ((Button) v).setTextColor(nextState ? 0xFFE11D48 : 0xFF475569);
+            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs 延迟)", Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         pttLp.setMargins(dp(3), 0, 0, 0);

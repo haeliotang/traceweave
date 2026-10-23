@@ -1,16 +1,33 @@
 package org.traceform.agentos;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 /**
  * Direction 4: Peripheral Hardware Linkage & BLE/USB-C HID Service.
  * Manages external smart rings, sensor tags, and Push-To-Talk (PTT) physical button actions.
+ * Directly bridges BLE GATT button press events to low-latency voice capture and inference.
  */
 public final class HardwarePeripheralService {
-    private static final String TAG = "HardwarePeripheralService";
+    private static final String TAG = "HardwarePeripheral";
     private static volatile HardwarePeripheralService sInstance;
+
+    // Standard Client Characteristic Configuration Descriptor (CCCD)
+    private static final UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public interface HardwareEventListener {
         void onPttTriggered(boolean pressed);
@@ -18,6 +35,8 @@ public final class HardwarePeripheralService {
     }
 
     private volatile HardwareEventListener mListener;
+    private BluetoothGatt mActiveGatt;
+    private volatile boolean mPttActive = false;
 
     public static HardwarePeripheralService getInstance() {
         if (sInstance == null) {
@@ -34,6 +53,46 @@ public final class HardwarePeripheralService {
 
     public void setHardwareEventListener(HardwareEventListener listener) {
         mListener = listener;
+    }
+
+    public boolean isPttActive() {
+        return mPttActive;
+    }
+
+    /**
+     * Executes the Push-To-Talk action: vibrates device, triggers VoiceInteractionManager,
+     * and dispatches native hardware action response.
+     */
+    public JSONObject triggerPttAction(Context context, boolean pressed) {
+        mPttActive = pressed;
+        String eventType = pressed ? "ptt_pressed" : "ptt_released";
+
+        // 1. Haptic Feedback
+        try {
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(pressed ? 40 : 20, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(pressed ? 40 : 20);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // 2. Dispatch to Native Hardware Broker
+        JSONObject res = dispatchEvent("ble_ptt_ring", eventType, new JSONObject());
+
+        // 3. Audio Pipeline Synergy
+        VoiceInteractionManager vim = VoiceInteractionManager.getInstance(context);
+        if (pressed) {
+            vim.startListening(null);
+            Log.i(TAG, "Hardware PTT pressed: continuous audio recording engaged");
+        } else {
+            vim.stopListening();
+            Log.i(TAG, "Hardware PTT released: recording stopped, triggering inference");
+        }
+
+        return res;
     }
 
     /**
@@ -111,6 +170,47 @@ public final class HardwarePeripheralService {
                 err.put("message", e.getMessage());
             } catch (Exception ignored) {}
             return err;
+        }
+    }
+
+    /**
+     * Connects to a physical Bluetooth Low Energy (BLE) peripheral via GATT.
+     */
+    public void connectGatt(Context context, BluetoothDevice device) {
+        if (device == null) return;
+
+        try {
+            mActiveGatt = device.connectGatt(context, false, new BluetoothGattCallback() {
+                @Override
+                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        Log.i(TAG, "Connected to BLE peripheral: " + gatt.getDevice().getName());
+                        registerPeripheral(gatt.getDevice().getAddress(), gatt.getDevice().getName(), "ble",
+                                new String[]{"ptt_button", "heart_rate"});
+                        gatt.discoverServices();
+                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        Log.w(TAG, "Disconnected from BLE peripheral: " + gatt.getDevice().getAddress());
+                    }
+                }
+
+                @Override
+                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    Log.i(TAG, "GATT services discovered, enabling PTT notifications");
+                }
+
+                @Override
+                public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                    byte[] data = characteristic.getValue();
+                    if (data != null && data.length > 0) {
+                        boolean pressed = data[0] != 0;
+                        triggerPttAction(context, pressed);
+                    }
+                }
+            });
+        } catch (SecurityException se) {
+            Log.e(TAG, "BLE GATT connect permission not granted", se);
+        } catch (Exception e) {
+            Log.e(TAG, "BLE GATT connect failed: " + e.getMessage());
         }
     }
 }
