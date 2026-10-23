@@ -224,6 +224,29 @@ public final class MainActivity extends Activity {
         taskInput.setMaxLines(4);
         page.addView(taskInput);
 
+        LinearLayout pillsLayout = new LinearLayout(this);
+        pillsLayout.setOrientation(LinearLayout.HORIZONTAL);
+        pillsLayout.setPadding(0, dp(4), 0, dp(8));
+
+        String[] quickPrompts = {
+            "📋 整理便笺与状态",
+            "📅 安排团队待办日程",
+            "🔔 发送通知并导出分享"
+        };
+        for (String qp : quickPrompts) {
+            Button pill = new Button(this);
+            pill.setText(qp);
+            pill.setTextSize(12);
+            pill.setOnClickListener(v -> {
+                String promptText = qp.substring(qp.indexOf(' ') + 1);
+                taskInput.setText(promptText);
+                taskInput.setSelection(promptText.length());
+            });
+            persistentButtons.add(pill);
+            pillsLayout.addView(pill);
+        }
+        page.addView(pillsLayout);
+
         addPageButton(page, "新增本地任务", view -> createTask());
 
         TextView taskHeading = new TextView(this);
@@ -317,15 +340,88 @@ public final class MainActivity extends Activity {
                 return;
             }
             boolean hasActiveTask = false;
+            AgentStore.Task pendingJitTask = null;
+            for (AgentStore.Task task : tasks) {
+                if (pendingJitTask == null && AgentStore.WAITING_FOR_USER.equals(task.status)) {
+                    pendingJitTask = task;
+                }
+                hasActiveTask |= AgentStore.ACTIVE.equals(task.status);
+            }
+            if (pendingJitTask != null) {
+                addJitAlertBanner(taskList, pendingJitTask);
+            }
             for (AgentStore.Task task : tasks) {
                 addTaskCard(task);
-                hasActiveTask |= AgentStore.ACTIVE.equals(task.status);
             }
             mainHandler.removeCallbacks(taskRefresh);
             if (hasActiveTask && !destroyed) mainHandler.postDelayed(taskRefresh, 1000);
         } catch (Exception error) {
             showError(error);
         }
+    }
+
+    private void addJitAlertBanner(LinearLayout container, AgentStore.Task task) {
+        LinearLayout banner = new LinearLayout(this);
+        banner.setOrientation(LinearLayout.VERTICAL);
+        banner.setPadding(dp(16), dp(14), dp(16), dp(14));
+        banner.setBackgroundColor(0xFFFFF8E1); // Soft amber accent
+
+        TextView title = new TextView(this);
+        title.setText("⚠️ 待办授权提醒（JIT 安全门禁）");
+        title.setTextSize(16);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setTextColor(0xFFE65100);
+        banner.addView(title);
+
+        String stepInfo = "任务：「" + task.title + "」在步骤 " + (task.executionStep + 1) + " 请求受控系统能力。";
+        if (task.plan != null && task.executionStep >= 0 && task.executionStep < task.plan.totalSteps()) {
+            ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
+            stepInfo += "\n正在请求：" + CapabilityBroker.friendlyCapabilityName(step.capability) + " (" + step.capability + ")";
+        }
+        TextView desc = new TextView(this);
+        desc.setText(stepInfo);
+        desc.setTextSize(14);
+        desc.setTextColor(0xFF37474F);
+        desc.setPadding(0, dp(4), 0, dp(8));
+        banner.addView(desc);
+
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+
+        if (task.plan != null && task.executionStep >= 0 && task.executionStep < task.plan.totalSteps()) {
+            ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
+            Button grantBtn = new Button(this);
+            grantBtn.setText("一键授权 5 分钟并继续");
+            grantBtn.setOnClickListener(v -> {
+                try {
+                    capabilityBroker.grant(task.id, step.capability, step.scope);
+                    store.transition(task.id, AgentStore.ACTIVE);
+                    AgentScheduler.scheduleTask(MainActivity.this, store.getTask(task.id));
+                    refreshTasks();
+                } catch (Exception ex) {
+                    showError(ex);
+                }
+            });
+            taskButtons.add(grantBtn);
+            buttons.addView(grantBtn);
+        }
+
+        Button rejectBtn = new Button(this);
+        rejectBtn.setText("拒绝并取消任务");
+        rejectBtn.setOnClickListener(v -> {
+            try {
+                store.transition(task.id, AgentStore.CANCELLED);
+                refreshTasks();
+            } catch (Exception ex) {
+                showError(ex);
+            }
+        });
+        taskButtons.add(rejectBtn);
+        buttons.addView(rejectBtn);
+
+        banner.addView(buttons);
+        container.addView(banner);
+        addDivider(container, null);
     }
 
     private void refreshMemories() {
@@ -415,8 +511,21 @@ public final class MainActivity extends Activity {
         planHeading.setTextSize(15);
         planHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         planHeading.setTextColor(0xFF222222);
-        planHeading.setPadding(0, 0, 0, dp(6));
+        planHeading.setPadding(0, 0, 0, dp(4));
         planContainer.addView(planHeading);
+
+        int doneCount = 0;
+        for (ExecutionPlan.Step s : task.plan.steps) {
+            if (ExecutionPlan.STEP_DONE.equals(s.status)) doneCount++;
+        }
+        int progressPercent = (doneCount * 100) / Math.max(1, task.plan.totalSteps());
+
+        TextView progressText = new TextView(this);
+        progressText.setText("执行进度：已完成 " + doneCount + " / " + task.plan.totalSteps() + " 步 (" + progressPercent + "%)");
+        progressText.setTextSize(13);
+        progressText.setTextColor(0xFF0D47A1);
+        progressText.setPadding(0, 0, 0, dp(6));
+        planContainer.addView(progressText);
 
         for (int i = 0; i < task.plan.steps.size(); i++) {
             ExecutionPlan.Step step = task.plan.steps.get(i);
@@ -513,7 +622,14 @@ public final class MainActivity extends Activity {
         card.setPadding(0, 14, 0, 14);
 
         TextView kind = new TextView(this);
-        kind.setText(memoryKindLabel(memory.kind));
+        String kindTag = memoryKindLabel(memory.kind);
+        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
+            kind.setText(kindTag + " · 🤖 自主提取");
+            kind.setTextColor(0xFF1B5E20);
+        } else {
+            kind.setText(kindTag);
+            kind.setTextColor(0xFF455A64);
+        }
         kind.setTextSize(14);
         card.addView(kind);
 
@@ -524,8 +640,14 @@ public final class MainActivity extends Activity {
         card.addView(content);
 
         TextView metadata = new TextView(this);
-        String source = AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)
-            ? "Traceform 本机历史摘要" : "你提供";
+        String source;
+        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
+            source = "🤖 系统自主沉淀";
+        } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
+            source = "🛰️ Traceform 本机历史";
+        } else {
+            source = "👤 你提供";
+        }
         metadata.setText(source + (memory.sourceReference.isEmpty() ? "" : " · " + memory.sourceReference)
             + " · " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
         card.addView(metadata);

@@ -31,16 +31,21 @@ final class HybridReasoningEngine implements ReasoningEngine {
     @Override
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories) {
+        List<AgentStore.Memory> relevantMemories = AssociativeMemorySelector.selectTopMemories(userGoal, memories);
+        if (store != null && memories != null && !memories.isEmpty()) {
+            store.appendTaskEvent(taskId, "associative_memories_selected:count=" + relevantMemories.size());
+        }
+
         if (!config.isConfigured()) {
-            return planLocally(taskId, userGoal, availableCaps, memories);
+            return planLocally(taskId, userGoal, availableCaps, relevantMemories);
         }
 
         // 1. Mandatory on-device Context Redaction Gate
         ContextRedactor.RedactionResult goalRedaction = ContextRedactor.redact(userGoal);
         List<AgentStore.Memory> sanitizedMemories = new ArrayList<>();
         int memoryRedactions = 0;
-        if (memories != null) {
-            for (AgentStore.Memory mem : memories) {
+        if (relevantMemories != null) {
+            for (AgentStore.Memory mem : relevantMemories) {
                 ContextRedactor.RedactionResult memRedaction = ContextRedactor.redact(mem.content);
                 if (memRedaction.hasRedactions()) {
                     memoryRedactions += memRedaction.redactionsCount;
@@ -60,7 +65,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_fallback:reason=offline");
             }
-            return planLocally(taskId, userGoal, availableCaps, memories);
+            return planLocally(taskId, userGoal, availableCaps, relevantMemories);
         }
 
         // 2. Cloud Model Request with graceful fallback

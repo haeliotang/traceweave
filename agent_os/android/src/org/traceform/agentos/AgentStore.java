@@ -46,6 +46,7 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String MEMORY_WORKFLOW = "workflow";
     static final String MEMORY_SOURCE_USER = "user";
     static final String MEMORY_SOURCE_TRACEFORM = "traceform";
+    static final String MEMORY_SOURCE_CONSOLIDATION = "agent_consolidation";
 
     static final class Task {
         final String id;
@@ -605,7 +606,8 @@ final class AgentStore extends SQLiteOpenHelper {
     Memory createMemory(String kind, String content, String source, String sourceReference) throws Exception {
         String normalized = validateMemory(kind, content);
         String reference = sourceReference == null ? "" : sourceReference.trim();
-        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source))
+        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
+                && !MEMORY_SOURCE_CONSOLIDATION.equals(source))
             throw new IllegalArgumentException("Choose a valid memory source");
         if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");
         long now = System.currentTimeMillis();
@@ -619,6 +621,23 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("sealed_payload", sealed);
         getWritableDatabase().insertOrThrow("memories", null, values);
         return new Memory(id, kind, normalized, source, reference, now, now);
+    }
+
+    void updateMemory(String id, String kind, String content, String source, String sourceReference) throws Exception {
+        String normalized = validateMemory(kind, content);
+        String reference = sourceReference == null ? "" : sourceReference.trim();
+        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
+                && !MEMORY_SOURCE_CONSOLIDATION.equals(source))
+            throw new IllegalArgumentException("Choose a valid memory source");
+        if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");
+        long now = System.currentTimeMillis();
+        byte[] sealed = seal(memoryAad(id), memoryPayload(normalized, source, reference));
+        ContentValues values = new ContentValues();
+        values.put("kind", kind);
+        values.put("updated_at", now);
+        values.put("sealed_payload", sealed);
+        int rows = getWritableDatabase().update("memories", values, "id=?", new String[]{id});
+        if (rows == 0) throw new IllegalArgumentException("Memory not found: " + id);
     }
 
     List<Memory> listMemories() throws Exception {

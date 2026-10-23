@@ -105,6 +105,10 @@ final class AgentExecutor {
             if (currentStepIndex >= plan.totalSteps()) {
                 String result = reasoningEngine.synthesize(taskId, task.title, plan.steps);
                 store.completeExecution(taskId, result);
+                AgentStore.Task completed = store.getTask(taskId);
+                if (completed != null) {
+                    MemoryConsolidator.consolidate(store, completed);
+                }
                 return;
             }
 
