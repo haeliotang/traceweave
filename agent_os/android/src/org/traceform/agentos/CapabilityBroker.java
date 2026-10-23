@@ -14,6 +14,12 @@ final class CapabilityBroker {
     static final String DEMO_STATUS_SCOPE = "synthetic.device_status";
     static final String TRACEFORM_CAPABILITY = TraceformProvider.CAPABILITY;
     static final String TRACEFORM_SCOPE = TraceformProvider.SCOPE;
+    static final String NOTIFICATION_CAPABILITY = LocalNotificationProvider.CAPABILITY;
+    static final String NOTIFICATION_SCOPE = LocalNotificationProvider.SCOPE;
+    static final String CALENDAR_CAPABILITY = LocalCalendarProvider.CAPABILITY;
+    static final String CALENDAR_SCOPE = LocalCalendarProvider.SCOPE;
+    static final String SHARE_CAPABILITY = LocalShareProvider.CAPABILITY;
+    static final String SHARE_SCOPE = LocalShareProvider.SCOPE;
     static final String GRANTED_EVENT = auditEvent("capability_granted", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     static final String INVOKED_EVENT = auditEvent("capability_invoked", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
     static final String DENIED_EVENT = auditEvent("capability_denied", DEMO_NOTE_CAPABILITY, DEMO_NOTE_SCOPE);
@@ -46,6 +52,9 @@ final class CapabilityBroker {
         registerProvider(new LocalDemoNoteProvider());
         registerProvider(new LocalDemoStatusProvider());
         registerProvider(new AndroidRemoteStatusProvider(context));
+        registerProvider(new LocalNotificationProvider(context));
+        registerProvider(new LocalCalendarProvider());
+        registerProvider(new LocalShareProvider());
         registerProvider(traceformProvider);
     }
 
@@ -83,6 +92,9 @@ final class CapabilityBroker {
         if (DEMO_NOTE_CAPABILITY.equals(capability)) return "示例便笺";
         if (DEMO_STATUS_CAPABILITY.equals(capability)) return "设备运行状态";
         if (TRACEFORM_CAPABILITY.equals(capability)) return "Traceform 本机历史摘要";
+        if (NOTIFICATION_CAPABILITY.equals(capability)) return "系统任务通知";
+        if (CALENDAR_CAPABILITY.equals(capability)) return "系统日历待办";
+        if (SHARE_CAPABILITY.equals(capability)) return "系统分享导出";
         if (AndroidRemoteStatusProvider.CAPABILITY.equals(capability)) return "跨应用状态";
         return capability == null ? "未知能力" : capability;
     }
@@ -97,6 +109,12 @@ final class CapabilityBroker {
             "示例便笺", "读取本地固定的合成便笺内容", true));
         descriptors.add(new CapabilityDescriptor(DEMO_STATUS_CAPABILITY, DEMO_STATUS_SCOPE,
             "合成状态", "读取本地设备合成运行状态", true));
+        descriptors.add(new CapabilityDescriptor(NOTIFICATION_CAPABILITY, NOTIFICATION_SCOPE,
+            "任务通知推送", "在系统通知栏发送本地任务状态与提醒", true));
+        descriptors.add(new CapabilityDescriptor(CALENDAR_CAPABILITY, CALENDAR_SCOPE,
+            "日历日程待办", "生成规范的系统日历日程事项", true));
+        descriptors.add(new CapabilityDescriptor(SHARE_CAPABILITY, SHARE_SCOPE,
+            "文本分享导出", "打包任务输出为可供系统分享的文本摘要", true));
         if (hasRemoteResource(taskId)) {
             descriptors.add(new CapabilityDescriptor(AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE, "跨应用状态", "从外部应用授权 URI 读取状态", true));

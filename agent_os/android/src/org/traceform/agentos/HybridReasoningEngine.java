@@ -12,6 +12,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
     private final AgentStore store;
     private final CloudModelConfig config;
     private final CloudModelClient cloudClient;
+    private final LocalSlmEngine slmEngine;
     private final SemanticRulePlanner localPlanner;
 
     HybridReasoningEngine(Context context, AgentStore store, CloudModelConfig config) {
@@ -19,6 +20,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
         this.store = store;
         this.config = config != null ? config : CloudModelConfig.load(context);
         this.cloudClient = new CloudModelClient();
+        this.slmEngine = new LocalSlmEngine();
         this.localPlanner = new SemanticRulePlanner();
     }
 
@@ -30,7 +32,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories) {
         if (!config.isConfigured()) {
-            return localPlanner.plan(taskId, userGoal, availableCaps, memories);
+            return planLocally(taskId, userGoal, availableCaps, memories);
         }
 
         // 1. Mandatory on-device Context Redaction Gate
@@ -58,7 +60,7 @@ final class HybridReasoningEngine implements ReasoningEngine {
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_fallback:reason=offline");
             }
-            return localPlanner.plan(taskId, userGoal, availableCaps, memories);
+            return planLocally(taskId, userGoal, availableCaps, memories);
         }
 
         // 2. Cloud Model Request with graceful fallback
@@ -80,14 +82,35 @@ final class HybridReasoningEngine implements ReasoningEngine {
             if (store != null) {
                 store.appendTaskEvent(taskId, "cloud_planning_fallback:reason=" + reason);
             }
-            return localPlanner.plan(taskId, userGoal, availableCaps, memories);
+            return planLocally(taskId, userGoal, availableCaps, memories);
         }
+    }
+
+    private ExecutionPlan planLocally(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
+                                      List<AgentStore.Memory> memories) {
+        try {
+            if (store != null) {
+                store.appendTaskEvent(taskId, "slm_planning_started:micro_slm_v1");
+            }
+            ExecutionPlan plan = slmEngine.plan(taskId, userGoal, availableCaps, memories);
+            if (plan != null && !plan.steps.isEmpty()) {
+                if (store != null) {
+                    store.appendTaskEvent(taskId, "slm_planning_completed:" + plan.totalSteps());
+                }
+                return plan;
+            }
+        } catch (Exception ex) {
+            if (store != null) {
+                store.appendTaskEvent(taskId, "slm_planning_fallback:reason=" + ex.getClass().getSimpleName());
+            }
+        }
+        return localPlanner.plan(taskId, userGoal, availableCaps, memories);
     }
 
     @Override
     public String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
         if (!config.isConfigured() || !isNetworkOnline()) {
-            return localPlanner.synthesize(taskId, userGoal, executedSteps);
+            return synthesizeLocally(taskId, userGoal, executedSteps);
         }
 
         try {
@@ -99,8 +122,19 @@ final class HybridReasoningEngine implements ReasoningEngine {
             }
             return cloudClient.requestSynthesis(taskId, goalRedaction.redactedText, sanitizedSteps, config);
         } catch (Exception ex) {
-            return localPlanner.synthesize(taskId, userGoal, executedSteps);
+            return synthesizeLocally(taskId, userGoal, executedSteps);
         }
+    }
+
+    private String synthesizeLocally(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
+        try {
+            String result = slmEngine.synthesize(taskId, userGoal, executedSteps);
+            if (result != null && !result.isEmpty()) {
+                return result;
+            }
+        } catch (Exception ignored) {
+        }
+        return localPlanner.synthesize(taskId, userGoal, executedSteps);
     }
 
     private boolean isNetworkOnline() {

@@ -48,6 +48,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_STEP_TREE_AND_JIT_GRANT = "org.traceform.agentos.validation.VERIFY_STEP_TREE_AND_JIT_GRANT";
     static final String ACTION_VERIFY_END_TO_END_INTEGRATED = "org.traceform.agentos.validation.VERIFY_END_TO_END_INTEGRATED";
     static final String ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION = "org.traceform.agentos.validation.VERIFY_HYBRID_CLOUD_AND_REDACTION";
+    static final String ACTION_VERIFY_SLM_AND_SYSTEM_CAPABILITIES = "org.traceform.agentos.validation.VERIFY_SLM_AND_SYSTEM_CAPABILITIES";
     private static final String TEST_PASSPHRASE = "synthetic-only-agent-os-archive-passphrase";
     private static final String TEST_TASK_TITLE = "SYNTHETIC cross-install task";
     private static final String TEST_MEMORY_CONTENT = "SYNTHETIC preference for cross-install validation";
@@ -108,6 +109,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifyEndToEndIntegrated();
                 } else if (ACTION_VERIFY_HYBRID_CLOUD_AND_REDACTION.equals(action)) {
                     result = verifyHybridCloudAndRedaction();
+                } else if (ACTION_VERIFY_SLM_AND_SYSTEM_CAPABILITIES.equals(action)) {
+                    result = verifySlmAndSystemCapabilities();
                 } else {
                     result = runMigrationAndKdf();
                 }
@@ -1621,13 +1624,190 @@ public final class DeviceValidationActivity extends Activity {
             if (!AgentStore.COMPLETED.equals(completed2.status)) {
                 throw new IllegalStateException("Cloud-planned task did not complete: " + completed2.status);
             }
-            if (!completed2.result.contains("本地演示结果") || !completed2.result.contains("端侧推演分析")) {
+            boolean validResult = (completed2.result.contains("本地演示结果") || completed2.result.contains("端侧 SLM 离线推演报告"))
+                && (completed2.result.contains("端侧推演分析") || completed2.result.contains("本地推演结论"));
+            if (!validResult) {
                 throw new IllegalStateException("Result missing expected components: " + completed2.result);
             }
 
             return "PASS: Hybrid cloud planner and context redaction verified on device; 5 PII categories sanitized (avg="
                 + String.format(Locale.US, "%.3f", avgRedactionMs) + "ms); offline network failure gracefully fell back to local planner with audit; wire inspection confirmed zero unmasked PII transmission; cloud plan executed cleanly to COMPLETED with JIT authorization. task1="
                 + task1.id + " task2=" + task2.id;
+        } finally {
+            store.close();
+        }
+    }
+
+    private String verifySlmAndSystemCapabilities() throws Exception {
+        deleteDatabase("agent_os.db");
+        AgentStore store = new AgentStore(this);
+        try {
+            SQLiteDatabase database = store.getReadableDatabase();
+            CapabilityBroker broker = new CapabilityBroker(this, store);
+
+            // =========================================================================
+            // PART 1: Direction B - On-Device Micro-SLM (LocalSlmEngine) Benchmark & Intent Accuracy
+            // =========================================================================
+            LocalSlmEngine slmEngine = new LocalSlmEngine();
+
+            // 1.1 Warmup & Latency SLA Benchmark (100 runs)
+            String benchmarkGoal = "查看本地便笺，然后发送系统通知，并将摘要导出分享";
+            for (int i = 0; i < 10; i++) {
+                LocalSlmEngine.inferIntentLogits(benchmarkGoal, null);
+            }
+            long benchStartNs = System.nanoTime();
+            int iterations = 100;
+            for (int i = 0; i < iterations; i++) {
+                LocalSlmEngine.inferIntentLogits(benchmarkGoal, null);
+            }
+            long benchTotalNs = System.nanoTime() - benchStartNs;
+            double avgSlmMs = (benchTotalNs / (double) iterations) / 1_000_000.0;
+            if (avgSlmMs > 20.0) {
+                throw new IllegalStateException("LocalSlmEngine latency SLA exceeded: " + avgSlmMs + "ms > 20ms");
+            }
+
+            // 1.2 Multi-intent accuracy check
+            float[] logitsNotif = LocalSlmEngine.inferIntentLogits("查看本地便笺并推送通知提醒我", null);
+            if (logitsNotif[LocalSlmEngine.CLASS_NOTE] < 0.35f || logitsNotif[LocalSlmEngine.CLASS_NOTIFICATION] < 0.35f) {
+                throw new IllegalStateException("LocalSlmEngine failed Note+Notification intent classification");
+            }
+
+            float[] logitsCal = LocalSlmEngine.inferIntentLogits("安排下周团队会议日程与待办事项", null);
+            if (logitsCal[LocalSlmEngine.CLASS_CALENDAR] < 0.35f) {
+                throw new IllegalStateException("LocalSlmEngine failed Calendar intent classification");
+            }
+
+            float[] logitsShare = LocalSlmEngine.inferIntentLogits("打包系统设备运行状态导出分享给同事", null);
+            if (logitsShare[LocalSlmEngine.CLASS_STATUS] < 0.35f || logitsShare[LocalSlmEngine.CLASS_SHARE] < 0.35f) {
+                throw new IllegalStateException("LocalSlmEngine failed Status+Share intent classification");
+            }
+
+            // =========================================================================
+            // PART 2: Direction C - Real System Capabilities in CapabilityBroker
+            // =========================================================================
+            AgentStore.Task sysTask = store.createTask("验证真实系统扩展能力受控授权与审计");
+            List<CapabilityDescriptor> availableCaps = broker.listAvailableCapabilities(sysTask.id);
+
+            boolean hasNotification = false;
+            boolean hasCalendar = false;
+            boolean hasShare = false;
+            for (CapabilityDescriptor desc : availableCaps) {
+                if (CapabilityBroker.NOTIFICATION_CAPABILITY.equals(desc.capability)) hasNotification = true;
+                if (CapabilityBroker.CALENDAR_CAPABILITY.equals(desc.capability)) hasCalendar = true;
+                if (CapabilityBroker.SHARE_CAPABILITY.equals(desc.capability)) hasShare = true;
+            }
+            if (!hasNotification || !hasCalendar || !hasShare) {
+                throw new IllegalStateException("CapabilityBroker missing system capabilities in catalog: notif="
+                    + hasNotification + " cal=" + hasCalendar + " share=" + hasShare);
+            }
+
+            // 2.1 Unauthorized invocation rejection (SecurityException)
+            String[] capsToTest = {
+                CapabilityBroker.NOTIFICATION_CAPABILITY,
+                CapabilityBroker.CALENDAR_CAPABILITY,
+                CapabilityBroker.SHARE_CAPABILITY
+            };
+            String[] scopesToTest = {
+                CapabilityBroker.NOTIFICATION_SCOPE,
+                CapabilityBroker.CALENDAR_SCOPE,
+                CapabilityBroker.SHARE_SCOPE
+            };
+
+            for (int i = 0; i < capsToTest.length; i++) {
+                try {
+                    broker.invoke(sysTask.id, capsToTest[i], scopesToTest[i]);
+                    throw new IllegalStateException("Invoking " + capsToTest[i] + " without grant should have failed");
+                } catch (SecurityException expected) {
+                    // Expected JIT security rejection
+                }
+            }
+
+            // 2.2 Time-bound 5-minute JIT grant & invocation
+            // Notification test
+            broker.grant(sysTask.id, CapabilityBroker.NOTIFICATION_CAPABILITY, CapabilityBroker.NOTIFICATION_SCOPE);
+            String notifJsonStr = broker.invoke(sysTask.id, CapabilityBroker.NOTIFICATION_CAPABILITY, CapabilityBroker.NOTIFICATION_SCOPE);
+            JSONObject notifJson = new JSONObject(notifJsonStr);
+            if (!notifJson.optBoolean("posted") || !"agent_os_tasks".equals(notifJson.optString("channel"))) {
+                throw new IllegalStateException("Notification provider output invalid: " + notifJsonStr);
+            }
+
+            // Calendar test
+            broker.grant(sysTask.id, CapabilityBroker.CALENDAR_CAPABILITY, CapabilityBroker.CALENDAR_SCOPE);
+            String calJsonStr = broker.invoke(sysTask.id, CapabilityBroker.CALENDAR_CAPABILITY, CapabilityBroker.CALENDAR_SCOPE);
+            JSONObject calJson = new JSONObject(calJsonStr);
+            if (!"android.intent.action.INSERT".equals(calJson.optString("intent_action"))
+                    || !"content://com.android.calendar/events".equals(calJson.optString("intent_uri"))
+                    || calJson.optLong("startTime") <= 0) {
+                throw new IllegalStateException("Calendar provider output invalid: " + calJsonStr);
+            }
+
+            // Share test
+            broker.grant(sysTask.id, CapabilityBroker.SHARE_CAPABILITY, CapabilityBroker.SHARE_SCOPE);
+            String shareJsonStr = broker.invoke(sysTask.id, CapabilityBroker.SHARE_CAPABILITY, CapabilityBroker.SHARE_SCOPE);
+            JSONObject shareJson = new JSONObject(shareJsonStr);
+            if (!"text/plain".equals(shareJson.optString("format"))
+                    || !"android.intent.action.SEND".equals(shareJson.optString("intent_action"))
+                    || !"ready_for_sharing".equals(shareJson.optString("status"))) {
+                throw new IllegalStateException("Share provider output invalid: " + shareJsonStr);
+            }
+
+            // Verify capability audit trail in database
+            for (int i = 0; i < capsToTest.length; i++) {
+                if (auditEventCount(database, sysTask.id, CapabilityBroker.auditEvent("capability_granted", capsToTest[i], scopesToTest[i])) != 1) {
+                    throw new IllegalStateException("Missing capability_granted audit for " + capsToTest[i]);
+                }
+                if (auditEventCount(database, sysTask.id, CapabilityBroker.auditEvent("capability_invoked", capsToTest[i], scopesToTest[i])) != 1) {
+                    throw new IllegalStateException("Missing capability_invoked audit for " + capsToTest[i]);
+                }
+                if (auditEventCount(database, sysTask.id, CapabilityBroker.auditEvent("capability_denied", capsToTest[i], scopesToTest[i])) != 1) {
+                    throw new IllegalStateException("Missing capability_denied audit for " + capsToTest[i]);
+                }
+            }
+
+            // =========================================================================
+            // PART 3: Tier 2 SLM + System Capabilities Multi-Step Agent Execution
+            // =========================================================================
+            String multiGoal = "查看本地便笺，然后发送系统通知，并将摘要导出分享";
+            AgentStore.Task execTask = store.createTask(multiGoal);
+
+            // Cloud is unconfigured -> HybridReasoningEngine routes to Tier 2 (LocalSlmEngine)
+            CloudModelConfig offlineConfig = new CloudModelConfig(false, "", "", "", 3000, 0.1);
+            HybridReasoningEngine hybridEngine = new HybridReasoningEngine(this, store, offlineConfig);
+
+            ExecutionPlan planned = hybridEngine.plan(execTask.id, multiGoal, broker.listAvailableCapabilities(execTask.id), null);
+            if (planned == null || planned.totalSteps() < 4) {
+                throw new IllegalStateException("SLM planning did not generate expected multi-step sequence, steps=" + (planned == null ? 0 : planned.totalSteps()));
+            }
+            store.savePlan(execTask.id, planned);
+
+            // JIT grant the required capabilities for this task
+            broker.grant(execTask.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
+            broker.grant(execTask.id, CapabilityBroker.NOTIFICATION_CAPABILITY, CapabilityBroker.NOTIFICATION_SCOPE);
+            broker.grant(execTask.id, CapabilityBroker.SHARE_CAPABILITY, CapabilityBroker.SHARE_SCOPE);
+
+            store.transition(execTask.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker, hybridEngine).execute(execTask.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+
+            AgentStore.Task completedTask = store.getTask(execTask.id);
+            if (!AgentStore.COMPLETED.equals(completedTask.status)) {
+                throw new IllegalStateException("Task did not reach COMPLETED: " + completedTask.status);
+            }
+
+            if (!completedTask.result.contains("端侧 SLM 离线推演报告")
+                    || !completedTask.result.contains("读取示例便笺")
+                    || !completedTask.result.contains("推送系统任务通知")
+                    || !completedTask.result.contains("打包文本分享导出")) {
+                throw new IllegalStateException("Synthesized SLM report missing expected step observations: " + completedTask.result);
+            }
+
+            if (auditEventCount(database, execTask.id, "slm_planning_started:micro_slm_v1") != 1
+                    || auditEventCount(database, execTask.id, "slm_planning_completed:" + planned.totalSteps()) != 1) {
+                throw new IllegalStateException("SLM planning audit events incomplete for execTask");
+            }
+
+            return "PASS: Direction B (on-device Micro-SLM, avg=" + String.format(Locale.US, "%.3f", avgSlmMs)
+                + "ms, <20ms SLA) and Direction C (System Notification, Calendar, Share providers with 5-min JIT authorization and full audit logging) verified 100% on device. sysTask="
+                + sysTask.id + " execTask=" + execTask.id;
         } finally {
             store.close();
         }

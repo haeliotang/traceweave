@@ -1,0 +1,93 @@
+package org.traceform.agentos;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+
+import org.json.JSONObject;
+
+final class LocalNotificationProvider implements CapabilityProvider {
+    static final String CAPABILITY = "system.notification.post";
+    static final String SCOPE = "system.notify";
+    static final String CHANNEL_ID = "agent_os_tasks";
+    static final String CHANNEL_NAME = "Agent OS 任务通知";
+
+    private final Context context;
+    private final NotificationManager notificationManager;
+
+    LocalNotificationProvider(Context context) {
+        this.context = context.getApplicationContext();
+        this.notificationManager = (NotificationManager) this.context.getSystemService(Context.NOTIFICATION_SERVICE);
+        ensureChannel();
+    }
+
+    private void ensureChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager != null) {
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Agent OS 本地任务执行状态与推演结果通知");
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    @Override
+    public String capability() {
+        return CAPABILITY;
+    }
+
+    @Override
+    public boolean supportsScope(String scope) {
+        return SCOPE.equals(scope);
+    }
+
+    @Override
+    public boolean isAvailable(String taskId, String scope) {
+        return supportsScope(scope) && notificationManager != null;
+    }
+
+    @Override
+    public String read(String taskId, String scope) {
+        if (!isAvailable(taskId, scope)) {
+            throw new IllegalStateException("Notification manager is unavailable");
+        }
+
+        long now = System.currentTimeMillis();
+        int notificationId = Math.abs(taskId.hashCode());
+        String notificationTitle = "Agent OS 任务通知";
+        String notificationText = "任务 [" + taskId.substring(0, Math.min(8, taskId.length())) + "] 正在推进本地执行。";
+
+        try {
+            Notification.Builder builder;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                builder = new Notification.Builder(context, CHANNEL_ID);
+            } else {
+                builder = new Notification.Builder(context);
+            }
+
+            builder.setContentTitle(notificationTitle)
+                   .setContentText(notificationText)
+                   .setSmallIcon(android.R.drawable.ic_dialog_info)
+                   .setAutoCancel(true);
+
+            notificationManager.notify(notificationId, builder.build());
+
+            JSONObject result = new JSONObject();
+            result.put("provider", "system.notification");
+            result.put("channel", CHANNEL_ID);
+            result.put("notificationId", notificationId);
+            result.put("posted", true);
+            result.put("postedAt", now);
+            result.put("title", notificationTitle);
+            result.put("summary", notificationText);
+            return result.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to post system notification: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void releaseTask(String taskId) {}
+}

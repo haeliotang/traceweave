@@ -21,6 +21,18 @@ final class SemanticRulePlanner implements ReasoningEngine {
         "跨应用", "remote", "外部状态"
     };
 
+    private static final String[] NOTIFICATION_KEYWORDS = {
+        "通知", "提醒", "notify", "notification", "alert"
+    };
+
+    private static final String[] CALENDAR_KEYWORDS = {
+        "日历", "日程", "待办", "会议", "calendar", "event", "schedule"
+    };
+
+    private static final String[] SHARE_KEYWORDS = {
+        "分享", "导出", "发送", "share", "export", "send"
+    };
+
     @Override
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories) {
@@ -32,9 +44,13 @@ final class SemanticRulePlanner implements ReasoningEngine {
         boolean matchedStatus = matchesAny(lowerGoal, STATUS_KEYWORDS);
         boolean matchedTraceform = matchesAny(lowerGoal, TRACEFORM_KEYWORDS);
         boolean matchedRemote = matchesAny(lowerGoal, REMOTE_KEYWORDS);
+        boolean matchedNotification = matchesAny(lowerGoal, NOTIFICATION_KEYWORDS);
+        boolean matchedCalendar = matchesAny(lowerGoal, CALENDAR_KEYWORDS);
+        boolean matchedShare = matchesAny(lowerGoal, SHARE_KEYWORDS);
 
         // If no keyword matches, default to note reading to ensure deterministic baseline.
-        if (!matchedNote && !matchedStatus && !matchedTraceform && !matchedRemote) {
+        if (!matchedNote && !matchedStatus && !matchedTraceform && !matchedRemote
+                && !matchedNotification && !matchedCalendar && !matchedShare) {
             matchedNote = true;
         }
 
@@ -84,6 +100,45 @@ final class SemanticRulePlanner implements ReasoningEngine {
                 AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE,
                 "从已选取的 ContentProvider 读取跨应用状态",
+                ExecutionPlan.STEP_PENDING,
+                "",
+                0L
+            ));
+        }
+
+        if (matchedNotification) {
+            steps.add(new ExecutionPlan.Step(
+                steps.size(),
+                "发送系统通知",
+                CapabilityBroker.NOTIFICATION_CAPABILITY,
+                CapabilityBroker.NOTIFICATION_SCOPE,
+                "向 Android 系统通知栏发送任务状态与提醒",
+                ExecutionPlan.STEP_PENDING,
+                "",
+                0L
+            ));
+        }
+
+        if (matchedCalendar) {
+            steps.add(new ExecutionPlan.Step(
+                steps.size(),
+                "创建系统日历日程",
+                CapabilityBroker.CALENDAR_CAPABILITY,
+                CapabilityBroker.CALENDAR_SCOPE,
+                "创建日程意图与系统日历备忘事项",
+                ExecutionPlan.STEP_PENDING,
+                "",
+                0L
+            ));
+        }
+
+        if (matchedShare) {
+            steps.add(new ExecutionPlan.Step(
+                steps.size(),
+                "导出系统分享文本",
+                CapabilityBroker.SHARE_CAPABILITY,
+                CapabilityBroker.SHARE_SCOPE,
+                "通过系统分享渠道导出文本内容与报告摘要",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
