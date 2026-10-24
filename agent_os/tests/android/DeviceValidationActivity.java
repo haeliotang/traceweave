@@ -53,6 +53,7 @@ public final class DeviceValidationActivity extends Activity {
     static final String ACTION_VERIFY_MEMORY_CONSOLIDATION_AND_UI = "org.traceform.agentos.validation.VERIFY_MEMORY_CONSOLIDATION_AND_UI";
     static final String ACTION_VERIFY_SENSOR_OPT_IN = "org.traceform.agentos.validation.VERIFY_SENSOR_OPT_IN";
     static final String ACTION_VERIFY_DAEMON_UNAVAILABLE = "org.traceform.agentos.validation.VERIFY_DAEMON_UNAVAILABLE";
+    static final String ACTION_VERIFY_CLOUD_KEY_STORAGE = "org.traceform.agentos.validation.VERIFY_CLOUD_KEY_STORAGE";
     static final String ACTION_VERIFY_NATIVE_CORE_AND_JNI = "org.traceform.agentos.validation.VERIFY_NATIVE_CORE_AND_JNI";
     static final String ACTION_VERIFY_FULL_RUST_STORE = "org.traceform.agentos.validation.VERIFY_FULL_RUST_STORE";
     static final String ACTION_VERIFY_ZERO_COPY_AND_EMBEDDED_JS = "org.traceform.agentos.validation.VERIFY_ZERO_COPY_AND_EMBEDDED_JS";
@@ -128,6 +129,8 @@ public final class DeviceValidationActivity extends Activity {
                     result = verifySensorOptIn();
                 } else if (ACTION_VERIFY_DAEMON_UNAVAILABLE.equals(action)) {
                     result = verifyDaemonUnavailableFailsClosed();
+                } else if (ACTION_VERIFY_CLOUD_KEY_STORAGE.equals(action)) {
+                    result = verifyCloudApiKeyStorage();
                 } else if (ACTION_VERIFY_NATIVE_CORE_AND_JNI.equals(action)) {
                     result = verifyNativeCoreAndJni();
                 } else if (ACTION_VERIFY_FULL_RUST_STORE.equals(action)) {
@@ -187,6 +190,29 @@ public final class DeviceValidationActivity extends Activity {
             throw new IllegalStateException("An unavailable daemon was reported as active");
         }
         return "PASS: an unreachable daemon is reported unavailable, not simulated as active";
+    }
+
+    private String verifyCloudApiKeyStorage() {
+        String syntheticKey = "SYNTHETIC-cloud-key-validation-only";
+        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_cloud_model_prefs", MODE_PRIVATE);
+        CloudModelConfig config = new CloudModelConfig(true, "https://example.invalid", syntheticKey,
+            "validation-model", CloudModelConfig.DEFAULT_TIMEOUT_MILLIS, CloudModelConfig.DEFAULT_TEMPERATURE);
+        if (!config.save(this)) throw new IllegalStateException("Could not save synthetic key through Android Keystore");
+        String encrypted = prefs.getString("cloud_api_key", "");
+        if (!encrypted.startsWith("android-keystore:v1:") || encrypted.contains(syntheticKey)) {
+            throw new IllegalStateException("API key was not stored as a Keystore-encrypted value");
+        }
+        if (!syntheticKey.equals(CloudModelConfig.load(this).apiKey)) {
+            throw new IllegalStateException("Keystore-encrypted API key did not round-trip");
+        }
+
+        prefs.edit().putString("cloud_api_key", syntheticKey).commit();
+        if (!syntheticKey.equals(CloudModelConfig.load(this).apiKey)
+                || !prefs.getString("cloud_api_key", "").startsWith("android-keystore:v1:")) {
+            throw new IllegalStateException("Legacy plaintext API key did not migrate to Keystore storage");
+        }
+        prefs.edit().clear().commit();
+        return "PASS: API keys are Keystore-encrypted, readable, and legacy plaintext is migrated";
     }
 
     private String runMigrationAndKdf() throws Exception {
@@ -321,6 +347,14 @@ public final class DeviceValidationActivity extends Activity {
             } finally {
                 Arrays.fill(verifyPassphrase, '\0');
             }
+            archiveData.memories.remove(consolidated);
+            Arrays.fill(archive, (byte) 0);
+            char[] conflictPassphrase = TEST_PASSPHRASE.toCharArray();
+            try {
+                archive = MemoryArchive.encrypt(archiveData, conflictPassphrase);
+            } finally {
+                Arrays.fill(conflictPassphrase, '\0');
+            }
             AgentStore.ImportResult keepLocal = importMemoryArchive(store, archive, false);
             AgentStore.Memory afterKeep = findMemory(store.listMemories(), source.id);
             if (keepLocal.memoryConflicts != 1 || keepLocal.memoriesReplaced != 0
@@ -375,7 +409,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(authorizedTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(authorizedTask.id));
             AgentStore.Task completed = awaitTaskStatus(store, authorizedTask.id, AgentStore.COMPLETED);
-            if (completed.executionStep != 2 || completed.checkpointNote.isEmpty()
+            if (completed.executionStep != 3 || completed.checkpointNote.isEmpty()
                     || !completed.result.contains(authorizedTask.title)
                     || !completed.result.contains(completed.checkpointNote)) {
                 throw new IllegalStateException("The executor did not persist its checkpoint and result");
@@ -403,7 +437,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(waitingTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(waitingTask.id));
             AgentStore.Task resumed = awaitTaskStatus(store, waitingTask.id, AgentStore.COMPLETED);
-            if (resumed.executionStep != 2 || resumed.result.isEmpty())
+            if (resumed.executionStep != 3 || resumed.result.isEmpty())
                 throw new IllegalStateException("The authorized task did not resume to completion");
 
             return "PASS: scheduled local execution saved both steps; missing authorization waited and audited, "
@@ -442,7 +476,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(pausedTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(pausedTask.id));
             AgentStore.Task resumed = awaitTaskStatus(store, pausedTask.id, AgentStore.COMPLETED);
-            if (resumed.executionStep != 2 || !paused.checkpointNote.equals(resumed.checkpointNote)
+            if (resumed.executionStep != 3 || !paused.checkpointNote.equals(resumed.checkpointNote)
                     || auditEventCount(database, pausedTask.id,
                         CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY,
                             CapabilityBroker.DEMO_NOTE_SCOPE)) != 1
@@ -535,7 +569,7 @@ public final class DeviceValidationActivity extends Activity {
         store.transition(pausedTask.id, AgentStore.ACTIVE);
         AgentScheduler.scheduleTask(this, store.getTask(pausedTask.id));
         AgentStore.Task resumed = awaitTaskStatus(store, pausedTask.id, AgentStore.COMPLETED);
-        if (resumed.executionStep != 2 || !paused.checkpointNote.equals(resumed.checkpointNote)
+        if (resumed.executionStep != 3 || !paused.checkpointNote.equals(resumed.checkpointNote)
                 || auditEventCount(database, pausedTask.id,
                     CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY,
                         CapabilityBroker.DEMO_NOTE_SCOPE)) != 1
@@ -671,7 +705,7 @@ public final class DeviceValidationActivity extends Activity {
                     CapabilityBroker.DEMO_NOTE_SCOPE));
             int step1Count = auditEventCount(database, taskId, "executor_step_1_saved");
             int step2Count = auditEventCount(database, taskId, "executor_step_2_saved");
-            if (task.executionStep != 2 || task.checkpointNote.isEmpty() || task.result.isEmpty()
+            if (task.executionStep != 3 || task.checkpointNote.isEmpty() || task.result.isEmpty()
                     || remainingGrant != 0 || invokeCount != 1 || step1Count != 1 || step2Count != 1) {
                 throw new IllegalStateException("Checkpoint verification failed: step=" + task.executionStep
                     + ", hasNote=" + !task.checkpointNote.isEmpty() + ", hasResult=" + !task.result.isEmpty()

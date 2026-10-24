@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <permission android:name="org.traceform.edge.CANONICAL_INPUT" android:protectionLevel="signature" />
     <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
-    <application android:label="Traceform" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:debuggable="true" android:extractNativeLibs="true">
+    <application android:label="Traceform" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:extractNativeLibs="true">
         <receiver android:name=".NativeVerificationReceiver" android:exported="true" android:permission="android.permission.DUMP" />
         <service android:name=".NativeVerificationJob" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".WeeklyMaintenanceJob" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />

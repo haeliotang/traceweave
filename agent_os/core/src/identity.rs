@@ -1,18 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::RwLock;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 const DEFAULT_SESSION_DURATION_MILLIS: i64 = 24 * 60 * 60 * 1000; // 24 hours
-
-static GLOBAL_REGISTRY: RwLock<Option<AgentRegistry>> = RwLock::new(None);
-
-pub fn now_millis() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis() as i64)
-        .unwrap_or(0)
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CapabilityDeclaration {
@@ -75,7 +64,7 @@ impl AgentRegistry {
         }
     }
 
-    /// Register a new or updated Agent identity and issue an initial active session token.
+    /// Register an Agent for internal tests and issue an initial active session token.
     pub fn register_agent(
         &mut self,
         agent_id: &str,
@@ -86,17 +75,17 @@ impl AgentRegistry {
         if agent_id.trim().is_empty() {
             return Err("agent_id cannot be empty".to_string());
         }
+        if self.agents.contains_key(agent_id) {
+            return Err("agent_id is already registered".to_string());
+        }
+        if public_key_hash.len() != 64 || !public_key_hash.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            return Err("public_key_hash must be a 32-byte SHA-256 hex digest".to_string());
+        }
 
         self.prune_expired_sessions(now);
 
         let manifest: AgentManifest = serde_json::from_str(manifest_json)
-            .unwrap_or_else(|_| AgentManifest {
-                name: agent_id.to_string(),
-                version: "1.0.0".to_string(),
-                description: "Generic Agent".to_string(),
-                capabilities_requested: Vec::new(),
-                max_concurrent_tasks: 5,
-            });
+            .map_err(|error| format!("Invalid agent manifest: {}", error))?;
 
         let identity = AgentIdentity {
             agent_id: agent_id.to_string(),
@@ -141,11 +130,6 @@ impl AgentRegistry {
         Some(agent)
     }
 
-    /// Get active session metadata by token.
-    pub fn get_session(&self, session_token: &str) -> Option<&AgentSession> {
-        self.sessions.get(session_token)
-    }
-
     /// Revoke an Agent, invalidating all current and future authorizations.
     pub fn revoke_agent(&mut self, agent_id: &str, now: i64) -> bool {
         if let Some(agent) = self.agents.get_mut(agent_id) {
@@ -174,21 +158,6 @@ impl AgentRegistry {
     }
 }
 
-// =========================================================================
-// GLOBAL REGISTRY SINGLETON
-// =========================================================================
-
-pub fn get_global_registry() -> &'static RwLock<Option<AgentRegistry>> {
-    &GLOBAL_REGISTRY
-}
-
-pub fn init_global_registry() {
-    let mut lock = GLOBAL_REGISTRY.write().unwrap();
-    if lock.is_none() {
-        *lock = Some(AgentRegistry::new());
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -209,7 +178,7 @@ mod tests {
         // 1. Register agent
         let session = registry.register_agent(
             "org.test.researcher",
-            "sha256:pubkey123",
+            &"a".repeat(64),
             manifest,
             now,
         ).expect("Registration should succeed");
@@ -233,5 +202,13 @@ mod tests {
         assert!(registry.revoke_agent("org.test.researcher", now + 200));
         assert!(registry.verify_session(&session.session_token, now + 300).is_none());
         assert_eq!(registry.active_sessions_count(now + 300), 0);
+    }
+
+    #[test]
+    fn invalid_manifest_and_unverified_key_hash_are_rejected() {
+        let mut registry = AgentRegistry::new();
+        assert!(registry.register_agent("org.test.bad", "short", "not-json", 1).is_err());
+        assert!(registry.register_agent("org.test.bad", &"b".repeat(64), "not-json", 1).is_err());
+        assert!(registry.list_agents().is_empty());
     }
 }

@@ -319,7 +319,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.setLayoutParams(topHeaderLp);
 
         TextView title = new TextView(this);
-        title.setText(en ? "Traceform OS · Handheld AI" : "Traceform OS 掌上智能系统");
+        title.setText(en ? "Traceform Agent OS Prototype" : "Traceform Agent OS 原型");
         title.setTextSize(20);
         title.setTextColor(0xFF0F172A);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -353,12 +353,12 @@ public final class MainActivity extends Activity {
         statusRow.setGravity(Gravity.CENTER_VERTICAL);
         statusRow.setPadding(0, dp(4), 0, dp(8));
 
-        TextView rustBadge = IconFactory.createBadge(this, NativeAgentCore.isAvailable() ? "RUST NATIVE 16KB" : "JAVA FALLBACK",
+        TextView rustBadge = IconFactory.createBadge(this, NativeAgentCore.isAvailable() ? "RUST NATIVE" : "JAVA FALLBACK",
                 NativeAgentCore.isAvailable() ? 0xFFDCFCE7 : 0xFFFEF3C7,
                 NativeAgentCore.isAvailable() ? 0xFF166534 : 0xFF92400E);
         statusRow.addView(rustBadge);
 
-        TextView daemonBadge = IconFactory.createBadge(this, "DAEMON 19898", 0xFFEFF6FF, 0xFF1D4ED8);
+        TextView daemonBadge = IconFactory.createBadge(this, "DAEMON DISABLED", 0xFFFEF3C7, 0xFF92400E);
         LinearLayout.LayoutParams dLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         dLp.setMargins(dp(6), 0, 0, 0);
@@ -376,7 +376,7 @@ public final class MainActivity extends Activity {
         LinearLayout gridRow1 = createGridRow(page);
         LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, en ? "Hardware" : "硬件常驻", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
-        hwInfo.setText(en ? "Tensor G1 · 8-core\nTCE Hetero Graph\n4.1MB · 16KB Aligned" : "Tensor G1 · 8核\nTCE 异构算力引擎\n常驻4.1MB · 16KB对齐");
+        hwInfo.setText(en ? "Tensor G1 · Pixel 6a\nPrototype compute scheduler\nSynthetic profile, not a benchmark" : "Tensor G1 · Pixel 6a\n原型计算调度器\n模拟数据，不代表实机性能");
         hwInfo.setTextSize(10);
         hwInfo.setLineSpacing(dp(1), 1.0f);
         hwInfo.setTextColor(0xFF475569);
@@ -394,19 +394,19 @@ public final class MainActivity extends Activity {
                 long latencyUs = resObj.optLong("total_latency_us", 0);
                 double tflops = resObj.optDouble("effective_tflops", 0.0);
 
-                hwInfo.setText((en ? "TCE Hetero Graph\n" : "TCE 异构执行图\n")
+                hwInfo.setText((en ? "Scheduler simulation\n" : "调度器模拟结果\n")
                     + "GPU(" + gpu + ") TPU(" + tpu + ") CPU(" + cpu + ")\n"
-                    + String.format(Locale.US, "%.2f TFLOPS (%dμs)", tflops, latencyUs));
-                Toast.makeText(this, (en ? "TCE Graph Scheduled: " : "TCE 异构算力调度: ")
+                    + String.format(Locale.US, "%.2f simulated TFLOPS (%dμs)", tflops, latencyUs));
+                Toast.makeText(this, (en ? "Synthetic TCE simulation: " : "TCE 合成调度模拟: ")
                     + "GPU:" + gpu + " TPU:" + tpu + " NEON:" + cpu + " (" + latencyUs + "μs)", Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Toast.makeText(this, "TCE: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, en ? "Edge SLM" : "端侧模型", 0xFF6A1B9A);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, en ? "Local Planner" : "本地规划", 0xFF6A1B9A);
         TextView slmInfo = new TextView(this);
-        slmInfo.setText(en ? "Qwen2.5-0.5B · GGUF\n32k Context · ChatML\n32.0 t/s · NEON SIMD" : "Qwen2.5-0.5B · GGUF\n32k 上下文 · ChatML\n32.0 t/s · NEON加速");
+        slmInfo.setText(en ? "Rule-based local planner\nNo GGUF model bundled\nNo throughput benchmark" : "规则式本地规划\n未随包提供 GGUF 模型\n暂无吞吐实测");
         slmInfo.setTextSize(10);
         slmInfo.setLineSpacing(dp(1), 1.0f);
         slmInfo.setTextColor(0xFF475569);
@@ -415,17 +415,10 @@ public final class MainActivity extends Activity {
 
         slmCard.setOnClickListener(v -> {
             try {
-                String infoJson = NativeAgentCore.edgeSlmModelInfo(null);
-                org.json.JSONObject infoObj = new org.json.JSONObject(infoJson);
-                String arch = infoObj.optString("architecture", "qwen2").toUpperCase(Locale.ROOT);
-                int ver = infoObj.optInt("version", 3);
-                int tensors = infoObj.optInt("tensor_count", 290);
-
-                slmInfo.setText(arch + " · GGUF v" + ver + "\n"
-                        + tensors + " Tensors · 32k\n"
-                        + "32.0 t/s · NEON SIMD");
-                Toast.makeText(this, (en ? "Edge SLM Profile: " : "端侧模型规格就绪: ")
-                        + arch + " (GGUF v" + ver + " · " + tensors + " Tensors · 32k · 32.0 t/s · NEON)", Toast.LENGTH_SHORT).show();
+                slmInfo.setText(en ? "Rule-based local planner\nNo GGUF model bundled\nNo throughput benchmark"
+                        : "规则式本地规划\n未随包提供 GGUF 模型\n暂无吞吐实测");
+                Toast.makeText(this, en ? "Local planning uses on-device rules; no model performance is claimed."
+                        : "本地规划使用端侧规则逻辑；未声明模型性能。", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(this, (en ? "Edge SLM error: " : "端侧模型状态异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -433,7 +426,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText(en ? "agentosd · 127.0.0.1:19898\nTap to check\nStatus unknown" : "agentosd · 127.0.0.1:19898\n点击探测\n状态未知");
+        daemonInfo.setText(en ? "agentosd disabled\nNot deployed\nTap to confirm unavailable" : "agentosd 已禁用\n未部署\n点击确认不可用");
         daemonInfo.setTextSize(10);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
@@ -464,9 +457,9 @@ public final class MainActivity extends Activity {
         });
 
         LinearLayout gridRow2 = createGridRow(page);
-        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "E2EE Sync" : "E2EE同步", 0xFF2E7D32);
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "Encrypted Archive" : "加密归档", 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
-        syncInfo.setText(en ? "AES-256-GCM + PBKDF2\nVector Clock Sync\nP2P Zero-Trust" : "AES-256-GCM + PBKDF2\n向量时钟因果一致\nP2P 局域网零信任");
+        syncInfo.setText(en ? "AES-GCM encrypted archive\nExport/import on demand\nNo automatic sync" : "AES-GCM 加密归档\n按需导出与导入\n当前不支持自动同步");
         syncInfo.setTextSize(10);
         syncInfo.setLineSpacing(dp(1), 1.0f);
         syncInfo.setTextColor(0xFF475569);
@@ -476,11 +469,10 @@ public final class MainActivity extends Activity {
         syncCard.setOnClickListener(v -> {
             try {
                 int memCount = store != null ? store.listMemories().size() : 0;
-                syncInfo.setText((en ? "AES-256-GCM Vault\n" : "AES-256-GCM 密文库\n")
-                        + (en ? "Vault: " + memCount + " Memories\n" : "密文库: " + memCount + " 条记忆\n")
-                        + (en ? "Clock: Causal v1" : "向量时钟: 因果一致 v1"));
-                Toast.makeText(this, (en ? "E2EE Sync Ready: " + memCount + " memories · AES-256-GCM · P2P Active"
-                        : "E2EE 同步就绪: 已加密 " + memCount + " 条记忆 · AES-256-GCM · P2P 待命"), Toast.LENGTH_SHORT).show();
+                syncInfo.setText((en ? "Encrypted memory vault\n" : "加密记忆库\n")
+                        + (en ? memCount + " memories\nOn-demand archive" : memCount + " 条记忆\n按需加密归档"));
+                Toast.makeText(this, (en ? "Encrypted archive ready: " + memCount + " memories · export/import on demand"
+                        : "加密归档就绪: " + memCount + " 条记忆 · 按需导出与导入"), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(this, "Sync: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -624,7 +616,10 @@ public final class MainActivity extends Activity {
 
         page.addView(dockRow);
 
-        setContentView(page);
+        ScrollView pageScroll = new ScrollView(this);
+        pageScroll.setFillViewport(true);
+        pageScroll.addView(page);
+        setContentView(pageScroll);
     }
 
     private void showMemoryDialog() {
@@ -1806,7 +1801,11 @@ public final class MainActivity extends Activity {
                     CloudModelConfig.DEFAULT_TIMEOUT_MILLIS,
                     CloudModelConfig.DEFAULT_TEMPERATURE
                 );
-                updated.save(MainActivity.this);
+                if (!updated.save(MainActivity.this)) {
+                    showMessage(en ? "Could not protect the API key with Android Keystore; configuration was not saved."
+                        : "无法使用 Android Keystore 加密 API Key，配置未保存。");
+                    return;
+                }
                 updateCloudModelControls();
                 showMessage(en ? "Hybrid cloud inference configuration updated" : "端云协同配置已更新");
             })

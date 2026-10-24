@@ -27,6 +27,11 @@
         <service
             android:name="org.traceform.agentos.AgentFloatingService"
             android:exported="false" />
+        <service android:name="org.traceform.agentos.SubstrateService" android:exported="true">
+            <intent-filter>
+                <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
+            </intent-filter>
+        </service>
         <service
             android:name="org.traceform.agentos.AgentAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
@@ -35,6 +40,7 @@
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
         </service>
+        <activity android:name="org.traceform.agentos.CapabilityApprovalActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.RemoteUriPickerActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.MainActivity" android:exported="true" />
         <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true">

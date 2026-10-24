@@ -13,6 +13,13 @@ ACTION="${1:-status}"
 TARGET="${2:-android}"
 DEVICE_ID="${ADB_DEVICE:-25161JEGR06836}"
 
+case "$ACTION" in
+    install|start|restart|build-magisk)
+        echo "agentosd installation is disabled until authenticated IPC and encrypted persistence are implemented."
+        exit 78
+        ;;
+esac
+
 usage() {
     echo "Usage: $0 [install|start|stop|restart|status|build-magisk] [android|macos|linux]"
     echo ""

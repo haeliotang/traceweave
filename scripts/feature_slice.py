@@ -13,7 +13,7 @@ from traceform.representation.feature_dataflow import backward_slice
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--features', required=True, help='comma-separated output names')
-    parser.add_argument('--normalizer-file', type=Path, default=ROOT / 'traceform/representation/normalizer.py')
+    parser.add_argument('--normalizer-file', type=Path, default=ROOT / 'research/traceform/representation/normalizer.py')
     args = parser.parse_args()
     source = args.normalizer_file.read_text()
     text = source.splitlines()

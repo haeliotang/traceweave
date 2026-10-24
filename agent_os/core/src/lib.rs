@@ -15,11 +15,12 @@ pub mod edge_slm;
 pub mod sync;
 pub mod voice_dsp;
 pub mod screen_agent;
-pub mod daemon;
+mod daemon;
 pub mod physical_sensorium;
 pub mod vision;
 pub mod hardware_broker;
 pub mod vault;
-pub mod identity;
+#[cfg(test)]
+mod identity;
 pub mod agent_ir;
 pub mod tce;

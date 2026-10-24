@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-24",
+  "device": "Pixel 6a / GrapheneOS / Android 17 API 37",
+  "validation_package": "org.traceform.agentos.validation.target",
+  "method": "dumpsys battery unplug; reset batterystats; execute local scheduled work; inspect UID attribution",
+  "sample_duration_seconds": 28,
+  "screen_on_fraction": 1.0,
+  "battery_level_percent_before_and_after": 100,
+  "standby_bucket": {
+    "value": 10,
+    "label": "ACTIVE"
+  },
+  "uid_attribution": {
+    "uid": "u0a316",
+    "estimated_drain_mAh": 0.457,
+    "screen_mAh": 0.457,
+    "gpu_mAh": 0.000333,
+    "computed_drain_mAh": 0.0,
+    "actual_drain_mAh": 0.0
+  },
+  "permissions": {
+    "android.permission.INTERNET": "requested and granted",
+    "android.permission.RECORD_AUDIO": "requested and not granted",
+    "android.permission.POST_NOTIFICATIONS": "temporarily granted for Broker approval testing, then revoked and verified granted=false",
+    "android.permission.SYSTEM_ALERT_WINDOW": "declared; AppOps reported allow"
+  },
+  "app_ops": "Location, contacts, call and SMS records, calendar, camera, microphone, body sensors, storage/media, Bluetooth scan/connect, activity recognition, nearby Wi-Fi and biometrics operations were observed as ignored. Overlay/accessibility-related operations reported allow; this is not an all-AppOps-denied result.",
+  "interpretation": "This short, screen-on, simulated-unplug sample is dominated by the display. It does not isolate background CPU energy, predict runtime, or prove zero network egress. Do not interpret the GPU estimate as CPU-only work. No defensible compute-only mAh estimate was obtained.",
+  "cleanup": "Battery simulation was reset after sampling; device returned to AC powered, USB false, 100% level. Airplane mode was disabled after the offline test."
+}

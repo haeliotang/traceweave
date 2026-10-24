@@ -14,7 +14,7 @@ from traceform.representation.feature_dataflow import analyze_source
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--normalizer-file', type=Path, default=ROOT / 'traceform/representation/normalizer.py')
+    parser.add_argument('--normalizer-file', type=Path, default=ROOT / 'research/traceform/representation/normalizer.py')
     parser.add_argument('--output-file', type=Path, required=True)
     args = parser.parse_args()
     result = analyze_source(args.normalizer_file.read_text())

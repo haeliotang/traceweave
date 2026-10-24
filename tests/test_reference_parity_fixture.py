@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -7,6 +8,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+ANDROID_JAR = Path(os.environ.get(
+    'TRACEFORM_ANDROID_JAR', '/private/tmp/traceform-android-tools/platform/android-35/android.jar'))
 
 
 class TestReferenceParityFixture(unittest.TestCase):
@@ -17,8 +20,8 @@ class TestReferenceParityFixture(unittest.TestCase):
         return json.loads(path.read_text())
 
     def test_fixture_is_deterministic_json_with_both_sections(self):
-        if not shutil.which('javac') or not shutil.which('java'):
-            self.skipTest('Java toolchain required for the host expectations')
+        if not shutil.which('javac') or not shutil.which('java') or not ANDROID_JAR.is_file():
+            self.skipTest('Java toolchain and Android API jar required for the host expectations')
         with tempfile.TemporaryDirectory() as directory:
             first = self.build(directory, 'a.json')
             second = self.build(directory, 'b.json')

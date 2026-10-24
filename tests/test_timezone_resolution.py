@@ -44,7 +44,7 @@ class TestResolveZone(unittest.TestCase):
 
     def test_periodic_kernel_and_maintenance_use_the_resolver(self):
         root = Path(__file__).resolve().parents[1]
-        for relative in ('traceform/forecasting/periodic_kernel.py', 'scripts/maintain_edge_runtime.py'):
+        for relative in ('research/traceform/forecasting/periodic_kernel.py', 'scripts/maintain_edge_runtime.py'):
             source = (root / relative).read_text()
             self.assertIn('resolve_zone', source, relative)
             self.assertNotIn('ZoneInfo(', source, relative)

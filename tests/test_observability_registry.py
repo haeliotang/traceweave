@@ -129,7 +129,8 @@ class TestRegistryOnTheRepository(unittest.TestCase):
         for name in ('gnss_position_dilution_of_precision', 'cellular_timing_advance_distance',
                      'touch_contact_area_normalized', 'cpu_user_system_mode_ratio'):
             self.assertEqual(by_name[name]['status'], 'unobservable_in_current_acquisition', name)
-        self.assertEqual(by_name['motion_accel_magnitude']['status'], 'not_assessed_at_runtime')
+        self.assertEqual(by_name['motion_accel_magnitude']['status'], 'unobservable_in_current_acquisition')
+        self.assertEqual(by_name['motion_accel_magnitude']['basis'], 'static_no_producer')
         self.assertEqual(len(registry['features']), 128)
 
 

@@ -31,7 +31,7 @@ JAVA_SOURCE = ROOT / 'android/src/org/traceform/edge'
 PARITY_JAVA = ROOT / 'tests/java_parity'
 HARNESS_CLASS = 'org.traceform.edge.ParityHarness'
 
-_DATAFLOW = analyze_source((ROOT / 'traceform/representation/normalizer.py').read_text())
+_DATAFLOW = analyze_source((ROOT / 'research/traceform/representation/normalizer.py').read_text())
 
 # Fields the native service can obtain from its own sources (used by the "native" profile).
 NATIVE_PATHS = {

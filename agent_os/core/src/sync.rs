@@ -163,7 +163,7 @@ pub fn export_encrypted_sync_package(
     serde_json::to_string(&envelope).map_err(|e| format!("Failed to serialize envelope: {}", e))
 }
 
-/// Imports and merges an encrypted sync package into the store with CRDT LWW semantics.
+/// Imports and merges an encrypted sync package using tombstone-first, deterministic LWW semantics.
 pub fn import_encrypted_sync_package(
     store: &AgentStore,
     passphrase: &str,
@@ -196,10 +196,10 @@ pub fn import_encrypted_sync_package(
     }
 
     for remote_task in payload.tasks {
-        match store.upsert_synced_task(&remote_task) {
-            Ok(true) => stats.imported_tasks += 1,
-            Ok(false) => stats.skipped_records += 1,
-            Err(_) => stats.skipped_records += 1,
+        if store.upsert_synced_task(&remote_task).map_err(|e| e.to_string())? {
+            stats.imported_tasks += 1;
+        } else {
+            stats.skipped_records += 1;
         }
     }
 
@@ -397,6 +397,40 @@ mod tests {
         let replica = AgentStore::open_in_memory().unwrap();
         import_encrypted_sync_package(&replica, "shared-passphrase", &package).unwrap();
         assert_eq!(replica.list_memory_tombstones().unwrap(), vec![(memory.id, 20)]);
+    }
+
+    #[test]
+    fn test_sync_tombstone_wins_over_clock_skewed_memory_update() {
+        let store = AgentStore::open_in_memory().unwrap();
+        let payload = SyncPayload {
+            device_id: "source-device".to_string(),
+            timestamp: 40,
+            memories: vec![MemoryRecord {
+                id: "deleted-memory".to_string(),
+                kind: "fact".to_string(),
+                content: "stale archive content".to_string(),
+                source: "user".to_string(),
+                source_reference: String::new(),
+                created_at: 1,
+                // This timestamp can be ahead of the deletion device's clock.
+                updated_at: 30,
+            }],
+            tombstones: vec![TombstoneRecord {
+                id: "deleted-memory".to_string(),
+                deleted_at: 20,
+            }],
+            tasks: Vec::new(),
+        };
+        let bytes = serde_json::to_vec(&payload).unwrap();
+        let envelope = encrypt_payload("shared-passphrase", &bytes, "source-device").unwrap();
+        let package = serde_json::to_string(&envelope).unwrap();
+
+        let stats = import_encrypted_sync_package(&store, "shared-passphrase", &package).unwrap();
+
+        assert_eq!(stats.applied_tombstones, 1);
+        assert_eq!(stats.skipped_records, 1);
+        assert!(store.list_memories().unwrap().is_empty());
+        assert_eq!(store.list_memory_tombstones().unwrap(), vec![("deleted-memory".to_string(), 20)]);
     }
 
     #[test]

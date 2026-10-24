@@ -1,0 +1,100 @@
+{
+  "run_id": "phase1-rerun-20261024",
+  "date": "2026-10-24",
+  "status": "PASS_WITH_LIMITATIONS",
+  "scope": "Current Agent OS source built as an isolated Android validation APK; synthetic acceptance data only.",
+  "device": {
+    "model": "Google Pixel 6a",
+    "codename": "bluejay",
+    "serial": "25161JEGR06836",
+    "os": "GrapheneOS / Android 17 / API 37",
+    "security_patch": "2026-09-01"
+  },
+  "build": {
+    "package": "org.traceform.agentos.validation.target",
+    "version": "0.1.0",
+    "apk_sha256": "055116b7a8af6dc05612507dad8e24fd65337338ff4449b6c71a8b85b8158ff6",
+    "apk_bytes": 172602,
+    "signature_verification": "APK v2 and v3 signatures verified",
+    "build_report": "phase1_rerun_20261024_build_report.json"
+  },
+  "gates": [
+    {
+      "id": 1,
+      "name": "Task lifecycle and recovery",
+      "status": "PASS",
+      "evidence": "Real UI create/start/pause/resume/complete/cancel flow; process force-stop recovery; full-device reboot recovery from step 1 checkpoint with no duplicate note read and no surviving process-local grant.",
+      "reboot_task_id": "2baf68c8-f575-400c-8697-508a73c7b14f",
+      "force_stop_task_id": "659fbee2-0326-4ffb-b94a-7c064abc91f9",
+      "screenshots": [
+        "phase1_rerun_20261024_ui_task_planned.png",
+        "phase1_rerun_20261024_ui_task_granted.png",
+        "phase1_rerun_20261024_ui_task_active.png",
+        "phase1_rerun_20261024_ui_task_paused.png",
+        "phase1_rerun_20261024_ui_task_completed.png",
+        "phase1_rerun_20261024_ui_cancelled.png"
+      ],
+      "reboot_log": "phase1_rerun_20261024_validation_logcat.txt"
+    },
+    {
+      "id": 2,
+      "name": "Broker authorization and audit",
+      "status": "PASS",
+      "evidence": "A separately signed synthetic Demo Agent received a real Android approval request. A denial was returned to the caller; a separate five-minute approval permitted the synthetic note read and session ping, and explicit revocation was enforced. Expired authorization was also denied. Traceform provider audit contains denied, granted, invoked, and revoked events.",
+      "screenshot": "phase1_rerun_20261024_broker_request.png",
+      "demo_agent_denied_task_id": "22d4ad69-3e60-4d20-825a-b53cd7202850",
+      "demo_agent_approved_task_id": "b6e7ad9a-c501-45aa-aa67-528aa5088eba"
+    },
+    {
+      "id": 3,
+      "name": "Offline local execution",
+      "status": "PASS",
+      "evidence": "System airplane mode was verified on during a two-step local scheduled task; an ungranted capability waited and was audited, then execution completed after a fresh grant. Airplane mode was restored off.",
+      "limitation": "The app requests and holds INTERNET permission for optional cloud reasoning. This gate proves local completion while airplane mode is enabled; no socket capture was made, so it is not a general zero-egress proof."
+    },
+    {
+      "id": 4,
+      "name": "Memory provenance, migration, and rebuilt index",
+      "status": "PASS",
+      "evidence": "On-device v3-to-v4 migration preserved encrypted memory content and assigned legacy provenance; the rebuilt in-memory index found Chinese content and source metadata; encrypted archive export/import preserved the tested records."
+    },
+    {
+      "id": 5,
+      "name": "Import conflicts and deletion tombstones",
+      "status": "PASS",
+      "evidence": "Device validation accepted both same-ID conflict choices (keep local or use archive) and confirmed a local deletion tombstone wins over archive content."
+    },
+    {
+      "id": 6,
+      "name": "Optional Traceform provider",
+      "status": "PASS",
+      "evidence": "Real UI verified default-off, explicit enable, unauthenticated denial, a task-scoped five-minute grant, a read of a bounded local-history simulation summary, user-confirmed save as a fact memory, explicit revoke, and default-off cleanup. The returned summary states it is not a validated prediction or causal effect.",
+      "task_id": "2fec6808-aae3-44c3-ac59-83c554cb8671",
+      "screenshots": [
+        "phase1_rerun_20261024_traceform_default_disabled.png",
+        "phase1_rerun_20261024_traceform_enabled.png",
+        "phase1_rerun_20261024_traceform_summary.png",
+        "phase1_rerun_20261024_traceform_saved_memory.png",
+        "phase1_rerun_20261024_traceform_revoked.png"
+      ],
+      "boundary": "No direct Traceform database access or sensor collection was used."
+    },
+    {
+      "id": 7,
+      "name": "Power, background policy, and permission record",
+      "status": "PASS_WITH_LIMITATIONS",
+      "evidence": "A 28-second, screen-on, simulated-unplug task sample and standby-bucket snapshot were recorded. See phase1_rerun_20261024_battery_measurement.json.",
+      "limitation": "The UID estimate is display-dominated and does not isolate background compute or predict runtime. The standby bucket was ACTIVE. INTERNET was granted; overlay/accessibility-related AppOps were not all denied."
+    }
+  ],
+  "cleanup": {
+    "temporary_post_notifications_permission": "revoked and verified granted=false",
+    "synthetic_demo_agent_package": "uninstalled",
+    "airplane_mode": "off",
+    "battery_simulation": "reset",
+    "production_packages": "The validation run installed and exercised only the isolated target package; Traceform production packages were not targeted."
+  },
+  "evidence_directory": ".",
+  "build_report": "phase1_rerun_20261024_build_report.json",
+  "battery_measurement": "phase1_rerun_20261024_battery_measurement.json"
+}

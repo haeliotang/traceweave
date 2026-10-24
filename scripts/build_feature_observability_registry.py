@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 from traceform.representation.feature_dataflow import analyze_source
 from traceform.representation.observability_registry import build_registry, producer_literals
 
-PRODUCER_ROOTS = ('pixel_physical', 'traceform/streaming', 'traceform/probes')
+PRODUCER_ROOTS = ('pixel_physical', 'research/traceform/streaming', 'research/traceform/probes')
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--ledger-file', type=Path, help='device-derived runtime ledger (output stays local)')
     parser.add_argument('--output-file', type=Path, required=True)
     args = parser.parse_args()
-    dataflow = analyze_source((ROOT / 'traceform/representation/normalizer.py').read_text())
+    dataflow = analyze_source((ROOT / 'research/traceform/representation/normalizer.py').read_text())
     ledger = json.loads(args.ledger_file.read_text()) if args.ledger_file else None
     registry = build_registry(dataflow, producer_literals([ROOT / root for root in PRODUCER_ROOTS]), ledger)
     registry['producer_roots'] = list(PRODUCER_ROOTS)

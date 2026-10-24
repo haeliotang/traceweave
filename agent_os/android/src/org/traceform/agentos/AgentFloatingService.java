@@ -109,7 +109,7 @@ public final class AgentFloatingService extends Service {
             btnDeny.setText(en ? "Deny" : "拒绝");
         }
         if (taskDetailView != null && (pendingTaskId == null || pendingTaskId.isEmpty())) {
-            taskDetailView.setText(en ? " Core: Standby Offline (Qwen2.5-0.5B)" : " 核心运行: 离线就绪 (Qwen2.5-0.5B)");
+            taskDetailView.setText(en ? " Core: Local rule planner ready" : " 核心运行: 本地规则规划已就绪");
         }
         if (sensoriumDetailView != null) {
             sensoriumDetailView.setText(en ? " Ambient: Stationary · Pocket Gated" : " 环境感知: 姿态静止 · 口袋防误触生效");
@@ -299,7 +299,7 @@ public final class AgentFloatingService extends Service {
         taskRow.setPadding(0, dp(6), 0, 0);
         taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#94A3B8"), 13));
         taskDetailView = new TextView(this);
-        taskDetailView.setText(" 核心运行: 离线就绪 (Qwen2.5-0.5B)");
+        taskDetailView.setText(" 核心运行: 本地规则规划已就绪");
         taskDetailView.setTextColor(Color.parseColor("#E2E8F0"));
         taskDetailView.setTextSize(11);
         taskRow.addView(taskDetailView);

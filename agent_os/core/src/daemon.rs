@@ -1,26 +1,33 @@
-use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::io::{BufRead, BufReader, Write};
+use std::net::TcpStream;
 #[cfg(unix)]
-use std::os::unix::net::{UnixListener, UnixStream};
-use std::path::Path;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::os::unix::net::UnixStream;
+#[cfg(test)]
+use std::sync::atomic::AtomicBool;
+#[cfg(test)]
 use std::sync::{Arc, RwLock};
+#[cfg(test)]
 use std::time::{SystemTime, UNIX_EPOCH};
+#[cfg(test)]
 use base64::engine::general_purpose::STANDARD as BASE64;
+#[cfg(test)]
 use base64::Engine;
+#[cfg(test)]
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use serde_json::Value;
 
+#[cfg(test)]
 use crate::broker::CapabilityBroker;
+#[cfg(test)]
 use crate::identity::AgentRegistry;
 
-pub const DEFAULT_TCP_PORT: u16 = 19898;
-pub const DEFAULT_SOCKET_PATH: &str = "/data/local/tmp/agentosd.sock";
-
-static REQUEST_COUNTER: AtomicU64 = AtomicU64::new(0);
+#[cfg(test)]
 static GLOBAL_DAEMON_BROKER: RwLock<Option<CapabilityBroker>> = RwLock::new(None);
+#[cfg(test)]
 static GLOBAL_DAEMON_REGISTRY: RwLock<Option<AgentRegistry>> = RwLock::new(None);
 
+#[cfg(test)]
 fn with_broker<F, R>(f: F) -> R
 where
     F: FnOnce(&mut CapabilityBroker) -> R,
@@ -32,6 +39,7 @@ where
     f(lock.as_mut().unwrap())
 }
 
+#[cfg(test)]
 fn with_registry<F, R>(f: F) -> R
 where
     F: FnOnce(&mut AgentRegistry) -> R,
@@ -43,6 +51,7 @@ where
     f(lock.as_mut().unwrap())
 }
 
+#[cfg(test)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DaemonRequest {
     pub id: String,
@@ -55,6 +64,7 @@ pub struct DaemonRequest {
     pub payload: Value,
 }
 
+#[cfg(test)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DaemonResponse {
     pub id: String,
@@ -63,6 +73,7 @@ pub struct DaemonResponse {
     pub data: Value,
 }
 
+#[cfg(test)]
 fn current_timestamp_ms() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -70,6 +81,7 @@ fn current_timestamp_ms() -> u64 {
         .as_millis() as u64
 }
 
+#[cfg(test)]
 fn resolve_effective_agent(req: &DaemonRequest, ts: i64) -> Result<String, String> {
     if let Some(token) = req.session_token.as_deref() {
         if let Some(agent) = with_registry(|reg| reg.verify_session(token, ts).cloned()) {
@@ -89,60 +101,19 @@ fn resolve_effective_agent(req: &DaemonRequest, ts: i64) -> Result<String, Strin
 }
 
 /// Dispatches a daemon action and produces a response.
-pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
-    let req_count = REQUEST_COUNTER.fetch_add(1, Ordering::SeqCst) + 1;
+#[cfg(test)]
+pub(crate) fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
     let ts = current_timestamp_ms();
 
     let (status, data) = match req.action.as_str() {
-        "ping" => {
-            let active_sessions = with_registry(|reg| reg.active_sessions_count(ts as i64));
-            (
-                "ok".to_string(),
-                serde_json::json!({
-                    "pong": true,
-                    "service": "agentosd",
-                    "version": "0.2.0-substrate",
-                    "request_index": req_count,
-                    "server_time_ms": ts,
-                    "active_agent_sessions": active_sessions,
-                    "vault_unlocked": crate::vault::is_global_vault_unlocked(),
-                    "arch": std::env::consts::ARCH,
-                    "os": std::env::consts::OS
-                }),
-            )
-        }
-        "status" => {
-            let agents_count = with_registry(|reg| reg.list_agents().len());
-            (
-                "ok".to_string(),
-                serde_json::json!({
-                    "daemon_state": "running",
-                    "total_requests_served": req_count,
-                    "pid": std::process::id(),
-                    "transport": "loopback_and_uds",
-                    "persistence": "personal_agent_substrate_hub",
-                    "registered_agents_count": agents_count,
-                    "vault_unlocked": crate::vault::is_global_vault_unlocked()
-                }),
-            )
-        }
+        "ping" | "status" => (
+            "error".to_string(),
+            serde_json::json!({ "message": "agentosd runtime is disabled pending authenticated IPC" }),
+        ),
         "agent.register" => {
-            let agent_id = req.payload.get("agent_id").and_then(|v| v.as_str()).unwrap_or("unknown_agent");
-            let pubkey = req.payload.get("public_key_hash").and_then(|v| v.as_str()).unwrap_or("");
-            let manifest = req.payload.get("manifest").map(|v| v.to_string()).unwrap_or_else(|| "{}".to_string());
-            let sess_res = with_registry(|reg| reg.register_agent(agent_id, pubkey, &manifest, ts as i64));
-            match sess_res {
-                Ok(sess) => (
-                    "ok".to_string(),
-                    serde_json::json!({
-                        "session_token": sess.session_token,
-                        "agent_id": sess.agent_id,
-                        "expires_at": sess.expires_at,
-                        "registered": true
-                    }),
-                ),
-                Err(e) => ("error".to_string(), serde_json::json!({ "message": e })),
-            }
+            ("error".to_string(), serde_json::json!({
+                "message": "Agent registration is disabled until the transport can verify caller identity"
+            }))
         }
         "agent.verify" => {
             let token = req.session_token.as_deref().or_else(|| req.payload.get("session_token").and_then(|v| v.as_str())).unwrap_or("");
@@ -426,120 +397,16 @@ pub fn process_daemon_message(req: DaemonRequest) -> DaemonResponse {
     }
 }
 
-/// Generic client connection handler for any Read + Write stream.
-pub fn handle_generic_stream<S: Read + Write>(stream: S) -> std::io::Result<()> {
-    let mut reader = BufReader::new(stream);
-    let mut line = String::new();
-
-    while reader.read_line(&mut line)? > 0 {
-        let trimmed = line.trim();
-        if trimmed.is_empty() {
-            line.clear();
-            continue;
-        }
-
-        let response = match serde_json::from_str::<DaemonRequest>(trimmed) {
-            Ok(req) => process_daemon_message(req),
-            Err(e) => DaemonResponse {
-                id: "err".to_string(),
-                status: "error".to_string(),
-                timestamp_ms: current_timestamp_ms(),
-                data: serde_json::json!({ "error": format!("Invalid JSON request: {}", e) }),
-            },
-        };
-
-        let mut out_bytes = serde_json::to_vec(&response).unwrap_or_default();
-        out_bytes.push(b'\n');
-        reader.get_mut().write_all(&out_bytes)?;
-        reader.get_mut().flush()?;
-        line.clear();
-    }
-    Ok(())
-}
-
-/// Runs TCP loopback server loop.
-pub fn run_tcp_server(port: u16, running: Arc<AtomicBool>) -> std::io::Result<()> {
-    let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(&addr)?;
-    listener.set_nonblocking(true)?;
-
-    while running.load(Ordering::SeqCst) {
-        match listener.accept() {
-            Ok((stream, _)) => {
-                let _ = stream.set_nonblocking(false);
-                std::thread::spawn(move || {
-                    let _ = handle_generic_stream(stream);
-                });
-            }
-            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                std::thread::sleep(std::time::Duration::from_millis(50));
-            }
-            Err(e) => {
-                eprintln!("[agentosd-tcp] accept error: {:?}", e);
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-        }
-    }
-    Ok(())
-}
-
-/// Runs Unix domain socket server loop (if supported and path writable).
-#[cfg(unix)]
-pub fn run_uds_server(socket_path: &str, running: Arc<AtomicBool>) -> std::io::Result<()> {
-    if Path::new(socket_path).exists() {
-        let _ = std::fs::remove_file(socket_path);
-    }
-
-    let listener = UnixListener::bind(socket_path)?;
-    listener.set_nonblocking(true)?;
-
-    while running.load(Ordering::SeqCst) {
-        match listener.accept() {
-            Ok((stream, _)) => {
-                let _ = stream.set_nonblocking(false);
-                std::thread::spawn(move || {
-                    let _ = handle_generic_stream(stream);
-                });
-            }
-            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                std::thread::sleep(std::time::Duration::from_millis(50));
-            }
-            Err(e) => {
-                eprintln!("[agentosd-uds] accept error: {:?}", e);
-                std::thread::sleep(std::time::Duration::from_millis(100));
-            }
-        }
-    }
-
-    if Path::new(socket_path).exists() {
-        let _ = std::fs::remove_file(socket_path);
-    }
-    Ok(())
-}
-
-/// Starts dual listener (TCP loopback and optional UDS).
-pub fn run_daemon_dual(port: u16, socket_path: Option<&str>, running: Arc<AtomicBool>) -> std::io::Result<()> {
-    let r_uds = running.clone();
-    let uds_path_opt = socket_path.map(|s| s.to_string());
-
-    let uds_handle = std::thread::spawn(move || {
-        if let Some(ref path) = uds_path_opt {
-            #[cfg(unix)]
-            {
-                if let Err(e) = run_uds_server(path, r_uds) {
-                    eprintln!("[agentosd] UDS listener not started ({:?}), relying on TCP loopback", e);
-                }
-            }
-        }
-    });
-
-    let tcp_res = run_tcp_server(port, running);
-    let _ = uds_handle.join();
-    tcp_res
+#[cfg(test)]
+pub(crate) fn run_tcp_server(_port: u16, _running: Arc<AtomicBool>) -> std::io::Result<()> {
+    Err(std::io::Error::new(
+        std::io::ErrorKind::PermissionDenied,
+        "agentosd TCP runtime is disabled pending authenticated IPC",
+    ))
 }
 
 /// Helper client function to send a JSON request via TCP or UDS and read response.
-pub fn send_client_request(target: &str, request_json: &str) -> Result<String, String> {
+pub(crate) fn send_client_request(target: &str, request_json: &str) -> Result<String, String> {
     if target.starts_with("tcp:") || target.contains(':') {
         let addr = if target.starts_with("tcp:") {
             &target[4..]
@@ -610,9 +477,8 @@ mod tests {
         };
         let resp = process_daemon_message(ping_req);
         assert_eq!(resp.id, "req-1");
-        assert_eq!(resp.status, "ok");
-        assert_eq!(resp.data["pong"], true);
-        assert_eq!(resp.data["service"], "agentosd");
+        assert_eq!(resp.status, "error");
+        assert!(resp.data["message"].as_str().unwrap().contains("disabled"));
 
         let status_req = DaemonRequest {
             id: "req-2".to_string(),
@@ -622,159 +488,32 @@ mod tests {
             payload: Value::Null,
         };
         let resp2 = process_daemon_message(status_req);
-        assert_eq!(resp2.status, "ok");
-        assert_eq!(resp2.data["daemon_state"], "running");
+        assert_eq!(resp2.status, "error");
+        assert!(resp2.data["message"].as_str().unwrap().contains("disabled"));
     }
 
     #[test]
     fn test_daemon_tcp_loopback_roundtrip() {
-        let port = 29898;
-        let running = Arc::new(AtomicBool::new(true));
-        let running_clone = running.clone();
-
-        let server_thread = std::thread::spawn(move || {
-            let _ = run_tcp_server(port, running_clone);
-        });
-
-        std::thread::sleep(std::time::Duration::from_millis(100));
-
-        let req_json = serde_json::json!({
-            "id": "tcp-ipc-1",
-            "action": "eval_task",
-            "payload": {
-                "task_id": "task-tcp-101",
-                "goal": "Verify TCP system daemon persistence"
-            }
-        }).to_string();
-
-        let resp_json = send_client_request(&format!("127.0.0.1:{}", port), &req_json)
-            .expect("TCP socket IPC must succeed");
-        let resp: DaemonResponse = serde_json::from_str(&resp_json).expect("Valid JSON");
-        assert_eq!(resp.id, "tcp-ipc-1");
-        assert_eq!(resp.status, "ok");
-        assert_eq!(resp.data["task_id"], "task-tcp-101");
-
-        running.store(false, Ordering::SeqCst);
-        let _ = server_thread.join();
+        let err = run_tcp_server(29898, Arc::new(AtomicBool::new(true))).unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::PermissionDenied);
     }
 
     #[test]
-    fn test_daemon_multi_agent_substrate_hub() {
-        // 1. Register Agent A
-        let reg_a = process_daemon_message(DaemonRequest {
-            id: "msg-1".to_string(),
+    fn test_agent_registration_is_disabled_without_trusted_transport() {
+        let response = process_daemon_message(DaemonRequest {
+            id: "registration-attempt".to_string(),
             action: "agent.register".to_string(),
             agent_id: None,
             session_token: None,
             payload: serde_json::json!({
-                "agent_id": "org.agent.writer",
-                "public_key_hash": "sha256:key_a",
-                "manifest": { "name": "WriterAgent", "version": "1.0" }
+                "agent_id": "org.agent.spoofed",
+                "public_key_hash": "sha256:unverified",
+                "manifest": { "name": "SpoofedAgent", "version": "1.0" }
             }),
         });
-        assert_eq!(reg_a.status, "ok");
-        let token_a = reg_a.data["session_token"].as_str().unwrap().to_string();
 
-        // 2. Verify Agent A
-        let ver_a = process_daemon_message(DaemonRequest {
-            id: "msg-2".to_string(),
-            action: "agent.verify".to_string(),
-            agent_id: None,
-            session_token: Some(token_a.clone()),
-            payload: serde_json::Value::Null,
-        });
-        assert_eq!(ver_a.status, "ok");
-        assert_eq!(ver_a.data["valid"], true);
-        assert_eq!(ver_a.data["agent_id"], "org.agent.writer");
-
-        // 3. Request capability for Agent A
-        let req_cap = process_daemon_message(DaemonRequest {
-            id: "msg-3".to_string(),
-            action: "capability.request".to_string(),
-            agent_id: Some("org.agent.writer".to_string()),
-            session_token: Some(token_a.clone()),
-            payload: serde_json::json!({
-                "task_id": "task-hub-01",
-                "capability": "demo.note.read",
-                "scope": "synthetic.welcome"
-            }),
-        });
-        assert_eq!(req_cap.status, "ok");
-        assert_eq!(req_cap.data["granted"], true);
-
-        // 4. Invoke capability
-        let inv_cap = process_daemon_message(DaemonRequest {
-            id: "msg-4".to_string(),
-            action: "capability.invoke".to_string(),
-            agent_id: Some("org.agent.writer".to_string()),
-            session_token: Some(token_a.clone()),
-            payload: serde_json::json!({
-                "task_id": "task-hub-01",
-                "capability": "demo.note.read",
-                "scope": "synthetic.welcome"
-            }),
-        });
-        assert_eq!(inv_cap.status, "ok");
-        assert!(inv_cap.data["result"].as_str().unwrap().contains("合成示例便笺"));
-
-        // 5. Query Audit
-        let audit = process_daemon_message(DaemonRequest {
-            id: "msg-5".to_string(),
-            action: "audit.query".to_string(),
-            agent_id: None,
-            session_token: None,
-            payload: serde_json::Value::Null,
-        });
-        assert_eq!(audit.status, "ok");
-        assert!(audit.data["count"].as_u64().unwrap() > 0);
-
-        // 6. Test Vault actions via daemon
-        let temp_dir = std::env::temp_dir().join(format!("agentos_hub_vault_{}", current_timestamp_ms()));
-        let vault_file = temp_dir.join("vault_hub.enc");
-        let v_init = process_daemon_message(DaemonRequest {
-            id: "msg-6".to_string(),
-            action: "vault.init".to_string(),
-            agent_id: None,
-            session_token: None,
-            payload: serde_json::json!({
-                "vault_path": vault_file.to_str().unwrap(),
-                "passphrase": "substrate-hub-secret"
-            }),
-        });
-        assert_eq!(v_init.status, "ok");
-
-        // 7. Vault seal
-        let aad = BASE64.encode(b"task:task-hub-01");
-        let plaintext = BASE64.encode(b"My private note inside substrate vault");
-        let v_seal = process_daemon_message(DaemonRequest {
-            id: "msg-7".to_string(),
-            action: "vault.seal".to_string(),
-            agent_id: None,
-            session_token: None,
-            payload: serde_json::json!({
-                "aad_b64": aad,
-                "plaintext_b64": plaintext
-            }),
-        });
-        assert_eq!(v_seal.status, "ok");
-        let sealed_b64 = v_seal.data["sealed_b64"].as_str().unwrap();
-
-        // 8. Vault unseal
-        let v_unseal = process_daemon_message(DaemonRequest {
-            id: "msg-8".to_string(),
-            action: "vault.unseal".to_string(),
-            agent_id: None,
-            session_token: None,
-            payload: serde_json::json!({
-                "aad_b64": aad,
-                "sealed_b64": sealed_b64
-            }),
-        });
-        assert_eq!(v_unseal.status, "ok");
-        let decrypted_bytes = BASE64.decode(v_unseal.data["plaintext_b64"].as_str().unwrap()).unwrap();
-        assert_eq!(decrypted_bytes, b"My private note inside substrate vault");
-
-        let _ = std::fs::remove_dir_all(&temp_dir);
+        assert_eq!(response.status, "error");
+        assert!(response.data["message"].as_str().unwrap().contains("verify caller identity"));
     }
 
     #[test]

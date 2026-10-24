@@ -16,6 +16,9 @@ pub enum SyncedMemoryResult {
 
 impl AgentStore {
     pub fn open(path: &str) -> Result<Self> {
+        if path != ":memory:" && !cfg!(test) {
+            return Err(rusqlite::Error::InvalidPath(path.into()));
+        }
         let conn = Connection::open(path)?;
         conn.execute_batch(
             "PRAGMA journal_mode = WAL;
@@ -96,11 +99,7 @@ where
     }
     drop(lock);
 
-    let default_path = if cfg!(target_os = "android") {
-        "/data/local/tmp/agent_os_core.db"
-    } else {
-        "agent_os_core.db"
-    };
+    let default_path = ":memory:";
 
     let mut write_lock = GLOBAL_STORE_SINGLETON.write().unwrap();
     if write_lock.is_none() {
@@ -288,14 +287,31 @@ impl AgentStore {
 
     pub fn upsert_synced_task(&self, task: &Task) -> Result<bool> {
         let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare("SELECT updated_at FROM tasks WHERE id = ?1")?;
+        let mut stmt = conn.prepare("SELECT updated_at, title, status, execution_step, result, plan_json FROM tasks WHERE id = ?1")?;
         let mut rows = stmt.query(params![task.id])?;
         if let Some(row) = rows.next()? {
             let local_updated: i64 = row.get(0)?;
-            if local_updated >= task.updated_at {
+            let local_key = (
+                local_updated,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, i64>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, Option<String>>(5)?,
+            );
+            let plan_json = task.plan.as_ref().and_then(|p| serde_json::to_string(p).ok());
+            let remote_key = (
+                task.updated_at,
+                task.title.clone(),
+                task.status.as_str().to_string(),
+                task.execution_step as i64,
+                task.result.clone(),
+                plan_json.clone(),
+            );
+            // Timestamp wins first; equal timestamps use content ordering so replicas converge.
+            if local_key >= remote_key {
                 return Ok(false);
             }
-            let plan_json = task.plan.as_ref().and_then(|p| serde_json::to_string(p).ok());
             conn.execute(
                 "UPDATE tasks SET title = ?1, status = ?2, execution_step = ?3, result = ?4, plan_json = ?5, updated_at = ?6 WHERE id = ?7",
                 params![task.title, task.status.as_str(), task.execution_step as i64, task.result, plan_json, task.updated_at, task.id],
@@ -451,24 +467,31 @@ impl AgentStore {
             params![memory.id],
             |row| row.get(0),
         ).optional()?;
-        if deleted_at.is_some_and(|timestamp| timestamp >= memory.updated_at) {
-            return Ok(SyncedMemoryResult::Skipped);
-        }
         if deleted_at.is_some() {
-            tx.execute("DELETE FROM memory_tombstones WHERE id = ?1", params![memory.id])?;
-        }
-
-        let local_updated_at: Option<i64> = tx.query_row(
-            "SELECT updated_at FROM memories WHERE id = ?1",
-            params![memory.id],
-            |row| row.get(0),
-        ).optional()?;
-        if local_updated_at.is_some_and(|timestamp| timestamp >= memory.updated_at) {
             tx.commit()?;
             return Ok(SyncedMemoryResult::Skipped);
         }
 
-        let result = if local_updated_at.is_some() {
+        let local: Option<(i64, String, String, String, String)> = tx.query_row(
+            "SELECT updated_at, kind, content, source, source_reference FROM memories WHERE id = ?1",
+            params![memory.id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        ).optional()?;
+        let remote_key = (
+            memory.updated_at,
+            memory.kind.as_str(),
+            memory.content.as_str(),
+            memory.source.as_str(),
+            memory.source_reference.as_str(),
+        );
+        if local.as_ref().is_some_and(|(updated_at, kind, content, source, source_reference)| {
+            (*updated_at, kind.as_str(), content.as_str(), source.as_str(), source_reference.as_str()) >= remote_key
+        }) {
+            tx.commit()?;
+            return Ok(SyncedMemoryResult::Skipped);
+        }
+
+        let result = if local.is_some() {
             tx.execute(
                 "UPDATE memories SET kind = ?1, content = ?2, source = ?3, source_reference = ?4, updated_at = ?5 WHERE id = ?6",
                 params![memory.kind, memory.content, memory.source, memory.source_reference, memory.updated_at, memory.id],
@@ -501,7 +524,7 @@ impl AgentStore {
              ON CONFLICT(id) DO UPDATE SET deleted_at = MAX(deleted_at, excluded.deleted_at)",
             params![id, deleted_at],
         )?;
-        tx.execute("DELETE FROM memories WHERE id = ?1 AND updated_at <= ?2", params![id, deleted_at])?;
+        tx.execute("DELETE FROM memories WHERE id = ?1", params![id])?;
         tx.commit()?;
         Ok(is_newer)
     }
@@ -628,5 +651,44 @@ mod tests {
         let ranked = store.select_associative_memories("安排周一团队例会", 1, now + 200).unwrap();
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].id, m1.id);
+    }
+
+    #[test]
+    fn equal_timestamp_memory_conflicts_converge_deterministically() {
+        let left = AgentStore::open_in_memory().unwrap();
+        let right = AgentStore::open_in_memory().unwrap();
+        let left_record = MemoryRecord {
+            id: "shared-memory".to_string(), kind: "fact".to_string(), content: "zulu".to_string(),
+            source: "user".to_string(), source_reference: "left".to_string(), created_at: 1, updated_at: 42,
+        };
+        let right_record = MemoryRecord {
+            content: "alpha".to_string(), source_reference: "right".to_string(), ..left_record.clone()
+        };
+
+        left.upsert_synced_memory(&left_record).unwrap();
+        right.upsert_synced_memory(&right_record).unwrap();
+        left.upsert_synced_memory(&right_record).unwrap();
+        right.upsert_synced_memory(&left_record).unwrap();
+
+        assert_eq!(left.list_memories().unwrap()[0].content, "zulu");
+        assert_eq!(right.list_memories().unwrap()[0].content, "zulu");
+    }
+
+    #[test]
+    fn equal_timestamp_task_conflicts_converge_deterministically() {
+        let left = AgentStore::open_in_memory().unwrap();
+        let right = AgentStore::open_in_memory().unwrap();
+        let mut left_task = Task::new("shared-task", "zulu", 1);
+        left_task.updated_at = 42;
+        let mut right_task = Task::new("shared-task", "alpha", 1);
+        right_task.updated_at = 42;
+
+        left.upsert_synced_task(&left_task).unwrap();
+        right.upsert_synced_task(&right_task).unwrap();
+        left.upsert_synced_task(&right_task).unwrap();
+        right.upsert_synced_task(&left_task).unwrap();
+
+        assert_eq!(left.get_task("shared-task").unwrap().unwrap().title, "zulu");
+        assert_eq!(right.get_task("shared-task").unwrap().unwrap().title, "zulu");
     }
 }

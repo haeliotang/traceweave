@@ -10,7 +10,7 @@ from pathlib import Path
 from traceform.representation.feature_dataflow import analyze_source
 
 ROOT = Path(__file__).resolve().parents[1]
-NORMALIZER = ROOT / 'traceform/representation/normalizer.py'
+NORMALIZER = ROOT / 'research/traceform/representation/normalizer.py'
 
 SYNTHETIC = textwrap.dedent('''
     class N:
