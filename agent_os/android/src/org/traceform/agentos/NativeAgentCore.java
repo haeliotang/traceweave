@@ -196,11 +196,6 @@ public final class NativeAgentCore {
     // PHASE 10: AOSP SYSTEM DAEMON, SENSOR FUSION, VISION OCR, HARDWARE BROKER
     // =========================================================================
 
-    public static String queryDaemon(String socketPath, String requestJson) {
-        if (!IS_LOADED) throw new IllegalStateException("Native core not available");
-        return nativeQueryDaemon(socketPath, requestJson);
-    }
-
     public static String processSensorTelemetry(String telemetryJson) {
         if (!IS_LOADED) throw new IllegalStateException("Native core not available");
         return nativeProcessSensorTelemetry(telemetryJson);
@@ -325,7 +320,6 @@ public final class NativeAgentCore {
     public static native boolean nativeAnalyzeVoiceDirect(java.nio.ByteBuffer directBuffer, int sampleOffset, int sampleCount, float[] outMetrics);
     public static native String nativeClassifyVoiceIntent(String transcript);
 
-    public static native String nativeQueryDaemon(String socketPath, String requestJson);
     public static native String nativeProcessSensorTelemetry(String telemetryJson);
     public static native String nativeAnalyzeVisualScene(String sceneJson, String query);
     public static native String nativeParseVisualDocument(String ocrJson);

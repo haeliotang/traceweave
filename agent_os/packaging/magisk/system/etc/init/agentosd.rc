@@ -1,8 +1,1 @@
-# Personal Agent Substrate Android init service definition
-service agentosd /system/bin/agentosd --port 19898 --store-path /data/agentosd/store.db
-    class late_start
-    user system
-    group system
-    seclabel u:r:agentosd:s0
-    capabilities NET_BIND_SERVICE
-    writepid /dev/cpuset/system-background/tasks
+# Disabled: the Android Binder-only MVP does not register a standalone init service.

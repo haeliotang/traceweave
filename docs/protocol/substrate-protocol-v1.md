@@ -1,7 +1,9 @@
-# Substrate Protocol Specification v1.0
-**Status**: Stable / Standard  
-**Revision**: 1.0.0  
-**Target Architecture**: Personal Agent Substrate (Android / Linux / macOS)
+# Substrate Protocol Specification v1.0 (Historical Design)
+**Status**: Experimental; TCP/UDS transport is disabled in the Android Binder-only MVP
+**Revision**: 1.0.0
+**Target Architecture**: Historical cross-platform proposal; only Android Binder is currently supported
+
+> Current implementation scope is defined by [the Android Binder-only MVP decision](../agent_os_android_binder_mvp.md). This document's TCP/UDS envelope and cross-device behavior are design material, not a running service contract.
 
 ---
 
@@ -15,25 +17,25 @@ The **Substrate Protocol** defines a vendor-neutral, non-custodial execution and
 2. **Just-In-Time (JIT) Least Privilege**: Capabilities are granted on-demand with strict temporal bounds (default 5 minutes TTL) and scoped access limits. No permanent or blanket permissions are ever granted.
 3. **Decoupled Cryptographic Vault**: Data encryption keys (DEK) are enveloped by a user master key (UMK) derived via PBKDF2-HMAC-SHA256 (600,000 rounds). Data retention is independent of any single APK or application lifecycle.
 4. **Append-Only Tamper-Evident Auditability**: Every authorization grant, capability invocation, revocation, and denial creates an immutable audit trail tagged with the originating agent identity.
-5. **Deterministic Cross-Device Convergence**: Task states and memories sync peer-to-peer using Last-Writer-Wins (CRDT LWW) conflict resolution over encrypted payloads.
+5. **User-Mediated Portability**: The Android MVP supports encrypted archive export/import initiated by the user. Automatic cross-device synchronization is not implemented.
 
 ---
 
 ## 2. Transport Layer Bindings
 
-The protocol supports two native transport channels:
+The current MVP supports one transport:
 
 ### 2.1 Android Local IPC: AIDL Binder
 - **Service Name**: `org.traceform.agentos.SubstrateService`
 - **Action Intent**: `org.traceform.agentos.action.BIND_SUBSTRATE`
-- **Permission**: `org.traceform.agentos.BIND_SUBSTRATE`
+- **Authentication**: Binder caller UID, package ownership, and the installed APK signing certificate SHA-256; capability use still requires explicit user approval
 - **Interface Definition**: `org.traceform.agentos.IAgentSubstrate`
 
 ```aidl
 package org.traceform.agentos;
 
 interface IAgentSubstrate {
-    String registerAgent(String agentPackage, String agentPublicKeyHash, String manifestJson);
+    String registerAgent(String agentPackage, String legacyAgentPublicKeyHash, String manifestJson);
     String listCapabilities(String sessionToken, String taskId);
     boolean requestCapability(String sessionToken, String taskId, String capability, String scope);
     String invokeCapability(String sessionToken, String taskId, String capability, String scope);
@@ -43,7 +45,12 @@ interface IAgentSubstrate {
 }
 ```
 
-### 2.2 Cross-Platform Stream: Line-Delimited JSON over TCP / UDS
+The Binder host derives an Agent identity from the sole package associated with the caller UID and that package's current APK signer SHA-256. It rechecks UID, package ownership, and signer on each call. The `legacyAgentPublicKeyHash` argument is ignored and must not be used as proof of key ownership.
+
+### 2.2 Reserved: Cross-Platform Stream over TCP / UDS
+
+This transport is not implemented or available in the MVP. The Rust `agentosd` binary exits disabled, and the Python client fails closed. Do not treat the following historical port and socket values as active endpoints.
+
 - **TCP Default Port**: `19898` (loopback / local network)
 - **Unix Domain Socket (UDS)**: `/tmp/agentosd.sock` or `/data/local/tmp/agentosd.sock`
 - **Framing**: UTF-8 encoded JSON strings delimited by newline (`\n`, `0x0A`).

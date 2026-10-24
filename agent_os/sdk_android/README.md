@@ -9,7 +9,7 @@ Third-Party Agent APK               Personal Agent Substrate (AgentOS)
 ┌───────────────────────┐           ┌──────────────────────────────────┐
 │  SubstrateClient      │           │  SubstrateService                │
 │  (sdk_android)        │ ──AIDL──> │  - CapabilityBroker (JIT Grants) │
-│                       │   IPC     │  - AgentIdentityRegistry         │
+│                       │   IPC     │  - UID/package/signer binding    │
 │  AgentManifest.java   │           │  - Encrypted Personal Vault      │
 └───────────────────────┘           └──────────────────────────────────┘
 ```
@@ -31,7 +31,7 @@ In your third-party `AndroidManifest.xml`, declare query intent and Substrate pe
 
 ```
 
-The current prototype verifies that the registering package belongs to the Binder caller UID; the legacy key-hash argument is retained for API compatibility and is not used as proof of identity. Each registration receives a private task context. Requesting a capability posts a system notification; the user must open it and approve the five-minute grant. Denials and notification-permission failures fail closed. Session tokens are secrets and must not be logged.
+The host derives each Agent identity as `android-package:<package>:sha256:<current-signer-fingerprint>`; each Binder session is separately bound to the caller UID. It verifies that the package is the sole package associated with that UID, reads the installed APK signing certificate through `PackageManager`, and rechecks caller UID, package ownership, and signer fingerprint on every session call. The manifest's Agent ID is descriptive metadata, not identity. The legacy `agentPublicKeyHash` AIDL argument remains in the wire shape but is ignored; it is not proof of key ownership. Each APK package is one Agent identity, so multiple in-app agents share grants and audit identity. Shared-UID packages and APKs with multiple current signers are unsupported. A signer change creates a new identity and requires registration again. Requesting a capability posts a system notification that shows the package and signer SHA-256; the user must approve the five-minute grant. Denials and notification-permission failures fail closed. Session tokens are secrets and must not be logged.
 
 ## Usage Example
 
@@ -48,12 +48,12 @@ client.connect(new SubstrateCallback.ConnectionListener() {
     @Override
     public void onConnected() {
         // 3. Declare manifest and register
-        AgentManifest manifest = new AgentManifest.Builder("com.example.myagent", "My Agent")
+        AgentManifest manifest = new AgentManifest.Builder(context.getPackageName(), "My Agent")
                 .description("Specialized autonomous helper agent")
                 .requestCapability("demo.note.read", "synthetic.welcome", "Inspect daily notes")
                 .build();
 
-        client.registerAgent("com.example.myagent", "", manifest,
+        client.registerAgent(manifest,
             new SubstrateCallback.ActionCallback<String>() {
                 @Override
                 public void onSuccess(String sessionToken) {

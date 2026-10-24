@@ -31,7 +31,7 @@ from .models import (
 
 
 class SubstrateClient:
-    """Synchronous client interface for communicating with agentosd Substrate Hub."""
+    """Legacy client for the disabled TCP daemon; unsupported by the Android MVP."""
 
     def __init__(
         self,
@@ -55,14 +55,10 @@ class SubstrateClient:
         self.close()
 
     def connect(self) -> None:
-        """Establish TCP connection to the Substrate daemon."""
-        try:
-            self._sock = socket.create_connection((self.host, self.port), timeout=self.timeout)
-            self._file_reader = self._sock.makefile("r", encoding="utf-8")
-        except OSError as e:
-            raise SubstrateConnectionError(
-                f"Failed to connect to Substrate hub at {self.host}:{self.port}: {e}"
-            ) from e
+        """Fail closed because the Android Binder-only MVP has no TCP daemon."""
+        raise SubstrateConnectionError(
+            "The Android Binder-only MVP does not expose the Rust TCP/UDS daemon; use the Android Binder SDK."
+        )
 
     def close(self) -> None:
         """Close TCP connection."""

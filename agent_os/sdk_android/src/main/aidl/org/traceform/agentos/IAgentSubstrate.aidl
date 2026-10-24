@@ -3,8 +3,9 @@
 package org.traceform.agentos;
 
 interface IAgentSubstrate {
-    // Agent registration: returns session token
-    String registerAgent(String agentPackage, String agentPublicKeyHash, String manifestJson);
+    // The host derives identity from the Binder caller UID, package, and installed APK signer.
+    // The legacy claim remains in the wire shape for compatibility and is ignored.
+    String registerAgent(String agentPackage, String legacyAgentPublicKeyHash, String manifestJson);
 
     // List available capabilities and active grants for task
     String listCapabilities(String sessionToken, String taskId);

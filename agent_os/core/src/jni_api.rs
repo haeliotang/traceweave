@@ -962,28 +962,6 @@ pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeClassify
 // =========================================================================
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeQueryDaemon(
-    mut env: JNIEnv,
-    _class: JClass,
-    socket_path: JString,
-    request_json: JString,
-) -> jstring {
-    let path_str: String = match env.get_string(&socket_path) {
-        Ok(s) => s.into(),
-        Err(_) => return std::ptr::null_mut(),
-    };
-    let req_str: String = match env.get_string(&request_json) {
-        Ok(s) => s.into(),
-        Err(_) => return std::ptr::null_mut(),
-    };
-
-    let result = crate::daemon::send_client_request(&path_str, &req_str)
-        .unwrap_or_else(|e| serde_json::json!({ "status": "error", "message": e }).to_string());
-
-    env.new_string(result).map(|js| js.into_raw()).unwrap_or(std::ptr::null_mut())
-}
-
-#[no_mangle]
 pub extern "system" fn Java_org_traceform_agentos_NativeAgentCore_nativeProcessSensorTelemetry(
     mut env: JNIEnv,
     _class: JClass,

@@ -19,7 +19,8 @@ public final class CapabilityApprovalActivity extends Activity {
 
         new AlertDialog.Builder(this)
             .setTitle("Allow Agent capability?")
-            .setMessage(request.packageName + " requests " + request.capability + "\nScope: " + request.scope
+            .setMessage(request.packageName + "\nSigner SHA-256: " + request.signerSha256
+                + "\n\nRequests " + request.capability + "\nScope: " + request.scope
                 + "\nTask: " + request.taskTitle + "\n\nAccess will last 5 minutes.")
             .setPositiveButton("Allow for 5 minutes", (dialog, which) ->
                 SubstrateService.resolvePendingApproval(request.id, true))

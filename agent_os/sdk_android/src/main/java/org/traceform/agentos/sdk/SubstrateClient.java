@@ -22,6 +22,7 @@ public class SubstrateClient {
 
     private static final String SUBSTRATE_PACKAGE = "org.traceform.agentos";
     private static final String SUBSTRATE_ACTION = "org.traceform.agentos.action.BIND_SUBSTRATE";
+    private static final String IDENTITY_SCHEME = "android-package-signer-sha256-v1";
 
     private final Context context;
     private ExecutorService executor;
@@ -31,6 +32,7 @@ public class SubstrateClient {
     private volatile boolean isBound = false;
     private volatile String activeSessionToken;
     private volatile String activeTaskId;
+    private volatile String activeAgentIdentity;
 
     private volatile SubstrateCallback.ConnectionListener connectionListener;
 
@@ -49,6 +51,7 @@ public class SubstrateClient {
             substrateService = null;
             activeSessionToken = null;
             activeTaskId = null;
+            activeAgentIdentity = null;
             if (connectionListener != null) {
                 mainHandler.post(() -> connectionListener.onDisconnected());
             }
@@ -110,6 +113,7 @@ public class SubstrateClient {
             substrateService = null;
             activeSessionToken = null;
             activeTaskId = null;
+            activeAgentIdentity = null;
         }
         executor.shutdown();
     }
@@ -126,30 +130,50 @@ public class SubstrateClient {
         return activeTaskId;
     }
 
+    public String getActiveAgentIdentity() {
+        return activeAgentIdentity;
+    }
+
     // =========================================================================
     // Synchronous Methods (Must run off main thread)
     // =========================================================================
 
-    public String registerAgentSync(String pkg, String keyHash, AgentManifest manifest) throws SubstrateException {
+    public String registerAgentSync(AgentManifest manifest) throws SubstrateException {
+        return registerAgentSync(context.getPackageName(), manifest);
+    }
+
+    public String registerAgentSync(String pkg, AgentManifest manifest) throws SubstrateException {
+        if (!context.getPackageName().equals(pkg)) {
+            throw new SubstrateException.AuthenticationException("An Android agent can register only its own package");
+        }
         ensureConnected();
         try {
-            JSONObject response = new JSONObject(substrateService.registerAgent(pkg, keyHash, manifest.toJsonString()));
+            JSONObject response = new JSONObject(substrateService.registerAgent(pkg, "", manifest.toJsonString()));
             if (!"ok".equals(response.optString("status"))) {
                 throw new SubstrateException.AuthenticationException(response.optString("message", "Agent registration failed"));
             }
             String token = response.optString("session_token", "");
             String taskId = response.optString("default_task_id", "");
-            if (token.isEmpty() || taskId.isEmpty()) {
+            String agentIdentity = response.optString("agent_identity", "");
+            if (token.isEmpty() || taskId.isEmpty() || agentIdentity.isEmpty()
+                    || !IDENTITY_SCHEME.equals(response.optString("identity_scheme"))) {
                 throw new SubstrateException.AuthenticationException("Agent registration response is incomplete");
             }
             this.activeSessionToken = token;
             this.activeTaskId = taskId;
+            this.activeAgentIdentity = agentIdentity;
             return token;
         } catch (org.json.JSONException e) {
             throw new SubstrateException.AuthenticationException("Invalid registration response from Substrate");
         } catch (RemoteException e) {
             throw new SubstrateException("IPC failure during registerAgent", e);
         }
+    }
+
+    @Deprecated
+    public String registerAgentSync(String pkg, String ignoredAgentPublicKeyHash, AgentManifest manifest)
+            throws SubstrateException {
+        return registerAgentSync(pkg, manifest);
     }
 
     public String listCapabilitiesSync(String taskId) throws SubstrateException {
@@ -214,15 +238,25 @@ public class SubstrateClient {
     // Asynchronous Methods with UI Handler dispatch
     // =========================================================================
 
-    public void registerAgent(String pkg, String keyHash, AgentManifest manifest, SubstrateCallback.ActionCallback<String> callback) {
+    public void registerAgent(AgentManifest manifest, SubstrateCallback.ActionCallback<String> callback) {
+        registerAgent(context.getPackageName(), manifest, callback);
+    }
+
+    public void registerAgent(String pkg, AgentManifest manifest, SubstrateCallback.ActionCallback<String> callback) {
         executeAsync(() -> {
             try {
-                String token = registerAgentSync(pkg, keyHash, manifest);
+                String token = registerAgentSync(pkg, manifest);
                 mainHandler.post(() -> callback.onSuccess(token));
             } catch (Throwable t) {
                 mainHandler.post(() -> callback.onError(t));
             }
         });
+    }
+
+    @Deprecated
+    public void registerAgent(String pkg, String ignoredAgentPublicKeyHash, AgentManifest manifest,
+                              SubstrateCallback.ActionCallback<String> callback) {
+        registerAgent(pkg, manifest, callback);
     }
 
     public void requestCapability(String taskId, String capability, String scope, SubstrateCallback.ActionCallback<Boolean> callback) {
@@ -280,6 +314,7 @@ public class SubstrateClient {
             substrateService = null;
             activeSessionToken = null;
             activeTaskId = null;
+            activeAgentIdentity = null;
         }
         if (listener != null) {
             mainHandler.post(() -> listener.onError(new SubstrateException(message)));

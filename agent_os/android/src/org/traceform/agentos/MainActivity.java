@@ -426,35 +426,12 @@ public final class MainActivity extends Activity {
 
         LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText(en ? "agentosd disabled\nNot deployed\nTap to confirm unavailable" : "agentosd 已禁用\n未部署\n点击确认不可用");
+        daemonInfo.setText(en ? "Standalone daemon disabled\nCross-app path: Binder" : "独立守护进程已停用\n跨应用通道：Binder");
         daemonInfo.setTextSize(10);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
         daemonInfo.setPadding(0, dp(4), 0, 0);
         daemonCard.addView(daemonInfo);
-
-        daemonCard.setOnClickListener(v -> {
-            daemonInfo.setText(en ? "agentosd · 127.0.0.1:19898\nChecking..." : "agentosd · 127.0.0.1:19898\n正在探测…");
-            new Thread(() -> {
-                long t0 = System.currentTimeMillis();
-                org.json.JSONObject pingResp = AgentSystemBridge.getInstance().ping();
-                long latencyMs = Math.max(1, System.currentTimeMillis() - t0);
-                runOnUiThread(() -> {
-                    org.json.JSONObject data = pingResp.optJSONObject("data");
-                    boolean active = "ok".equals(pingResp.optString("status"))
-                        && data != null && data.optBoolean("pong");
-                    if (active) {
-                        daemonInfo.setText("agentosd · 127.0.0.1:19898\n"
-                                + (en ? "IPC: " + latencyMs + " ms · Active" : "IPC: " + latencyMs + " ms · 活跃"));
-                        Toast.makeText(this, en ? "agentosd responded to ping" : "agentosd 已响应探测", Toast.LENGTH_SHORT).show();
-                    } else {
-                        String message = pingResp.optString("message", en ? "No valid daemon response" : "未收到有效守护进程响应");
-                        daemonInfo.setText((en ? "agentosd unavailable\n" : "agentosd 不可用\n") + message);
-                        Toast.makeText(this, (en ? "Daemon unavailable: " : "守护进程不可用：") + message, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }).start();
-        });
 
         LinearLayout gridRow2 = createGridRow(page);
         LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "Encrypted Archive" : "加密归档", 0xFF2E7D32);
@@ -812,21 +789,6 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
         hideLp.setMargins(dp(4), 0, 0, 0);
         autoBtnRow.addView(hideFloatingBtn, hideLp);
-
-        Button pingDaemonBtn = createCompactActionButton(en ? "Ping Daemon" : "Ping 守护", 0xFFF1F5F9, 0xFF334155, v -> new Thread(() -> {
-            org.json.JSONObject resp = AgentSystemBridge.getInstance().ping();
-            runOnUiThread(() -> {
-                org.json.JSONObject data = resp.optJSONObject("data");
-                boolean active = "ok".equals(resp.optString("status")) && data != null && data.optBoolean("pong");
-                String message = active
-                    ? (en ? "Daemon responded: " : "守护进程已响应：") + data.optString("service", "agentosd")
-                    : (en ? "Daemon unavailable: " : "守护进程不可用：") + resp.optString("message", "No valid response");
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            });
-        }).start());
-        LinearLayout.LayoutParams pingLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
-        pingLp.setMargins(dp(4), 0, 0, 0);
-        autoBtnRow.addView(pingDaemonBtn, pingLp);
 
         root.addView(autoBtnRow);
 

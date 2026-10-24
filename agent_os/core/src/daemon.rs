@@ -1,7 +1,3 @@
-use std::io::{BufRead, BufReader, Write};
-use std::net::TcpStream;
-#[cfg(unix)]
-use std::os::unix::net::UnixStream;
 #[cfg(test)]
 use std::sync::atomic::AtomicBool;
 #[cfg(test)]
@@ -403,63 +399,6 @@ pub(crate) fn run_tcp_server(_port: u16, _running: Arc<AtomicBool>) -> std::io::
         std::io::ErrorKind::PermissionDenied,
         "agentosd TCP runtime is disabled pending authenticated IPC",
     ))
-}
-
-/// Helper client function to send a JSON request via TCP or UDS and read response.
-pub(crate) fn send_client_request(target: &str, request_json: &str) -> Result<String, String> {
-    if target.starts_with("tcp:") || target.contains(':') {
-        let addr = if target.starts_with("tcp:") {
-            &target[4..]
-        } else {
-            target
-        };
-        let mut stream = TcpStream::connect(addr)
-            .map_err(|e| format!("Failed to connect to TCP {}: {}", addr, e))?;
-
-        let mut payload = request_json.trim().as_bytes().to_vec();
-        payload.push(b'\n');
-        stream.write_all(&payload)
-            .map_err(|e| format!("Write failed: {}", e))?;
-        stream.flush()
-            .map_err(|e| format!("Flush failed: {}", e))?;
-
-        let mut reader = BufReader::new(stream);
-        let mut response_line = String::new();
-        reader.read_line(&mut response_line)
-            .map_err(|e| format!("Read failed: {}", e))?;
-
-        if response_line.trim().is_empty() {
-            return Err("Empty response from agentosd".to_string());
-        }
-        Ok(response_line.trim().to_string())
-    } else {
-        #[cfg(unix)]
-        {
-            let mut stream = UnixStream::connect(target)
-                .map_err(|e| format!("Failed to connect to UDS {}: {}", target, e))?;
-
-            let mut payload = request_json.trim().as_bytes().to_vec();
-            payload.push(b'\n');
-            stream.write_all(&payload)
-                .map_err(|e| format!("Write failed: {}", e))?;
-            stream.flush()
-                .map_err(|e| format!("Flush failed: {}", e))?;
-
-            let mut reader = BufReader::new(stream);
-            let mut response_line = String::new();
-            reader.read_line(&mut response_line)
-                .map_err(|e| format!("Read failed: {}", e))?;
-
-            if response_line.trim().is_empty() {
-                return Err("Empty response from agentosd".to_string());
-            }
-            Ok(response_line.trim().to_string())
-        }
-        #[cfg(not(unix))]
-        {
-            Err("UNIX sockets unsupported on this platform".to_string())
-        }
-    }
 }
 
 #[cfg(test)]

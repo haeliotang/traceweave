@@ -6,7 +6,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -16,6 +18,8 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class SubstrateService extends Service {
     private static final String TAG = "SubstrateService";
+    private static final String IDENTITY_SCHEME = "android-package-signer-sha256-v1";
     public static final String ACTION_BIND_SUBSTRATE = "org.traceform.agentos.action.BIND_SUBSTRATE";
     static final String ACTION_APPROVE_CAPABILITY = "org.traceform.agentos.action.APPROVE_CAPABILITY";
     private static final String APPROVAL_CHANNEL = "agent_capability_approval";
@@ -46,14 +51,19 @@ public class SubstrateService extends Service {
         final String token;
         final String packageName;
         final int callerUid;
+        final String signerSha256;
+        final String agentIdentity;
         final String manifest;
         final String taskId;
         final long createdAt;
 
-        AgentSession(String token, String packageName, int callerUid, String manifest, String taskId, long createdAt) {
+        AgentSession(String token, String packageName, int callerUid, String signerSha256, String agentIdentity,
+                     String manifest, String taskId, long createdAt) {
             this.token = token;
             this.packageName = packageName;
             this.callerUid = callerUid;
+            this.signerSha256 = signerSha256;
+            this.agentIdentity = agentIdentity;
             this.manifest = manifest;
             this.taskId = taskId;
             this.createdAt = createdAt;
@@ -63,6 +73,7 @@ public class SubstrateService extends Service {
     static final class PendingCapabilityApproval {
         final String id;
         final String packageName;
+        final String signerSha256;
         final String taskTitle;
         final String capability;
         final String scope;
@@ -70,9 +81,11 @@ public class SubstrateService extends Service {
         final AtomicBoolean resolved = new AtomicBoolean();
         volatile boolean approved;
 
-        PendingCapabilityApproval(String id, String packageName, String taskTitle, String capability, String scope) {
+        PendingCapabilityApproval(String id, String packageName, String signerSha256, String taskTitle,
+                                  String capability, String scope) {
             this.id = id;
             this.packageName = packageName;
+            this.signerSha256 = signerSha256;
             this.taskTitle = taskTitle;
             this.capability = capability;
             this.scope = scope;
@@ -81,12 +94,17 @@ public class SubstrateService extends Service {
 
     private final IAgentSubstrate.Stub binder = new IAgentSubstrate.Stub() {
         @Override
-        public String registerAgent(String agentPackage, String agentPublicKeyHash, String manifestJson) throws RemoteException {
+        public String registerAgent(String agentPackage, String legacyAgentPublicKeyHash, String manifestJson) throws RemoteException {
             try {
                 int callerUid = Binder.getCallingUid();
                 if (agentPackage == null || agentPackage.trim().isEmpty() || agentPackage.length() > 255
                         || !packageBelongsToUid(agentPackage, callerUid)) {
                     throw new SecurityException("Agent package does not belong to the calling application");
+                }
+                String signerSha256 = currentSignerSha256(agentPackage);
+                String agentIdentity = "android-package:" + agentPackage + ":sha256:" + signerSha256;
+                if (legacyAgentPublicKeyHash != null && !legacyAgentPublicKeyHash.trim().isEmpty()) {
+                    Log.w(TAG, "Ignoring caller-supplied Agent key hash; Android package signing defines MVP identity");
                 }
                 if (manifestJson == null || manifestJson.length() > 64 * 1024) {
                     throw new IllegalArgumentException("Agent manifest is missing or too large");
@@ -107,14 +125,18 @@ public class SubstrateService extends Service {
                         }
                     }
                     if (taskId == null) taskId = store.createTask("Agent task: " + agentPackage).id;
-                    sessions.put(token, new AgentSession(token, agentPackage, callerUid, manifestJson, taskId, now));
+                    sessions.put(token, new AgentSession(token, agentPackage, callerUid, signerSha256,
+                        agentIdentity, manifestJson, taskId, now));
                 }
-                store.appendTaskEvent(taskId, "agent_registered:" + agentPackage);
+                store.appendTaskEvent(taskId, "agent_registered:" + agentIdentity);
 
                 JSONObject response = new JSONObject();
                 response.put("status", "ok");
                 response.put("session_token", token);
                 response.put("agent_package", agentPackage);
+                response.put("agent_identity", agentIdentity);
+                response.put("identity_scheme", IDENTITY_SCHEME);
+                response.put("agent_signer_sha256", signerSha256);
                 response.put("default_task_id", taskId);
                 response.put("timestamp", now);
                 return response.toString();
@@ -149,7 +171,7 @@ public class SubstrateService extends Service {
             AgentSession session = requireSession(sessionToken);
             String effectiveTaskId = requireOwnedTask(session, taskId);
             if (capability == null || scope == null || capability.length() > 128 || scope.length() > 512) {
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 return false;
             }
             boolean available = false;
@@ -160,7 +182,7 @@ public class SubstrateService extends Service {
                 }
             }
             if (!available) {
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 return false;
             }
             AgentStore.Task task;
@@ -172,33 +194,33 @@ public class SubstrateService extends Service {
             if (task == null) throw new RemoteException("Agent task does not exist");
 
             PendingCapabilityApproval approval = new PendingCapabilityApproval(UUID.randomUUID().toString(),
-                session.packageName, task.title, capability, scope);
+                session.packageName, session.signerSha256, task.title, capability, scope);
             if (!APPROVAL_ACTIVE.compareAndSet(false, true)) {
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 return false;
             }
             PENDING_APPROVALS.put(approval.id, approval);
             boolean approved = false;
             try {
                 if (!postApprovalNotification(approval)) {
-                    broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                    broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                     return false;
                 }
                 approved = approval.result.await(APPROVAL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                     && approval.approved && approval.resolved.get();
                 if (approved) {
-                    broker.grant(session.packageName, effectiveTaskId, capability, scope);
-                    Log.i(TAG, "User approved capability " + capability + " for " + session.packageName);
+                    broker.grant(session.agentIdentity, effectiveTaskId, capability, scope);
+                    Log.i(TAG, "User approved capability " + capability + " for " + session.agentIdentity);
                     return true;
                 }
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 return false;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 return false;
             } catch (Exception e) {
-                broker.deny(session.packageName, effectiveTaskId, capability, scope);
+                broker.deny(session.agentIdentity, effectiveTaskId, capability, scope);
                 Log.w(TAG, "Capability approval failed: " + e.getMessage());
                 return false;
             } finally {
@@ -213,7 +235,7 @@ public class SubstrateService extends Service {
             AgentSession session = requireSession(sessionToken);
             String effectiveTaskId = requireOwnedTask(session, taskId);
             try {
-                return broker.invoke(session.packageName, effectiveTaskId, capability, scope);
+                return broker.invoke(session.agentIdentity, effectiveTaskId, capability, scope);
             } catch (Exception e) {
                 Log.e(TAG, "Invoke failed: " + e.getMessage());
                 throw new RemoteException(e.getMessage());
@@ -224,7 +246,7 @@ public class SubstrateService extends Service {
         public boolean revokeCapability(String sessionToken, String taskId, String capability, String scope) throws RemoteException {
             AgentSession session = requireSession(sessionToken);
             String effectiveTaskId = requireOwnedTask(session, taskId);
-            return broker.revoke(session.packageName, effectiveTaskId, capability, scope);
+            return broker.revoke(session.agentIdentity, effectiveTaskId, capability, scope);
         }
 
         @Override
@@ -237,7 +259,7 @@ public class SubstrateService extends Service {
                 JSONObject response = new JSONObject();
                 response.put("status", "ok");
                 response.put("taskId", effectiveTaskId);
-                response.put("agent", session.packageName);
+                response.put("agent", session.agentIdentity);
                 JSONArray arr = new JSONArray();
                 for (String event : events) arr.put(event);
                 response.put("events", arr);
@@ -257,6 +279,7 @@ public class SubstrateService extends Service {
                 response.put("service", "PersonalAgentSubstrate");
                 response.put("session_valid", true);
                 response.put("agent_package", session.packageName);
+                response.put("agent_identity", session.agentIdentity);
                 response.put("server_time_ms", System.currentTimeMillis());
                 return response.toString();
             } catch (Exception e) {
@@ -269,11 +292,32 @@ public class SubstrateService extends Service {
 
     private boolean packageBelongsToUid(String packageName, int uid) {
         String[] packages = getPackageManager().getPackagesForUid(uid);
-        if (packages == null) return false;
-        for (String candidate : packages) {
-            if (packageName.equals(candidate)) return true;
+        return packages != null && packages.length == 1 && packageName.equals(packages[0]);
+    }
+
+    private String currentSignerSha256(String packageName)
+            throws PackageManager.NameNotFoundException, NoSuchAlgorithmException {
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
+        PackageInfo packageInfo = getPackageManager().getPackageInfo(packageName, flags);
+        Signature[] signers;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            signers = packageInfo.signingInfo == null ? null : packageInfo.signingInfo.getApkContentsSigners();
+        } else {
+            signers = packageInfo.signatures;
         }
-        return false;
+        if (signers == null || signers.length != 1) {
+            throw new SecurityException("MVP agents must have exactly one current APK signing certificate");
+        }
+
+        byte[] digest = MessageDigest.getInstance("SHA-256").digest(signers[0].toByteArray());
+        StringBuilder fingerprint = new StringBuilder(digest.length * 2);
+        for (byte value : digest) {
+            int unsigned = value & 0xff;
+            fingerprint.append("0123456789abcdef".charAt(unsigned >>> 4));
+            fingerprint.append("0123456789abcdef".charAt(unsigned & 0x0f));
+        }
+        return fingerprint.toString();
     }
 
     private AgentSession requireSession(String token) throws RemoteException {
@@ -281,6 +325,21 @@ public class SubstrateService extends Service {
         AgentSession session = token == null ? null : sessions.get(token);
         if (session == null || session.callerUid != callerUid) {
             throw new RemoteException("Invalid substrate session token for caller");
+        }
+        if (!packageBelongsToUid(session.packageName, callerUid)) {
+            sessions.remove(token);
+            throw new RemoteException("Agent package no longer belongs to the Binder caller UID");
+        }
+        try {
+            if (!session.signerSha256.equals(currentSignerSha256(session.packageName))) {
+                sessions.remove(token);
+                throw new RemoteException("Agent package signing identity changed; register again");
+            }
+        } catch (RemoteException error) {
+            throw error;
+        } catch (Exception error) {
+            sessions.remove(token);
+            throw new RemoteException("Unable to verify Agent package signing identity");
         }
         if (System.currentTimeMillis() - session.createdAt > SESSION_EXPIRY_MILLIS) {
             sessions.remove(token);
