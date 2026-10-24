@@ -55,7 +55,7 @@ final class LocalNotificationProvider implements CapabilityProvider {
         }
 
         long now = System.currentTimeMillis();
-        int notificationId = Math.abs(taskId.hashCode());
+        int notificationId = taskId.hashCode() & Integer.MAX_VALUE;
         String notificationTitle = "Agent OS 任务通知";
         String notificationText = "任务 [" + taskId.substring(0, Math.min(8, taskId.length())) + "] 正在推进本地执行。";
 

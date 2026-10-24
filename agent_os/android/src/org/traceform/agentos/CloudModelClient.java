@@ -153,6 +153,9 @@ final class CloudModelClient {
         if (stepsArr.length() == 0) {
             throw new IllegalStateException("Cloud model returned empty steps");
         }
+        if (stepsArr.length() > AgentStore.MAX_DYNAMIC_STEPS) {
+            throw new IllegalStateException("Cloud model returned too many steps");
+        }
 
         Map<String, Set<String>> validScopesByCapability = new HashMap<>();
         for (CapabilityDescriptor descriptor : availableCaps) {
@@ -187,6 +190,9 @@ final class CloudModelClient {
 
         // Ensure final step is builtin synthesis
         if (!steps.get(steps.size() - 1).isBuiltin()) {
+            if (steps.size() >= AgentStore.MAX_DYNAMIC_STEPS) {
+                throw new IllegalStateException("Cloud model returned too many steps");
+            }
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
                 "端侧综合推理报告",

@@ -107,6 +107,10 @@ public final class VoiceInteractionManager {
             } catch (Exception ignored) {}
 
             if (record == null || record.getState() != AudioRecord.STATE_INITIALIZED) {
+                if (record != null) {
+                    record.release();
+                    record = null;
+                }
                 record = new AudioRecord(
                         MediaRecorder.AudioSource.MIC,
                         SAMPLE_RATE,
@@ -122,8 +126,9 @@ public final class VoiceInteractionManager {
                 return false;
             }
 
-            mAudioRecord = record;
-            mAudioRecord.startRecording();
+            final AudioRecord activeRecord = record;
+            mAudioRecord = activeRecord;
+            activeRecord.startRecording();
             mIsRecording = true;
 
             // DirectByteBuffer for zero-copy JNI transfer
@@ -131,7 +136,13 @@ public final class VoiceInteractionManager {
             final float[] metrics = new float[3]; // [isSpeech, energyRms, zcr]
             final short[] pcmCopyBuf = new short[SAMPLES_PER_FRAME];
 
-            mCaptureThread = new Thread(() -> captureLoop(directBuf, metrics, pcmCopyBuf), "AgentOS-AudioRecord");
+            mCaptureThread = new Thread(() -> {
+                try {
+                    captureLoop(activeRecord, directBuf, metrics, pcmCopyBuf);
+                } finally {
+                    finishCapture(activeRecord);
+                }
+            }, "AgentOS-AudioRecord");
             mCaptureThread.setPriority(Thread.MAX_PRIORITY);
             mCaptureThread.start();
 
@@ -140,19 +151,35 @@ public final class VoiceInteractionManager {
             return true;
         } catch (SecurityException se) {
             Log.e(TAG, "Audio recording security exception: permission not granted", se);
+            releaseFailedStart();
             notifyError("RECORD_AUDIO 运行时权限未授予");
             return false;
         } catch (Exception e) {
             Log.e(TAG, "Failed to start AudioRecord", e);
+            releaseFailedStart();
             notifyError("录音启动失败: " + e.getMessage());
             return false;
         }
     }
 
+    private void releaseFailedStart() {
+        AudioRecord record = mAudioRecord;
+        mAudioRecord = null;
+        mCaptureThread = null;
+        mIsRecording = false;
+        if (record == null) return;
+        try {
+            if (record.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) record.stop();
+        } catch (Exception ignored) {}
+        try {
+            record.release();
+        } catch (Exception ignored) {}
+    }
+
     /**
      * Background audio loop processing 20ms frames at real-time NEON SIMD speed.
      */
-    private void captureLoop(ByteBuffer directBuf, float[] metrics, short[] pcmCopyBuf) {
+    private void captureLoop(AudioRecord record, ByteBuffer directBuf, float[] metrics, short[] pcmCopyBuf) {
         boolean inSpeech = false;
         int speechFrameCount = 0;
         int silentFrameCount = 0;
@@ -160,9 +187,6 @@ public final class VoiceInteractionManager {
         final List<short[]> speechChunks = new ArrayList<>();
 
         while (mIsRecording) {
-            final AudioRecord record = mAudioRecord;
-            if (record == null) break;
-
             directBuf.clear();
             int bytesRead = record.read(directBuf, BYTES_PER_FRAME);
 
@@ -207,6 +231,8 @@ public final class VoiceInteractionManager {
                 }
             } catch (Exception ignored) {}
 
+            if (inSpeech && speechChunks.size() >= 1500) isSpeech = false;
+
             // Notify real-time telemetry metrics
             final float fRms = energyRms;
             final float fZcr = zcr;
@@ -240,11 +266,6 @@ public final class VoiceInteractionManager {
                 short[] chunk = new short[SAMPLES_PER_FRAME];
                 System.arraycopy(pcmCopyBuf, 0, chunk, 0, SAMPLES_PER_FRAME);
                 speechChunks.add(chunk);
-
-                // Cap burst to max 1500 frames (30s) to prevent memory exhaustion
-                if (speechChunks.size() >= 1500) {
-                    silentFrameCount = SILENCE_HANGOVER_FRAMES;
-                }
 
                 if (!inSpeech && speechFrameCount >= 2) {
                     inSpeech = true;
@@ -306,7 +327,19 @@ public final class VoiceInteractionManager {
             }
         }
 
-        mIsRecording = false;
+    }
+
+    private void finishCapture(AudioRecord record) {
+        synchronized (this) {
+            if (mAudioRecord == record) {
+                mIsRecording = false;
+                mAudioRecord = null;
+                if (mCaptureThread == Thread.currentThread()) mCaptureThread = null;
+                try {
+                    record.release();
+                } catch (Exception ignored) {}
+            }
+        }
         notifyListeningState(false);
     }
 

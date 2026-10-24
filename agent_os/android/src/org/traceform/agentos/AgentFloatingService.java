@@ -115,7 +115,8 @@ public final class AgentFloatingService extends Service {
             sensoriumDetailView.setText(en ? " Ambient: Stationary · Pocket Gated" : " 环境感知: 姿态静止 · 口袋防误触生效");
         }
         if (btnVoice != null) {
-            btnVoice.setText(en ? "Live Audio" : "实时拾音");
+            boolean listening = VoiceInteractionManager.getInstance(this).isListening();
+            btnVoice.setText(en ? (listening ? "Stop Audio" : "Live Audio") : (listening ? "停止拾音" : "实时拾音"));
         }
         if (btnVision != null) {
             btnVision.setText(en ? "Vision OCR" : "真机视觉");
@@ -453,13 +454,15 @@ public final class AgentFloatingService extends Service {
         vim.toggleListening(new VoiceInteractionManager.VoiceListener() {
             @Override
             public void onListeningStateChanged(boolean isListening) {
+                boolean en = isEnglish();
                 int dotColor = isListening ? 0xFF29B6F6 : 0xFF00E676;
                 IconFactory.IconType iconType = isListening ? IconFactory.IconType.STATUS_DOT_BLUE : IconFactory.IconType.STATUS_DOT_GREEN;
                 if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 10));
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 8));
-                if (statusTextView != null) {
-                    statusTextView.setText(isListening ? " 拾音中 (16kHz NEON)" : " Traceform Capsule");
-                }
+                if (btnVoice != null) btnVoice.setText(en ? (isListening ? "Stop Audio" : "Live Audio") : (isListening ? "停止拾音" : "实时拾音"));
+                if (statusTextView != null) statusTextView.setText(isListening
+                        ? (en ? " Listening (16 kHz)" : " 拾音中 (16kHz NEON)")
+                        : (en ? " Traceform Capsule" : " Traceform 胶囊"));
             }
 
             @Override
@@ -477,23 +480,44 @@ public final class AgentFloatingService extends Service {
 
             @Override
             public void onSpeechStart() {
+                boolean en = isEnglish();
                 if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 8));
-                if (statusTextView != null) statusTextView.setText(" 语音捕获中...");
+                if (statusTextView != null) statusTextView.setText(en ? " Capturing speech..." : " 语音捕获中...");
             }
 
             @Override
             public void onSpeechEnd(short[] speechAudio, String classifiedIntent) {
+                boolean en = isEnglish();
                 if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10));
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 8));
-                if (statusTextView != null) statusTextView.setText(" 意图: " + classifiedIntent);
+                if (statusTextView != null) statusTextView.setText(en
+                        ? " Intent: " + englishVoiceIntent(classifiedIntent)
+                        : " 意图: " + classifiedIntent);
             }
 
             @Override
             public void onError(String message) {
-                if (statusTextView != null) statusTextView.setText(" 拾音异常: " + message);
+                if (statusTextView != null) statusTextView.setText(englishVoiceError(message));
             }
         });
+    }
+
+    private String englishVoiceIntent(String intent) {
+        if (intent == null || intent.trim().isEmpty() || "speech_burst".equals(intent)
+                || intent.matches(".*[\\u4e00-\\u9fff].*")) {
+            return "Speech detected";
+        }
+        return intent;
+    }
+
+    private String englishVoiceError(String message) {
+        if (!isEnglish()) return " 拾音异常: " + message;
+        if ("RECORD_AUDIO 运行时权限未授予".equals(message)) return " Microphone permission not granted";
+        if (message != null && message.startsWith("录音启动失败:")) return " Failed to start audio capture";
+        if (message != null && message.startsWith("音频硬件读取故障:")) return " Audio hardware read failure";
+        if (message == null || message.matches(".*[\\u4e00-\\u9fff].*")) return " Audio capture failed";
+        return " Audio error: " + message;
     }
 
     private void triggerVisionInspection() {

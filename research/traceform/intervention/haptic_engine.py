@@ -55,15 +55,20 @@ class HapticEngine:
             )
 
     def shutdown(self) -> None:
+        if not self._running:
+            return
         self._running = False
-        self._queue.put({"type": "SHUTDOWN"})
+        try:
+            self._queue.put_nowait({"type": "SHUTDOWN"})
+        except queue.Full:
+            pass
         self._worker.join(timeout=1.0)
 
     def trigger(self, event_type: str, level: str, message: str) -> None:
         """
         Enqueues a haptic trigger asynchronously. Applies debouncing and silence checks.
         """
-        if not self.enabled:
+        if not self._running or not self.enabled:
             return
         if os.environ.get("TRACEFORM_DISABLE_HAPTICS", "").lower() in (
             "1",

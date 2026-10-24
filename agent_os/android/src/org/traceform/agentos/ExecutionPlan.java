@@ -67,7 +67,7 @@ final class ExecutionPlan {
         }
 
         boolean isBuiltin() {
-            return capability != null && capability.startsWith("builtin.");
+            return "builtin.synthesis".equals(capability);
         }
     }
 

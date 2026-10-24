@@ -1083,7 +1083,16 @@ public final class MainActivity extends Activity {
                 try {
                     capabilityBroker.grant(task.id, step.capability, step.scope);
                     store.transition(task.id, AgentStore.ACTIVE);
-                    AgentScheduler.scheduleTask(MainActivity.this, store.getTask(task.id));
+                    try {
+                        AgentScheduler.scheduleTask(MainActivity.this, store.getTask(task.id));
+                    } catch (Exception scheduleError) {
+                        try {
+                            store.transition(task.id, AgentStore.WAITING_FOR_USER);
+                        } finally {
+                            capabilityBroker.revoke(task.id, step.capability, step.scope);
+                        }
+                        throw scheduleError;
+                    }
                     refreshTasks();
                 } catch (Exception ex) {
                     showError(ex);
@@ -1725,8 +1734,8 @@ public final class MainActivity extends Activity {
             ? (en ? "Configure Cloud Inference" : "设置端云协同参数")
             : (en ? "Enable Hybrid Cloud Inference" : "启用端云协同推理"));
         cloudModelStatus.setText(config.enabled
-            ? (en ? "Enabled (Model: " + config.modelName + ") · Requests sanitized on-device before egress; auto-fallback offline."
-                  : "已启用（模型：" + config.modelName + "） · 请求前强制经端侧脱敏门禁过滤个人敏感数据；断网时自动降级。")
+            ? (en ? "Enabled (Model: " + config.modelName + ") · Pattern-based redaction before requests; not a complete privacy filter."
+                  : "已启用（模型：" + config.modelName + "） · 请求前尝试按规则遮盖部分常见敏感信息，不能保证全部移除。")
             : (en ? "Disabled by default. Pure local deterministic reasoning, zero external network connections."
                   : "默认关闭。仅在端侧进行确定性规则规划与离线推理，完全不发起外部网络连接。"));
     }
@@ -1782,8 +1791,8 @@ public final class MainActivity extends Activity {
 
         new AlertDialog.Builder(this)
             .setTitle(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推理")
-            .setMessage(en ? "When enabled, task objectives and relevant memories pass through on-device redactor before egress. If offline or timed out, seamlessly falls back to local edge SLM planning. Cloud outputs are verified on-device and authorized step-by-step."
-                           : "启用后，任务目标和关联记忆在离开手机前强制经过端侧脱敏门禁过滤敏感信息。断网或超时时自动无缝降级回本地边缘模型离线推理。云端输出由端侧严格校验并逐步授权。")
+            .setMessage(en ? "When enabled, task objectives and relevant memories are processed by on-device pattern-based redaction before being sent to the configured endpoint. It may miss sensitive data; enable cloud requests only for content you are willing to send. Offline or timed-out requests fall back to on-device planning, and each capability still requires approval."
+                           : "启用后，任务目标和关联记忆会在发送到所配置的端点前经过端侧规则脱敏，但规则可能漏掉敏感信息；仅对你愿意发送的内容启用云端请求。断网或超时时改用端侧规划，具体能力仍需逐步授权。")
             .setView(fields)
             .setNegativeButton(en ? "Cancel" : "取消", null)
             .setPositiveButton(en ? "Save Config" : "保存配置", (dialog, which) -> {
@@ -1848,6 +1857,7 @@ public final class MainActivity extends Activity {
     private void expireRemoteUriGrant() {
         if (remoteUriExpiresAtElapsed > 0
                 && SystemClock.elapsedRealtime() >= remoteUriExpiresAtElapsed && !destroyed) {
+            capabilityBroker.releaseAllRemoteUris();
             showMessage("跨应用临时读取权已过期，请重新打开 Agent OS");
             finishAndRemoveTask();
         }
@@ -1860,6 +1870,8 @@ public final class MainActivity extends Activity {
             .setNegativeButton("保留", null)
             .setPositiveButton("删除", (dialog, which) -> {
                 try {
+                    capabilityBroker.revoke(task.id, AndroidRemoteStatusProvider.CAPABILITY,
+                        AndroidRemoteStatusProvider.SCOPE);
                     store.deleteTask(task.id);
                     AgentScheduler.cancelTask(this, task.jobId);
                     refreshTasks();

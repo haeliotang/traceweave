@@ -116,7 +116,7 @@ impl AgentStore {
     // =========================================================================
 
     pub fn create_task(&self, title: &str, now: i64) -> Result<Task> {
-        let task_id = format!("task-{}", &uuid_v4());
+        let task_id = format!("task-{}", uuid_v4()?);
         let task = Task::new(&task_id, title, now);
         let conn = self.conn.lock().unwrap();
 
@@ -413,7 +413,7 @@ impl AgentStore {
                 updated_at: now,
             })
         } else {
-            let id = format!("mem-{}", &uuid_v4());
+            let id = format!("mem-{}", uuid_v4()?);
             conn.execute(
                 "INSERT INTO memories (id, kind, content, source, source_reference, topic_key, created_at, updated_at)
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
@@ -582,13 +582,21 @@ impl AgentStore {
     }
 }
 
-fn uuid_v4() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let nanos = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_nanos())
-        .unwrap_or(0);
-    format!("{:016x}", nanos)
+fn uuid_v4() -> rusqlite::Result<String> {
+    let mut bytes = [0u8; 16];
+    getrandom::getrandom(&mut bytes).map_err(|error| {
+        rusqlite::Error::ToSqlConversionFailure(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            error.to_string(),
+        )))
+    })?;
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    Ok(format!(
+        "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+        bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+        bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
+    ))
 }
 
 #[cfg(test)]

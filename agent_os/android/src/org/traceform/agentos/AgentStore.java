@@ -41,6 +41,7 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String CANCELLED = "cancelled";
     static final int CURRENT_EXECUTION_VERSION = 2;
     static final int MAX_DYNAMIC_STEPS = 10;
+    static final int MAX_AUDIT_EVENT_LENGTH = 2048;
     static final String MEMORY_PREFERENCE = "preference";
     static final String MEMORY_FACT = "fact";
     static final String MEMORY_WORKFLOW = "workflow";
@@ -398,6 +399,8 @@ final class AgentStore extends SQLiteOpenHelper {
 
     void savePlan(String taskId, ExecutionPlan plan) throws Exception {
         if (plan == null) throw new IllegalArgumentException("Plan cannot be null");
+        if (plan.totalSteps() > MAX_DYNAMIC_STEPS)
+            throw new IllegalArgumentException("Execution plans are limited to " + MAX_DYNAMIC_STEPS + " steps");
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
@@ -491,6 +494,7 @@ final class AgentStore extends SQLiteOpenHelper {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
+            requireActiveStep(database, taskId, stepIndex);
             JSONObject payload = taskPayload(database, taskId);
             ExecutionPlan plan = payload.has("plan") ? ExecutionPlan.fromJson(payload.getJSONObject("plan")) : null;
             if (plan != null && stepIndex >= 0 && stepIndex < plan.totalSteps()) {
@@ -905,6 +909,8 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     private static void appendAudit(SQLiteDatabase database, String taskId, String event, long occurredAt) {
+        if (event == null || event.isEmpty() || event.length() > MAX_AUDIT_EVENT_LENGTH)
+            throw new IllegalArgumentException("Task history event is invalid or too long");
         ContentValues values = new ContentValues();
         values.put("id", UUID.randomUUID().toString());
         values.put("task_id", taskId);

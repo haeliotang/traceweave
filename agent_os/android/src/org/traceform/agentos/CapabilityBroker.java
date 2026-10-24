@@ -157,6 +157,10 @@ public final class CapabilityBroker {
         ((AndroidRemoteStatusProvider) providers.get(AndroidRemoteStatusProvider.CAPABILITY)).releaseTask(taskId);
     }
 
+    void releaseAllRemoteUris() {
+        AndroidRemoteStatusProvider.releaseAllTasks();
+    }
+
     public void grant(String agentId, String taskId, String capability, String scope, long durationMillis) {
         CapabilityProvider provider = providers.get(capability);
         if (provider == null || !provider.isAvailable(taskId, scope)) {
@@ -168,7 +172,9 @@ public final class CapabilityBroker {
         boolean isOneShot = durationMillis <= 0;
         long durationTag = isOneShot ? 0 : durationMillis;
         store.appendCapabilityAudit(taskId, auditEvent("capability_granted", capability, scope) + agentTag + ":ttl=" + durationTag);
-        long expiresAt = isOneShot ? Long.MAX_VALUE : (SystemClock.elapsedRealtime() + durationMillis);
+        long now = SystemClock.elapsedRealtime();
+        long expiresAt = isOneShot || durationMillis >= Long.MAX_VALUE - now
+            ? Long.MAX_VALUE : now + durationMillis;
         synchronized (GRANTS_LOCK) {
             grants.computeIfAbsent(taskId, ignored -> new HashMap<>())
                 .put(grantKey(effectiveAgent, capability, scope), new Grant(effectiveAgent, taskId, capability, scope,
@@ -197,6 +203,7 @@ public final class CapabilityBroker {
     public String invoke(String agentId, String taskId, String capability, String scope) {
         String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
         String key = grantKey(effectiveAgent, capability, scope);
+        CapabilityProvider provider = providers.get(capability);
         Grant grant;
         synchronized (GRANTS_LOCK) {
             Map<String, Grant> taskGrants = grants.get(taskId);
@@ -205,16 +212,18 @@ public final class CapabilityBroker {
                 removeGrant(taskId, key);
                 grant = null;
             }
+            if (grant != null && (!effectiveAgent.equals(grant.agentId)
+                    || !taskId.equals(grant.taskId)
+                    || !capability.equals(grant.capability)
+                    || !scope.equals(grant.scope)
+                    || provider == null || !provider.isAvailable(taskId, scope))) {
+                removeGrant(taskId, key);
+                grant = null;
+            }
+            if (grant != null && grant.isOneShot) removeGrant(taskId, key);
         }
-        CapabilityProvider provider = providers.get(capability);
-        if (grant == null
-                || (grant.agentId != null && !grant.agentId.equals(effectiveAgent))
-                || !taskId.equals(grant.taskId)
-                || !capability.equals(grant.capability)
-                || !scope.equals(grant.scope)
-                || provider == null || !provider.isAvailable(taskId, scope)) {
+        if (grant == null) {
             removeGrant(taskId, key);
-            if (provider != null) provider.releaseTask(taskId);
             String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
             store.appendCapabilityAudit(taskId, auditEvent("capability_denied", capability, scope) + agentTag);
             throw new SecurityException("该任务没有针对此 Agent 的有效能力授权");
@@ -229,9 +238,6 @@ public final class CapabilityBroker {
         }
         String agentTag = !"local_agent".equals(effectiveAgent) ? ":" + effectiveAgent : "";
         store.appendCapabilityAudit(taskId, auditEvent("capability_invoked", capability, scope) + agentTag);
-        if (grant.isOneShot) {
-            removeGrant(taskId, key);
-        }
         return result;
     }
 

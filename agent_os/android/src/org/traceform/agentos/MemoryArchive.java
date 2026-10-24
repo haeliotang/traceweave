@@ -275,7 +275,10 @@ final class MemoryArchive {
                 if (AgentStore.COMPLETED.equals(status) && result.isEmpty())
                     throw new IOException("The archive contains an inconsistent task checkpoint");
             }
-            ExecutionPlan plan = item.has("plan") ? ExecutionPlan.fromJson(item.getJSONObject("plan")) : null;
+            JSONObject planJson = item.has("plan") ? item.getJSONObject("plan") : null;
+            if (planJson != null && planJson.getJSONArray("steps").length() > AgentStore.MAX_DYNAMIC_STEPS)
+                throw new IOException("The archive contains an execution plan with too many steps");
+            ExecutionPlan plan = planJson == null ? null : ExecutionPlan.fromJson(planJson);
             data.tasks.add(new AgentStore.Task(id, title, status, createdAt, updatedAt, 0,
                 executionVersion, executionStep, checkpointNote, result, plan));
         }
@@ -323,7 +326,8 @@ final class MemoryArchive {
             String taskId = validId(item.getString("taskId"));
             long occurredAt = nonNegative(item.getLong("occurredAt"), "audit.occurredAt");
             String event = item.getString("event");
-            if (!auditIds.add(id) || !taskIds.contains(taskId) || event.trim().isEmpty() || event.length() > 64)
+            if (!auditIds.add(id) || !taskIds.contains(taskId) || event.trim().isEmpty()
+                    || event.length() > AgentStore.MAX_AUDIT_EVENT_LENGTH)
                 throw new IOException("The archive contains an invalid task history record");
             data.audit.add(new AgentStore.AuditEvent(id, taskId, occurredAt, event));
         }

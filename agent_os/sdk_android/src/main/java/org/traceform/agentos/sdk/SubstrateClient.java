@@ -24,7 +24,7 @@ public class SubstrateClient {
     private static final String SUBSTRATE_ACTION = "org.traceform.agentos.action.BIND_SUBSTRATE";
 
     private final Context context;
-    private final ExecutorService executor;
+    private ExecutorService executor;
     private final Handler mainHandler;
 
     private volatile IAgentSubstrate substrateService;
@@ -32,7 +32,7 @@ public class SubstrateClient {
     private volatile String activeSessionToken;
     private volatile String activeTaskId;
 
-    private SubstrateCallback.ConnectionListener connectionListener;
+    private volatile SubstrateCallback.ConnectionListener connectionListener;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -47,12 +47,21 @@ public class SubstrateClient {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             substrateService = null;
-            isBound = false;
             activeSessionToken = null;
             activeTaskId = null;
             if (connectionListener != null) {
                 mainHandler.post(() -> connectionListener.onDisconnected());
             }
+        }
+
+        @Override
+        public void onBindingDied(ComponentName name) {
+            handleBindingFailure("Substrate service binding died; reconnect is available.");
+        }
+
+        @Override
+        public void onNullBinding(ComponentName name) {
+            handleBindingFailure("Substrate service rejected the binding.");
         }
     };
 
@@ -64,13 +73,25 @@ public class SubstrateClient {
 
     public synchronized void connect(SubstrateCallback.ConnectionListener listener) {
         this.connectionListener = listener;
+        if (executor.isShutdown()) executor = Executors.newSingleThreadExecutor();
+        if (isBound) {
+            if (substrateService != null && listener != null) mainHandler.post(listener::onConnected);
+            return;
+        }
         Intent intent = new Intent(SUBSTRATE_ACTION);
         intent.setPackage(SUBSTRATE_PACKAGE);
 
         try {
             boolean bindSuccess = context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-            if (!bindSuccess && listener != null) {
-                mainHandler.post(() -> listener.onError(new SubstrateException("Failed to bind to SubstrateService. Ensure AgentOS APK is installed.")));
+            isBound = bindSuccess;
+            if (!bindSuccess) {
+                try {
+                    context.unbindService(serviceConnection);
+                } catch (Exception ignored) {
+                }
+                if (listener != null) {
+                    mainHandler.post(() -> listener.onError(new SubstrateException("Failed to bind to SubstrateService. Ensure AgentOS APK is installed.")));
+                }
             }
         } catch (SecurityException e) {
             if (listener != null) {
@@ -194,7 +215,7 @@ public class SubstrateClient {
     // =========================================================================
 
     public void registerAgent(String pkg, String keyHash, AgentManifest manifest, SubstrateCallback.ActionCallback<String> callback) {
-        executor.execute(() -> {
+        executeAsync(() -> {
             try {
                 String token = registerAgentSync(pkg, keyHash, manifest);
                 mainHandler.post(() -> callback.onSuccess(token));
@@ -205,7 +226,7 @@ public class SubstrateClient {
     }
 
     public void requestCapability(String taskId, String capability, String scope, SubstrateCallback.ActionCallback<Boolean> callback) {
-        executor.execute(() -> {
+        executeAsync(() -> {
             try {
                 boolean granted = requestCapabilitySync(taskId, capability, scope);
                 mainHandler.post(() -> callback.onSuccess(granted));
@@ -216,7 +237,7 @@ public class SubstrateClient {
     }
 
     public void invokeCapability(String taskId, String capability, String scope, SubstrateCallback.ActionCallback<String> callback) {
-        executor.execute(() -> {
+        executeAsync(() -> {
             try {
                 String res = invokeCapabilitySync(taskId, capability, scope);
                 mainHandler.post(() -> callback.onSuccess(res));
@@ -227,7 +248,7 @@ public class SubstrateClient {
     }
 
     public void revokeCapability(String taskId, String capability, String scope, SubstrateCallback.ActionCallback<Boolean> callback) {
-        executor.execute(() -> {
+        executeAsync(() -> {
             try {
                 boolean revoked = revokeCapabilitySync(taskId, capability, scope);
                 mainHandler.post(() -> callback.onSuccess(revoked));
@@ -240,6 +261,28 @@ public class SubstrateClient {
     private void ensureConnected() throws SubstrateException.NotConnectedException {
         if (!isConnected()) {
             throw new SubstrateException.NotConnectedException();
+        }
+    }
+
+    private synchronized void executeAsync(Runnable action) {
+        if (executor.isShutdown()) executor = Executors.newSingleThreadExecutor();
+        executor.execute(action);
+    }
+
+    private void handleBindingFailure(String message) {
+        SubstrateCallback.ConnectionListener listener = connectionListener;
+        synchronized (this) {
+            try {
+                context.unbindService(serviceConnection);
+            } catch (Exception ignored) {
+            }
+            isBound = false;
+            substrateService = null;
+            activeSessionToken = null;
+            activeTaskId = null;
+        }
+        if (listener != null) {
+            mainHandler.post(() -> listener.onError(new SubstrateException(message)));
         }
     }
 }

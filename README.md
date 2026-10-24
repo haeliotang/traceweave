@@ -29,9 +29,9 @@ Traceform redefines personal computing for the post-application agent era. Tradi
 Traceform's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
-  <img src="docs/assets/traceform_os_handheld_dashboard_en.png" alt="Illustrative Agent OS app prototype dashboard" width="380" />
+  <img src="docs/assets/traceform_os_handheld_dashboard_en.png" alt="Pixel 6a screenshot of the Traceform Agent OS prototype main screen in English" width="380" />
   <br />
-  <em>Illustrative app UI; the Phase 1 app prototype runs on GrapheneOS (Android 17 / API 37), not as a system-image deployment.</em>
+  <em>Pixel 6a screen capture (2026-10-24). The hardware, daemon, and sync status cards are visual prototype placeholders, not evidence of running or validated services. The app remains a regular APK on GrapheneOS (Android 17 / API 37), not a system-image deployment.</em>
 </p>
 
 ---

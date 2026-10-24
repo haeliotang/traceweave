@@ -36,7 +36,7 @@ final class MemoryConsolidator {
             List<AgentStore.Memory> existingMemories = store.listMemories();
 
             for (ConsolidatedItem item : items) {
-                AgentStore.Memory matchedExisting = findExistingMemory(existingMemories, item.topicKey);
+                AgentStore.Memory matchedExisting = findExistingMemory(existingMemories, item);
                 if (matchedExisting != null) {
                     store.updateMemory(matchedExisting.id, item.kind, item.content,
                         AgentStore.MEMORY_SOURCE_CONSOLIDATION, task.id);
@@ -69,6 +69,7 @@ final class MemoryConsolidator {
                         && step.observation != null && !step.observation.isEmpty()) {
                     try {
                         JSONObject cal = new JSONObject(step.observation);
+                        if (!"created".equals(cal.optString("status"))) continue;
                         String eventTitle = cal.optString("title", "系统日程待办");
                         String timeStr = cal.optString("formattedStart", "");
                         String topicKey = "【日程待办 · " + eventTitle + "】";
@@ -81,8 +82,8 @@ final class MemoryConsolidator {
         }
 
         // 2. User preference extraction from goal keywords
-        if (titleLower.contains("偏好") || titleLower.contains("习惯") || titleLower.contains("喜欢")
-                || titleLower.contains("总是") || titleLower.contains("默认")) {
+        if (titleLower.startsWith("我偏好") || titleLower.startsWith("我喜欢") || titleLower.startsWith("我习惯")
+                || titleLower.contains("请记住我") || titleLower.contains("记住我的偏好")) {
             String topicKey = "【用户偏好 · " + title + "】";
             String content = topicKey + "用户倾向于执行任务时遵循意向：「" + title + "」";
             items.add(new ConsolidatedItem(AgentStore.MEMORY_PREFERENCE, content, topicKey));
@@ -109,10 +110,11 @@ final class MemoryConsolidator {
         return items;
     }
 
-    private static AgentStore.Memory findExistingMemory(List<AgentStore.Memory> memories, String topicKey) {
-        if (memories == null || topicKey == null) return null;
+    private static AgentStore.Memory findExistingMemory(List<AgentStore.Memory> memories, ConsolidatedItem item) {
+        if (memories == null || item == null || item.topicKey == null) return null;
         for (AgentStore.Memory m : memories) {
-            if (m.content != null && m.content.contains(topicKey)) {
+            if (item.kind.equals(m.kind) && AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(m.source)
+                    && m.content != null && m.content.contains(item.topicKey)) {
                 return m;
             }
         }

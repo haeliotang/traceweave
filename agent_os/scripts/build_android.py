@@ -114,9 +114,12 @@ def main():
                 pass
         return "external/" + path.name
 
+    manifest_attributes = ET.parse(manifest).getroot().attrib
+    android_namespace = "{http://schemas.android.com/apk/res/android}"
     report = {
-        "package": ET.parse(manifest).getroot().get("package"),
-        "version": "0.1.0",
+        "package": manifest_attributes.get("package"),
+        "version": manifest_attributes.get(android_namespace + "versionName"),
+        "version_code": int(manifest_attributes.get(android_namespace + "versionCode", "0")),
         "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
         "apk_bytes": apk.stat().st_size,
         "signing": "local_development_key",

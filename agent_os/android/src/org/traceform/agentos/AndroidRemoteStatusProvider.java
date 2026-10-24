@@ -7,8 +7,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Process;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 final class AndroidRemoteStatusProvider implements CapabilityProvider {
     static final String CAPABILITY = "demo.remote_status.read";
@@ -21,7 +21,7 @@ final class AndroidRemoteStatusProvider implements CapabilityProvider {
 
     private final Context context;
     private final ContentResolver resolver;
-    private final Map<String, Uri> taskUris = new HashMap<>();
+    private static final Map<String, Uri> taskUris = new ConcurrentHashMap<>();
 
     AndroidRemoteStatusProvider(Context context) {
         this.context = context.getApplicationContext();
@@ -73,6 +73,10 @@ final class AndroidRemoteStatusProvider implements CapabilityProvider {
     @Override
     public void releaseTask(String taskId) {
         taskUris.remove(taskId);
+    }
+
+    static void releaseAllTasks() {
+        taskUris.clear();
     }
 
     private boolean hasReadPermission(Uri uri) {
