@@ -4,7 +4,7 @@
 
 Keep the current Agent OS work as an Android application prototype inside the Traceform repository. The code does not constitute an Android, AOSP, or GrapheneOS fork. Do not deploy the Rust `agentosd` Magisk package: the current root daemon interface and packaging have critical security gaps. The app-level Binder service is a separate path and has materially stronger caller and capability checks.
 
-The existing Phase 1 receipt reports all seven MVP exit gates passing on an isolated Pixel 6a validation package. That receipt predates the changes in this audit and does not verify this checkout. The current Android sources build, but the new sensor, daemon-reporting, and approval flows have not yet been rerun on the Pixel.
+The existing Phase 1 receipt reports all seven MVP exit gates passing on an isolated Pixel 6a validation package. That receipt predates the changes in this audit and does not verify this checkout. The audit changes were rebuilt and checked in a separate isolated package on the Pixel 6a: sensor opt-in/stop, daemon-unavailable reporting, Broker denial, and Broker approval followed by invocation and revocation passed. These checks do not rerun every Phase 1 gate.
 
 ## Scope reviewed
 
@@ -21,6 +21,7 @@ The existing Phase 1 receipt reports all seven MVP exit gates passing on an isol
 | Sync could collapse distinct memories from the same source, omit deletions, and silently export an empty task list on database errors. | Preserve stable memory IDs, apply and export tombstones, and propagate store errors. |
 | Android archive export could create `agent_consolidation` provenance records that its own importer rejected. | Accept the app's existing consolidation source and add an archive round-trip validation. |
 | The Android Binder service trusted a package string, allowed caller-selected task IDs, and granted capabilities without a visible user decision. | Bind package claims to the Binder caller UID, scope each session to its task, require a timed user approval, cap concurrent approval waits, and fail closed when notifications are unavailable. The approval screen hides overlays on Android 12+. |
+| The capability approval Activity called `setHideOverlayWindows(true)` without declaring `HIDE_OVERLAY_WINDOWS`, so Android 12+ crashed before the user could approve or deny. | Declare the permission in the app and validation manifests; verified both denial and approval on Pixel 6a. |
 | Cloud planning accepted an advertised capability name with an unadvertised scope; synthesis omitted title redaction; non-loopback HTTP was allowed. | Validate exact available capability/scope pairs, redact synthesis titles and observations, require HTTPS except for loopback, reject redirects, cap request/response bodies, and avoid returning provider error bodies. |
 | Sensor collection started whenever the main Activity opened or resumed and continued when it was backgrounded. | Make collection an explicit visible toggle, stop it when the Activity pauses or is destroyed, and show an off state until opted in. |
 | The daemon bridge returned a fabricated successful ping when the daemon could not be reached; the UI displayed a fake PID and OOM priority. | Return an unavailable error, display only a real ping response, and remove unsupported PID/`oom_adj -1000` claims. |
@@ -61,15 +62,16 @@ The unfiltered Python test run fails collection because tests expect missing `tr
 ## Verification performed
 
 - `cargo test --locked --manifest-path agent_os/core/Cargo.toml`: 71 Rust unit tests passed; benchmark and TypeScript MCP integration tests also passed.
-- Android CLI build of the app and `DeviceValidationActivity`: compiled and APK v2/v3 signatures verified with a temporary test key. The APK was not installed over either formal package.
+- Android CLI build of the app and `DeviceValidationActivity`: compiled and APK v2/v3 signatures verified with a temporary test key. Installed as `org.traceform.agentos.auditreview`; a temporary Demo Agent used the separate package `org.traceform.demoagent.auditreview`. Neither formal package was replaced.
+- Pixel 6a (GrapheneOS, Android 17 / API 37): sensor opt-in/stop and daemon-unavailable fail-closed actions passed. A real cross-app Broker request was denied, then a separate request was approved; the Agent read the synthetic local note, pinged the session, revoked the grant, and reported PASS. `POST_NOTIFICATIONS` was temporarily granted to the isolated host for the approval flow and revoked after the run.
 - Python `compileall`: passed for `scripts`, `tests`, `research`, `agent_os/sdk_python`, and `agent_os/scripts`.
 - `git diff --check`: passed.
-- The Pixel 6a was asleep with the lock screen showing during this audit. No attempt was made to unlock or bypass it. The two new Android regression actions compiled but were not run on the device.
+- The earlier Phase 1 receipt remains historical evidence for its own APK and source; the audit-specific device checks above do not replace the full seven-gate Phase 1 run.
 
 ## Next release gates
 
 1. Disable or redesign the Rust root daemon transport and Magisk runtime before any distribution.
 2. Encrypt Rust task/memory storage and align all privacy claims with the storage actually used.
-3. Re-run the current isolated Android validation package on Pixel 6a after unlocking the device; include notification allow/deny, sensor toggle/background stop, and daemon-unavailable behavior.
+3. Re-run the full Phase 1 suite against the current source; the audit-specific sensor, daemon-unavailable, Broker denial, and Broker approval/invocation/revocation checks have passed separately.
 4. Repair or explicitly quarantine Python tests whose source packages are no longer present; make the daemon integration suite launch its own isolated daemon fixture.
 5. Remove development-only security and performance claims from release materials unless bound to current source and reproducible evidence.
