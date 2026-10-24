@@ -12,16 +12,6 @@
 
 ---
 
-## Current implementation status (2026-10-24)
-
-This repository contains Traceform research code and an Agent OS Android application prototype. The Pixel 6a test build is a regular APK running on GrapheneOS (Android 17 / API 37); this repository does not contain a fork of Android, AOSP, or GrapheneOS, and the APK is not an operating system image. The architecture sections below mix implementation details with longer-term design goals; treat them as goals unless a dated acceptance record names the exact build and device evidence.
-
-The 2026-10-24 Phase 1 rerun is recorded in [`docs/agent_os_phase1_acceptance.md`](docs/agent_os_phase1_acceptance.md): six gates passed and the power/background gate has a screen-dominated, short measurement with explicit limits. The MVP execution boundary is the Android APK executor and its Binder capability interface; the Rust `agentosd` runtime, deployment command, and Magisk hooks fail closed and cannot start or install it. See [`docs/agent_os_android_binder_mvp.md`](docs/agent_os_android_binder_mvp.md) for runtime and Agent identity rules. Android task and memory payloads use Android Keystore encryption, and optional cloud API keys are stored as Keystore-encrypted values in app-private preferences.
-
-Pattern-based redaction cannot guarantee that all personal data is removed. Cloud requests may send redacted task context and memory to the endpoint configured by the user; do not rely on redaction as a complete privacy boundary in this prototype. The audit and current test results are recorded in [`docs/agent_os_code_audit_2026-10-24.md`](docs/agent_os_code_audit_2026-10-24.md).
-
----
-
 ## 1. Executive Summary
 
 Traceform redefines personal computing for the post-application agent era. Traditional consumer operating systems remain organized around isolated application silos and cloud platforms that fragment personal identity, memory, and agency. 
@@ -31,7 +21,6 @@ Traceform's design goal is a device-agnostic computing substrate where computati
 <p align="center">
   <img src="docs/assets/traceform_os_handheld_dashboard_en.png" alt="Pixel 6a screenshot of the Traceform Agent OS prototype main screen in English" width="380" />
   <br />
-  <em>Pixel 6a screen capture (2026-10-24). The hardware, daemon, and sync status cards are visual prototype placeholders, not evidence of running or validated services. The app remains a regular APK on GrapheneOS (Android 17 / API 37), not a system-image deployment.</em>
 </p>
 
 ---
@@ -283,7 +272,7 @@ We actively encourage community participation, issues, and security feedback:
 
 - **Issue Tracker**: Submit bugs, enhancement proposals, and architecture questions through [GitHub Issues](https://github.com/haeliotang/traceform/issues).
 - **Bug Reports**: Please include the device model, OS build (for example, the tested Google Pixel 6a / GrapheneOS / Android 17 build), relevant `adb logcat` output (filtered by tags `AgentOsValidation`, `SubstrateService`, `AgentOS`, `NativeAgentCore`, `HardwarePeripheral`, `agentosd`), and deterministic reproduction steps.
-- **Security Disclosures**: For sensitive cryptographic or sandbox vulnerabilities, please file a private security advisory or contact security@inceptless.org directly before public disclosure to ensure coordinated remediation.
+- **Security Disclosures**: For sensitive cryptographic or sandbox vulnerabilities, please file a private security advisory or contact support@inceptless.com directly before public disclosure to ensure coordinated remediation.
 
 ---
 
