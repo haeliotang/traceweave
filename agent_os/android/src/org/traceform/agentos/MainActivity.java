@@ -1926,9 +1926,9 @@ public final class MainActivity extends Activity {
         new AlertDialog.Builder(this)
             .setTitle("处理同 ID 记忆冲突")
             .setMessage("请选择本次导入如何处理同 ID 的记忆。任务记录仍保留本机版本；任何删除墓碑始终优先。")
-            .setItems(new String[]{"保留本机记忆", "采用档案中的记忆"},
-                (dialog, which) -> promptImportPassphrase(uri, which == 1))
             .setNegativeButton("取消", (dialog, which) -> setBusy(false, "导入已取消"))
+            .setNeutralButton("采用档案中的记忆", (dialog, which) -> promptImportPassphrase(uri, true))
+            .setPositiveButton("保留本机记忆", (dialog, which) -> promptImportPassphrase(uri, false))
             .setOnCancelListener(dialog -> setBusy(false, "导入已取消"))
             .show();
     }
