@@ -14,6 +14,10 @@ final class ExecutionPlan {
     static final String STEP_AWAITING_GRANT = "awaiting_grant";
     static final String STEP_DONE = "done";
     static final String STEP_FAILED = "failed";
+    static final String STEP_DRAFT_READY = "draft_ready";
+    static final String STEP_HANDED_OFF = "handed_off";
+    static final String STEP_UNKNOWN = "outcome_unknown";
+    static final String STEP_CANCELLED = "cancelled";
 
     static final class Step {
         final int index;
@@ -69,6 +73,11 @@ final class ExecutionPlan {
         boolean isBuiltin() {
             return "builtin.synthesis".equals(capability);
         }
+
+        boolean isExternalAction() {
+            return LocalCalendarProvider.CAPABILITY.equals(capability)
+                || LocalShareProvider.CAPABILITY.equals(capability);
+        }
     }
 
     final String id;
@@ -76,13 +85,19 @@ final class ExecutionPlan {
     final List<Step> steps;
     final long plannedAt;
     final int currentStepIndex;
+    final String memoryReview;
 
     ExecutionPlan(String id, String goal, List<Step> steps, long plannedAt, int currentStepIndex) {
+        this(id, goal, steps, plannedAt, currentStepIndex, "pending");
+    }
+
+    ExecutionPlan(String id, String goal, List<Step> steps, long plannedAt, int currentStepIndex, String memoryReview) {
         this.id = id == null ? "" : id;
         this.goal = goal == null ? "" : goal;
         this.steps = Collections.unmodifiableList(new ArrayList<>(steps));
         this.plannedAt = plannedAt;
         this.currentStepIndex = currentStepIndex;
+        this.memoryReview = memoryReview;
     }
 
     int totalSteps() {
@@ -93,6 +108,7 @@ final class ExecutionPlan {
         if (steps.isEmpty()) return false;
         for (Step step : steps) {
             if (!STEP_DONE.equals(step.status)) return false;
+            if (step.isExternalAction() && !ExternalAction.hasVerifiedEffect(step)) return false;
         }
         return true;
     }
@@ -107,7 +123,11 @@ final class ExecutionPlan {
     ExecutionPlan withStepUpdated(int stepIndex, Step updatedStep, int nextCurrentIndex) {
         List<Step> newSteps = new ArrayList<>(steps);
         newSteps.set(stepIndex, updatedStep);
-        return new ExecutionPlan(id, goal, newSteps, plannedAt, nextCurrentIndex);
+        return new ExecutionPlan(id, goal, newSteps, plannedAt, nextCurrentIndex, memoryReview);
+    }
+
+    ExecutionPlan withMemoryReview(String review) {
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review);
     }
 
     JSONObject toJson() throws JSONException {
@@ -121,6 +141,7 @@ final class ExecutionPlan {
             .put("plannedAt", plannedAt)
             .put("totalSteps", totalSteps())
             .put("currentStepIndex", currentStepIndex)
+            .put("memoryReview", memoryReview)
             .put("steps", stepsArray);
     }
 
@@ -139,6 +160,9 @@ final class ExecutionPlan {
                 }
             }
         }
-        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex);
+        String review = json.optString("memoryReview", "pending");
+        if (!"pending".equals(review) && !"accepted".equals(review) && !"dismissed".equals(review))
+            throw new IllegalArgumentException("Invalid memory review state");
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review);
     }
 }

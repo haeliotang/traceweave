@@ -87,7 +87,7 @@ final class AgentExecutor {
         ExecutionPlan plan = task.plan;
         if (plan == null) {
             List<CapabilityDescriptor> availableCaps = broker.listAvailableCapabilities(taskId);
-            List<AgentStore.Memory> memories = store.listMemories();
+            List<AgentStore.Memory> memories = store.listPlanningMemories();
             plan = reasoningEngine.plan(taskId, task.title, availableCaps, memories);
             store.savePlan(taskId, plan);
         }
@@ -105,16 +105,17 @@ final class AgentExecutor {
             if (currentStepIndex >= plan.totalSteps()) {
                 String result = reasoningEngine.synthesize(taskId, task.title, plan.steps);
                 store.completeExecution(taskId, result);
-                AgentStore.Task completed = store.getTask(taskId);
-                if (completed != null) {
-                    MemoryConsolidator.consolidate(store, completed);
-                }
                 return;
             }
 
             ExecutionPlan.Step currentStep = plan.steps.get(currentStepIndex);
             store.recordStepStarted(taskId, currentStepIndex);
             if (stopped.get() || !store.isTaskActive(taskId)) return;
+
+            if (currentStep.isExternalAction()) {
+                store.prepareExternalDraft(taskId, currentStepIndex, ExternalAction.prepare(task, currentStep).toString());
+                return;
+            }
 
             String observation;
             if (currentStep.isBuiltin()) {

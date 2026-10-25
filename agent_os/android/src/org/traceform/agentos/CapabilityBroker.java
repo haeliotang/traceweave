@@ -68,7 +68,7 @@ public final class CapabilityBroker {
     public CapabilityBroker(android.content.Context context, AgentStore store) {
         this.store = store;
         traceformProvider = new TraceformProvider(context);
-        registerProvider(new LocalDemoNoteProvider(store));
+        registerProvider(new LocalDemoNoteProvider());
         registerProvider(new LocalDemoStatusProvider(context));
         registerProvider(new AndroidRemoteStatusProvider(context));
         registerProvider(new LocalNotificationProvider(context));
@@ -129,9 +129,9 @@ public final class CapabilityBroker {
         descriptors.add(new CapabilityDescriptor(DEMO_STATUS_CAPABILITY, DEMO_STATUS_SCOPE,
             "合成状态", "读取本地设备合成运行状态", true));
         descriptors.add(new CapabilityDescriptor(NOTIFICATION_CAPABILITY, NOTIFICATION_SCOPE,
-            "任务通知推送", "在系统通知栏发送本地任务状态与提醒", true));
+            "任务通知推送", "向系统提交通知；需用户开启通知权限", providers.get(NOTIFICATION_CAPABILITY).isAvailable(taskId, NOTIFICATION_SCOPE)));
         descriptors.add(new CapabilityDescriptor(CALENDAR_CAPABILITY, CALENDAR_SCOPE,
-            "日历日程待办", "生成规范的系统日历日程事项", true));
+            "日历日程草稿", "准备草稿；用户确认后交给日历应用，保存结果可能未知", true));
         descriptors.add(new CapabilityDescriptor(SHARE_CAPABILITY, SHARE_SCOPE,
             "文本分享导出", "打包任务输出为可供系统分享的文本摘要", true));
         if (hasRemoteResource(taskId)) {

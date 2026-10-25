@@ -1,0 +1,17 @@
+{
+  "synthetic_only": true,
+  "receiver": "ws.xsoh.etar",
+  "offline_calendar": "SYNTHETIC Agent OS Acceptance",
+  "title": "SYNTHETIC Agent OS calendar acceptance",
+  "date": "2026-10-26",
+  "time": "15:00\u201316:00",
+  "timezone": "Asia/Kathmandu",
+  "receiver_restarted": true,
+  "receiving_editor_used": true,
+  "receiver_title_corrected_before_final_readback": true,
+  "agent_os_has_success_receipt": false,
+  "agent_os_restarted": true,
+  "agent_os_status": "outcome_unknown",
+  "synthetic_event_removed": true,
+  "offline_calendar_retained": true
+}

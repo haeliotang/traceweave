@@ -1,0 +1,21 @@
+{
+  "package": "org.traceform.agentos",
+  "version": "0.2.0",
+  "version_code": 2,
+  "apk_sha256": "d7f52d255d6a1f7e27e6150df460d0eefae25adef70a2bdc814a6346ec77bb64",
+  "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+  "same_signer_update": true,
+  "uninstalled_production": false,
+  "first_install_time_unchanged": true,
+  "visible_task_status_count_before": 2,
+  "visible_task_status_count_after": 2,
+  "new_calendar_editor_visible": true,
+  "edge_provider": "paused_due_to_signer_mismatch",
+  "cloud_enabled_for_this_test": false,
+  "existing_cloud_secret_validity_retested": false,
+  "package_metadata": {
+    "versionCode": "2 minSdk=26 targetSdk=35",
+    "firstInstallTime": "2026-10-25 10:43:26",
+    "lastUpdateTime": "2026-10-25 14:12:52"
+  }
+}

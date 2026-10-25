@@ -99,6 +99,7 @@ public final class MainActivity extends Activity {
         updateFloatPermStatus();
         expireRemoteUriGrant();
         try {
+            store.recoverExternalActions();
             int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
             if (recoveredJobs > 0 && activityStatus != null)
                 activityStatus.setText("已恢复 " + recoveredJobs + " 条本地任务调度；任务记录保持不变。");
@@ -567,6 +568,8 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
         subLp.setMargins(0, dp(4), 0, 0);
         taskInputCard.addView(submitTaskBtn, subLp);
+        addPageButton(taskInputCard, en ? "New calendar task" : "新建日程任务",
+            view -> startActivity(new Intent(this, ExternalActionActivity.class)));
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
@@ -948,7 +951,7 @@ public final class MainActivity extends Activity {
                 AgentStore.Task task = store.createTask(title);
                 ReasoningEngine planner = new HybridReasoningEngine(MainActivity.this, store);
                 ExecutionPlan plan = planner.plan(task.id, task.title,
-                    capabilityBroker.listAvailableCapabilities(task.id), store.listMemories());
+                    capabilityBroker.listAvailableCapabilities(task.id), store.listPlanningMemories());
                 store.savePlan(task.id, plan);
                 runOnUiThread(() -> {
                     setBusy(false, en ? "Task planned successfully" : "任务规划完成");
@@ -995,7 +998,9 @@ public final class MainActivity extends Activity {
             boolean hasActiveTask = false;
             AgentStore.Task pendingJitTask = null;
             for (AgentStore.Task task : tasks) {
-                if (pendingJitTask == null && AgentStore.WAITING_FOR_USER.equals(task.status)) {
+                boolean externalWaiting = task.plan != null && task.executionStep < task.plan.totalSteps()
+                    && task.plan.steps.get(task.executionStep).isExternalAction();
+                if (pendingJitTask == null && AgentStore.WAITING_FOR_USER.equals(task.status) && !externalWaiting) {
                     pendingJitTask = task;
                 }
                 hasActiveTask |= AgentStore.ACTIVE.equals(task.status);
@@ -1146,7 +1151,9 @@ public final class MainActivity extends Activity {
         card.addView(metadata);
 
         boolean en = isEnglish();
-        boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status);
+        boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
+            || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
+        addMemoryCandidateControls(card, task);
         final LinearLayout detailContainer = new LinearLayout(this);
         detailContainer.setOrientation(LinearLayout.VERTICAL);
 
@@ -1162,6 +1169,7 @@ public final class MainActivity extends Activity {
             int stepCount = (task.plan != null) ? task.plan.totalSteps() : 0;
             String statusText = AgentStore.COMPLETED.equals(task.status)
                     ? (en ? "Completed" : "已完成")
+                    : AgentStore.OUTCOME_UNKNOWN.equals(task.status) ? (en ? "Outcome unknown" : "结果未知")
                     : (en ? "Cancelled" : "已取消");
             toggleBtn.setText(statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
             toggleBtn.setTextSize(12);
@@ -1189,8 +1197,11 @@ public final class MainActivity extends Activity {
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setPadding(0, dp(4), 0, 0);
 
-        if (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
-                || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status)) {
+        boolean externalDraft = task.plan != null && task.executionStep < task.plan.totalSteps()
+            && task.plan.steps.get(task.executionStep).isExternalAction()
+            && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(task.executionStep).status);
+        if (!externalDraft && (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
+                || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status))) {
             String label = AgentStore.QUEUED.equals(task.status) ? (en ? "Start" : "开始")
                 : AgentStore.FAILED.equals(task.status) ? (en ? "Retry" : "重试") : (en ? "Resume" : "继续");
             addTaskButton(actions, label, task, AgentStore.ACTIVE);
@@ -1209,13 +1220,44 @@ public final class MainActivity extends Activity {
         taskList.addView(card);
     }
 
+    private void addMemoryCandidateControls(LinearLayout card, AgentStore.Task task) {
+        if (task.plan == null || !"pending".equals(task.plan.memoryReview)) return;
+        List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
+        if (candidates.isEmpty()) return;
+        boolean en = isEnglish();
+        LinearLayout actions = new LinearLayout(this);
+        addCardActionButton(actions, en ? "Review memory suggestions (" + candidates.size() + ")"
+            : "审核候选记忆（" + candidates.size() + "）", view -> {
+            StringBuilder preview = new StringBuilder(en ? "These are suggestions, not established facts. Save only what you accept.\n\n"
+                : "以下为候选建议，不会自动成为事实。请只保存你认可的内容。\n\n");
+            for (MemoryConsolidator.ConsolidatedItem item : candidates)
+                preview.append(item.kind).append(": ").append(item.content).append("\n\n");
+            preview.append(en ? "Source task: " : "来源任务：").append(task.id);
+            new AlertDialog.Builder(this).setTitle(en ? "Confirm long-term memory" : "确认长期记忆")
+                .setMessage(preview.toString())
+                .setNegativeButton(en ? "Later" : "稍后", null)
+                .setNeutralButton(en ? "Reject all" : "全部拒绝", (dialog, which) -> reviewMemoryCandidates(task.id, false))
+                .setPositiveButton(en ? "Confirm and save all" : "确认并保存全部", (dialog, which) -> reviewMemoryCandidates(task.id, true))
+                .show();
+        }, taskButtons);
+        card.addView(actions);
+    }
+
+    private void reviewMemoryCandidates(String taskId, boolean accept) {
+        try {
+            store.reviewMemoryCandidates(taskId, accept);
+            refreshTasks();
+            refreshMemories();
+        } catch (Exception error) { showError(error); }
+    }
+
     private String formatStepTitle(String title, boolean en) {
         if (!en || title == null) return title;
         if (title.contains("端侧综合推理") || title.contains("端侧综合分析") || title.contains("报告生成")) {
             return "On-Device Synthesis & Report";
         }
         if (title.contains("日历") || title.contains("日程")) {
-            return "Read System Calendar Events";
+            return "Prepare Calendar Event";
         }
         if (title.contains("通知") || title.contains("提醒")) {
             return "Send Local Notification";
@@ -1249,7 +1291,7 @@ public final class MainActivity extends Activity {
         if (clean.isEmpty()) return "";
         if (en) {
             if (clean.contains("已读取系统日历事件") || clean.contains("日程")) {
-                return "System calendar events accessed successfully.";
+                return "Calendar draft prepared; saving requires confirmation in the calendar app.";
             }
             if (clean.contains("已发送本地通知") || clean.contains("通知")) {
                 return "Local task notification dispatched to system tray.";
@@ -1285,7 +1327,7 @@ public final class MainActivity extends Activity {
 
         int doneCount = 0;
         for (ExecutionPlan.Step s : task.plan.steps) {
-            if (ExecutionPlan.STEP_DONE.equals(s.status)) doneCount++;
+            if (ExecutionPlan.STEP_DONE.equals(s.status) && (!s.isExternalAction() || ExternalAction.hasVerifiedEffect(s))) doneCount++;
         }
         int progressPercent = (doneCount * 100) / Math.max(1, task.plan.totalSteps());
 
@@ -1308,7 +1350,8 @@ public final class MainActivity extends Activity {
             stepHeader.setTextSize(14);
 
             boolean isCurrentStep = (task.executionStep == i);
-            boolean isStepDone = ExecutionPlan.STEP_DONE.equals(step.status);
+            boolean isStepDone = ExecutionPlan.STEP_DONE.equals(step.status)
+                && (!step.isExternalAction() || ExternalAction.hasVerifiedEffect(step));
             boolean isStepWaiting = ExecutionPlan.STEP_AWAITING_GRANT.equals(step.status)
                 || (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status));
             boolean isStepRunning = (isCurrentStep && AgentStore.ACTIVE.equals(task.status));
@@ -1317,7 +1360,23 @@ public final class MainActivity extends Activity {
             int textColor;
             String statusTag;
 
-            if (isStepDone) {
+            if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status)) {
+                statusTag = en ? "[Draft ready · confirm]" : "[草稿就绪 · 待确认]";
+                textColor = 0xFFB78103;
+                dotType = IconFactory.IconType.STATUS_DOT_AMBER;
+            } else if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status) || ExecutionPlan.STEP_UNKNOWN.equals(step.status)) {
+                statusTag = en ? "[Handed off · outcome unknown]" : "[已交接 · 结果未知]";
+                textColor = 0xFFB78103;
+                dotType = IconFactory.IconType.STATUS_DOT_AMBER;
+            } else if (ExecutionPlan.STEP_FAILED.equals(step.status) || ExecutionPlan.STEP_CANCELLED.equals(step.status)) {
+                statusTag = ExecutionPlan.STEP_FAILED.equals(step.status) ? (en ? "[Failed]" : "[失败]") : (en ? "[Cancelled]" : "[已取消]");
+                textColor = 0xFF991B1B;
+                dotType = IconFactory.IconType.STATUS_DOT_GRAY;
+            } else if (step.isExternalAction() && ExecutionPlan.STEP_DONE.equals(step.status) && !isStepDone) {
+                statusTag = en ? "[Historical entry · no receipt]" : "[历史记录 · 无成功回执]";
+                textColor = 0xFFB78103;
+                dotType = IconFactory.IconType.STATUS_DOT_AMBER;
+            } else if (isStepDone) {
                 statusTag = en ? "[Done]" : "[已完成]";
                 textColor = 0xFF1B5E20;
                 dotType = IconFactory.IconType.STATUS_DOT_GREEN;
@@ -1345,10 +1404,23 @@ public final class MainActivity extends Activity {
             headerLine.addView(stepHeader);
             stepRow.addView(headerLine);
 
-            if (step.isBuiltin()) {
+            if (step.isExternalAction()) {
+                TextView hint = new TextView(this);
+                hint.setText(en ? "Saving/sending is handled by the receiving app. A return code is not a verified receipt; dispatched actions are never replayed automatically."
+                    : "保存或发送由目标应用处理，返回码不是成功回执；已交接动作不会自动重放。");
+                hint.setTextSize(12);
+                stepRow.addView(hint);
+                if (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status)
+                        && ExecutionPlan.STEP_DRAFT_READY.equals(step.status)) {
+                    LinearLayout review = new LinearLayout(this);
+                    addCardActionButton(review, en ? "Review action draft" : "预览并确认动作", view ->
+                        startActivity(new Intent(this, ExternalActionActivity.class).putExtra(ExternalActionActivity.EXTRA_TASK_ID, task.id)), taskButtons);
+                    stepRow.addView(review);
+                }
+            } else if (step.isBuiltin()) {
                 if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
                     TextView obsView = new TextView(this);
-                    obsView.setText(en ? "On-device status: Completed multi-step safety verification" : "端侧状态：已完成任务整合与多步安全校验");
+                    obsView.setText(en ? "Local summary prepared" : "本地摘要已生成");
                     obsView.setTextSize(12);
                     obsView.setTextColor(0xFF1B5E20);
                     obsView.setPadding(dp(16), dp(2), 0, 0);
@@ -1435,7 +1507,9 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         String source;
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
-            source = en ? "Auto Consolidated" : "系统自主提取";
+            source = memory.sourceReference.startsWith("confirmed:")
+                ? (en ? "User-confirmed suggestion" : "用户已确认的建议")
+                : (en ? "Legacy inference · unreviewed" : "历史自动推断 · 未确认");
         } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
             source = "Traceform";
         } else {
@@ -1463,6 +1537,19 @@ public final class MainActivity extends Activity {
         content.setTextColor(0xFF1E293B);
         content.setPadding(0, dp(4), 0, dp(4));
         card.addView(content);
+
+        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && !memory.sourceReference.startsWith("confirmed:")) {
+            LinearLayout review = new LinearLayout(this);
+            addCardActionButton(review, en ? "Review legacy inference" : "审核历史推断", view ->
+                new AlertDialog.Builder(this).setTitle(en ? "Confirm this inference?" : "确认这条推断？")
+                    .setMessage(memory.content + "\n\n" + (en ? "Source: " : "来源：") + memory.sourceReference)
+                    .setNegativeButton(en ? "Keep untrusted" : "保留为未确认", null)
+                    .setPositiveButton(en ? "Confirm for future tasks" : "确认供后续任务使用", (dialog, which) -> {
+                        try { store.reviewLegacyMemory(memory.id, memory.updatedAt); refreshMemories(); }
+                        catch (Exception error) { showError(error); }
+                    }).show(), memoryButtons);
+            card.addView(review);
+        }
 
         TextView metadata = new TextView(this);
         metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
@@ -1662,7 +1749,7 @@ public final class MainActivity extends Activity {
         }
         new AlertDialog.Builder(this)
             .setTitle("启用可选 Traceform Provider？")
-            .setMessage("启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；读取只调用签名保护接口，不启动传感器采集、不访问私有数据库或网络。保存结果为记忆还需再次确认。")
+            .setMessage("启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；Edge 服务会只读查询自己的历史库，Agent OS 不直接打开该文件，不启动传感器采集或访问网络。保存结果为记忆还需再次确认。")
             .setNegativeButton("取消", null)
             .setPositiveButton("启用", (dialog, which) -> {
                 try {
@@ -2196,7 +2283,8 @@ public final class MainActivity extends Activity {
         if (AgentStore.QUEUED.equals(status)) return "待处理";
         if (AgentStore.ACTIVE.equals(status)) return "执行中";
         if (AgentStore.PAUSED.equals(status)) return "已暂停";
-        if (AgentStore.WAITING_FOR_USER.equals(status)) return "等待授权";
+        if (AgentStore.WAITING_FOR_USER.equals(status)) return "等待用户";
+        if (AgentStore.OUTCOME_UNKNOWN.equals(status)) return "结果未知";
         if (AgentStore.FAILED.equals(status)) return "执行失败";
         if (AgentStore.COMPLETED.equals(status)) return "已完成";
         if (AgentStore.CANCELLED.equals(status)) return "已取消";
@@ -2270,10 +2358,14 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         if (AgentStore.COMPLETED.equals(status)) {
             return IconFactory.createBadge(this, en ? "Completed" : "已完成", 0xFFDCFCE7, 0xFF166534);
+        } else if (AgentStore.OUTCOME_UNKNOWN.equals(status)) {
+            return IconFactory.createBadge(this, en ? "Outcome unknown" : "结果未知", 0xFFFEF3C7, 0xFF92400E);
+        } else if (AgentStore.FAILED.equals(status)) {
+            return IconFactory.createBadge(this, en ? "Failed" : "失败", 0xFFFEE2E2, 0xFF991B1B);
         } else if (AgentStore.ACTIVE.equals(status)) {
             return IconFactory.createBadge(this, en ? "Active" : "执行中", 0xFFDBEAFE, 0xFF1E40AF);
         } else if (AgentStore.WAITING_FOR_USER.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Need Auth" : "等待授权", 0xFFFEF3C7, 0xFF92400E);
+            return IconFactory.createBadge(this, en ? "Awaiting user" : "等待用户", 0xFFFEF3C7, 0xFF92400E);
         } else if (AgentStore.PAUSED.equals(status)) {
             return IconFactory.createBadge(this, en ? "Paused" : "已暂停", 0xFFF1F5F9, 0xFF475569);
         } else if (AgentStore.CANCELLED.equals(status)) {

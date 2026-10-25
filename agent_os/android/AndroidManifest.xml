@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.traceform.agentos"
-    android:versionCode="1"
-    android:versionName="0.1.0">
+    android:versionCode="2"
+    android:versionName="0.2.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,6 +19,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
     <queries>
+        <intent><action android:name="android.intent.action.INSERT" /><data android:mimeType="vnd.android.cursor.dir/event" /></intent>
+        <intent><action android:name="android.intent.action.SEND" /><data android:mimeType="text/plain" /></intent>
         <package android:name="org.traceform.agentos.validation.provider" />
         <package android:name="org.traceform.edge" />
     </queries>
@@ -56,6 +58,7 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
         <activity android:name=".RemoteUriPickerActivity" android:exported="false" />
+        <activity android:name=".ExternalActionActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

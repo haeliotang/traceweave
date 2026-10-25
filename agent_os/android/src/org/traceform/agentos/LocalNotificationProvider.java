@@ -45,7 +45,11 @@ final class LocalNotificationProvider implements CapabilityProvider {
 
     @Override
     public boolean isAvailable(String taskId, String scope) {
-        return supportsScope(scope) && notificationManager != null;
+        if (!supportsScope(scope) || notificationManager == null || !notificationManager.areNotificationsEnabled()) return false;
+        if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
+        NotificationChannel channel = notificationManager.getNotificationChannel(CHANNEL_ID);
+        return channel != null && channel.getImportance() != NotificationManager.IMPORTANCE_NONE;
     }
 
     @Override
@@ -79,6 +83,7 @@ final class LocalNotificationProvider implements CapabilityProvider {
             result.put("channel", CHANNEL_ID);
             result.put("notificationId", notificationId);
             result.put("posted", true);
+            result.put("status", "accepted_by_system");
             result.put("postedAt", now);
             result.put("title", notificationTitle);
             result.put("summary", notificationText);

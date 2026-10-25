@@ -26,7 +26,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -39,6 +39,7 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String FAILED = "failed";
     static final String COMPLETED = "completed";
     static final String CANCELLED = "cancelled";
+    static final String OUTCOME_UNKNOWN = "outcome_unknown";
     static final int CURRENT_EXECUTION_VERSION = 2;
     static final int MAX_DYNAMIC_STEPS = 10;
     static final int MAX_AUDIT_EVENT_LENGTH = 2048;
@@ -213,10 +214,53 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 3) {
                 upgradeMemoryProvenance(database);
                 version = 4;
+            } else if (version == 4) {
+                upgradeExternalOutcomes(database);
+                version = 5;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
         }
+    }
+
+    private void upgradeExternalOutcomes(SQLiteDatabase database) {
+        ArrayList<Task> historical = new ArrayList<>();
+        try (Cursor cursor = database.query("tasks", new String[]{"id", "created_at", "updated_at", "status", "sealed_payload",
+                "job_id", "execution_version", "execution_step"}, "status=?", new String[]{COMPLETED}, null, null, null)) {
+            while (cursor.moveToNext()) historical.add(taskFromCursor(cursor));
+        } catch (Exception error) { throw new IllegalStateException("Could not read historical task outcomes", error); }
+        for (Task task : historical) {
+            int index = firstUnverifiedAction(task.plan);
+            if (index < 0) continue;
+            try {
+                ExecutionPlan plan = task.plan.withStepUpdated(index, unknownStep(task.plan.steps.get(index)), index);
+                persistPlan(database, task, plan, OUTCOME_UNKNOWN, "historical_external_outcome_unknown:step_" + (index + 1));
+                ContentValues values = new ContentValues();
+                values.put("execution_step", index);
+                database.update("tasks", values, "id=?", new String[]{task.id});
+            } catch (Exception error) { throw new IllegalStateException("Could not preserve historical action outcome", error); }
+        }
+    }
+
+    private static int firstUnverifiedAction(ExecutionPlan plan) {
+        if (plan != null) {
+            for (int index = 0; index < plan.totalSteps(); index++) {
+                ExecutionPlan.Step step = plan.steps.get(index);
+                if (step.isExternalAction() && !ExternalAction.hasVerifiedEffect(step)) return index;
+            }
+        }
+        return -1;
+    }
+
+    private static ExecutionPlan.Step unknownStep(ExecutionPlan.Step step) {
+        String observation = step.observation;
+        try {
+            JSONObject payload = new JSONObject(observation);
+            payload.put("previousStatus", payload.optString("status", ""));
+            payload.put("status", "outcome_unknown").put("verification", "none");
+            observation = payload.toString();
+        } catch (Exception ignored) { /* Preserve non-JSON historical observations. */ }
+        return step.withStatusAndObservation(ExecutionPlan.STEP_UNKNOWN, observation, step.executedAt);
     }
 
     private void upgradeMemoryProvenance(SQLiteDatabase database) {
@@ -363,6 +407,25 @@ final class AgentStore extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put("status", targetStatus);
             values.put("updated_at", now);
+            Task current = getTask(taskId);
+            if (current.plan != null && current.executionStep < current.plan.totalSteps()) {
+                ExecutionPlan.Step step = current.plan.steps.get(current.executionStep);
+                if (ACTIVE.equals(targetStatus) && step.isExternalAction()
+                        && (ExecutionPlan.STEP_DRAFT_READY.equals(step.status)
+                            || ExecutionPlan.STEP_HANDED_OFF.equals(step.status)
+                            || ExecutionPlan.STEP_UNKNOWN.equals(step.status)))
+                    throw new IllegalStateException("Review the external action; it cannot be replayed by resume");
+                if (CANCELLED.equals(targetStatus) && step.isExternalAction()) {
+                    boolean dispatched = ExecutionPlan.STEP_HANDED_OFF.equals(step.status);
+                    JSONObject payload = taskPayload(database, taskId);
+                    ExecutionPlan updated = current.plan.withStepUpdated(current.executionStep,
+                        step.withStatusAndObservation(dispatched ? ExecutionPlan.STEP_UNKNOWN : ExecutionPlan.STEP_CANCELLED,
+                            step.observation, now), current.executionStep);
+                    payload.put("plan", updated.toJson());
+                    values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
+                    if (dispatched) values.put("status", OUTCOME_UNKNOWN);
+                }
+            }
             if (ACTIVE.equals(targetStatus) && executionVersion == 0) {
                 byte[] sealed = null;
                 try (Cursor cursor = database.query("tasks", new String[]{"sealed_payload"}, "id=?",
@@ -378,7 +441,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 values.put("execution_step", 0);
             }
             database.update("tasks", values, "id=?", new String[]{taskId});
-            appendAudit(database, taskId, "status_" + targetStatus, now);
+            appendAudit(database, taskId, "status_" + values.getAsString("status"), now);
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
@@ -429,6 +492,8 @@ final class AgentStore extends SQLiteOpenHelper {
             ExecutionPlan plan = payload.has("plan") ? ExecutionPlan.fromJson(payload.getJSONObject("plan")) : null;
             if (plan != null && stepIndex < plan.totalSteps()) {
                 ExecutionPlan.Step current = plan.steps.get(stepIndex);
+                if (current.isExternalAction())
+                    throw new IllegalStateException("An external action draft is not a completed effect");
                 long now = System.currentTimeMillis();
                 ExecutionPlan.Step updated = current.withStatusAndObservation(ExecutionPlan.STEP_DONE, observation, now);
                 plan = plan.withStepUpdated(stepIndex, updated, stepIndex + 1);
@@ -449,6 +514,144 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally {
             database.endTransaction();
         }
+    }
+
+    void prepareExternalDraft(String taskId, int stepIndex, String draft) throws Exception {
+        if (draft == null || draft.length() > 12000) throw new IllegalArgumentException("Invalid action draft");
+        new JSONObject(draft).getString("draftId");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            requireActiveStep(database, taskId, stepIndex);
+            Task task = getTask(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(stepIndex);
+            if (!step.isExternalAction() || ExecutionPlan.STEP_DRAFT_READY.equals(step.status)
+                    || ExecutionPlan.STEP_HANDED_OFF.equals(step.status) || ExecutionPlan.STEP_UNKNOWN.equals(step.status))
+                throw new IllegalStateException("External draft already prepared or dispatched");
+            persistPlan(database, task, task.plan.withStepUpdated(stepIndex,
+                step.withStatusAndObservation(ExecutionPlan.STEP_DRAFT_READY, draft, System.currentTimeMillis()), stepIndex),
+                WAITING_FOR_USER, "action_draft_ready:step_" + (stepIndex + 1));
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
+    String claimExternalAction(String taskId, int stepIndex, String draftId, JSONObject draft) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || !WAITING_FOR_USER.equals(task.status) || task.executionStep != stepIndex
+                    || task.plan == null || stepIndex >= task.plan.totalSteps())
+                throw new IllegalStateException("This action is no longer awaiting confirmation");
+            ExecutionPlan.Step step = task.plan.steps.get(stepIndex);
+            if (!step.isExternalAction() || !ExecutionPlan.STEP_DRAFT_READY.equals(step.status)
+                    || !draftId.equals(new JSONObject(step.observation).getString("draftId")))
+                throw new IllegalStateException("Stale or already dispatched action");
+            ExternalAction.intent(step.capability, draft);
+            String attempt = UUID.randomUUID().toString();
+            draft.put("draftId", draftId).put("attemptId", attempt).put("status", "handed_off");
+            if (draft.toString().length() > 12000) throw new IllegalArgumentException("Action draft is too large");
+            persistPlan(database, task, task.plan.withStepUpdated(stepIndex,
+                step.withStatusAndObservation(ExecutionPlan.STEP_HANDED_OFF, draft.toString(), System.currentTimeMillis()), stepIndex),
+                WAITING_FOR_USER, "action_handed_off:step_" + (stepIndex + 1) + ":attempt_" + attempt);
+            database.setTransactionSuccessful();
+            return attempt;
+        } finally { database.endTransaction(); }
+    }
+
+    boolean recordExternalOutcome(String taskId, int stepIndex, String attempt, boolean launchFailed, String reason) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || task.plan == null || task.executionStep != stepIndex
+                    || stepIndex >= task.plan.totalSteps()) return false;
+            ExecutionPlan.Step step = task.plan.steps.get(stepIndex);
+            if (!ExecutionPlan.STEP_HANDED_OFF.equals(step.status)) return false;
+            JSONObject observation = new JSONObject(step.observation);
+            if (!attempt.equals(observation.optString("attemptId"))) return false;
+            observation.put("status", launchFailed ? "launch_failed" : "outcome_unknown");
+            observation.put("verification", "none");
+            String state = launchFailed ? ExecutionPlan.STEP_FAILED : ExecutionPlan.STEP_UNKNOWN;
+            persistPlan(database, task, task.plan.withStepUpdated(stepIndex,
+                step.withStatusAndObservation(state, observation.toString(), System.currentTimeMillis()), stepIndex),
+                launchFailed ? FAILED : OUTCOME_UNKNOWN,
+                "action_" + state + ":step_" + (stepIndex + 1) + ":" + reason);
+            database.setTransactionSuccessful();
+            return true;
+        } finally { database.endTransaction(); }
+    }
+
+    int recoverExternalActions() throws Exception {
+        int recovered = 0;
+        for (Task task : listTasks()) {
+            if (task.plan == null || task.executionStep >= task.plan.totalSteps()) continue;
+            ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
+            if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status)
+                    && recordExternalOutcome(task.id, task.executionStep,
+                        new JSONObject(step.observation).getString("attemptId"), false, "recovered_without_receipt")) recovered++;
+        }
+        return recovered;
+    }
+
+    int reviewMemoryCandidates(String taskId, boolean accept) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || !COMPLETED.equals(task.status) || task.plan == null
+                    || !"pending".equals(task.plan.memoryReview)) return 0;
+            List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
+            if (accept) {
+                for (MemoryConsolidator.ConsolidatedItem item : candidates)
+                    createMemory(item.kind, item.content, MEMORY_SOURCE_CONSOLIDATION, "confirmed:" + task.id);
+            }
+            persistPlan(database, task, task.plan.withMemoryReview(accept ? "accepted" : "dismissed"), task.status,
+                "memory_candidates_" + (accept ? "confirmed" : "dismissed") + ":count=" + candidates.size());
+            database.setTransactionSuccessful();
+            return accept ? candidates.size() : 0;
+        } finally { database.endTransaction(); }
+    }
+
+    List<Memory> listPlanningMemories() throws Exception {
+        ArrayList<Memory> trusted = new ArrayList<>();
+        for (Memory memory : listMemories()) {
+            if (!MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) || memory.sourceReference.startsWith("confirmed:"))
+                trusted.add(memory);
+        }
+        return trusted;
+    }
+
+    boolean reviewLegacyMemory(String memoryId, long expectedUpdatedAt) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Memory memory;
+            try (Cursor cursor = database.query("memories", new String[]{"kind", "created_at", "updated_at", "sealed_payload"},
+                    "id=?", new String[]{memoryId}, null, null, null)) {
+                if (!cursor.moveToFirst()) throw new IllegalArgumentException("Memory no longer exists");
+                memory = memoryFromPayload(memoryId, cursor.getString(0), cursor.getLong(1), cursor.getLong(2),
+                    unseal(memoryAad(memoryId), cursor.getBlob(3)));
+            }
+            if (!MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) || memory.sourceReference.startsWith("confirmed:")) return false;
+            if (memory.updatedAt != expectedUpdatedAt) throw new IllegalStateException("Memory changed; review its latest version");
+            updateMemory(memory.id, memory.kind, memory.content, memory.source, "confirmed:" + memory.sourceReference);
+            if (exists(database, "tasks", memory.sourceReference))
+                appendAudit(database, memory.sourceReference, "legacy_memory_confirmed:" + memory.id, System.currentTimeMillis());
+            database.setTransactionSuccessful();
+            return true;
+        } finally { database.endTransaction(); }
+    }
+
+    private void persistPlan(SQLiteDatabase database, Task task, ExecutionPlan plan, String status, String event) throws Exception {
+        JSONObject payload = taskPayload(database, task.id);
+        payload.put("plan", plan.toJson());
+        ContentValues values = new ContentValues();
+        values.put("status", status);
+        values.put("updated_at", System.currentTimeMillis());
+        values.put("sealed_payload", seal(task.id, payload.toString().getBytes(StandardCharsets.UTF_8)));
+        database.update("tasks", values, "id=?", new String[]{task.id});
+        appendAudit(database, task.id, event, System.currentTimeMillis());
     }
 
     void saveNoteCheckpoint(String taskId, String note) throws Exception {
@@ -472,17 +675,20 @@ final class AgentStore extends SQLiteOpenHelper {
             }
             requireActiveStep(database, taskId, currentStep);
             JSONObject payload = taskPayload(database, taskId);
+            if (execVersion >= 2 && (!payload.has("plan")
+                    || !ExecutionPlan.fromJson(payload.getJSONObject("plan")).isComplete()))
+                throw new IllegalStateException("Unverified steps cannot complete a task");
             if (execVersion == 1 && payload.optString("checkpointNote", "").isEmpty())
                 throw new IllegalStateException("The local note checkpoint is missing");
             payload.put("result", result);
             long now = System.currentTimeMillis();
             ContentValues values = new ContentValues();
             values.put("status", COMPLETED);
-            values.put("execution_step", currentStep + 1);
+            values.put("execution_step", execVersion == 1 ? currentStep + 1 : currentStep);
             values.put("updated_at", now);
             values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
             database.update("tasks", values, "id=?", new String[]{taskId});
-            appendAudit(database, taskId, "executor_step_" + (currentStep + 1) + "_saved", now);
+            if (execVersion == 1) appendAudit(database, taskId, "executor_step_" + (currentStep + 1) + "_saved", now);
             appendAudit(database, taskId, "task_succeeded", now);
             database.setTransactionSuccessful();
         } finally {
@@ -690,36 +896,40 @@ final class AgentStore extends SQLiteOpenHelper {
     byte[] exportArchive(char[] passphrase) throws Exception {
         SQLiteDatabase database = getReadableDatabase();
         MemoryArchive.Data data = new MemoryArchive.Data();
-        try (Cursor cursor = database.query(
-                "tasks", new String[]{"id", "created_at", "updated_at", "status", "sealed_payload",
-                    "job_id", "execution_version", "execution_step"},
-                null, null, null, null, "updated_at DESC")) {
-            while (cursor.moveToNext()) {
-                data.tasks.add(taskFromCursor(cursor));
+        database.beginTransactionNonExclusive();
+        try {
+            try (Cursor cursor = database.query(
+                    "tasks", new String[]{"id", "created_at", "updated_at", "status", "sealed_payload",
+                        "job_id", "execution_version", "execution_step"},
+                    null, null, null, null, "updated_at DESC")) {
+                while (cursor.moveToNext()) {
+                    data.tasks.add(taskFromCursor(cursor));
+                }
             }
-        }
-        try (Cursor cursor = database.query(
-                "memories", new String[]{"id", "kind", "created_at", "updated_at", "sealed_payload"},
-                null, null, null, null, "updated_at DESC")) {
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(0);
-                data.memories.add(memoryFromPayload(id, cursor.getString(1), cursor.getLong(2), cursor.getLong(3),
-                    unseal(memoryAad(id), cursor.getBlob(4))));
+            try (Cursor cursor = database.query(
+                    "memories", new String[]{"id", "kind", "created_at", "updated_at", "sealed_payload"},
+                    null, null, null, null, "updated_at DESC")) {
+                while (cursor.moveToNext()) {
+                    String id = cursor.getString(0);
+                    data.memories.add(memoryFromPayload(id, cursor.getString(1), cursor.getLong(2), cursor.getLong(3),
+                        unseal(memoryAad(id), cursor.getBlob(4))));
+                }
             }
-        }
-        try (Cursor cursor = database.query("audit", new String[]{"id", "task_id", "occurred_at", "event"},
-                null, null, null, null, "occurred_at ASC")) {
-            while (cursor.moveToNext()) {
-                data.audit.add(new AuditEvent(cursor.getString(0), cursor.getString(1), cursor.getLong(2), cursor.getString(3)));
+            try (Cursor cursor = database.query("audit", new String[]{"id", "task_id", "occurred_at", "event"},
+                    null, null, null, null, "occurred_at ASC")) {
+                while (cursor.moveToNext()) {
+                    data.audit.add(new AuditEvent(cursor.getString(0), cursor.getString(1), cursor.getLong(2), cursor.getString(3)));
+                }
             }
-        }
-        try (Cursor cursor = database.query("tombstones", new String[]{"entity_type", "entity_id", "deleted_at"},
-                null, null, null, null, "deleted_at ASC")) {
-            while (cursor.moveToNext()) {
-                data.tombstones.add(new Tombstone(cursor.getString(0), cursor.getString(1), cursor.getLong(2)));
+            try (Cursor cursor = database.query("tombstones", new String[]{"entity_type", "entity_id", "deleted_at"},
+                    null, null, null, null, "deleted_at ASC")) {
+                while (cursor.moveToNext()) {
+                    data.tombstones.add(new Tombstone(cursor.getString(0), cursor.getString(1), cursor.getLong(2)));
+                }
             }
-        }
-        data.exportedAt = System.currentTimeMillis();
+            data.exportedAt = System.currentTimeMillis();
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
         return MemoryArchive.encrypt(data, passphrase);
     }
 
@@ -762,11 +972,27 @@ final class AgentStore extends SQLiteOpenHelper {
                 }
                 String importedStatus = ACTIVE.equals(task.status) ? PAUSED : task.status;
                 int jobId = allocateJobId(database, task.id);
+                int importedStep = task.executionStep;
                 JSONObject payload = new JSONObject().put("title", task.title)
                     .put("checkpointNote", task.checkpointNote).put("result", task.result);
-                if (task.plan != null) {
-                    payload.put("plan", task.plan.toJson());
+                ExecutionPlan importedPlan = task.plan;
+                if (importedPlan != null && task.executionStep < importedPlan.totalSteps()) {
+                    ExecutionPlan.Step step = importedPlan.steps.get(task.executionStep);
+                    if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status)) {
+                        JSONObject observation = new JSONObject(step.observation);
+                        observation.put("status", "outcome_unknown").put("verification", "none");
+                        importedPlan = importedPlan.withStepUpdated(task.executionStep,
+                            step.withStatusAndObservation(ExecutionPlan.STEP_UNKNOWN, observation.toString(), step.executedAt), task.executionStep);
+                        importedStatus = OUTCOME_UNKNOWN;
+                    }
                 }
+                int historicalAction = COMPLETED.equals(task.status) ? firstUnverifiedAction(importedPlan) : -1;
+                if (historicalAction >= 0) {
+                    importedPlan = importedPlan.withStepUpdated(historicalAction, unknownStep(importedPlan.steps.get(historicalAction)), historicalAction);
+                    importedStep = historicalAction;
+                    importedStatus = OUTCOME_UNKNOWN;
+                }
+                if (importedPlan != null) payload.put("plan", importedPlan.toJson());
                 ContentValues values = new ContentValues();
                 values.put("id", task.id);
                 values.put("created_at", task.createdAt);
@@ -774,10 +1000,12 @@ final class AgentStore extends SQLiteOpenHelper {
                 values.put("status", importedStatus);
                 values.put("job_id", jobId);
                 values.put("execution_version", task.executionVersion);
-                values.put("execution_step", task.executionStep);
+                values.put("execution_step", importedStep);
                 values.put("sealed_payload", seal(task.id, payload.toString().getBytes(StandardCharsets.UTF_8)));
                 database.insertOrThrow("tasks", null, values);
                 if (ACTIVE.equals(task.status)) appendAudit(database, task.id, "task_imported_paused", System.currentTimeMillis());
+                if (OUTCOME_UNKNOWN.equals(importedStatus) && !OUTCOME_UNKNOWN.equals(task.status))
+                    appendAudit(database, task.id, "imported_action_outcome_unknown", System.currentTimeMillis());
                 tasksImported++;
                 importedTaskIds.add(task.id);
             }

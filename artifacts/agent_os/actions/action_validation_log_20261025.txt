@@ -1,0 +1,26 @@
+--------- beginning of main
+10-25 13:53:33.482 28798 28826 I AgentOsActionsValidation: PASS action_flow checks=1 mode=SEED_UI
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: FAIL IllegalStateException: assertion: real calendar return is unknown, not succeeded
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: java.lang.IllegalStateException: assertion: real calendar return is unknown, not succeeded
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.check(ActionFlowValidationActivity.java:250)
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.verifyUi(ActionFlowValidationActivity.java:204)
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.lambda$onCreate$1$org-traceform-agentos-ActionFlowValidationActivity(ActionFlowValidationActivity.java:30)
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity$$ExternalSyntheticLambda10.run(D8$$SyntheticClass:0)
+10-25 13:57:48.159 29285 29314 E AgentOsActionsValidation: 	at java.lang.Thread.run(Thread.java:1572)
+10-25 13:57:48.159 29285 29314 I AgentOsActionsValidation: FAIL IllegalStateException: assertion: real calendar return is unknown, not succeeded
+10-25 14:00:27.106 29379 29407 I AgentOsActionsValidation: PASS action_flow checks=17 mode=VERIFY_UI
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: FAIL IllegalStateException: assertion: data schema upgrade preserves encryption envelope version 3
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: java.lang.IllegalStateException: assertion: data schema upgrade preserves encryption envelope version 3
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.check(ActionFlowValidationActivity.java:306)
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.verifyUpgrade(ActionFlowValidationActivity.java:228)
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity.lambda$onCreate$1$org-traceform-agentos-ActionFlowValidationActivity(ActionFlowValidationActivity.java:32)
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: 	at org.traceform.agentos.ActionFlowValidationActivity$$ExternalSyntheticLambda11.run(D8$$SyntheticClass:0)
+10-25 14:02:15.695 29572 29642 E AgentOsActionsValidation: 	at java.lang.Thread.run(Thread.java:1572)
+10-25 14:02:15.695 29572 29642 I AgentOsActionsValidation: FAIL IllegalStateException: assertion: data schema upgrade preserves encryption envelope version 3
+10-25 14:02:52.921 29747 29775 I AgentOsActionsValidation: SYNTHETIC calendar start=1792915920000 end=1792915980000
+10-25 14:02:52.922 29747 29775 I AgentOsActionsValidation: PASS action_flow checks=17 mode=VERIFY_UI
+10-25 14:03:29.606 29798 29826 I AgentOsActionsValidation: PASS action_flow checks=13 mode=VERIFY_UPGRADE
+10-25 14:03:31.724 29877 29906 I AgentOsActionsValidation: SYNTHETIC calendar start=1792915920000 end=1792915980000
+10-25 14:03:31.726 29877 29906 I AgentOsActionsValidation: PASS action_flow checks=17 mode=VERIFY_UI
+10-25 14:04:31.591 30137 30155 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE
+10-25 14:04:33.609 30209 30237 I AgentOsActionsValidation: PASS action_flow checks=6 mode=VERIFY_RESTART

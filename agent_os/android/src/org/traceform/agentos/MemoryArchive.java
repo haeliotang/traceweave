@@ -28,7 +28,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 final class MemoryArchive {
     private static final String FORMAT = "org.traceform.agentos.memory";
-    private static final int SCHEMA_VERSION = 3;
+    private static final int SCHEMA_VERSION = 4;
+    private static final int ENCRYPTION_VERSION = 3;
     private static final int PBKDF2_ITERATIONS = 600000;
     private static final int SALT_BYTES = 16;
     private static final int NONCE_BYTES = 12;
@@ -92,7 +93,7 @@ final class MemoryArchive {
         }
         int version = headerBuffer.get() & 0xff;
         int iterations = headerBuffer.getInt();
-        if (version < 1 || version > SCHEMA_VERSION) throw new IOException("Unsupported archive encryption version");
+        if (version < 1 || version > ENCRYPTION_VERSION) throw new IOException("Unsupported archive encryption version");
         if (iterations != PBKDF2_ITERATIONS) throw new IOException("Unsupported archive key derivation parameters");
         byte[] salt = new byte[SALT_BYTES];
         byte[] nonce = new byte[NONCE_BYTES];
@@ -125,7 +126,7 @@ final class MemoryArchive {
     private static byte[] header(byte[] salt, byte[] nonce) {
         return ByteBuffer.allocate(HEADER_BYTES).order(ByteOrder.BIG_ENDIAN)
             .put(MAGIC)
-            .put((byte) SCHEMA_VERSION)
+            .put((byte) ENCRYPTION_VERSION)
             .putInt(PBKDF2_ITERATIONS)
             .put(salt)
             .put(nonce)
@@ -260,7 +261,7 @@ final class MemoryArchive {
             if (!AgentStore.QUEUED.equals(status) && !AgentStore.ACTIVE.equals(status)
                     && !AgentStore.PAUSED.equals(status) && !AgentStore.WAITING_FOR_USER.equals(status)
                     && !AgentStore.FAILED.equals(status) && !AgentStore.COMPLETED.equals(status)
-                    && !AgentStore.CANCELLED.equals(status))
+                    && !AgentStore.CANCELLED.equals(status) && !AgentStore.OUTCOME_UNKNOWN.equals(status))
                 throw new IOException("The archive contains an invalid task status");
             int maxStep = executionVersion >= 2 ? AgentStore.MAX_DYNAMIC_STEPS : 2;
             if (executionVersion < 0 || executionVersion > AgentStore.CURRENT_EXECUTION_VERSION

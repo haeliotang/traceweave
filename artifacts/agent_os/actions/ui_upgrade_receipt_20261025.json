@@ -1,0 +1,19 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T08:18:31.690365+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_UPGRADE",
+      "pid": 29798,
+      "passed": true,
+      "result": "10-25 14:03:29.606 29798 29826 I AgentOsActionsValidation: PASS action_flow checks=13 mode=VERIFY_UPGRADE"
+    },
+    {
+      "case": "VERIFY_UI",
+      "pid": 29877,
+      "passed": true,
+      "result": "10-25 14:03:31.726 29877 29906 I AgentOsActionsValidation: PASS action_flow checks=17 mode=VERIFY_UI"
+    }
+  ]
+}

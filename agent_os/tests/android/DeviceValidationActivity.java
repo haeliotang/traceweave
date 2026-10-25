@@ -185,7 +185,7 @@ public final class DeviceValidationActivity extends Activity {
     }
 
     private String verifyDaemonUnavailableFailsClosed() {
-        JSONObject response = new AgentSystemBridge("127.0.0.1", 0).ping();
+        JSONObject response = AgentSystemBridge.getInstance().ping();
         if ("ok".equals(response.optString("status")) || response.optBoolean("fallback")) {
             throw new IllegalStateException("An unavailable daemon was reported as active");
         }
@@ -268,15 +268,15 @@ public final class DeviceValidationActivity extends Activity {
             }
 
             SQLiteDatabase database = migrated.getReadableDatabase();
-            if (database.getVersion() != 4 || !tableExists(database, "memories")
+            if (database.getVersion() != 5 || !tableExists(database, "memories")
                     || !tableExists(database, "tombstones") || auditCount(database, task.id) != 3) {
-                throw new IllegalStateException("The version 1 to 4 migration did not preserve schema and audit data");
+                throw new IllegalStateException("The version 1 to 5 migration did not preserve schema and audit data");
             }
         } finally {
             migrated.close();
         }
 
-        return "PASS: database v1→v4 migration preserved the encrypted task and audit history, assigned a job ID, "
+        return "PASS: database v1→v5 migration preserved the encrypted task and audit history, assigned a job ID, "
             + "and re-queued a legacy active journal entry.";
     }
 
@@ -311,7 +311,7 @@ public final class DeviceValidationActivity extends Activity {
             AgentStore.Memory migrated = findMemory(store.listMemories(), legacy.id);
             if (migrated == null || !"SYNTHETIC legacy memory stays private".equals(migrated.content)
                     || !AgentStore.MEMORY_SOURCE_USER.equals(migrated.source) || !migrated.sourceReference.isEmpty()
-                    || store.getReadableDatabase().getVersion() != 4) {
+                    || store.getReadableDatabase().getVersion() != 5) {
                 throw new IllegalStateException("The v3 memory migration did not preserve content and mark its source");
             }
 
@@ -409,7 +409,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(authorizedTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(authorizedTask.id));
             AgentStore.Task completed = awaitTaskStatus(store, authorizedTask.id, AgentStore.COMPLETED);
-            if (completed.executionStep != 3 || completed.checkpointNote.isEmpty()
+            if (completed.executionStep != (completed.plan == null ? 2 : completed.plan.totalSteps()) || completed.checkpointNote.isEmpty()
                     || !completed.result.contains(authorizedTask.title)
                     || !completed.result.contains(completed.checkpointNote)) {
                 throw new IllegalStateException("The executor did not persist its checkpoint and result");
@@ -437,7 +437,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(waitingTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(waitingTask.id));
             AgentStore.Task resumed = awaitTaskStatus(store, waitingTask.id, AgentStore.COMPLETED);
-            if (resumed.executionStep != 3 || resumed.result.isEmpty())
+            if (resumed.executionStep != (resumed.plan == null ? 2 : resumed.plan.totalSteps()) || resumed.result.isEmpty())
                 throw new IllegalStateException("The authorized task did not resume to completion");
 
             return "PASS: scheduled local execution saved both steps; missing authorization waited and audited, "
@@ -476,7 +476,7 @@ public final class DeviceValidationActivity extends Activity {
             store.transition(pausedTask.id, AgentStore.ACTIVE);
             AgentScheduler.scheduleTask(this, store.getTask(pausedTask.id));
             AgentStore.Task resumed = awaitTaskStatus(store, pausedTask.id, AgentStore.COMPLETED);
-            if (resumed.executionStep != 3 || !paused.checkpointNote.equals(resumed.checkpointNote)
+            if (resumed.executionStep != (resumed.plan == null ? 2 : resumed.plan.totalSteps()) || !paused.checkpointNote.equals(resumed.checkpointNote)
                     || auditEventCount(database, pausedTask.id,
                         CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY,
                             CapabilityBroker.DEMO_NOTE_SCOPE)) != 1
@@ -569,7 +569,7 @@ public final class DeviceValidationActivity extends Activity {
         store.transition(pausedTask.id, AgentStore.ACTIVE);
         AgentScheduler.scheduleTask(this, store.getTask(pausedTask.id));
         AgentStore.Task resumed = awaitTaskStatus(store, pausedTask.id, AgentStore.COMPLETED);
-        if (resumed.executionStep != 3 || !paused.checkpointNote.equals(resumed.checkpointNote)
+        if (resumed.executionStep != (resumed.plan == null ? 2 : resumed.plan.totalSteps()) || !paused.checkpointNote.equals(resumed.checkpointNote)
                 || auditEventCount(database, pausedTask.id,
                     CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_NOTE_CAPABILITY,
                         CapabilityBroker.DEMO_NOTE_SCOPE)) != 1
@@ -648,6 +648,11 @@ public final class DeviceValidationActivity extends Activity {
 
     private void prepareExecutorCheckpoint(AgentStore store, CapabilityBroker broker, AgentStore.Task task)
             throws Exception {
+        ExecutionPlan.Step noteStep = new ExecutionPlan.Step(0, "note", CapabilityBroker.DEMO_NOTE_CAPABILITY,
+            CapabilityBroker.DEMO_NOTE_SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+        ExecutionPlan.Step summaryStep = new ExecutionPlan.Step(1, "summary", "builtin.synthesis", "local_inference",
+            "", ExecutionPlan.STEP_PENDING, "", 0);
+        store.savePlan(task.id, new ExecutionPlan(task.id, task.title, Arrays.asList(noteStep, summaryStep), System.currentTimeMillis(), 0));
         broker.grant(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
         store.transition(task.id, AgentStore.ACTIVE);
         store.recordStepStarted(task.id, 0);
@@ -705,7 +710,7 @@ public final class DeviceValidationActivity extends Activity {
                     CapabilityBroker.DEMO_NOTE_SCOPE));
             int step1Count = auditEventCount(database, taskId, "executor_step_1_saved");
             int step2Count = auditEventCount(database, taskId, "executor_step_2_saved");
-            if (task.executionStep != 3 || task.checkpointNote.isEmpty() || task.result.isEmpty()
+            if (task.executionStep != (task.plan == null ? 2 : task.plan.totalSteps()) || task.checkpointNote.isEmpty() || task.result.isEmpty()
                     || remainingGrant != 0 || invokeCount != 1 || step1Count != 1 || step2Count != 1) {
                 throw new IllegalStateException("Checkpoint verification failed: step=" + task.executionStep
                     + ", hasNote=" + !task.checkpointNote.isEmpty() + ", hasResult=" + !task.result.isEmpty()
@@ -1067,7 +1072,7 @@ public final class DeviceValidationActivity extends Activity {
             List<ExecutionPlan.Step> executedSteps = new ArrayList<>();
             executedSteps.add(done0);
             String synthesis = planner.synthesize("task-2", "整理便笺并检查设备状态与历史预测", executedSteps);
-            if (!synthesis.contains("本地演示结果") || !synthesis.contains("观察数据测试") || !synthesis.contains("端侧推演分析")) {
+            if (!synthesis.contains("本地演示结果") || !synthesis.contains("观察数据测试") || !synthesis.contains("端侧推理分析")) {
                 throw new IllegalStateException("Synthesis text missing expected structure: " + synthesis);
             }
 
@@ -1112,7 +1117,7 @@ public final class DeviceValidationActivity extends Activity {
                     || !ExecutionPlan.STEP_DONE.equals(completed1.plan.steps.get(2).status))
                 throw new IllegalStateException("Not all steps marked DONE in Task1");
             if (!completed1.result.contains("本地演示结果") || !completed1.result.contains("合成示例便笺")
-                    || !completed1.result.contains("合成状态") || !completed1.result.contains("端侧推演分析"))
+                    || !completed1.result.contains("设备状态") || !completed1.result.contains("端侧推理分析"))
                 throw new IllegalStateException("Task1 result missing expected components: " + completed1.result);
 
             // Verify audits for task1
@@ -1484,7 +1489,7 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Traceform observation unexpected content: " + traceformObs);
             }
 
-            if (!completed.result.contains("端侧推演分析") || !completed.result.contains("本地演示结果")) {
+            if (!completed.result.contains("端侧推理分析") || !completed.result.contains("本地演示结果")) {
                 throw new IllegalStateException("Final synthesis result incomplete: " + completed.result);
             }
 
@@ -1748,7 +1753,7 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Cloud-planned task did not complete: " + completed2.status);
             }
             boolean validResult = (completed2.result.contains("本地演示结果") || completed2.result.contains("端侧 SLM 离线推演报告"))
-                && (completed2.result.contains("端侧推演分析") || completed2.result.contains("本地推演结论"));
+                && (completed2.result.contains("端侧推理分析") || completed2.result.contains("本地推理结论"));
             if (!validResult) {
                 throw new IllegalStateException("Result missing expected components: " + completed2.result);
             }
@@ -1860,7 +1865,7 @@ public final class DeviceValidationActivity extends Activity {
             JSONObject calJson = new JSONObject(calJsonStr);
             if (!"android.intent.action.INSERT".equals(calJson.optString("intent_action"))
                     || !"content://com.android.calendar/events".equals(calJson.optString("intent_uri"))
-                    || calJson.optLong("startTime") <= 0) {
+                    || calJson.optLong("startTime") != 0 || !"prepared".equals(calJson.optString("status"))) {
                 throw new IllegalStateException("Calendar provider output invalid: " + calJsonStr);
             }
 
@@ -1974,112 +1979,29 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Associative memory ranking failed for query2, expected memMeeting first: " + (top2.isEmpty() ? "none" : top2.get(0).content));
             }
 
-            // =========================================================================
-            // PART 2: Direction 1 - Automatic Memory Consolidation on Task Completion
-            // =========================================================================
-            String taskGoalA = "安排下周项目复盘会议日程";
-            AgentStore.Task taskA = store.createTask(taskGoalA);
-            HybridReasoningEngine engine = new HybridReasoningEngine(this, store, new CloudModelConfig(false, "", "", "", 3000, 0.1));
-
-            ExecutionPlan planA = engine.plan(taskA.id, taskGoalA, broker.listAvailableCapabilities(taskA.id), store.listMemories());
-            store.savePlan(taskA.id, planA);
-
-            // Grant calendar & note permissions
-            broker.grant(taskA.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
-            broker.grant(taskA.id, CapabilityBroker.CALENDAR_CAPABILITY, CapabilityBroker.CALENDAR_SCOPE);
-
-            store.transition(taskA.id, AgentStore.ACTIVE);
-            new AgentExecutor(store, broker, engine).execute(taskA.id, new java.util.concurrent.atomic.AtomicBoolean(false));
-
-            AgentStore.Task completedA = store.getTask(taskA.id);
-            if (!AgentStore.COMPLETED.equals(completedA.status)) {
-                throw new IllegalStateException("Task A did not complete: " + completedA.status);
-            }
-
-            // Verify that MemoryConsolidator automatically ran and produced a consolidated memory
-            List<AgentStore.Memory> consolidatedMems = new ArrayList<>();
-            for (AgentStore.Memory m : store.listMemories()) {
-                if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(m.source)) {
-                    consolidatedMems.add(m);
-                }
-            }
-            if (consolidatedMems.isEmpty()) {
-                throw new IllegalStateException("No consolidated memories found after Task A completion");
-            }
-
-            boolean hasCalendarConsolidation = false;
-            for (AgentStore.Memory cm : consolidatedMems) {
-                if (cm.content.contains("日程待办")) hasCalendarConsolidation = true;
-            }
-            if (!hasCalendarConsolidation) {
-                throw new IllegalStateException("Consolidated memory missing expected calendar fact: " + consolidatedMems.get(0).content);
-            }
-
-            if (auditEventCount(database, taskA.id, "memory_consolidated:count=1") != 1
-                    && auditEventCount(database, taskA.id, "memory_consolidated:count=2") != 1) {
-                throw new IllegalStateException("Task A missing memory_consolidated audit event");
-            }
-
-            // =========================================================================
-            // PART 3: In-place Deduplication & Update Verification
-            // =========================================================================
-            int memCountBeforeB = store.listMemories().size();
-            String taskGoalB = "再次安排下周项目复盘会议日程";
-            AgentStore.Task taskB = store.createTask(taskGoalB);
-            ExecutionPlan planB = engine.plan(taskB.id, taskGoalB, broker.listAvailableCapabilities(taskB.id), store.listMemories());
-            store.savePlan(taskB.id, planB);
-
-            broker.grant(taskB.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
-            broker.grant(taskB.id, CapabilityBroker.CALENDAR_CAPABILITY, CapabilityBroker.CALENDAR_SCOPE);
-
-            store.transition(taskB.id, AgentStore.ACTIVE);
-            new AgentExecutor(store, broker, engine).execute(taskB.id, new java.util.concurrent.atomic.AtomicBoolean(false));
-
-            AgentStore.Task completedB = store.getTask(taskB.id);
-            if (!AgentStore.COMPLETED.equals(completedB.status)) {
-                throw new IllegalStateException("Task B did not complete: " + completedB.status);
-            }
-
-            int memCountAfterB = store.listMemories().size();
-            // Since taskB has the exact same calendar event topic, it should update in-place rather than duplicate!
-            if (memCountAfterB != memCountBeforeB) {
-                throw new IllegalStateException("Deduplication failed: memory count grew from " + memCountBeforeB + " to " + memCountAfterB);
-            }
-
-            // =========================================================================
-            // PART 4: Direction 2 - End-to-End Dynamic Workflow & JIT Pending Flow
-            // =========================================================================
-            String taskGoalC = "查看本地便笺，然后发送系统通知，并将摘要导出分享";
-            AgentStore.Task taskC = store.createTask(taskGoalC);
-            ExecutionPlan planC = engine.plan(taskC.id, taskGoalC, broker.listAvailableCapabilities(taskC.id), store.listMemories());
-            store.savePlan(taskC.id, planC);
-
-            // Intentionally only grant Step 0 (Note), leaving Step 1 (Notification) ungranted
-            broker.grant(taskC.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
-            store.transition(taskC.id, AgentStore.ACTIVE);
-
-            new AgentExecutor(store, broker, engine).execute(taskC.id, new java.util.concurrent.atomic.AtomicBoolean(false));
-            AgentStore.Task waitingC = store.getTask(taskC.id);
-            if (!AgentStore.WAITING_FOR_USER.equals(waitingC.status)) {
-                throw new IllegalStateException("Task C should be waiting_for_user: " + waitingC.status);
-            }
-            if (waitingC.executionStep != 1) {
-                throw new IllegalStateException("Task C executionStep should be 1: " + waitingC.executionStep);
-            }
-
-            // Now grant Step 1 and Step 2, and resume execution
-            broker.grant(taskC.id, CapabilityBroker.NOTIFICATION_CAPABILITY, CapabilityBroker.NOTIFICATION_SCOPE);
-            broker.grant(taskC.id, CapabilityBroker.SHARE_CAPABILITY, CapabilityBroker.SHARE_SCOPE);
-            store.transition(taskC.id, AgentStore.ACTIVE);
-
-            new AgentExecutor(store, broker, engine).execute(taskC.id, new java.util.concurrent.atomic.AtomicBoolean(false));
-            AgentStore.Task completedC = store.getTask(taskC.id);
-            if (!AgentStore.COMPLETED.equals(completedC.status)) {
-                throw new IllegalStateException("Task C did not complete after grant resume: " + completedC.status);
-            }
-
-            return "PASS: Direction 1 (Associative memory ranking, automatic consolidation on task completion, in-place deduplication) and Direction 2 (JIT alert interrupt/resume flow and UI evolution) verified 100% on device. taskA="
-                + taskA.id + " taskB=" + taskB.id + " taskC=" + taskC.id;
+            AgentStore.Task preference = store.createTask("我偏好 SYNTHETIC user-confirmed memory");
+            ExecutionPlan.Step summary = new ExecutionPlan.Step(0, "SYNTHETIC summary", "builtin.synthesis", "local_inference",
+                "", ExecutionPlan.STEP_PENDING, "", 0);
+            store.savePlan(preference.id, new ExecutionPlan(preference.id, preference.title,
+                Collections.singletonList(summary), System.currentTimeMillis(), 0));
+            store.transition(preference.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker).execute(preference.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+            if (store.listMemories().size() != 4 || MemoryConsolidator.extractItems(store.getTask(preference.id)).isEmpty())
+                throw new IllegalStateException("Memory must remain a candidate until confirmed");
+            if (store.reviewMemoryCandidates(preference.id, true) != 1 || store.reviewMemoryCandidates(preference.id, true) != 0
+                    || store.listMemories().size() != 5)
+                throw new IllegalStateException("Explicit memory confirmation must be atomic and idempotent");
+            AgentStore.Task calendar = store.createTask("SYNTHETIC calendar preview");
+            ExecutionPlan.Step action = new ExecutionPlan.Step(0, "calendar", CapabilityBroker.CALENDAR_CAPABILITY,
+                CapabilityBroker.CALENDAR_SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+            store.savePlan(calendar.id, new ExecutionPlan(calendar.id, calendar.title,
+                Collections.singletonList(action), System.currentTimeMillis(), 0));
+            store.transition(calendar.id, AgentStore.ACTIVE);
+            new AgentExecutor(store, broker).execute(calendar.id, new java.util.concurrent.atomic.AtomicBoolean(false));
+            if (!AgentStore.WAITING_FOR_USER.equals(store.getTask(calendar.id).status)
+                    || !MemoryConsolidator.extractItems(store.getTask(calendar.id)).isEmpty())
+                throw new IllegalStateException("Calendar draft cannot complete or become a fact");
+            return "PASS: memory ranking, explicit idempotent candidate confirmation and unverified calendar rejection.";
         } finally {
             store.close();
         }

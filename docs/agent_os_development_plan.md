@@ -3,7 +3,7 @@
 > 历史验收状态（2026-10-24）：阶段 1 七项已在当前隔离 APK 上完整重跑；前六项通过，功耗/后台项完成记录但测量受屏幕点亮和 28 秒采样窗口限制。阶段 2 应用能力生态验证已通过 · 仓库：Traceform（与 Agent OS 共用同一 GitHub 远端）
 > 最新逐项结果见 [阶段 1 验收记录](agent_os_phase1_acceptance.md) 和 [当前设备收据](../artifacts/agent_os/phase1/phase1_rerun_20261024_device_receipt.json)；APK 来源摘要见 [构建报告](../artifacts/agent_os/phase1/phase1_rerun_20261024_build_report.json)。旧收据 `phase1_mvp_complete_device_receipt.json` 仅代表早期构建。
 
-> 当前安装状态（2026-10-25）：正式包已轮换开发签名并迁移加密档案；Traceform Edge 保留原签名，当前 Provider 接入暂停。后续开发优先完善动作结果、真实日历交接与用户确认的记忆写入。
+> 当前增量（2026-10-25）：正式包已轮换开发签名并迁移加密档案；Traceform Edge 保留原签名，当前 Provider 接入暂停。本轮已实现动作草稿/确认/交接/结果未知、真实日历编辑与用户确认的候选记忆；验收范围及安装结果见[动作与记忆验收](agent_os_actions_acceptance.md)。
 
 ## 1. 决策摘要
 
@@ -17,7 +17,7 @@ Traceform 与 Agent OS 可以共享 `https://github.com/haeliotang/traceform.git
 
 ### 当前实现检查点
 
-独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v4 迁移、删除墓碑、确定性两步执行器、持久化 JobScheduler 工作及加密检查点，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者、一个独立签名的只读合成 `ContentProvider`，以及默认关闭的 Traceform Provider。Broker 按任务/能力/范围实施二次授权，最多五分钟；授权在进程重启后清空。2026-10-24 的完整重跑已在 Pixel 6a 上验证真实 UI 生命周期、Broker 拒绝/授权/撤销、飞行模式本地执行、来源迁移和索引、冲突与墓碑选择、Traceform Provider，以及整机重启恢复。Traceform 适配器不直接打开其私有数据库；Edge 服务只读查询自己的历史库，不启动传感器采集；保存结果为记忆须另行确认。Android manifest 为可选云推理声明 `INTERNET`，因此离线任务通过不等于零出网证明。电池样本由屏幕功耗主导，不是独立后台计算基准。当前无云同步，档案也未经独立密码学审计；仅使用合成内容。
+独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v5 迁移、删除墓碑、确定性两步执行器、持久化 JobScheduler 工作及加密检查点，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者、一个独立签名的只读合成 `ContentProvider`，以及默认关闭的 Traceform Provider。Broker 按任务/能力/范围实施二次授权，最多五分钟；授权在进程重启后清空。2026-10-24 的完整重跑已在 Pixel 6a 上验证真实 UI 生命周期、Broker 拒绝/授权/撤销、飞行模式本地执行、来源迁移和索引、冲突与墓碑选择、Traceform Provider，以及整机重启恢复。Traceform 适配器不直接打开其私有数据库；Edge 服务只读查询自己的历史库，不启动传感器采集；保存结果为记忆须另行确认。Android manifest 为可选云推理声明 `INTERNET`，因此离线任务通过不等于零出网证明。电池样本由屏幕功耗主导，不是独立后台计算基准。当前无云同步，档案也未经独立密码学审计；仅使用合成内容。
 
 2026-10-22 的 GrapheneOS Pixel 6a 验收已确认：v1→v2 迁移保留加密任务和两条审计事件；PBKDF2-HMAC-SHA256（600,000 次）三次测量中位数为 3,089.1 ms；隔离安装间导入保留任务/记忆 ID、内容、时间戳、状态和三条审计事件；同 ID 冲突档案不会覆盖目标端内容。此前的合成验收确认错误口令拒绝、删除墓碑优先、进程重启和五分钟到期都会拒绝旧授权；本地与共签名跨应用 Provider 的授权、读取、撤销及撤销后拒绝也已通过真机验证。独立签名 Provider 的取消拒绝审计、异常审计、重试成功、即时 URI grant 撤销和进程重启后拒绝回放均已通过真机验证。当前 APK 可由 Android SDK CLI 构建并通过签名验证；这些应用层结果不代表自有系统镜像或安全更新链已验证。五分钟 URI grant 自动关闭逻辑已完成真机计时验收：来源授权记录时间为 23:21:24.766（+0545）；4 分 50 秒时验证 Activity 仍在运行，5 分 58 秒时它已自动结束、正式应用回到前台，且 Android Activity 权限清单中已无该 Provider 的 URI grant。隔离测试库记录了来源选择、任务授权和两次成功读取。验证目标包与 Provider 包随后卸载，正式应用保留安装。
 

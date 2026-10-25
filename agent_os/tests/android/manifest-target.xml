@@ -42,6 +42,7 @@
         </service>
         <activity android:name="org.traceform.agentos.CapabilityApprovalActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.RemoteUriPickerActivity" android:exported="false" />
+        <activity android:name="org.traceform.agentos.ExternalActionActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.MainActivity" android:exported="true" />
         <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true">
             <intent-filter>
