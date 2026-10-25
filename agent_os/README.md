@@ -68,6 +68,8 @@ python3 agent_os/scripts/build_android.py \
 
 The signed development APK and its source-digest report are written under the ignored `agent_os/build/` directory. The development keystore must remain outside version control and must not be used as a release key.
 
+The current local development signer is `agent_os/build/agent-os-rotation-20261025.p12` (alias `agent-os-rotation-20261025`). Its passphrase is stored in this Mac's login Keychain under service `com.inceptless.traceform.agentos.signing` and account `agent-os-rotation-20261025`; keep both the ignored keystore file and Keychain item for future same-signer updates. Replacing this signer requires an app-data archive migration and temporarily disconnects the signature-protected Traceform Edge provider.
+
 ## Stage 2 status and next gate
 
 Stage 2 application-capability validation passed on the GrapheneOS Pixel 6a on 2026-10-22. Earlier synthetic checks covered v1→v2 migration, cross-install task/memory/audit preservation, same-ID conflict preservation, wrong-passphrase rejection, tombstone precedence, five-minute Broker expiry, process-restart denial, local and cross-app grant/invocation/revoke/denial flows, provider failure/retry, and cancellation auditing. The timed URI test selected its source at 23:21:24.766 (+0545); the validation Activity remained active at 4m50s and had auto-closed by 5m58s. The production app was then resumed, and Android's activity-permission dump contained no grant for the synthetic provider URI. The isolated audit database recorded selection, task authorization, and two successful reads. Both validation packages were uninstalled afterward; the production package remains installed.

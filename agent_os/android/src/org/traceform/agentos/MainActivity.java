@@ -1559,7 +1559,7 @@ public final class MainActivity extends Activity {
 
     private void confirmCapabilityGrant(AgentStore.Task task, String label, String capability, String scope) {
         String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
-            ? "允许此任务通过 Traceform 的签名保护接口读取本机保留历史并运行固定范围的本机模拟。结果会显示在本任务界面；不会读取 Traceform 私有数据库、启动传感器采集或访问网络。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。"
+            ? "允许此任务通过 Traceform 的签名保护 Binder 接口，在 Edge 服务进程内只读查询本机保留历史并运行固定范围的本机模拟。Edge 服务会只读访问其私有的 edge.sqlite 历史库；Agent OS 不会直接访问该文件，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。"
             : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。";
         new AlertDialog.Builder(this)
             .setTitle("授权" + label + "？")
