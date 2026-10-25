@@ -1,0 +1,17 @@
+{
+  "synthetic_output_hash_checked_before_removal": true,
+  "synthetic_download_removed": true,
+  "isolated_packages_removed": [
+    "org.traceform.agentos.actionsvalidation",
+    "org.traceform.agentos.documentsvalidation"
+  ],
+  "test_reverse_port_removed": 58999,
+  "owned_fixture_servers_stopped": 1,
+  "production_package_retained": true,
+  "signing_key_retained": true,
+  "user_archive_retained": true,
+  "final_boundary_test_packages_removed": true,
+  "remaining_agent_os_packages": [
+    "org.traceform.agentos"
+  ]
+}

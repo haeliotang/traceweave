@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:26:10.808856+00:00",
+  "cases": [
+    {
+      "case": "SEED_DOCUMENT_UI",
+      "pid": 6143,
+      "passed": true,
+      "result": "10-25 20:11:10.148  6143  6191 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SEED_DOCUMENT_UI"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:28:33.305947+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_DOCUMENT_UI",
+      "pid": 6614,
+      "passed": true,
+      "result": "10-25 20:13:24.301  6614  6652 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_UI"
+    },
+    {
+      "case": "EXPORT_MIGRATION",
+      "pid": 6680,
+      "passed": true,
+      "result": "10-25 20:13:32.884  6680  6715 I AgentOsDocumentsValidation: PASS document_flow checks=12 mode=EXPORT_MIGRATION"
+    }
+  ]
+}

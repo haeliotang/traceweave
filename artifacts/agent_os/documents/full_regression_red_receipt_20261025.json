@@ -1,0 +1,144 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T15:01:27.346690+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_REVIEW_UI",
+      "pid": 11787,
+      "passed": true,
+      "result": "10-25 20:44:49.251 11787 11820 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=VERIFY_REVIEW_UI"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_UI",
+      "pid": 11844,
+      "passed": true,
+      "result": "10-25 20:44:50.793 11844 11872 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_UI"
+    },
+    {
+      "case": "VERIFY_CLOUD_UI",
+      "pid": 11896,
+      "passed": true,
+      "result": "10-25 20:44:53.226 11896 11927 I AgentOsDocumentsValidation: PASS document_flow checks=15 mode=VERIFY_CLOUD_UI"
+    },
+    {
+      "case": "DUPLICATE_RECEIPT",
+      "pid": 11947,
+      "passed": true,
+      "result": "10-25 20:44:54.717 11947 11976 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=DUPLICATE_RECEIPT"
+    },
+    {
+      "case": "INVALID_DRAFT",
+      "pid": 12002,
+      "passed": true,
+      "result": "10-25 20:44:57.388 12002 12030 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=INVALID_DRAFT"
+    },
+    {
+      "case": "STOP_TRACKING",
+      "pid": 12054,
+      "passed": true,
+      "result": "10-25 20:44:59.561 12054 12092 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=STOP_TRACKING"
+    },
+    {
+      "case": "BASELINE_CLOUD",
+      "pid": 12112,
+      "passed": true,
+      "result": "10-25 20:45:00.870 12112 12142 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=BASELINE_CLOUD"
+    },
+    {
+      "case": "VERIFY_PRIVACY",
+      "pid": 12165,
+      "passed": true,
+      "result": "10-25 20:45:02.490 12165 12193 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=VERIFY_PRIVACY"
+    },
+    {
+      "case": "VERIFY_MEMORY_REVIEW",
+      "pid": 12218,
+      "passed": true,
+      "result": "10-25 20:45:04.205 12218 12247 I AgentOsDocumentsValidation: PASS document_flow checks=10 mode=VERIFY_MEMORY_REVIEW"
+    },
+    {
+      "case": "RUN_DOCUMENTS",
+      "pid": 12272,
+      "passed": true,
+      "result": "10-25 20:45:06.978 12272 12300 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 12327,
+      "passed": true,
+      "result": "10-25 20:45:09.282 12327 12357 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "ARM_DOCUMENT_CRASH",
+      "passed": true,
+      "result": "Process terminated; VERIFY_DOCUMENT_RESTART must verify the existing file without a second write"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 12429,
+      "passed": true,
+      "result": "10-25 20:45:14.428 12429 12457 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "EXPORT_MIGRATION",
+      "pid": 12493,
+      "passed": true,
+      "result": "10-25 20:45:24.599 12493 12521 I AgentOsDocumentsValidation: PASS document_flow checks=12 mode=EXPORT_MIGRATION"
+    },
+    {
+      "case": "RUN_SUITE",
+      "pid": 12570,
+      "passed": true,
+      "result": "10-25 20:45:33.572 12570 12602 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE"
+    },
+    {
+      "case": "VERIFY_RESTART",
+      "pid": 12646,
+      "passed": true,
+      "result": "10-25 20:45:35.600 12646 12674 I AgentOsActionsValidation: PASS action_flow checks=6 mode=VERIFY_RESTART"
+    },
+    {
+      "case": "VERIFY_UPGRADE",
+      "pid": 12696,
+      "passed": true,
+      "result": "10-25 20:45:46.365 12696 12727 I AgentOsActionsValidation: PASS action_flow checks=13 mode=VERIFY_UPGRADE"
+    },
+    {
+      "case": "VERIFY_DYNAMIC_EXECUTOR",
+      "pid": 12775,
+      "passed": true,
+      "result": "10-25 20:45:49.130 12775 12803 I AgentOsValidation: PASS: multi-step dynamic execution completed 3-step plan; missing-authorization halted into WAITING_FOR_USER without repeating step 0 on resume; crash recovery at step 1 checkpoint completed without duplicate execution. task1=9c8a5d9b-39ce-48b8-94c8-d413402df1fe task2=97d43a5d-1510-4509-b192-0a535f80a345 task3=f5a3967a-bb82-440f-8c28-de680ff12d37"
+    },
+    {
+      "case": "VERIFY_EXECUTOR_LIFECYCLE",
+      "pid": 12828,
+      "passed": true,
+      "result": "10-25 20:46:01.130 12828 12857 I AgentOsValidation: PASS: pause preserved the step-1 checkpoint with no pending job; resume completed step 2 without repeating the capability call; cancellation removed the pending job and remained terminal; active-worker pause/resume and cancellation also stopped before step 2. pausedTask=b0fbd9ca-7850-43e8-bc77-71c63fcd807b cancelledTask=808e4b7f-023d-4adb-a290-3f93b7e1236e"
+    },
+    {
+      "case": "VERIFY_MEMORY_PROVENANCE",
+      "pid": 12912,
+      "passed": true,
+      "result": "10-25 20:46:21.752 12912 12953 I AgentOsValidation: PASS: v3 memory migration preserved encrypted content and marked legacy provenance; the rebuilt index found Chinese content and source; import choices kept or replaced a same-ID memory; a tombstone still won."
+    },
+    {
+      "case": "VERIFY_MEMORY_CONSOLIDATION_AND_UI",
+      "pid": 13081,
+      "passed": true,
+      "result": "10-25 20:46:23.938 13081 13110 I AgentOsValidation: PASS: memory ranking, explicit idempotent candidate confirmation and unverified calendar rejection."
+    },
+    {
+      "case": "VERIFY_DATABASE_MIGRATION",
+      "pid": 13137,
+      "passed": true,
+      "result": "10-25 20:46:26.224 13137 13165 I AgentOsValidation: PASS: database v1\u2192v6 migration preserved the encrypted task and audit history, assigned a job ID, and re-queued a legacy active journal entry."
+    },
+    {
+      "case": "VERIFY_HYBRID_CLOUD_AND_REDACTION",
+      "pid": 13186,
+      "passed": false,
+      "result": "10-25 20:46:27.545 13186 13215 I AgentOsValidation: FAIL: IllegalStateException: OpenAI response contains no choices"
+    }
+  ]
+}

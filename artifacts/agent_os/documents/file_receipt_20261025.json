@@ -1,0 +1,36 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T08:40:36.132636+00:00",
+  "cases": [
+    {
+      "case": "STOP_TRACKING",
+      "pid": 32647,
+      "passed": true,
+      "result": "10-25 14:25:26.278 32647 32699 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=STOP_TRACKING"
+    },
+    {
+      "case": "RUN_DOCUMENTS",
+      "pid": 32721,
+      "passed": true,
+      "result": "10-25 14:25:28.223 32721 32749 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 330,
+      "passed": true,
+      "result": "10-25 14:25:30.203   330   362 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "ARM_DOCUMENT_CRASH",
+      "passed": true,
+      "result": "Process terminated; VERIFY_DOCUMENT_RESTART must verify the existing file without a second write"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 456,
+      "passed": true,
+      "result": "10-25 14:25:35.231   456   484 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:24:07.735477+00:00",
+  "cases": [
+    {
+      "case": "BASELINE_CLOUD",
+      "pid": 5686,
+      "passed": true,
+      "result": "10-25 20:08:58.949  5686  5733 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=BASELINE_CLOUD"
+    },
+    {
+      "case": "VERIFY_PRIVACY",
+      "pid": 5782,
+      "passed": true,
+      "result": "10-25 20:09:00.590  5782  5838 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=VERIFY_PRIVACY"
+    },
+    {
+      "case": "VERIFY_MEMORY_REVIEW",
+      "pid": 5863,
+      "passed": true,
+      "result": "10-25 20:09:02.109  5863  5916 I AgentOsDocumentsValidation: PASS document_flow checks=10 mode=VERIFY_MEMORY_REVIEW"
+    },
+    {
+      "case": "RUN_DOCUMENTS",
+      "pid": 5943,
+      "passed": true,
+      "result": "10-25 20:09:05.114  5943  5978 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 6013,
+      "passed": true,
+      "result": "10-25 20:09:07.101  6013  6041 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    }
+  ]
+}

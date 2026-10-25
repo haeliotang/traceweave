@@ -22,9 +22,15 @@ final class CloudModelClient {
 
     ExecutionPlan requestPlan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories, CloudModelConfig config) throws Exception {
+        throw new SecurityException("Preview and approve this exact cloud request first");
+    }
+
+    CloudRequest preparePlan(AgentStore.Task task, List<CapabilityDescriptor> availableCaps, CloudModelConfig config) throws Exception {
+        if (TaskContext.localOnly(task.plan)) throw new SecurityException("This task is local-only");
         if (!config.isConfigured()) {
             throw new IllegalArgumentException("Cloud model is not configured or disabled");
         }
+        if (!isAllowedEndpointUrl(config.endpointUrl)) throw new SecurityException("Cloud endpoint must use HTTPS");
 
         JSONObject requestJson = new JSONObject();
         requestJson.put("model", config.modelName);
@@ -41,7 +47,12 @@ final class CloudModelClient {
         // User prompt with goal and memories
         JSONObject userMsg = new JSONObject();
         userMsg.put("role", "user");
-        userMsg.put("content", buildPlanningUserPrompt(userGoal, memories));
+        List<AgentStore.Memory> sanitized = new ArrayList<>();
+        for (AgentStore.Memory memory : TaskContext.memories(task.plan)) {
+            sanitized.add(new AgentStore.Memory(memory.id, memory.kind, ContextRedactor.redact(memory.content).redactedText,
+                memory.source, memory.sourceReference, memory.createdAt, memory.updatedAt));
+        }
+        userMsg.put("content", buildPlanningUserPrompt(ContextRedactor.redact(task.title).redactedText, sanitized));
         messages.put(userMsg);
 
         requestJson.put("messages", messages);
@@ -51,45 +62,27 @@ final class CloudModelClient {
         respFormat.put("type", "json_object");
         requestJson.put("response_format", respFormat);
 
-        String responseBody = executePost(config.endpointUrl, config.apiKey, requestJson.toString(), config.timeoutMillis);
-        return parsePlanResponse(taskId, userGoal, responseBody, availableCaps);
+        return new CloudRequest(task, requestJson.toString(), availableCaps, config);
+    }
+
+    ExecutionPlan requestApprovedPlan(CloudRequest request, AgentStore store) throws Exception {
+        request.consume(store);
+        store.appendTaskEvent(request.taskId, "cloud_request_authorized:planning:sha256_" + request.sha256);
+        String responseBody = executePost(request.endpoint, request.config.apiKey, request.body, request.config.timeoutMillis);
+        ExecutionPlan plan = parsePlanResponse(request.taskId, request.goal, responseBody, request.capabilities);
+        store.appendTaskEvent(request.taskId, "cloud_planning_completed:" + plan.totalSteps());
+        AgentStore.Task current = store.getTask(request.taskId);
+        if (current == null || !AgentStore.QUEUED.equals(current.status)
+                || !request.contextFingerprint.equals(TaskContext.fingerprint(current)))
+            throw new SecurityException("Task changed while the cloud request was in flight");
+        plan = plan.withContext(current.plan.context);
+        store.saveReviewedPlan(request.taskId, plan, request.contextFingerprint);
+        return plan;
     }
 
     String requestSynthesis(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps,
                            CloudModelConfig config) throws Exception {
-        if (!config.isConfigured()) {
-            throw new IllegalArgumentException("Cloud model is not configured or disabled");
-        }
-
-        JSONObject requestJson = new JSONObject();
-        requestJson.put("model", config.modelName);
-        requestJson.put("temperature", config.temperature);
-
-        JSONArray messages = new JSONArray();
-
-        JSONObject sysMsg = new JSONObject();
-        sysMsg.put("role", "system");
-        sysMsg.put("content", "You are an on-device Agent OS synthesis engine. Synthesize the user's original goal with the observations gathered from each executed step into a clear, structured analytical report.");
-        messages.put(sysMsg);
-
-        StringBuilder userContent = new StringBuilder();
-        userContent.append("User Goal: ").append(userGoal).append("\n\nExecuted Step Observations:\n");
-        for (ExecutionPlan.Step step : executedSteps) {
-            userContent.append("- Step ").append(step.index + 1).append(" (").append(step.title).append("): ")
-                       .append(step.observation.isEmpty() ? "(no observation)" : step.observation).append("\n");
-        }
-        userContent.append("\nPlease generate a concise, structured local summary report.");
-
-        JSONObject userMsg = new JSONObject();
-        userMsg.put("role", "user");
-        userMsg.put("content", userContent.toString());
-        messages.put(userMsg);
-
-        requestJson.put("messages", messages);
-
-        String responseBody = executePost(config.endpointUrl, config.apiKey, requestJson.toString(), config.timeoutMillis);
-        JSONObject root = new JSONObject(responseBody);
-        return root.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
+        throw new SecurityException("Step observations have no cloud request consent; synthesize locally");
     }
 
     private static String buildPlanningSystemPrompt(List<CapabilityDescriptor> availableCaps) {

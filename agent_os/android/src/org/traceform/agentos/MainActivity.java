@@ -570,6 +570,8 @@ public final class MainActivity extends Activity {
         taskInputCard.addView(submitTaskBtn, subLp);
         addPageButton(taskInputCard, en ? "New calendar task" : "新建日程任务",
             view -> startActivity(new Intent(this, ExternalActionActivity.class)));
+        addPageButton(taskInputCard, en ? "New verified file task" : "新建可验证文件任务",
+            view -> startActivity(new Intent(this, DocumentTaskActivity.class)));
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
@@ -943,27 +945,7 @@ public final class MainActivity extends Activity {
         if (busy) return;
         final String title = taskInput.getText().toString().trim();
         if (title.isEmpty()) return;
-        boolean en = isEnglish();
-        setBusy(true, en ? "Planning task via Hybrid Reasoning Engine..." : "正在通过混合推理引擎规划任务…");
-        taskInput.setText("");
-        new Thread(() -> {
-            try {
-                AgentStore.Task task = store.createTask(title);
-                ReasoningEngine planner = new HybridReasoningEngine(MainActivity.this, store);
-                ExecutionPlan plan = planner.plan(task.id, task.title,
-                    capabilityBroker.listAvailableCapabilities(task.id), store.listPlanningMemories());
-                store.savePlan(task.id, plan);
-                runOnUiThread(() -> {
-                    setBusy(false, en ? "Task planned successfully" : "任务规划完成");
-                    refreshTasks();
-                });
-            } catch (Exception error) {
-                runOnUiThread(() -> {
-                    setBusy(false, en ? "Task planning failed" : "任务规划失败");
-                    showError(error);
-                });
-            }
-        }).start();
+        startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_GOAL, title));
     }
 
     private void createMemory() {
@@ -1139,7 +1121,9 @@ public final class MainActivity extends Activity {
         description.setTextColor(0xFF0F172A);
         headerRow.addView(description, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
-        TextView badge = getStatusBadge(task.status);
+        TextView badge = DocumentAction.locallyVerified(task)
+            ? IconFactory.createBadge(this, isEnglish() ? "Verified" : "已验证", 0xFFDCFCE7, 0xFF166534)
+            : getStatusBadge(task.status);
         headerRow.addView(badge);
         card.addView(headerRow);
 
@@ -1154,8 +1138,25 @@ public final class MainActivity extends Activity {
         boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
             || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
         addMemoryCandidateControls(card, task);
+        if (task.plan != null && task.plan.totalSteps() == 1
+                && DocumentAction.CAPABILITY.equals(task.plan.steps.get(0).capability)) {
+            addPageButton(card, en ? "Review file and receipt" : "查看文件与回执", view ->
+                startActivity(new Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID, task.id)));
+        }
         final LinearLayout detailContainer = new LinearLayout(this);
         detailContainer.setOrientation(LinearLayout.VERTICAL);
+        if (task.plan != null && !task.plan.context.isEmpty()) {
+            addPageButton(detailContainer, en ? "Review selected task memories" : "查看本任务选定的记忆", view -> {
+                StringBuilder context = new StringBuilder(TaskContext.localOnly(task.plan)
+                    ? (en ? "Task stays local.\n\n" : "此任务保持本地。\n\n")
+                    : (en ? "Cloud planning requires a fresh, single-request approval. Later observations stay local.\n\n"
+                        : "云端规划需要新的单次请求授权；后续步骤观察保持本地。\n\n"));
+                for (AgentStore.Memory memory : TaskContext.memories(task.plan))
+                    context.append(memory.content).append("\n").append(memory.source).append(" · ").append(memory.id).append("\n\n");
+                new AlertDialog.Builder(this).setTitle(en ? "Selected memory snapshots" : "选定的记忆快照")
+                    .setMessage(context.toString()).setPositiveButton(en ? "Close" : "关闭", null).show();
+            });
+        }
 
         if (isTerminal) {
             detailContainer.setVisibility(View.GONE);
@@ -1226,6 +1227,8 @@ public final class MainActivity extends Activity {
         if (candidates.isEmpty()) return;
         boolean en = isEnglish();
         LinearLayout actions = new LinearLayout(this);
+        addCardActionButton(actions, en ? "Edit and review suggestions individually" : "逐条修改与审核候选", view ->
+            startActivity(new Intent(this, MemoryReviewActivity.class).putExtra(MemoryReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
         addCardActionButton(actions, en ? "Review memory suggestions (" + candidates.size() + ")"
             : "审核候选记忆（" + candidates.size() + "）", view -> {
             StringBuilder preview = new StringBuilder(en ? "These are suggestions, not established facts. Save only what you accept.\n\n"
@@ -1406,15 +1409,21 @@ public final class MainActivity extends Activity {
 
             if (step.isExternalAction()) {
                 TextView hint = new TextView(this);
-                hint.setText(en ? "Saving/sending is handled by the receiving app. A return code is not a verified receipt; dispatched actions are never replayed automatically."
+                hint.setText(DocumentAction.CAPABILITY.equals(step.capability)
+                    ? (en ? "A file is complete only after readback matches the approved text. Recovery verifies without writing again."
+                        : "仅在文件读回内容与确认文本一致后完成；恢复只核验，不重新写入。")
+                    : en ? "Saving/sending is handled by the receiving app. A return code is not a verified receipt; dispatched actions are never replayed automatically."
                     : "保存或发送由目标应用处理，返回码不是成功回执；已交接动作不会自动重放。");
                 hint.setTextSize(12);
                 stepRow.addView(hint);
                 if (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status)
                         && ExecutionPlan.STEP_DRAFT_READY.equals(step.status)) {
                     LinearLayout review = new LinearLayout(this);
-                    addCardActionButton(review, en ? "Review action draft" : "预览并确认动作", view ->
-                        startActivity(new Intent(this, ExternalActionActivity.class).putExtra(ExternalActionActivity.EXTRA_TASK_ID, task.id)), taskButtons);
+                    addCardActionButton(review, en ? "Review action draft" : "预览并确认动作", view -> {
+                        boolean document = DocumentAction.CAPABILITY.equals(step.capability);
+                        startActivity(new Intent(this, document ? DocumentTaskActivity.class : ExternalActionActivity.class)
+                            .putExtra(document ? DocumentTaskActivity.EXTRA_TASK_ID : ExternalActionActivity.EXTRA_TASK_ID, task.id));
+                    }, taskButtons);
                     stepRow.addView(review);
                 }
             } else if (step.isBuiltin()) {
@@ -1780,13 +1789,13 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         CloudModelConfig config = CloudModelConfig.load(this);
         cloudModelConfigButton.setText(config.enabled
-            ? (en ? "Configure Cloud Inference" : "设置端云协同参数")
-            : (en ? "Enable Hybrid Cloud Inference" : "启用端云协同推理"));
+            ? (en ? "Configure Cloud Planning" : "设置云端规划参数")
+            : (en ? "Configure Optional Cloud Planning" : "配置可选云端规划"));
         cloudModelStatus.setText(config.enabled
-            ? (en ? "Enabled (Model: " + config.modelName + ") · Pattern-based redaction before requests; not a complete privacy filter."
-                  : "已启用（模型：" + config.modelName + "） · 请求前尝试按规则遮盖部分常见敏感信息，不能保证全部移除。")
-            : (en ? "Disabled by default. Pure local deterministic reasoning, zero external network connections."
-                  : "默认关闭。仅在端侧进行确定性规则规划与离线推理，完全不发起外部网络连接。"));
+            ? (en ? "Configured (Model: " + config.modelName + ") · Each planning request needs its own preview and approval; execution observations stay local."
+                  : "已配置（模型：" + config.modelName + "） · 每次规划请求仍需预览并单独授权；执行观察保持本地。")
+            : (en ? "Cloud planning is disabled. Task planning and synthesis run locally."
+                  : "云端规划已关闭，任务规划与综合分析在本地运行。"));
     }
 
     private void promptCloudModelConfig() {
@@ -1797,7 +1806,7 @@ public final class MainActivity extends Activity {
         fields.setPadding(dp(24), dp(8), dp(24), 0);
 
         final android.widget.CheckBox enabledCheck = new android.widget.CheckBox(this);
-        enabledCheck.setText(en ? "Enable Hybrid Cloud Inference (OpenAI Compatible API)" : "启用端云协同推理（OpenAI 兼容接口）");
+        enabledCheck.setText(en ? "Allow cloud planning previews (approval required for each request)" : "允许云端规划预览（每次请求仍需单独授权）");
         enabledCheck.setChecked(current.enabled);
         fields.addView(enabledCheck);
 
@@ -1840,8 +1849,8 @@ public final class MainActivity extends Activity {
 
         new AlertDialog.Builder(this)
             .setTitle(en ? "Configure Hybrid Cloud Inference" : "配置端云协同推理")
-            .setMessage(en ? "When enabled, task objectives and relevant memories are processed by on-device pattern-based redaction before being sent to the configured endpoint. It may miss sensitive data; enable cloud requests only for content you are willing to send. Offline or timed-out requests fall back to on-device planning, and each capability still requires approval."
-                           : "启用后，任务目标和关联记忆会在发送到所配置的端点前经过端侧规则脱敏，但规则可能漏掉敏感信息；仅对你愿意发送的内容启用云端请求。断网或超时时改用端侧规划，具体能力仍需逐步授权。")
+            .setMessage(en ? "Saving this configuration sends no task. For each task, select memories, preview the exact endpoint and payload, then approve one planning request or keep the task local. Pattern redaction can miss sensitive information. Failed requests are not resent automatically; later execution observations stay local."
+                           : "保存配置不会发送任务。每次任务需选择记忆、预览实际端点与请求内容，再决定仅允许本次规划或保持本地。规则脱敏可能遗漏敏感信息；请求失败不自动重发，后续执行观察保持本地。")
             .setView(fields)
             .setNegativeButton(en ? "Cancel" : "取消", null)
             .setPositiveButton(en ? "Save Config" : "保存配置", (dialog, which) -> {

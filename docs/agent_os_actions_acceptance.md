@@ -1,5 +1,7 @@
 # 动作交接与候选记忆验收（2026-10-25）
 
+> 0.2.0 历史验收。后续 0.3.0 已加入可验证文件任务、逐条候选审核与任务级云请求授权，见[新验收记录](agent_os_documents_privacy_acceptance.md)。
+
 本轮完成四项增量：先提交签名迁移与授权说明，再收敛动作状态，接入真实日历编辑/交接，最后将推断记忆改为用户确认后写入。运行边界仍为普通 Android APK、Binder 与 JobScheduler。Traceform Edge 保留旧签名，其 Provider 接入仍暂停。
 
 ## 行为与数据契约

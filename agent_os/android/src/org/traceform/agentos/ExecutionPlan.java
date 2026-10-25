@@ -76,7 +76,8 @@ final class ExecutionPlan {
 
         boolean isExternalAction() {
             return LocalCalendarProvider.CAPABILITY.equals(capability)
-                || LocalShareProvider.CAPABILITY.equals(capability);
+                || LocalShareProvider.CAPABILITY.equals(capability)
+                || DocumentAction.CAPABILITY.equals(capability);
         }
     }
 
@@ -86,18 +87,29 @@ final class ExecutionPlan {
     final long plannedAt;
     final int currentStepIndex;
     final String memoryReview;
+    final String context;
+    final String memoryDecisions;
 
     ExecutionPlan(String id, String goal, List<Step> steps, long plannedAt, int currentStepIndex) {
         this(id, goal, steps, plannedAt, currentStepIndex, "pending");
     }
 
     ExecutionPlan(String id, String goal, List<Step> steps, long plannedAt, int currentStepIndex, String memoryReview) {
+        this(id, goal, steps, plannedAt, currentStepIndex, memoryReview, "", "{}");
+    }
+
+    ExecutionPlan(String id, String goal, List<Step> steps, long plannedAt, int currentStepIndex, String memoryReview,
+                  String context, String memoryDecisions) {
+        if (context.length() > 64000 || memoryDecisions.length() > 32000)
+            throw new IllegalArgumentException("Task context or memory review exceeds size limit");
         this.id = id == null ? "" : id;
         this.goal = goal == null ? "" : goal;
         this.steps = Collections.unmodifiableList(new ArrayList<>(steps));
         this.plannedAt = plannedAt;
         this.currentStepIndex = currentStepIndex;
         this.memoryReview = memoryReview;
+        this.context = context;
+        this.memoryDecisions = memoryDecisions;
     }
 
     int totalSteps() {
@@ -123,11 +135,19 @@ final class ExecutionPlan {
     ExecutionPlan withStepUpdated(int stepIndex, Step updatedStep, int nextCurrentIndex) {
         List<Step> newSteps = new ArrayList<>(steps);
         newSteps.set(stepIndex, updatedStep);
-        return new ExecutionPlan(id, goal, newSteps, plannedAt, nextCurrentIndex, memoryReview);
+        return new ExecutionPlan(id, goal, newSteps, plannedAt, nextCurrentIndex, memoryReview, context, memoryDecisions);
     }
 
     ExecutionPlan withMemoryReview(String review) {
-        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review);
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review, context, memoryDecisions);
+    }
+
+    ExecutionPlan withContext(String selectedContext) {
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, memoryReview, selectedContext, memoryDecisions);
+    }
+
+    ExecutionPlan withMemoryDecisions(String review, String decisions) {
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review, context, decisions);
     }
 
     JSONObject toJson() throws JSONException {
@@ -142,6 +162,8 @@ final class ExecutionPlan {
             .put("totalSteps", totalSteps())
             .put("currentStepIndex", currentStepIndex)
             .put("memoryReview", memoryReview)
+            .put("context", context)
+            .put("memoryDecisions", memoryDecisions)
             .put("steps", stepsArray);
     }
 
@@ -163,6 +185,10 @@ final class ExecutionPlan {
         String review = json.optString("memoryReview", "pending");
         if (!"pending".equals(review) && !"accepted".equals(review) && !"dismissed".equals(review))
             throw new IllegalArgumentException("Invalid memory review state");
-        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review);
+        String context = json.optString("context", "");
+        String decisions = json.optString("memoryDecisions", "{}");
+        try { new JSONObject(decisions); }
+        catch (JSONException error) { throw new IllegalArgumentException("Invalid memory decisions", error); }
+        return new ExecutionPlan(id, goal, steps, plannedAt, currentStepIndex, review, context, decisions);
     }
 }

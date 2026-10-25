@@ -1,0 +1,66 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:34:50.567677+00:00",
+  "cases": [
+    {
+      "case": "DUPLICATE_RECEIPT",
+      "pid": 7231,
+      "passed": true,
+      "result": "10-25 20:19:30.738  7231  7314 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=DUPLICATE_RECEIPT"
+    },
+    {
+      "case": "STOP_TRACKING",
+      "pid": 7375,
+      "passed": true,
+      "result": "10-25 20:19:33.136  7375  7423 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=STOP_TRACKING"
+    },
+    {
+      "case": "BASELINE_CLOUD",
+      "pid": 7444,
+      "passed": true,
+      "result": "10-25 20:19:34.332  7444  7474 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=BASELINE_CLOUD"
+    },
+    {
+      "case": "VERIFY_PRIVACY",
+      "pid": 7496,
+      "passed": true,
+      "result": "10-25 20:19:35.916  7496  7524 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=VERIFY_PRIVACY"
+    },
+    {
+      "case": "VERIFY_MEMORY_REVIEW",
+      "pid": 7550,
+      "passed": true,
+      "result": "10-25 20:19:38.676  7550  7579 I AgentOsDocumentsValidation: PASS document_flow checks=10 mode=VERIFY_MEMORY_REVIEW"
+    },
+    {
+      "case": "RUN_DOCUMENTS",
+      "pid": 7606,
+      "passed": true,
+      "result": "10-25 20:19:41.482  7606  7634 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 7660,
+      "passed": true,
+      "result": "10-25 20:19:43.638  7660  7688 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "ARM_DOCUMENT_CRASH",
+      "passed": true,
+      "result": "Process terminated; VERIFY_DOCUMENT_RESTART must verify the existing file without a second write"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 7763,
+      "passed": true,
+      "result": "10-25 20:19:48.700  7763  7791 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "SEED_CLOUD_UI",
+      "pid": 7817,
+      "passed": true,
+      "result": "10-25 20:19:50.761  7817  7849 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SEED_CLOUD_UI"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T19:58:56.680314+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_HYBRID_CLOUD_AND_REDACTION",
+      "pid": 15948,
+      "passed": false,
+      "result": "10-26 01:43:56.494 15948 15999 I AgentOsValidation: FAIL: IllegalStateException: Result missing expected components: \u3010\u7aef\u4fa7 SLM \u79bb\u7ebf\u63a8\u7406\u62a5\u544a\u3011"
+    }
+  ]
+}

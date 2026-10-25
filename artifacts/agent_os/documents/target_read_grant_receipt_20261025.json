@@ -1,0 +1,19 @@
+{
+  "package": "org.traceform.agentos.documentsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:53:49.600879+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_IMPORTED_READ_ONLY",
+      "pid": 11186,
+      "passed": true,
+      "result": "10-25 20:38:48.452 11186 11215 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_IMPORTED_READ_ONLY"
+    },
+    {
+      "case": "VERIFY_REVOKED_READ",
+      "pid": 11236,
+      "passed": true,
+      "result": "10-25 20:38:49.909 11236 11265 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=VERIFY_REVOKED_READ"
+    }
+  ]
+}

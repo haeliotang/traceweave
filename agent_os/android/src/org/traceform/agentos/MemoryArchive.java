@@ -1,7 +1,6 @@
 package org.traceform.agentos;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -28,7 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 final class MemoryArchive {
     private static final String FORMAT = "org.traceform.agentos.memory";
-    private static final int SCHEMA_VERSION = 4;
+    private static final int SCHEMA_VERSION = 5;
     private static final int ENCRYPTION_VERSION = 3;
     private static final int PBKDF2_ITERATIONS = 600000;
     private static final int SALT_BYTES = 16;
@@ -189,7 +188,7 @@ final class MemoryArchive {
             throw new IllegalArgumentException("Use a passphrase with at least 12 characters");
     }
 
-    private static String toJson(Data data) throws JSONException {
+    private static String toJson(Data data) throws Exception {
         JSONObject root = new JSONObject();
         root.put("format", FORMAT);
         root.put("schemaVersion", SCHEMA_VERSION);
@@ -201,7 +200,7 @@ final class MemoryArchive {
                 .put("executionVersion", task.executionVersion).put("executionStep", task.executionStep)
                 .put("checkpointNote", task.checkpointNote).put("result", task.result);
             if (task.plan != null) {
-                taskJson.put("plan", task.plan.toJson());
+                taskJson.put("plan", DocumentAction.withoutLocalAccess(task.plan).toJson());
             }
             tasks.put(taskJson);
         }

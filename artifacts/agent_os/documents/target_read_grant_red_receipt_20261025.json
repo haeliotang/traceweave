@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.documentsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:50:31.521222+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_IMPORTED_READ_ONLY",
+      "pid": 10664,
+      "passed": false,
+      "result": "10-25 20:35:31.894 10664 10728 I AgentOsDocumentsValidation: FAIL IllegalStateException: assertion: restarted target holds no persistent write permission"
+    }
+  ]
+}

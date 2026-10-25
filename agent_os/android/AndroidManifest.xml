@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.traceform.agentos"
-    android:versionCode="2"
-    android:versionName="0.2.0">
+    android:versionCode="3"
+    android:versionName="0.3.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -59,6 +59,9 @@
         </service>
         <activity android:name=".RemoteUriPickerActivity" android:exported="false" />
         <activity android:name=".ExternalActionActivity" android:exported="false" />
+        <activity android:name=".DocumentTaskActivity" android:exported="false" />
+        <activity android:name=".TaskReviewActivity" android:exported="false" />
+        <activity android:name=".MemoryReviewActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

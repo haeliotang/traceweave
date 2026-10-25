@@ -268,15 +268,15 @@ public final class DeviceValidationActivity extends Activity {
             }
 
             SQLiteDatabase database = migrated.getReadableDatabase();
-            if (database.getVersion() != 5 || !tableExists(database, "memories")
+            if (database.getVersion() != 6 || !tableExists(database, "memories")
                     || !tableExists(database, "tombstones") || auditCount(database, task.id) != 3) {
-                throw new IllegalStateException("The version 1 to 5 migration did not preserve schema and audit data");
+                throw new IllegalStateException("The version 1 to 6 migration did not preserve schema and audit data");
             }
         } finally {
             migrated.close();
         }
 
-        return "PASS: database v1→v5 migration preserved the encrypted task and audit history, assigned a job ID, "
+        return "PASS: database v1→v6 migration preserved the encrypted task and audit history, assigned a job ID, "
             + "and re-queued a legacy active journal entry.";
     }
 
@@ -311,7 +311,7 @@ public final class DeviceValidationActivity extends Activity {
             AgentStore.Memory migrated = findMemory(store.listMemories(), legacy.id);
             if (migrated == null || !"SYNTHETIC legacy memory stays private".equals(migrated.content)
                     || !AgentStore.MEMORY_SOURCE_USER.equals(migrated.source) || !migrated.sourceReference.isEmpty()
-                    || store.getReadableDatabase().getVersion() != 5) {
+                    || store.getReadableDatabase().getVersion() != 6) {
                 throw new IllegalStateException("The v3 memory migration did not preserve content and mark its source");
             }
 
@@ -1530,7 +1530,8 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Cloud endpoint transport policy allowed an unsafe URL");
             try {
                 CloudModelClient.parsePlanResponse("synthetic", "goal",
-                    "{\"steps\":[{\"capability\":\"demo.note.read\",\"scope\":\"other.task\"}]}",
+                    new JSONObject().put("choices", new JSONArray().put(new JSONObject().put("message",
+                        new JSONObject().put("content", "{\"steps\":[{\"capability\":\"demo.note.read\",\"scope\":\"other.task\"}]}")))).toString(),
                     broker.listAvailableCapabilities("synthetic"));
                 throw new IllegalStateException("Cloud planner accepted an unadvertised capability scope");
             } catch (SecurityException expected) {
@@ -1594,12 +1595,7 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Fallback plan invalid or null");
             }
 
-            if (auditEventCount(database, task1.id, "context_redacted:count=1") != 1) {
-                throw new IllegalStateException("Redaction audit event missing in task1");
-            }
-            int fallbackAuditCount = auditEventCount(database, task1.id, "cloud_planning_fallback:reason=error")
-                + auditEventCount(database, task1.id, "cloud_planning_fallback:reason=timeout")
-                + auditEventCount(database, task1.id, "cloud_planning_fallback:reason=offline");
+            int fallbackAuditCount = auditEventCount(database, task1.id, "cloud_planning_blocked:no_request_consent");
             if (fallbackAuditCount != 1) {
                 throw new IllegalStateException("Fallback audit event missing in task1: count=" + fallbackAuditCount);
             }
@@ -1722,7 +1718,12 @@ public final class DeviceValidationActivity extends Activity {
 
             String goal2 = "根据联系人 13988776655 整理便笺与状态";
             AgentStore.Task task2 = store.createTask(goal2);
-            ExecutionPlan cloudPlan = mockEngine.plan(task2.id, goal2, availableCaps, memories);
+            store.savePlan(task2.id, new ExecutionPlan(task2.id, goal2, Collections.emptyList(), System.currentTimeMillis(), 0)
+                .withContext(TaskContext.selected(memories, false)));
+            CloudModelClient approvedClient = new CloudModelClient();
+            CloudRequest preview = approvedClient.preparePlan(store.getTask(task2.id), availableCaps, mockConfig);
+            preview.approveOnce();
+            ExecutionPlan cloudPlan = approvedClient.requestApprovedPlan(preview, store);
             serverThread.join(4000);
 
             if (wireInspectionError[0] != null) {
@@ -1735,9 +1736,8 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Cloud plan step count mismatch: " + (cloudPlan == null ? 0 : cloudPlan.totalSteps()));
             }
 
-            if (auditEventCount(database, task2.id, "cloud_planning_started:gpt-4o-mini") != 1
-                    || auditEventCount(database, task2.id, "cloud_planning_completed:3") != 1
-                    || auditEventCount(database, task2.id, "context_redacted:count=1") != 1) {
+            if (auditEventCount(database, task2.id, "cloud_request_authorized:planning:sha256_" + preview.sha256) != 1
+                    || auditEventCount(database, task2.id, "cloud_planning_completed:3") != 1) {
                 throw new IllegalStateException("Cloud planning audit trail incomplete for task2");
             }
 
@@ -1752,14 +1752,15 @@ public final class DeviceValidationActivity extends Activity {
             if (!AgentStore.COMPLETED.equals(completed2.status)) {
                 throw new IllegalStateException("Cloud-planned task did not complete: " + completed2.status);
             }
-            boolean validResult = (completed2.result.contains("本地演示结果") || completed2.result.contains("端侧 SLM 离线推演报告"))
-                && (completed2.result.contains("端侧推理分析") || completed2.result.contains("本地推理结论"));
+            boolean validResult = completed2.result.contains(goal2)
+                && completed2.result.contains(completed2.plan.steps.get(0).observation)
+                && completed2.result.contains(completed2.plan.steps.get(1).observation);
             if (!validResult) {
                 throw new IllegalStateException("Result missing expected components: " + completed2.result);
             }
 
-            return "PASS: Hybrid cloud planner and context redaction verified on device; 5 PII categories sanitized (avg="
-                + String.format(Locale.US, "%.3f", avgRedactionMs) + "ms); offline network failure gracefully fell back to local planner with audit; wire inspection confirmed zero unmasked PII transmission; cloud plan executed cleanly to COMPLETED with JIT authorization. task1="
+            return "PASS: single-request cloud consent and context redaction verified on device; 5 synthetic PII categories sanitized (avg="
+                + String.format(Locale.US, "%.3f", avgRedactionMs) + "ms); global configuration alone stayed local; approved wire payload contained the masked fixture; cloud plan executed locally to COMPLETED with JIT authorization. task1="
                 + task1.id + " task2=" + task2.id;
         } finally {
             store.close();

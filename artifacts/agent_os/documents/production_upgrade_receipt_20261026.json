@@ -1,0 +1,27 @@
+{
+  "package": "org.traceform.agentos",
+  "version": "0.3.0",
+  "version_code": 3,
+  "same_signer_update": true,
+  "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+  "apk_sha256": "5bc75e82c4b4544ccba63d6a1f1ea30c7f55a221d9eff2fc7a7d5b4e6f74b3f7",
+  "first_install_time_unchanged": true,
+  "production_uninstalled": false,
+  "previous_release_version_code": 2,
+  "previous_verified_task_count": 2,
+  "post_update_initial_visible_task_count": 1,
+  "post_update_full_scroll_task_count": 2,
+  "viewport_title_equality_check_replaced_with_full_scroll_check": true,
+  "new_verified_file_entry_visible": true,
+  "cloud_key_or_endpoint_reconfigured": false,
+  "live_model_requests_performed": false,
+  "edge_provider_status": "paused_signer_mismatch",
+  "package_metadata": {
+    "versionCode": "3 minSdk=26 targetSdk=35",
+    "versionName": "0.3.0",
+    "lastUpdateTime": "2026-10-26 02:01:26",
+    "firstInstallTime": "2026-10-25 10:43:26"
+  },
+  "installed_apk_matches_final_build": true,
+  "final_boundary_fixes_installed": true
+}

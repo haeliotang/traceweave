@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T20:13:25.750199+00:00",
+  "cases": [
+    {
+      "case": "MEMORY_BOUNDARY",
+      "pid": 18179,
+      "passed": false,
+      "result": "10-26 01:58:25.710 18179 18209 I AgentOsDocumentsValidation: FAIL IllegalStateException: assertion: oversized combined review journal rejected atomically"
+    }
+  ]
+}

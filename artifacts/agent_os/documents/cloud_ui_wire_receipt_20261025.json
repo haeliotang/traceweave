@@ -1,0 +1,9 @@
+{
+  "synthetic_only": true,
+  "preview_without_approval_requests": 0,
+  "keep_local_requests": 0,
+  "approved_planning_requests": 1,
+  "additional_requests_after_execution": 0,
+  "wire_body_matches_preview": true,
+  "request_sha256": "416d88479416dcda308e8bfc87084e36c5be2500530b5d965e70b9020f240fe6"
+}

@@ -1,0 +1,31 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:42:15.374628+00:00",
+  "cases": [
+    {
+      "case": "INVALID_DRAFT",
+      "pid": 9191,
+      "passed": true,
+      "result": "10-25 20:27:08.494  9191  9245 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=INVALID_DRAFT"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_UI",
+      "pid": 9270,
+      "passed": true,
+      "result": "10-25 20:27:10.763  9270  9298 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_UI"
+    },
+    {
+      "case": "VERIFY_CLOUD_UI",
+      "pid": 9322,
+      "passed": true,
+      "result": "10-25 20:27:12.202  9322  9350 I AgentOsDocumentsValidation: PASS document_flow checks=15 mode=VERIFY_CLOUD_UI"
+    },
+    {
+      "case": "SEED_REVIEW_UI",
+      "pid": 9374,
+      "passed": true,
+      "result": "10-25 20:27:14.701  9374  9402 I AgentOsDocumentsValidation: PASS document_flow checks=2 mode=SEED_REVIEW_UI"
+    }
+  ]
+}

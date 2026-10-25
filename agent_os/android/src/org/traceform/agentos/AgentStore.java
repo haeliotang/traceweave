@@ -26,7 +26,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -217,6 +217,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 4) {
                 upgradeExternalOutcomes(database);
                 version = 5;
+            } else if (version == 5) {
+                // Gate older code from reopening task-context and document-receipt semantics.
+                version = 6;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -417,10 +420,13 @@ final class AgentStore extends SQLiteOpenHelper {
                     throw new IllegalStateException("Review the external action; it cannot be replayed by resume");
                 if (CANCELLED.equals(targetStatus) && step.isExternalAction()) {
                     boolean dispatched = ExecutionPlan.STEP_HANDED_OFF.equals(step.status);
+                    String observation = step.observation;
+                    if (dispatched && DocumentAction.CAPABILITY.equals(step.capability))
+                        observation = new JSONObject(observation).put("trackingStopped", true).toString();
                     JSONObject payload = taskPayload(database, taskId);
                     ExecutionPlan updated = current.plan.withStepUpdated(current.executionStep,
                         step.withStatusAndObservation(dispatched ? ExecutionPlan.STEP_UNKNOWN : ExecutionPlan.STEP_CANCELLED,
-                            step.observation, now), current.executionStep);
+                            observation, now), current.executionStep);
                     payload.put("plan", updated.toJson());
                     values.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
                     if (dispatched) values.put("status", OUTCOME_UNKNOWN);
@@ -468,6 +474,10 @@ final class AgentStore extends SQLiteOpenHelper {
         database.beginTransaction();
         try {
             JSONObject payload = taskPayload(database, taskId);
+            if (plan.context.isEmpty() && payload.has("plan")) {
+                ExecutionPlan previous = ExecutionPlan.fromJson(payload.getJSONObject("plan"));
+                plan = plan.withContext(previous.context);
+            }
             payload.put("plan", plan.toJson());
             ContentValues values = new ContentValues();
             values.put("updated_at", System.currentTimeMillis());
@@ -516,6 +526,18 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    void saveReviewedPlan(String taskId, ExecutionPlan plan, String expectedContextFingerprint) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || !QUEUED.equals(task.status) || !expectedContextFingerprint.equals(TaskContext.fingerprint(task)))
+                throw new SecurityException("Task or context changed before the reviewed plan was saved");
+            savePlan(taskId, plan);
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
     void prepareExternalDraft(String taskId, int stepIndex, String draft) throws Exception {
         if (draft == null || draft.length() > 12000) throw new IllegalArgumentException("Invalid action draft");
         new JSONObject(draft).getString("draftId");
@@ -550,6 +572,11 @@ final class AgentStore extends SQLiteOpenHelper {
             ExternalAction.intent(step.capability, draft);
             String attempt = UUID.randomUUID().toString();
             draft.put("draftId", draftId).put("attemptId", attempt).put("status", "handed_off");
+            if (DocumentAction.CAPABILITY.equals(step.capability)) {
+                draft.put("phase", "picking").put("taskId", taskId)
+                    .put("sha256", DocumentAction.sha256(draft.getString("content").getBytes(StandardCharsets.UTF_8)));
+                draft.remove("uri");
+            }
             if (draft.toString().length() > 12000) throw new IllegalArgumentException("Action draft is too large");
             persistPlan(database, task, task.plan.withStepUpdated(stepIndex,
                 step.withStatusAndObservation(ExecutionPlan.STEP_HANDED_OFF, draft.toString(), System.currentTimeMillis()), stepIndex),
@@ -594,6 +621,169 @@ final class AgentStore extends SQLiteOpenHelper {
         return recovered;
     }
 
+    Task createDocumentTask(String goal, String content, org.json.JSONArray sources) throws Exception {
+        JSONObject draft = DocumentAction.draft(content, sources);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = createTask(goal);
+            ExecutionPlan.Step step = new ExecutionPlan.Step(0, "保存 Markdown 并读回核验", DocumentAction.CAPABILITY,
+                DocumentAction.SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+            savePlan(task.id, new ExecutionPlan(task.id, task.title, java.util.Collections.singletonList(step),
+                System.currentTimeMillis(), 0));
+            transition(task.id, ACTIVE);
+            prepareExternalDraft(task.id, 0, draft.toString());
+            database.setTransactionSuccessful();
+            return getTask(task.id);
+        } finally { database.endTransaction(); }
+    }
+
+    private Task requireDocument(String taskId) throws Exception {
+        Task task = getTask(taskId);
+        if (task == null || task.plan == null || task.plan.totalSteps() != 1
+                || !DocumentAction.CAPABILITY.equals(task.plan.steps.get(0).capability))
+            throw new IllegalStateException("This is not a document task");
+        return task;
+    }
+
+    void bindDocumentTarget(String taskId, String attempt, String uri) throws Exception {
+        DocumentAction.contentUri(uri);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            if (!WAITING_FOR_USER.equals(task.status) || !ExecutionPlan.STEP_HANDED_OFF.equals(step.status)
+                    || !attempt.equals(value.optString("attemptId")) || !"picking".equals(value.optString("phase")))
+                throw new IllegalStateException("The file selection is stale or already consumed");
+            value.put("uri", uri).put("phase", "target_ready").put("localAccess", true).put("verificationId", attempt);
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_HANDED_OFF, value.toString(), System.currentTimeMillis()), 0),
+                WAITING_FOR_USER, "document_target_selected");
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
+    JSONObject claimDocumentWrite(String taskId) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            if (!WAITING_FOR_USER.equals(task.status) || !ExecutionPlan.STEP_HANDED_OFF.equals(step.status)
+                    || !"target_ready".equals(value.optString("phase")) || !value.optBoolean("localAccess"))
+                throw new IllegalStateException("Document write is not authorized or was already claimed");
+            DocumentAction.contentUri(value.getString("uri"));
+            value.put("phase", "writing");
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_HANDED_OFF, value.toString(), System.currentTimeMillis()), 0),
+                WAITING_FOR_USER, "document_write_claimed:attempt_" + value.getString("attemptId"));
+            database.setTransactionSuccessful();
+            return value;
+        } finally { database.endTransaction(); }
+    }
+
+    void selectDocumentForVerification(String taskId, String uri) throws Exception {
+        DocumentAction.contentUri(uri);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            if ((!OUTCOME_UNKNOWN.equals(task.status) && !COMPLETED.equals(task.status))
+                    || value.optString("attemptId").isEmpty())
+                throw new IllegalStateException("No dispatched document exists to verify");
+            value.put("uri", uri).put("phase", "verify_only").put("localAccess", true).put("trackingStopped", false)
+                .put("verificationId", UUID.randomUUID().toString());
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_UNKNOWN, value.toString(), System.currentTimeMillis()), 0),
+                OUTCOME_UNKNOWN, "document_read_access_selected");
+            ContentValues checkpoint = new ContentValues();
+            checkpoint.put("execution_step", 0);
+            database.update("tasks", checkpoint, "id=?", new String[]{taskId});
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
+    void completeDocumentVerification(String taskId, String attempt, String verificationId, String uri, String hash, int size) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            boolean currentRead = attempt.equals(value.optString("attemptId"))
+                && verificationId.equals(value.optString("verificationId", attempt)) && uri.equals(value.optString("uri"));
+            if (currentRead && COMPLETED.equals(task.status) && DocumentAction.hasReceipt(value)
+                    && hash.equals(value.optString("sha256")) && size == value.optInt("byteCount")) return;
+            if ((!WAITING_FOR_USER.equals(task.status) && !OUTCOME_UNKNOWN.equals(task.status))
+                    || !currentRead
+                    || !value.optBoolean("localAccess") || value.optBoolean("trackingStopped")
+                    || (!"writing".equals(value.optString("phase")) && !"verify_only".equals(value.optString("phase"))))
+                throw new IllegalStateException("This readback does not match a current document attempt");
+            byte[] expected = value.getString("content").getBytes(StandardCharsets.UTF_8);
+            if (size != expected.length || !hash.equals(DocumentAction.sha256(expected)))
+                throw new IllegalStateException("Document readback does not match the approved content");
+            long now = System.currentTimeMillis();
+            value.put("status", "verify_only".equals(value.optString("phase")) ? "verified_existing" : "created")
+                .put("phase", "verified").put("verification", "document_readback").put("sha256", hash)
+                .put("byteCount", size).put("verifiedAt", now).put("receiptOrigin", "this_installation");
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_DONE, value.toString(), now), 1), COMPLETED,
+                "document_readback_verified:sha256_" + hash);
+            JSONObject payload = taskPayload(database, taskId);
+            payload.put("result", "Markdown 读回核验一致 / Markdown readback matched\nSHA-256: " + hash);
+            ContentValues completed = new ContentValues();
+            completed.put("execution_step", 1);
+            completed.put("sealed_payload", seal(taskId, payload.toString().getBytes(StandardCharsets.UTF_8)));
+            database.update("tasks", completed, "id=?", new String[]{taskId});
+            appendAudit(database, taskId, "task_succeeded", now);
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
+    void documentOutcomeUnknown(String taskId, String attempt, String verificationId, String reason) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            if (!attempt.equals(value.optString("attemptId")) || !verificationId.equals(value.optString("verificationId", attempt))
+                    || CANCELLED.equals(task.status)) return;
+            if (OUTCOME_UNKNOWN.equals(task.status) && "none".equals(value.optString("verification"))) return;
+            value.put("status", "outcome_unknown").put("verification", "none");
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_UNKNOWN, value.toString(), System.currentTimeMillis()), 0),
+                OUTCOME_UNKNOWN, "document_outcome_unknown:" + reason);
+            ContentValues checkpoint = new ContentValues();
+            checkpoint.put("execution_step", 0);
+            database.update("tasks", checkpoint, "id=?", new String[]{taskId});
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
+    void cancelDocumentPicker(String taskId, String attempt) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = requireDocument(taskId);
+            ExecutionPlan.Step step = task.plan.steps.get(0);
+            JSONObject value = new JSONObject(step.observation);
+            if (!ExecutionPlan.STEP_HANDED_OFF.equals(step.status) || !attempt.equals(value.optString("attemptId"))
+                    || !"picking".equals(value.optString("phase")) || value.has("uri"))
+                throw new IllegalStateException("The file picker is no longer pending");
+            value.put("status", "cancelled");
+            persistPlan(database, task, task.plan.withStepUpdated(0,
+                step.withStatusAndObservation(ExecutionPlan.STEP_CANCELLED, value.toString(), System.currentTimeMillis()), 0),
+                CANCELLED, "document_picker_cancelled");
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+    }
+
     int reviewMemoryCandidates(String taskId, boolean accept) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
@@ -602,14 +792,44 @@ final class AgentStore extends SQLiteOpenHelper {
             if (task == null || !COMPLETED.equals(task.status) || task.plan == null
                     || !"pending".equals(task.plan.memoryReview)) return 0;
             List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
-            if (accept) {
-                for (MemoryConsolidator.ConsolidatedItem item : candidates)
-                    createMemory(item.kind, item.content, MEMORY_SOURCE_CONSOLIDATION, "confirmed:" + task.id);
-            }
-            persistPlan(database, task, task.plan.withMemoryReview(accept ? "accepted" : "dismissed"), task.status,
-                "memory_candidates_" + (accept ? "confirmed" : "dismissed") + ":count=" + candidates.size());
+            int saved = 0;
+            for (int index = 0; index < candidates.size(); index++)
+                saved += reviewMemoryCandidate(taskId, index, accept, candidates.get(index).content);
             database.setTransactionSuccessful();
-            return accept ? candidates.size() : 0;
+            return saved;
+        } finally { database.endTransaction(); }
+    }
+
+    int reviewMemoryCandidate(String taskId, int index, boolean accept, String editedContent) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || !COMPLETED.equals(task.status) || task.plan == null
+                    || !"pending".equals(task.plan.memoryReview)) return 0;
+            List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
+            if (index < 0 || index >= candidates.size()) throw new IllegalArgumentException("Candidate no longer exists");
+            JSONObject decisions = new JSONObject(task.plan.memoryDecisions);
+            String key = String.valueOf(index);
+            if (decisions.has(key)) return 0;
+            String content = editedContent == null ? "" : editedContent.trim();
+            if (accept && (content.isEmpty() || content.length() > 10000))
+                throw new IllegalArgumentException("Confirmed memory must contain 1–10000 characters");
+            JSONObject choice = new JSONObject().put("decision", accept ? "accepted" : "dismissed")
+                .put("kind", candidates.get(index).kind).put("reviewedAt", System.currentTimeMillis());
+            if (accept) {
+                Memory memory = createMemory(candidates.get(index).kind, content, MEMORY_SOURCE_CONSOLIDATION, "confirmed:" + task.id);
+                choice.put("memoryId", memory.id).put("content", content);
+            }
+            decisions.put(key, choice);
+            boolean accepted = false;
+            for (int item = 0; item < candidates.size(); item++)
+                if (decisions.has(String.valueOf(item)) && "accepted".equals(decisions.getJSONObject(String.valueOf(item)).optString("decision"))) accepted = true;
+            String review = decisions.length() < candidates.size() ? "pending" : accepted ? "accepted" : "dismissed";
+            persistPlan(database, task, task.plan.withMemoryDecisions(review, decisions.toString()), task.status,
+                "memory_candidate_" + (accept ? "confirmed" : "dismissed") + ":index=" + index);
+            database.setTransactionSuccessful();
+            return accept ? 1 : 0;
         } finally { database.endTransaction(); }
     }
 
@@ -975,7 +1195,8 @@ final class AgentStore extends SQLiteOpenHelper {
                 int importedStep = task.executionStep;
                 JSONObject payload = new JSONObject().put("title", task.title)
                     .put("checkpointNote", task.checkpointNote).put("result", task.result);
-                ExecutionPlan importedPlan = task.plan;
+                ExecutionPlan importedPlan = DocumentAction.withoutLocalAccess(task.plan);
+                if (importedPlan != null) importedPlan = importedPlan.withContext(TaskContext.imported(importedPlan.context));
                 if (importedPlan != null && task.executionStep < importedPlan.totalSteps()) {
                     ExecutionPlan.Step step = importedPlan.steps.get(task.executionStep);
                     if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status)) {
@@ -983,6 +1204,12 @@ final class AgentStore extends SQLiteOpenHelper {
                         observation.put("status", "outcome_unknown").put("verification", "none");
                         importedPlan = importedPlan.withStepUpdated(task.executionStep,
                             step.withStatusAndObservation(ExecutionPlan.STEP_UNKNOWN, observation.toString(), step.executedAt), task.executionStep);
+                        importedStatus = OUTCOME_UNKNOWN;
+                    }
+                    if (DocumentAction.CAPABILITY.equals(step.capability)
+                            && !ExecutionPlan.STEP_DRAFT_READY.equals(step.status) && !ExecutionPlan.STEP_CANCELLED.equals(step.status)
+                            && !DocumentAction.hasReceipt(new JSONObject(step.observation))) {
+                        importedPlan = importedPlan.withStepUpdated(task.executionStep, unknownStep(step), task.executionStep);
                         importedStatus = OUTCOME_UNKNOWN;
                     }
                 }

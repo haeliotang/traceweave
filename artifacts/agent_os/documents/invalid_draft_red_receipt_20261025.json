@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T14:41:06.867627+00:00",
+  "cases": [
+    {
+      "case": "INVALID_DRAFT",
+      "pid": 9110,
+      "passed": false,
+      "result": "10-25 20:26:06.398  9110  9140 I AgentOsDocumentsValidation: FAIL IllegalStateException: assertion: rejected draft leaves no orphan task or active job"
+    }
+  ]
+}

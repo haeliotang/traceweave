@@ -19,8 +19,16 @@ CASES = {
     "VERIFY_UPGRADE": ("ActionFlowValidationActivity", "VERIFY_UPGRADE", "AgentOsActionsValidation"),
     "VERIFY_UI": ("ActionFlowValidationActivity", "VERIFY_UI", "AgentOsActionsValidation"),
 }
+for name in ("RUN_DOCUMENTS", "VERIFY_DOCUMENT_RESTART", "STOP_TRACKING", "ARM_DOCUMENT_CRASH", "BASELINE_CLOUD",
+             "VERIFY_PRIVACY", "VERIFY_MEMORY_REVIEW", "SEED_DOCUMENT_UI"):
+    CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
+for name in ("EXPORT_MIGRATION", "IMPORT_MIGRATION", "VERIFY_DOCUMENT_UI", "DUPLICATE_RECEIPT", "SEED_CLOUD_UI",
+             "VERIFY_CLOUD_UI", "VERIFY_IMPORTED_READ_ONLY"):
+    CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
+for name in ("VERIFY_REVIEW_UI", "INVALID_DRAFT", "SEED_REVIEW_UI", "VERIFY_REVOKED_READ", "MEMORY_BOUNDARY", "SNAPSHOT_BOUNDARY"):
+    CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
 for name in ("VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
-             "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION"):
+             "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION", "VERIFY_HYBRID_CLOUD_AND_REDACTION"):
     CASES[name] = ("DeviceValidationActivity", "org.traceform.agentos.validation." + name, "AgentOsValidation")
 
 
@@ -28,11 +36,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--adb", default="adb")
     parser.add_argument("--serial", required=True)
+    parser.add_argument("--package", default="org.traceform.agentos.actionsvalidation")
     parser.add_argument("--case", choices=CASES, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     adb = [args.adb, "-s", args.serial]
-    package = "org.traceform.agentos.actionsvalidation"
+    package = args.package
 
     def run(*arguments):
         return subprocess.run(adb + list(arguments), capture_output=True, text=True, check=True, timeout=30).stdout
@@ -40,6 +49,18 @@ def main():
     results = []
     for name in args.case:
         component, action, tag = CASES[name]
+        if name == "ARM_DOCUMENT_CRASH":
+            run("shell", "am", "start", "-S", "-f", "0x10008000", "-n",
+                package + "/org.traceform.agentos." + component, "-a", action)
+            time.sleep(2)
+            process = subprocess.run(adb + ["shell", "pidof", package], capture_output=True, text=True, timeout=10)
+            result = {"case": name, "passed": process.returncode != 0,
+                      "result": "Process terminated; VERIFY_DOCUMENT_RESTART must verify the existing file without a second write"}
+            results.append(result)
+            print(name + " => " + str(result["passed"]), flush=True)
+            if not result["passed"]:
+                break
+            continue
         run("shell", "am", "start", "-W", "-S", "-f", "0x10008000", "-n",
             package + "/org.traceform.agentos." + component, "-a", action)
         pid = run("shell", "pidof", package).strip().split()[0]

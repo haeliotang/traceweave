@@ -85,9 +85,9 @@ final class AgentExecutor {
         if (task == null || !AgentStore.ACTIVE.equals(task.status)) return;
 
         ExecutionPlan plan = task.plan;
-        if (plan == null) {
+        if (plan == null || plan.steps.isEmpty()) {
             List<CapabilityDescriptor> availableCaps = broker.listAvailableCapabilities(taskId);
-            List<AgentStore.Memory> memories = store.listPlanningMemories();
+            List<AgentStore.Memory> memories = TaskContext.memories(task.plan);
             plan = reasoningEngine.plan(taskId, task.title, availableCaps, memories);
             store.savePlan(taskId, plan);
         }

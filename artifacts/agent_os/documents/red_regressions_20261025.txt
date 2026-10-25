@@ -1,0 +1,36 @@
+--------- beginning of main
+10-25 20:08:58.949  5686  5733 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=BASELINE_CLOUD
+10-25 20:09:00.590  5782  5838 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=VERIFY_PRIVACY
+10-25 20:09:02.109  5863  5916 I AgentOsDocumentsValidation: PASS document_flow checks=10 mode=VERIFY_MEMORY_REVIEW
+10-25 20:09:05.114  5943  5978 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS
+10-25 20:09:07.101  6013  6041 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART
+10-25 20:11:10.148  6143  6191 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SEED_DOCUMENT_UI
+10-25 20:13:24.301  6614  6652 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_UI
+10-25 20:13:32.884  6680  6715 I AgentOsDocumentsValidation: PASS document_flow checks=12 mode=EXPORT_MIGRATION
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: FAIL FileNotFoundException: /data/user/0/org.traceform.agentos.documentsvalidation/files/synthetic-migration.taos: open failed: ENOENT (No such file or directory)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: java.io.FileNotFoundException: /data/user/0/org.traceform.agentos.documentsvalidation/files/synthetic-migration.taos: open failed: ENOENT (No such file or directory)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.IoBridge.open(IoBridge.java:591)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at java.io.FileInputStream.<init>(FileInputStream.java:179)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity.read(DocumentFlowValidationActivity.java:347)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity.importMigration(DocumentFlowValidationActivity.java:302)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity.lambda$onCreate$1$org-traceform-agentos-DocumentFlowValidationActivity(DocumentFlowValidationActivity.java:29)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at java.lang.Thread.run(Thread.java:1572)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.Linux.open(Native Method)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:579)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:274)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:579)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at android.app.AndroidForwardingOs.open(AndroidForwardingOs.java:120)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	at libcore.io.IoBridge.open(IoBridge.java:576)
+10-25 20:13:49.473  6855  6890 E AgentOsDocumentsValidation: 	... 6 more
+10-25 20:13:49.473  6855  6890 I AgentOsDocumentsValidation: FAIL FileNotFoundException: /data/user/0/org.traceform.agentos.documentsvalidation/files/synthetic-migration.taos: open failed: ENOENT (No such file or directory)
+10-25 20:14:35.073  6947  6977 I AgentOsDocumentsValidation: PASS document_flow checks=23 mode=IMPORT_MIGRATION
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: FAIL IllegalStateException: This readback does not match a current document attempt
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: java.lang.IllegalStateException: This readback does not match a current document attempt
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: 	at org.traceform.agentos.AgentStore.completeDocumentVerification(AgentStore.java:704)
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity.duplicateReceipt(DocumentFlowValidationActivity.java:64)
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity.lambda$onCreate$1$org-traceform-agentos-DocumentFlowValidationActivity(DocumentFlowValidationActivity.java:31)
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: 	at org.traceform.agentos.DocumentFlowValidationActivity$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+10-25 20:16:49.712  7103  7167 E AgentOsDocumentsValidation: 	at java.lang.Thread.run(Thread.java:1572)
+10-25 20:16:49.712  7103  7167 I AgentOsDocumentsValidation: FAIL IllegalStateException: This readback does not match a current document attempt

@@ -15,6 +15,7 @@ final class ExternalAction {
         if (!ExecutionPlan.STEP_DONE.equals(step.status)) return false;
         try {
             JSONObject result = new JSONObject(step.observation);
+            if (DocumentAction.CAPABILITY.equals(step.capability)) return DocumentAction.hasReceipt(result);
             return "created".equals(result.optString("status"))
                 && "provider_readback".equals(result.optString("verification"));
         } catch (Exception error) { return false; }
@@ -38,7 +39,10 @@ final class ExternalAction {
             draft.remove("verification");
             return draft.put("status", "prepared").put("draftId", UUID.randomUUID().toString());
         }
-        if (LocalCalendarProvider.CAPABILITY.equals(step.capability)) {
+        if (DocumentAction.CAPABILITY.equals(step.capability)) {
+            draft = DocumentAction.draft(DocumentAction.markdown(task.title, java.util.Collections.emptyList()),
+                new org.json.JSONArray());
+        } else if (LocalCalendarProvider.CAPABILITY.equals(step.capability)) {
             JSONObject input = null;
             try { input = new JSONObject(step.prompt); } catch (Exception ignored) {}
             draft = calendarDraft(input == null ? task.title : input.optString("title", task.title),
@@ -60,6 +64,11 @@ final class ExternalAction {
     }
 
     static Intent intent(String capability, JSONObject draft) throws Exception {
+        if (DocumentAction.CAPABILITY.equals(capability)) {
+            DocumentAction.validateContent(draft.getString("content"));
+            return new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("text/markdown").putExtra(Intent.EXTRA_TITLE, draft.getString("fileName"));
+        }
         if (LocalCalendarProvider.CAPABILITY.equals(capability)) {
             JSONObject checked = calendarDraft(draft.getString("title"), draft.getLong("startTime"), draft.getLong("endTime"));
             if (checked.getString("title").isEmpty() || checked.getLong("startTime") <= 0)
