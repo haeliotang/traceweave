@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-26",
+  "base_commit": "2cb5cd8d4816d4ad4c1f0a0c23a9967a6d19c528",
+  "local_reachable_commits": 176,
+  "remote_heads": [
+    "main"
+  ],
+  "visibility": "private",
+  "actions_runs": 0,
+  "actions_artifacts": 0,
+  "releases": 0,
+  "gitleaks_version": "8.30.1",
+  "gitleaks_findings": 165,
+  "reviewed_source_or_verifier_digests": 164,
+  "reviewed_redaction_test_placeholder": 1,
+  "confirmed_credentials": 0,
+  "historical_private_key_or_database_archive_paths": 0,
+  "historical_image_blobs_reviewed": 34,
+  "historical_local_home_path_blobs": 18,
+  "historical_device_serial_blobs": 15,
+  "historical_coordinate_key_blobs": 31,
+  "publication_gate": "hold_for_location_provenance_and_device_metadata_review",
+  "history_rewritten": false,
+  "visibility_changed": false,
+  "scope_limit": "Reachable local refs matched remote main. Pattern scan is not proof of absence; image review checked visible test content. Exact coordinates exist in fixtures/design examples; their origin was not established.",
+  "changed_and_new_files_secret_scan": "gitleaks dir: zero alerts",
+  "collaboration_files_added": [
+    "SECURITY.md",
+    "CONTRIBUTING.md"
+  ],
+  "gitleaks_scanned_bytes": 22927140,
+  "gitleaks_scanned_commits": 176
+}

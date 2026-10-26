@@ -8,7 +8,7 @@
 [![Platform: GrapheneOS Pixel 6a test device](https://img.shields.io/badge/Platform-GrapheneOS_Pixel_6a-0284C7.svg)]()
 [![Runtime: Rust and Android app prototype](https://img.shields.io/badge/Runtime-Rust_%2B_Android_Prototype-0D9488.svg)]()
 [![Security: Prototype, not certified](https://img.shields.io/badge/Security-Prototype_Not_Certified-475569.svg)]()
-[![Test Suite: 75 Rust unit tests passing](https://img.shields.io/badge/Tests-75_Rust_Passing-16A34A.svg)]()
+[![Device checks: Dated receipts](https://img.shields.io/badge/Device_checks-Dated_receipts-16A34A.svg)](docs/agent_os_model_document_acceptance.md)
 
 ---
 
@@ -137,9 +137,9 @@ The Android Broker mediates the prototype's registered capabilities. A request i
 
 ### 5.2 Optional Local Context Bridge
 The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/org/traceform/agentos/TraceformProvider.java)) is an optional local context adapter in the Android prototype:
-- **Signature Protection**: Bound to `android:protectionLevel="signature"`. In the current development stage, applications are signed by the local development keystore (`development.keystore`); for enterprise production releases, this transitions to the HSM-backed Inceptless root certificate ceremony. Only applications sharing this signature can query or bind to the provider.
+- **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. The current Agent OS signer differs from the installed Edge signer, so this integration is paused. No HSM release-signing process is implemented.
 - **Current validation**: The Pixel 6a test used the Traceform Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
-- **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; if enabled, redacted task context may leave the device for the configured endpoint.
+- **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; global configuration alone does not authorize transmission. Each cloud planning request requires an exact payload preview and single-use user approval; subsequent execution observations remain local.
 
 ---
 
@@ -272,13 +272,13 @@ We actively encourage community participation, issues, and security feedback:
 
 - **Issue Tracker**: Submit bugs, enhancement proposals, and architecture questions through [GitHub Issues](https://github.com/haeliotang/traceform/issues).
 - **Bug Reports**: Please include the device model, OS build (for example, the tested Google Pixel 6a / GrapheneOS / Android 17 build), relevant `adb logcat` output (filtered by tags `AgentOsValidation`, `SubstrateService`, `AgentOS`, `NativeAgentCore`, `HardwarePeripheral`, `agentosd`), and deterministic reproduction steps.
-- **Security Disclosures**: For sensitive cryptographic or sandbox vulnerabilities, please file a private security advisory or contact support@inceptless.com directly before public disclosure to ensure coordinated remediation.
+- **Security Disclosures**: Report vulnerabilities privately to support@inceptless.com; see [SECURITY.md](SECURITY.md). Do not include credentials or personal device data in public issues.
 
 ---
 
 ## 10. Contributing
 
-Contributions from systems engineers, machine learning researchers, and security practitioners are warmly welcomed. Traceform follows a structured open-source development workflow:
+Contributions from systems engineers, machine learning researchers, and security practitioners are warmly welcomed. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, synthetic fixtures and reproducible checks. Traceform follows a structured development workflow:
 
 ### Development Workflow
 1. **Fork & Branch**: Fork the repository and create a feature branch (`git checkout -b feature/agent-ir-pass` or `fix/sensor-fusion-deadlock`).
@@ -296,11 +296,7 @@ Contributions from systems engineers, machine learning researchers, and security
 
 Traceform is released under the **Apache License, Version 2.0**.
 
-### Strategic Licensing Rationale
-- **Express Patent Grant & Protection (Section 3)**: Provides explicit patent rights from contributors and automatically terminates licenses if a party files patent litigation against the project. This offers essential legal defense for Inceptless and the community.
-- **Hardware Ecosystem Interoperability**: Permissive commercial terms enable smartphone OEMs, wearable device manufacturers, and silicon vendors to integrate Traceform Runtime without copyleft restrictions.
-- **Trademark Protection (Section 6)**: Strictly protects the **Inceptless** and **Traceform** brand identities and names.
-- **Standards Conformance**: Apache 2.0 is the foundational licensing standard across both the Android Open Source Project (AOSP) and the Rust systems ecosystem.
+The root [LICENSE](LICENSE) applies to project code. Third-party components retain their own licenses; preserve their notices when redistributing dependencies or binaries.
 
 ---
 

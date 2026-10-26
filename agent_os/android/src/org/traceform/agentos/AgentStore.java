@@ -638,6 +638,30 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally { database.endTransaction(); }
     }
 
+    Task prepareReviewedDocument(String taskId, String content, String expectedFingerprint, String requestSha256) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task task = getTask(taskId);
+            if (task == null || !QUEUED.equals(task.status) || !expectedFingerprint.equals(TaskContext.fingerprint(task)))
+                throw new SecurityException("Task changed while its document was being prepared");
+            org.json.JSONArray sources = new org.json.JSONArray();
+            for (Memory memory : TaskContext.memories(task.plan))
+                sources.put(new JSONObject().put("id", memory.id).put("kind", memory.kind).put("source", memory.source)
+                    .put("sourceReference", memory.sourceReference).put("updatedAt", memory.updatedAt));
+            JSONObject draft = DocumentAction.draft(content, sources).put("draftOrigin", requestSha256.isEmpty() ? "local_template" : "model");
+            if (!requestSha256.isEmpty()) draft.put("requestSha256", requestSha256);
+            ExecutionPlan.Step step = new ExecutionPlan.Step(0, "保存 Markdown 并读回核验", DocumentAction.CAPABILITY,
+                DocumentAction.SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+            savePlan(taskId, new ExecutionPlan(taskId, task.title, java.util.Collections.singletonList(step),
+                System.currentTimeMillis(), 0).withContext(task.plan.context));
+            transition(taskId, ACTIVE);
+            prepareExternalDraft(taskId, 0, draft.toString());
+            database.setTransactionSuccessful();
+            return getTask(taskId);
+        } finally { database.endTransaction(); }
+    }
+
     private Task requireDocument(String taskId) throws Exception {
         Task task = getTask(taskId);
         if (task == null || task.plan == null || task.plan.totalSteps() != 1

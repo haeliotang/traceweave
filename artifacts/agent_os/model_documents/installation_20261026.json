@@ -1,0 +1,21 @@
+{
+  "version": "0.4.0",
+  "version_code": 4,
+  "same_signer_in_place_upgrade": true,
+  "production_uninstalled": false,
+  "apk_sha256": "dc55809cb8fc1f0098a0ca99b8741d7fad2dfa730207530de3cd2011b510f2b7",
+  "installed_apk_matches_build": true,
+  "first_install_time_unchanged": true,
+  "post_update_full_scroll_task_count": 3,
+  "prior_tasks_count": 2,
+  "synthetic_model_document_tasks_count": 1,
+  "package_metadata": {
+    "versionCode": "4 minSdk=26 targetSdk=35",
+    "versionName": "0.4.0",
+    "lastUpdateTime": "2026-10-26 12:44:12",
+    "firstInstallTime": "2026-10-25 10:43:26"
+  },
+  "initial_live_request_build_apk_sha256": "5f873d1be38ada7970cda44d260bb2c24bb4750ec9236578464dca2acb5e5a1e",
+  "final_cancel_race_fix_installed": true,
+  "final_build_force_stop_readback_passed": true
+}

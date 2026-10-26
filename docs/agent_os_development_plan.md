@@ -250,3 +250,5 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 - Phosh 的 GNOME/Wayland 手机壳定位：[Phosh project](https://world.pages.gitlab.gnome.org/Phosh/phosh/)
 - Waydroid 的 Linux 容器定位：[Waydroid documentation](https://docs.waydro.id/)
 - 本仓库现状：[Traceform Native Android SDK](native_android_sdk.md)、[Pixel 6a deployment notes](pixel6a_deployment.md)
+
+**0.4.0 增量：** 模型仅规划待审核的 Markdown 文稿，用户单独确认文件保存，读回后才完成同一任务；响应不能携带 URI、任意能力或工具调用。验收与构建边界见[模型文件闭环](agent_os_model_document_acceptance.md)。公开前检查见[检查报告](public_readiness_20261026.md)，仓库仍保持私有。

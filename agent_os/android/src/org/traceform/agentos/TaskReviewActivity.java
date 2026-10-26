@@ -17,9 +17,12 @@ import java.util.List;
 /** Explicit context selection and an exact, single-request cloud preview. */
 public final class TaskReviewActivity extends Activity {
     static final String EXTRA_GOAL = "reviewTaskGoal";
+    static final String EXTRA_DOCUMENT = "reviewDocumentGoal";
+    static final String EXTRA_SELECTED = "reviewSelectedMemories";
     private AgentStore store;
     private boolean en;
     private boolean busy;
+    private boolean document;
     private EditText goal;
     private String taskId;
     private CloudRequest pending;
@@ -30,6 +33,7 @@ public final class TaskReviewActivity extends Activity {
         super.onCreate(state);
         store = new AgentStore(this);
         en = "en".equals(getSharedPreferences("agent_os_prefs", MODE_PRIVATE).getString("app_lang", "zh"));
+        document = getIntent().getBooleanExtra(EXTRA_DOCUMENT, false);
         taskId = state == null ? null : state.getString("taskId");
         try { selection(state); } catch (Exception error) { fail(error); finish(); }
     }
@@ -79,8 +83,8 @@ public final class TaskReviewActivity extends Activity {
         for (AgentStore.Memory memory : memories) {
             CheckBox box = new CheckBox(this);
             box.setText(memory.content + "\n" + memory.source + " · " + memory.id);
-            box.setChecked(state != null && state.getStringArrayList("selected") != null
-                && state.getStringArrayList("selected").contains(memory.id));
+            ArrayList<String> ids = state == null ? getIntent().getStringArrayListExtra(EXTRA_SELECTED) : state.getStringArrayList("selected");
+            box.setChecked(ids != null && ids.contains(memory.id));
             choices.add(box);
             root.addView(box);
         }
@@ -89,7 +93,8 @@ public final class TaskReviewActivity extends Activity {
             try {
                 AgentStore.Task task = prepareTask(false);
                 CloudModelConfig config = CloudModelConfig.load(this);
-                pending = new CloudModelClient().preparePlan(task, new CapabilityBroker(this, store).listAvailableCapabilities(task.id), config);
+                pending = document ? new CloudModelClient().prepareDocument(task, config)
+                    : new CloudModelClient().preparePlan(task, new CapabilityBroker(this, store).listAvailableCapabilities(task.id), config);
                 cloudPreview();
             } catch (Exception error) { fail(error); }
         });
@@ -118,6 +123,12 @@ public final class TaskReviewActivity extends Activity {
         try {
             if (pending != null) pending.revoke();
             AgentStore.Task task = prepareTask(true);
+            if (document) {
+                store.prepareReviewedDocument(task.id, DocumentAction.markdown(task.title, TaskContext.memories(task.plan)),
+                    TaskContext.fingerprint(task), "");
+                openDocument();
+                return;
+            }
             ExecutionPlan plan = new HybridReasoningEngine(this, store).plan(task.id, task.title,
                 new CapabilityBroker(this, store).listAvailableCapabilities(task.id), TaskContext.memories(task.plan));
             store.savePlan(task.id, plan.withContext(task.plan.context));
@@ -132,6 +143,8 @@ public final class TaskReviewActivity extends Activity {
         text(root, en ? "The request below includes the goal, selected memories and capability descriptions. Pattern redaction cannot guarantee removal of all sensitive information. Approval is for this planning request only; later observations stay local."
             : "下方为将发送的目标、所选记忆及能力描述。规则脱敏不能保证移除所有敏感信息。授权仅限本次规划，后续步骤观察保持本地。");
         text(root, pending.body);
+        if (document) text(root, en ? "The model proposes text only. Review and edit its draft before separately confirming a file save."
+            : "模型仅提出文稿。返回后先审核、编辑全文，再单独确认文件保存；发送请求不会授权写文件。");
         button(root, en ? "Allow this planning request once" : "仅允许本次规划发送", () -> {
             try {
                 CloudRequest request = pending;
@@ -143,17 +156,27 @@ public final class TaskReviewActivity extends Activity {
                 }
                 request.approveOnce();
                 busy = true;
-                page(en ? "Sending the approved request…" : "正在发送已授权的本次请求…");
+                LinearLayout progress = page(en ? "Sending the approved request…" : "正在发送已授权的本次请求…");
+                text(progress, en ? "Cancellation discards the result; a request already sent cannot be recalled."
+                    : "取消将丢弃返回结果；已发出的请求无法收回。");
+                Button cancel = new Button(this);
+                cancel.setText(en ? "Cancel task and discard response" : "取消任务并丢弃返回结果");
+                cancel.setOnClickListener(view -> cancelPlanning());
+                progress.addView(cancel);
                 new Thread(() -> {
                     Exception failure = null;
                     try {
-                        new CloudModelClient().requestApprovedPlan(request, store);
+                        if (document) new CloudModelClient().requestApprovedDocument(request, store);
+                        else new CloudModelClient().requestApprovedPlan(request, store);
                     } catch (Exception error) { failure = error; }
                     Exception error = failure;
                     busy = false;
                     runOnUiThread(() -> {
-                        if (isDestroyed()) { store.close(); return; }
-                        if (error == null) finish();
+                        if (isFinishing() || isDestroyed()) { store.close(); return; }
+                        if (error == null) {
+                            if (document) openDocument();
+                            else finish();
+                        }
                         else {
                             fail(error);
                             LinearLayout fallback = page(en ? "Request did not produce a usable plan" : "本次请求未获得可用计划");
@@ -178,6 +201,35 @@ public final class TaskReviewActivity extends Activity {
                 selection(selected);
             } catch (Exception error) { fail(error); }
         });
+    }
+
+    private void openDocument() {
+        startActivity(new Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID, taskId));
+        finish();
+    }
+
+    private void cancelPlanning() {
+        try {
+            if (pending != null) cancelRequest(store, pending);
+            finish();
+        } catch (Exception error) { fail(error); }
+    }
+
+    static void cancelRequest(AgentStore store, CloudRequest request) throws Exception {
+        request.revoke();
+        AgentStore.Task task = store.getTask(request.taskId);
+        if (task == null || !request.contextFingerprint.equals(TaskContext.fingerprint(task))) return;
+        boolean readyDocument = request.documentDraft && AgentStore.WAITING_FOR_USER.equals(task.status)
+            && task.plan != null && task.plan.totalSteps() == 1
+            && DocumentAction.CAPABILITY.equals(task.plan.steps.get(0).capability)
+            && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(0).status)
+            && request.sha256.equals(new org.json.JSONObject(task.plan.steps.get(0).observation).optString("requestSha256"));
+        if (AgentStore.QUEUED.equals(task.status) || readyDocument) store.transition(task.id, AgentStore.CANCELLED);
+    }
+
+    @Override public void onBackPressed() {
+        if (busy) cancelPlanning();
+        else super.onBackPressed();
     }
 
     private void text(LinearLayout root, String value) {

@@ -39,6 +39,9 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("INVALID_DRAFT".equals(getIntent().getAction())) invalidDraft(store);
                 else if ("MEMORY_BOUNDARY".equals(getIntent().getAction())) memoryBoundary(store);
                 else if ("SNAPSHOT_BOUNDARY".equals(getIntent().getAction())) snapshotBoundary(store);
+                else if ("MODEL_DOCUMENT".equals(getIntent().getAction())) modelDocument(store);
+                else if ("MODEL_DOCUMENT_FAILURES".equals(getIntent().getAction())) modelDocumentFailures(store);
+                else if ("MODEL_CANCEL_RACE".equals(getIntent().getAction())) modelCancelRace(store);
                 else if ("SEED_REVIEW_UI".equals(getIntent().getAction())) {
                     AgentStore.Task task = reviewableTask(store);
                     getSharedPreferences("document_validation", 0).edit().putString("ui_review", task.id).commit();
@@ -156,6 +159,140 @@ public final class DocumentFlowValidationActivity extends Activity {
         AgentStore.Task imported = store.getTask(task.id);
         check(imported != null && TaskContext.localOnly(imported.plan), "maximum snapshot imports readably with local-only policy");
         check(padding.toString().equals(new org.json.JSONObject(imported.plan.context).getString("padding")), "maximum snapshot import preserves content without truncation");
+    }
+
+    private org.json.JSONObject proposedDocument() throws Exception {
+        return new org.json.JSONObject().put("capability", DocumentAction.CAPABILITY).put("scope", DocumentAction.SCOPE)
+            .put("markdown", "# SYNTHETIC model proposal\n\n- Review selected information.\n");
+    }
+
+    private String envelope(org.json.JSONObject value) throws Exception {
+        return new org.json.JSONObject().put("choices", new org.json.JSONArray().put(new org.json.JSONObject()
+            .put("finish_reason", "stop").put("message", new org.json.JSONObject().put("content", value.toString())))).toString();
+    }
+
+    private void modelDocument(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("document_fixture", 0).edit().clear().commit();
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC selected document context");
+        AgentStore.Memory excluded = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC not-selected-document-sentinel");
+        try (CloudCapture server = new CloudCapture()) {
+            server.responseContent = proposedDocument().toString();
+            CloudModelClient client = new CloudModelClient();
+            CloudModelConfig config = new CloudModelConfig(true, server.endpoint(), "", "synthetic-document", 15000, 0.1);
+            AgentStore.Task task = selectedTask(store, java.util.Collections.singletonList(memory), false);
+            CloudRequest request = client.prepareDocument(task, config);
+            check(request.documentDraft && request.body.contains(memory.content) && !request.body.contains(excluded.content), "document preview includes only selected context");
+            rejects(() -> client.requestApprovedDocument(request, store), "document preview cannot send without approval");
+            check(server.count.get() == 0 && writes() == 0, "preview has no network or file effect");
+            request.approveOnce();
+            rejects(() -> client.requestApprovedPlan(request, store), "document approval cannot authorize general planning");
+            AgentStore.Task draft = client.requestApprovedDocument(request, store);
+            org.json.JSONObject value = new org.json.JSONObject(draft.plan.steps.get(0).observation);
+            check(draft.id.equals(task.id) && AgentStore.WAITING_FOR_USER.equals(draft.status), "model output waits for separate file confirmation on same task");
+            check("model".equals(value.getString("draftOrigin")) && request.sha256.equals(value.getString("requestSha256")), "proposal provenance binds exact approved request");
+            check(value.getJSONArray("memorySources").getJSONObject(0).getString("id").equals(memory.id), "draft retains selected source identity");
+            check(!value.has("uri") && writes() == 0 && !draft.plan.isComplete(), "model grants no file access and cannot claim completion");
+            check(server.count.get() == 1 && server.body.equals(request.body), "exact preview sent once");
+            rejects(() -> client.requestApprovedDocument(request, store), "document approval cannot replay");
+            rejects(() -> DocumentAction.writeOnce(getContentResolver(), store, draft.id), "model proposal is not file authorization");
+            String edited = "# SYNTHETIC user edited model draft\n\nApproved after review.\n";
+            value.put("content", edited);
+            String attempt = store.claimExternalAction(task.id, 0, value.getString("draftId"), value);
+            Uri uri = target("model_verified");
+            store.bindDocumentTarget(task.id, attempt, uri.toString());
+            DocumentAction.writeOnce(getContentResolver(), store, task.id);
+            AgentStore.Task done = store.getTask(task.id);
+            org.json.JSONObject receipt = new org.json.JSONObject(done.plan.steps.get(0).observation);
+            check(DocumentAction.locallyVerified(done) && done.plan.isComplete(), "edited model task completes only after readback");
+            check(DocumentAction.sha256(edited.getBytes("UTF-8")).equals(receipt.getString("sha256")), "receipt verifies the user's edited text");
+            check(writes() == 1 && server.count.get() == 1, "one file write and no hidden follow-up cloud call");
+            org.json.JSONObject bad = proposedDocument().put("uri", "content://unapproved/file");
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(bad)), "model-selected URI rejected");
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(proposedDocument().put("scope", "all_files"))), "invented scope rejected");
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(proposedDocument().put("capability", "system.shell"))), "invented execution capability rejected");
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(proposedDocument().put("markdown", 12))), "non-text content rejected");
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(proposedDocument().put("markdown", ""))), "empty model content rejected");
+            StringBuilder large = new StringBuilder(); for (int i = 0; i < 8001; i++) large.append('x');
+            rejects(() -> CloudModelClient.parseDocumentResponse(envelope(proposedDocument().put("markdown", large.toString()))), "oversized model content rejected");
+            org.json.JSONObject truncated = new org.json.JSONObject(envelope(proposedDocument()));
+            truncated.getJSONArray("choices").getJSONObject(0).put("finish_reason", "length");
+            rejects(() -> CloudModelClient.parseDocumentResponse(truncated.toString()), "truncated completion rejected");
+            org.json.JSONObject tools = new org.json.JSONObject(envelope(proposedDocument()));
+            tools.getJSONArray("choices").getJSONObject(0).getJSONObject("message").put("tool_calls", new org.json.JSONArray());
+            rejects(() -> CloudModelClient.parseDocumentResponse(tools.toString()), "tool execution proposal rejected");
+        }
+    }
+
+    private void modelDocumentFailures(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("document_fixture", 0).edit().clear().commit();
+        try (CloudCapture server = new CloudCapture()) {
+            CloudModelClient client = new CloudModelClient();
+            CloudModelConfig config = new CloudModelConfig(true, server.endpoint(), "", "synthetic-document", 15000, 0.1);
+            AgentStore.Task invalid = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudRequest request = client.prepareDocument(invalid, config); request.approveOnce();
+            server.responseContent = proposedDocument().put("uri", "content://unapproved/file").toString();
+            rejects(() -> client.requestApprovedDocument(request, store), "illegal wire response rejected");
+            check(AgentStore.QUEUED.equals(store.getTask(invalid.id).status) && writes() == 0, "illegal response leaves task retryable without file effects");
+            rejects(() -> client.requestApprovedDocument(request, store), "failed request cannot silently retry");
+            server.responseContent = proposedDocument().toString(); server.delayMillis = 700;
+            AgentStore.Task cancelled = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudRequest late = client.prepareDocument(cancelled, config); late.approveOnce();
+            int before = server.count.get();
+            java.util.concurrent.atomic.AtomicReference<Exception> failure = new java.util.concurrent.atomic.AtomicReference<>();
+            Thread worker = new Thread(() -> { try { client.requestApprovedDocument(late, store); } catch (Exception error) { failure.set(error); } });
+            worker.start();
+            long deadline = System.currentTimeMillis() + 5000;
+            while (server.count.get() == before && System.currentTimeMillis() < deadline) Thread.sleep(10);
+            check(server.count.get() == before + 1, "cancellation fixture received one request");
+            store.transition(cancelled.id, AgentStore.CANCELLED); late.revoke(); worker.join(5000);
+            check(!worker.isAlive() && failure.get() instanceof SecurityException, "late response rejected after cancellation");
+            check(AgentStore.CANCELLED.equals(store.getTask(cancelled.id).status) && writes() == 0, "cancelled task remains terminal and cannot write");
+            AgentStore.Task stale = selectedTask(store, java.util.Collections.emptyList(), false);
+            String fingerprint = TaskContext.fingerprint(stale);
+            store.savePlan(stale.id, stale.plan.withContext(TaskContext.selected(java.util.Collections.emptyList(), true)));
+            rejects(() -> store.prepareReviewedDocument(stale.id, "# SYNTHETIC stale", fingerprint, ""), "changed context rejects stale model result atomically");
+            server.responseStatus = 503; server.delayMillis = 0;
+            AgentStore.Task unavailable = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudRequest error = client.prepareDocument(unavailable, config); error.approveOnce();
+            rejects(() -> client.requestApprovedDocument(error, store), "HTTP service failure has no draft");
+            check(AgentStore.QUEUED.equals(store.getTask(unavailable.id).status), "service failure remains recoverable");
+            server.responseStatus = 200; server.delayMillis = 17000;
+            AgentStore.Task timeout = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudRequest slow = client.prepareDocument(timeout, config); slow.approveOnce();
+            rejects(() -> client.requestApprovedDocument(slow, store), "read timeout has no draft");
+            check(AgentStore.QUEUED.equals(store.getTask(timeout.id).status) && writes() == 0, "timeout cannot report completion or write");
+        }
+        AgentStore.Task offline = selectedTask(store, java.util.Collections.emptyList(), false);
+        java.net.ServerSocket closed = new java.net.ServerSocket(0); int port = closed.getLocalPort(); closed.close();
+        CloudModelConfig disconnected = new CloudModelConfig(true, "http://127.0.0.1:" + port, "", "synthetic", 15000, 0.1);
+        CloudModelClient client = new CloudModelClient(); CloudRequest request = client.prepareDocument(offline, disconnected); request.approveOnce();
+        rejects(() -> client.requestApprovedDocument(request, store), "unreachable endpoint cannot create document");
+        check(AgentStore.QUEUED.equals(store.getTask(offline.id).status) && writes() == 0, "unreachable endpoint remains local and unfinished");
+    }
+
+    private void modelCancelRace(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("document_fixture", 0).edit().clear().commit();
+        try (CloudCapture server = new CloudCapture()) {
+            server.responseContent = proposedDocument().toString();
+            CloudModelConfig config = new CloudModelConfig(true, server.endpoint(), "", "synthetic-document", 15000, 0.1);
+            AgentStore.Task task = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudModelClient client = new CloudModelClient();
+            CloudRequest request = client.prepareDocument(task, config); request.approveOnce();
+            AgentStore.Task draft = client.requestApprovedDocument(request, store);
+            check(AgentStore.WAITING_FOR_USER.equals(draft.status), "response committed before cancel tap fixture");
+            TaskReviewActivity.cancelRequest(store, request);
+            check(AgentStore.CANCELLED.equals(store.getTask(task.id).status), "cancel tap also cancels a just-committed model draft");
+            rejects(() -> claim(store, draft, target("cancel_race")), "cancelled model draft cannot launch a file write");
+            check(writes() == 0 && server.count.get() == 1, "cancel race has no file write or retry");
+            AgentStore.Task changed = selectedTask(store, java.util.Collections.emptyList(), false);
+            CloudRequest stale = client.prepareDocument(changed, config);
+            store.savePlan(changed.id, changed.plan.withContext(TaskContext.selected(java.util.Collections.emptyList(), true)));
+            TaskReviewActivity.cancelRequest(store, stale);
+            check(AgentStore.QUEUED.equals(store.getTask(changed.id).status), "stale preview cannot cancel a newly changed task context");
+        }
     }
 
     private Uri target(String id) { return Uri.parse("content://" + getPackageName() + ".documents.fixture/" + id); }
@@ -544,6 +681,9 @@ public final class DocumentFlowValidationActivity extends Activity {
         final Thread worker;
         volatile String body = "";
         volatile boolean closed;
+        volatile String responseContent;
+        volatile int responseStatus = 200;
+        volatile long delayMillis;
         CloudCapture() throws Exception {
             worker = new Thread(() -> {
                 while (!closed) {
@@ -570,12 +710,13 @@ public final class DocumentFlowValidationActivity extends Activity {
                         }
                         body = new String(bytes, "UTF-8");
                         count.incrementAndGet();
-                        String plan = "{\"steps\":[{\"capability\":\"builtin.synthesis\",\"scope\":\"local_inference\",\"title\":\"SYNTHETIC summary\"}]}";
+                        if (delayMillis > 0) Thread.sleep(delayMillis);
+                        String plan = responseContent == null ? "{\"steps\":[{\"capability\":\"builtin.synthesis\",\"scope\":\"local_inference\",\"title\":\"SYNTHETIC summary\"}]}" : responseContent;
                         org.json.JSONObject response = new org.json.JSONObject().put("choices", new org.json.JSONArray().put(
                             new org.json.JSONObject().put("message", new org.json.JSONObject().put("content", plan))));
                         byte[] responseBytes = response.toString().getBytes("UTF-8");
                         java.io.OutputStream output = client.getOutputStream();
-                        output.write(("HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: "
+                        output.write(("HTTP/1.1 " + responseStatus + " Fixture\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: "
                             + responseBytes.length + "\r\n\r\n").getBytes("UTF-8"));
                         output.write(responseBytes);
                         output.flush();
@@ -590,7 +731,7 @@ public final class DocumentFlowValidationActivity extends Activity {
     private interface Checked { void run() throws Exception; }
     private void rejects(Checked action, String message) throws Exception {
         boolean rejected = false;
-        try { action.run(); } catch (IllegalArgumentException | IllegalStateException | SecurityException | java.io.IOException expected) { rejected = true; }
+        try { action.run(); } catch (IllegalArgumentException | IllegalStateException | SecurityException | java.io.IOException | org.json.JSONException expected) { rejected = true; }
         check(rejected, message);
     }
 }

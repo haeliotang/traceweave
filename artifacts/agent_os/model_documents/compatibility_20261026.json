@@ -1,0 +1,132 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-25T20:39:39.524897+00:00",
+  "cases": [
+    {
+      "case": "MEMORY_BOUNDARY",
+      "pid": 20899,
+      "passed": true,
+      "result": "10-26 02:23:06.980 20899 20928 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=MEMORY_BOUNDARY"
+    },
+    {
+      "case": "SNAPSHOT_BOUNDARY",
+      "pid": 20954,
+      "passed": true,
+      "result": "10-26 02:23:15.561 20954 20982 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SNAPSHOT_BOUNDARY"
+    },
+    {
+      "case": "VERIFY_HYBRID_CLOUD_AND_REDACTION",
+      "pid": 21022,
+      "passed": true,
+      "result": "10-26 02:23:17.420 21022 21052 I AgentOsValidation: PASS: single-request cloud consent and context redaction verified on device; 5 synthetic PII categories sanitized (avg=0.286ms); global configuration alone stayed local; approved wire payload contained the masked fixture; cloud plan executed locally to COMPLETED with JIT authorization. task1=b0053671-c366-4938-8895-2b0efe7d29fa task2=75dd0a52-a30a-4088-ae1f-cf0b52578a2b"
+    },
+    {
+      "case": "DUPLICATE_RECEIPT",
+      "pid": 21079,
+      "passed": true,
+      "result": "10-26 02:23:19.860 21079 21109 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=DUPLICATE_RECEIPT"
+    },
+    {
+      "case": "INVALID_DRAFT",
+      "pid": 21135,
+      "passed": true,
+      "result": "10-26 02:23:22.222 21135 21163 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=INVALID_DRAFT"
+    },
+    {
+      "case": "STOP_TRACKING",
+      "pid": 21185,
+      "passed": true,
+      "result": "10-26 02:23:23.678 21185 21213 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=STOP_TRACKING"
+    },
+    {
+      "case": "BASELINE_CLOUD",
+      "pid": 21235,
+      "passed": true,
+      "result": "10-26 02:23:24.975 21235 21263 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=BASELINE_CLOUD"
+    },
+    {
+      "case": "VERIFY_PRIVACY",
+      "pid": 21286,
+      "passed": true,
+      "result": "10-26 02:23:26.480 21286 21314 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=VERIFY_PRIVACY"
+    },
+    {
+      "case": "VERIFY_MEMORY_REVIEW",
+      "pid": 21338,
+      "passed": true,
+      "result": "10-26 02:23:27.965 21338 21371 I AgentOsDocumentsValidation: PASS document_flow checks=10 mode=VERIFY_MEMORY_REVIEW"
+    },
+    {
+      "case": "RUN_DOCUMENTS",
+      "pid": 21397,
+      "passed": true,
+      "result": "10-26 02:23:30.884 21397 21425 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 21450,
+      "passed": true,
+      "result": "10-26 02:23:32.832 21450 21479 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "ARM_DOCUMENT_CRASH",
+      "passed": true,
+      "result": "Process terminated; VERIFY_DOCUMENT_RESTART must verify the existing file without a second write"
+    },
+    {
+      "case": "VERIFY_DOCUMENT_RESTART",
+      "pid": 21551,
+      "passed": true,
+      "result": "10-26 02:23:37.899 21551 21579 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART"
+    },
+    {
+      "case": "RUN_SUITE",
+      "pid": 21604,
+      "passed": true,
+      "result": "10-26 02:23:47.786 21604 21633 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE"
+    },
+    {
+      "case": "VERIFY_RESTART",
+      "pid": 21676,
+      "passed": true,
+      "result": "10-26 02:23:49.620 21676 21704 I AgentOsActionsValidation: PASS action_flow checks=6 mode=VERIFY_RESTART"
+    },
+    {
+      "case": "VERIFY_UPGRADE",
+      "pid": 21727,
+      "passed": true,
+      "result": "10-26 02:24:00.445 21727 21755 I AgentOsActionsValidation: PASS action_flow checks=13 mode=VERIFY_UPGRADE"
+    },
+    {
+      "case": "VERIFY_DYNAMIC_EXECUTOR",
+      "pid": 21803,
+      "passed": true,
+      "result": "10-26 02:24:02.992 21803 21832 I AgentOsValidation: PASS: multi-step dynamic execution completed 3-step plan; missing-authorization halted into WAITING_FOR_USER without repeating step 0 on resume; crash recovery at step 1 checkpoint completed without duplicate execution. task1=4cc1d1c1-18e2-4e97-9db0-8e4bcd5e1398 task2=be4860f9-9d36-460b-83d6-0bc6c393dce9 task3=a03dccac-0ea3-4e50-a72e-4dabde07de6b"
+    },
+    {
+      "case": "VERIFY_EXECUTOR_LIFECYCLE",
+      "pid": 21860,
+      "passed": true,
+      "result": "10-26 02:24:15.050 21860 21889 I AgentOsValidation: PASS: pause preserved the step-1 checkpoint with no pending job; resume completed step 2 without repeating the capability call; cancellation removed the pending job and remained terminal; active-worker pause/resume and cancellation also stopped before step 2. pausedTask=ec6166d8-6763-4d8d-b207-83b8be599cd2 cancelledTask=1c981449-e3c3-4c1f-a9c8-6a06a54791fa"
+    },
+    {
+      "case": "VERIFY_MEMORY_PROVENANCE",
+      "pid": 21943,
+      "passed": true,
+      "result": "10-26 02:24:36.131 21943 21973 I AgentOsValidation: PASS: v3 memory migration preserved encrypted content and marked legacy provenance; the rebuilt index found Chinese content and source; import choices kept or replaced a same-ID memory; a tombstone still won."
+    },
+    {
+      "case": "VERIFY_MEMORY_CONSOLIDATION_AND_UI",
+      "pid": 22083,
+      "passed": true,
+      "result": "10-26 02:24:37.848 22083 22111 I AgentOsValidation: PASS: memory ranking, explicit idempotent candidate confirmation and unverified calendar rejection."
+    },
+    {
+      "case": "VERIFY_DATABASE_MIGRATION",
+      "pid": 22135,
+      "passed": true,
+      "result": "10-26 02:24:40.108 22135 22164 I AgentOsValidation: PASS: database v1\u2192v6 migration preserved the encrypted task and audit history, assigned a job ID, and re-queued a legacy active journal entry."
+    }
+  ]
+}

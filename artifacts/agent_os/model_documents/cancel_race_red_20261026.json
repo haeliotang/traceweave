@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T06:55:31.373787+00:00",
+  "cases": [
+    {
+      "case": "MODEL_CANCEL_RACE",
+      "pid": 29754,
+      "passed": false,
+      "result": "10-26 12:40:31.781 29754 29784 I AgentOsDocumentsValidation: FAIL IllegalStateException: assertion: cancel tap also cancels a just-committed model draft"
+    }
+  ]
+}

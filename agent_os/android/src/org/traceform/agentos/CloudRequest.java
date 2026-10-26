@@ -17,12 +17,18 @@ final class CloudRequest {
     final String contextFingerprint;
     final CloudModelConfig config;
     final List<CapabilityDescriptor> capabilities;
+    final boolean documentDraft;
     private final long expiresAt = SystemClock.elapsedRealtime() + 5 * 60 * 1000;
     private final AtomicBoolean approved = new AtomicBoolean();
     private final AtomicBoolean consumed = new AtomicBoolean();
     private volatile boolean revoked;
 
     CloudRequest(AgentStore.Task task, String body, List<CapabilityDescriptor> capabilities, CloudModelConfig config) throws Exception {
+        this(task, body, capabilities, config, false);
+    }
+
+    CloudRequest(AgentStore.Task task, String body, List<CapabilityDescriptor> capabilities, CloudModelConfig config,
+                 boolean documentDraft) throws Exception {
         this.taskId = task.id;
         this.goal = task.title;
         this.body = body;
@@ -31,6 +37,7 @@ final class CloudRequest {
         this.contextFingerprint = TaskContext.fingerprint(task);
         this.capabilities = Collections.unmodifiableList(new ArrayList<>(capabilities));
         this.config = config;
+        this.documentDraft = documentDraft;
     }
 
     void approveOnce() {

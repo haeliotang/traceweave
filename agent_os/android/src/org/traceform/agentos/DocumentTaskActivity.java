@@ -85,6 +85,15 @@ public final class DocumentTaskActivity extends Activity {
                 selections.add(box);
                 root.addView(box);
             }
+            button(root, en ? "Review context and preview model document request" : "审核上下文并预览模型文稿请求", () -> {
+                ArrayList<String> selected = new ArrayList<>();
+                for (int index = 0; index < selections.size(); index++)
+                    if (selections.get(index).isChecked()) selected.add(memories.get(index).id);
+                startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_DOCUMENT, true)
+                    .putExtra(TaskReviewActivity.EXTRA_GOAL, goal.getText().toString())
+                    .putStringArrayListExtra(TaskReviewActivity.EXTRA_SELECTED, selected));
+                finish();
+            });
             button(root, en ? "Generate local Markdown draft" : "生成本地 Markdown 草稿", () -> {
                 try {
                     ArrayList<AgentStore.Memory> chosen = new ArrayList<>();
@@ -109,6 +118,8 @@ public final class DocumentTaskActivity extends Activity {
             JSONObject value = new JSONObject(step.observation);
             label(root, task.title);
             if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status) && AgentStore.WAITING_FOR_USER.equals(task.status)) {
+                if ("model".equals(value.optString("draftOrigin"))) label(root, en ? "Model proposal · review before saving"
+                    : "模型建议文稿 · 请审核后再保存");
                 markdown = new EditText(this);
                 markdown.setMinLines(8);
                 markdown.setText(state == null ? value.getString("content") : state.getString("markdown", value.getString("content")));

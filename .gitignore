@@ -104,3 +104,11 @@ field_telemetry/*/**
 # Local device archives and pre-redaction originals.
 local_device_archives/
 local_private_metadata/
+
+# Local credentials, signing keys and portable user archives
+.env
+.env.*
+*.jks
+*.keystore
+*.p12
+*.taos

@@ -1,0 +1,11 @@
+{
+  "isolated_test_package_removed": true,
+  "remaining_agent_os_packages": [
+    "org.traceform.agentos"
+  ],
+  "user_archive_retained": true,
+  "signing_key_retained": true,
+  "synthetic_demo_file_and_task_retained_for_review": true,
+  "model_credentials_copied_off_device": false,
+  "final_cancel_fix_test_package_removed": true
+}

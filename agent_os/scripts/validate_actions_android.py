@@ -27,6 +27,8 @@ for name in ("EXPORT_MIGRATION", "IMPORT_MIGRATION", "VERIFY_DOCUMENT_UI", "DUPL
     CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
 for name in ("VERIFY_REVIEW_UI", "INVALID_DRAFT", "SEED_REVIEW_UI", "VERIFY_REVOKED_READ", "MEMORY_BOUNDARY", "SNAPSHOT_BOUNDARY"):
     CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
+for name in ("MODEL_DOCUMENT", "MODEL_DOCUMENT_FAILURES", "MODEL_CANCEL_RACE"):
+    CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
 for name in ("VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
              "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION", "VERIFY_HYBRID_CLOUD_AND_REDACTION"):
     CASES[name] = ("DeviceValidationActivity", "org.traceform.agentos.validation." + name, "AgentOsValidation")
