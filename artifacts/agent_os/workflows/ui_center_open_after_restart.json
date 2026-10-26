@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T12:42:20.749948+00:00",
+  "cases": [
+    {
+      "case": "OPEN_CENTER_UI",
+      "pid": 15496,
+      "passed": true,
+      "result": "10-26 18:27:21.051 15496 15536 I AgentOsWorkflowValidation: PASS workflow checks=1 mode=OPEN_CENTER_UI"
+    }
+  ]
+}

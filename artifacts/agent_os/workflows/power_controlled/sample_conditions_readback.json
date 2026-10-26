@@ -1,0 +1,137 @@
+{
+  "provenance": "Condition subset transcribed from the independent terminal readback of the completed device record before it was reset. This is not the full raw energy record.",
+  "samples": [
+    {
+      "phase": "baseline_start",
+      "utc": "2026-10-26T17:45:14.984+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:46:15.013+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:47:15.015+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:48:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:49:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:50:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:51:15.020+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:52:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:53:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_tick",
+      "utc": "2026-10-26T17:54:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "baseline_end",
+      "utc": "2026-10-26T17:55:15.014+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_start",
+      "utc": "2026-10-26T17:55:15.120+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T17:56:15.205+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T17:57:15.205+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T17:58:15.208+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T17:59:15.207+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T18:00:15.203+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T18:01:15.206+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T18:02:15.203+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T18:03:15.206+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_tick",
+      "utc": "2026-10-26T18:04:15.209+00:00",
+      "plugged": 0,
+      "interactive": false
+    },
+    {
+      "phase": "work_end",
+      "utc": "2026-10-26T18:05:15.195+00:00",
+      "plugged": 0,
+      "interactive": true
+    }
+  ]
+}

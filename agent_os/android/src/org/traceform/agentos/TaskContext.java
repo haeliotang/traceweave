@@ -10,6 +10,11 @@ import java.util.List;
 final class TaskContext {
     private TaskContext() {}
 
+    static boolean isDocument(ExecutionPlan plan) {
+        try { return plan != null && "verified_document".equals(new JSONObject(plan.context).optString("intent")); }
+        catch (Exception error) { return false; }
+    }
+
     static String selected(List<AgentStore.Memory> memories) throws Exception {
         return selected(memories, true);
     }

@@ -1,0 +1,11 @@
+{
+  "format": "traceform.controlled-probe.v1",
+  "status": "failed",
+  "foregroundController": true,
+  "sameWakeLockBothPhases": true,
+  "executionMode": "controlled_in_process_executor_not_background_scheduler",
+  "phaseDurationMs": 600000,
+  "tasksSubmitted": 0,
+  "samples": [],
+  "error": "IllegalStateException"
+}

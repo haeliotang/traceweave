@@ -1,0 +1,19 @@
+{
+  "synthetic_only": true,
+  "runs": [
+    {
+      "run": "A",
+      "file_name": "agent-os-1793018425257.md",
+      "sha256": "66d3b8ce21a4e3284a5d9a4a2c4ab72f031a2402b53d387370fe977ad0d64d6f",
+      "utf8_bytes": 320,
+      "app_and_independent_readback_match": true
+    },
+    {
+      "run": "B",
+      "file_name": "agent-os-1793018495954.md",
+      "sha256": "8f65a97f75f09197c3069ae8568fe1c844502158078c3ade07d7336318d16498",
+      "utf8_bytes": 304,
+      "app_and_independent_readback_match": true
+    }
+  ]
+}

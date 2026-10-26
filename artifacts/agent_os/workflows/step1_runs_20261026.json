@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T07:50:59.726863+00:00",
+  "cases": [
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 32140,
+      "passed": true,
+      "result": "10-26 13:35:59.465 32140 32212 I AgentOsWorkflowValidation: PASS workflow checks=20 mode=WORKFLOW_RUNS"
+    }
+  ]
+}

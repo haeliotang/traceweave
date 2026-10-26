@@ -1,0 +1,14 @@
+{
+  "full_raw_record_available": true,
+  "completed_tasks": 10,
+  "sample_count": 22,
+  "strict_conditions_passed": true,
+  "measurement_sources_match_current_checkout": true,
+  "collector_sha256": "8218279023689083eb9f4c9b5a0598b09e0b7a70ea8484c1b241bd04b798fcf4",
+  "sha256": {
+    "physical_background_raw.json": "fa5a50ae064bbe1db6d7188cd9ce362fd775b4e1282cf575b030a021f5991453",
+    "physical_background_summary.json": "8230e1a55dff435029206e9d2bcba7c7b0e147618674416e3a8fff938cba65af",
+    "measurement_build_report.json": "34c18a6c2d9ecbea953be94f2212663d5571e7bede247464b0b66adc1f209ed8",
+    "measurement_setup.json": "0dc8eb4a278b60f322c8d6fb19927a12c4c41f51bb9b0f3b79dce7a449307a3f"
+  }
+}

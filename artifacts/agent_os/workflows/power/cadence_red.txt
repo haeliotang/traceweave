@@ -1,0 +1,19 @@
+test_delayed_sparse_sampling_is_not_a_controlled_comparison (test_background_measurement.MeasurementTests.test_delayed_sparse_sampling_is_not_a_controlled_comparison) ... FAIL
+test_incomplete_interval_is_not_fabricated (test_background_measurement.MeasurementTests.test_incomplete_interval_is_not_fabricated) ... ok
+test_missing_gauge_and_process_restart_are_not_zero_energy_or_negative_cpu (test_background_measurement.MeasurementTests.test_missing_gauge_and_process_restart_are_not_zero_energy_or_negative_cpu) ... ok
+test_physical_interval_and_cpu_are_measured_separately (test_background_measurement.MeasurementTests.test_physical_interval_and_cpu_are_measured_separately) ... ok
+test_plugging_or_waking_mid_interval_invalidates_conditions (test_background_measurement.MeasurementTests.test_plugging_or_waking_mid_interval_invalidates_conditions) ... ok
+
+======================================================================
+FAIL: test_delayed_sparse_sampling_is_not_a_controlled_comparison (test_background_measurement.MeasurementTests.test_delayed_sparse_sampling_is_not_a_controlled_comparison)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workspace>/agent_os/tests/test_background_measurement.py", line 45, in test_delayed_sparse_sampling_is_not_a_controlled_comparison
+    self.assertFalse(measurement.controlled_comparison_valid(baseline, work, 1))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+FAILED (failures=1)

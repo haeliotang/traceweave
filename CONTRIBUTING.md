@@ -13,7 +13,7 @@ The supported product path is the Android application in `agent_os/android`; res
 
 For Android build prerequisites and a local development signer, follow [the build instructions](agent_os/README.md#build). Create your own signer outside Git; the maintainer's signing key is not required. The normal build uses the production manifest. Device checks require an isolated test package, never a user's production database.
 
-Build the `agent_os/tests/android/manifest-documents.xml` package with these four `--extra-source` arguments to `build_android.py`: `DocumentFlowValidationActivity.java`, `DocumentFixtureProvider.java`, `ActionFlowValidationActivity.java`, `DeviceValidationActivity.java`, all under `agent_os/tests/android/`. Install only that isolated APK. Then run:
+Build the `agent_os/tests/android/manifest-documents.xml` package with these eight `--extra-source` arguments to `build_android.py`: `DocumentFlowValidationActivity.java`, `DocumentFixtureProvider.java`, `ActionFlowValidationActivity.java`, `DeviceValidationActivity.java`, `WorkflowValidationActivity.java`, `BackgroundProbeJob.java`, `BackgroundProbeActivity.java`, `ControlledProbeService.java`, all under `agent_os/tests/android/`. Install only that isolated APK. Then run:
 
 ```sh
 python3 agent_os/scripts/validate_actions_android.py \
@@ -23,10 +23,13 @@ python3 agent_os/scripts/validate_actions_android.py \
   --case VERIFY_PRIVACY --case VERIFY_MEMORY_REVIEW \
   --case MEMORY_BOUNDARY --case SNAPSHOT_BOUNDARY \
   --case MODEL_DOCUMENT --case MODEL_DOCUMENT_FAILURES --case MODEL_CANCEL_RACE \
+  --case WORKFLOW_RUNS --case MEMORY_CHOICES --case TASK_CENTER --case WORKFLOW_GUARD \
   --output /tmp/traceform-synthetic-checks.json
 ```
 
 `ARM_DOCUMENT_CRASH` requires the following recovery check. Some legacy cases reset the isolated database. Actual system-picker UI and cross-install permission tests require the additional steps in the dated acceptance document.
+
+Workflow UI, migration and power conditions are documented in [the 0.5.0 acceptance record](docs/agent_os_workflows_acceptance.md). Physical power measurements require a separate consented session; the foreground controller and its temporary permissions exist only in the isolated test build. Use [the candidate release process](docs/agent_os_release_process.md) for same-signer update verification.
 
 Rust changes use `cargo test --locked --manifest-path agent_os/core/Cargo.toml`; research changes use the tests relevant to that package. Do not reformat unrelated files.
 

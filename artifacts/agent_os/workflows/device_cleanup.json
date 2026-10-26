@@ -1,0 +1,21 @@
+{
+  "isolated_package_uninstalled": true,
+  "temporary_notifications_revoked_before_uninstall": true,
+  "temporary_battery_exemption_removed_before_uninstall": true,
+  "restored_settings": {
+    "stay_on_while_plugged_in": "15",
+    "low_power": "0",
+    "airplane_mode_on": "0",
+    "wifi_on": "1"
+  },
+  "original_stay_on_setting_matches_ui_baseline": true,
+  "remaining_traceform_packages": [
+    "org.traceform.edge",
+    "org.traceform.agentos"
+  ],
+  "formal_apk_still_matches_final_candidate": true,
+  "formal_apk_sha256": "0c734881a68e7dffdf129d78ca64bdaa57080034b8e45fa86538a715d5ab0457",
+  "edge_package_preserved": true,
+  "user_archive_not_deleted": true,
+  "strict_trial_completed_and_raw_verified_before_cleanup": true
+}

@@ -1,0 +1,30 @@
+{
+  "apk_sha256": "0c734881a68e7dffdf129d78ca64bdaa57080034b8e45fa86538a715d5ab0457",
+  "cases": [
+    {
+      "case": "wrong_signer",
+      "passed": true,
+      "reason": "APK signer differs from the expected update identity"
+    },
+    {
+      "case": "validation_apk",
+      "passed": true,
+      "reason": "Expected a non-debuggable production APK"
+    },
+    {
+      "case": "mismatched_apk_report",
+      "passed": true,
+      "reason": "APK digest differs from build report"
+    },
+    {
+      "case": "changed_resource_input",
+      "passed": true,
+      "reason": "Input changed after build: agent_os/android/res/xml/network_security_config.xml"
+    },
+    {
+      "case": "same_version_as_update_base",
+      "passed": true,
+      "reason": "Previous APK must be the same signer/package and a lower version"
+    }
+  ]
+}

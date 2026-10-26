@@ -1,0 +1,7 @@
+{
+  "synthetic_only": true,
+  "pending_workflow_survived_process_restart": true,
+  "main_shows_review_workflow": true,
+  "generic_start_resume_retry_absent": true,
+  "review_opens_context_selection": true
+}

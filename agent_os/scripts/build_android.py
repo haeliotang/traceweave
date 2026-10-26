@@ -104,6 +104,8 @@ def main():
     run([tools["apksigner"], "verify", "--verbose", apk])
 
     tracked_sources = [manifest, *sources, Path(__file__).resolve()]
+    tracked_sources.extend(sorted(path for path in res_dir.rglob("*") if path.is_file()))
+    tracked_sources.extend(path.resolve() for path in args.native_lib if path.is_file())
 
     def source_label(path):
         for base, label in ((root, ""), (source_dir, "custom_source/"), (build, "generated/")):

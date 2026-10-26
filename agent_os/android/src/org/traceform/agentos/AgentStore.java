@@ -411,6 +411,8 @@ final class AgentStore extends SQLiteOpenHelper {
             values.put("status", targetStatus);
             values.put("updated_at", now);
             Task current = getTask(taskId);
+            if (ACTIVE.equals(targetStatus) && TaskContext.isDocument(current.plan) && current.plan.steps.isEmpty())
+                throw new IllegalStateException("Review the document workflow before execution");
             if (current.plan != null && current.executionStep < current.plan.totalSteps()) {
                 ExecutionPlan.Step step = current.plan.steps.get(current.executionStep);
                 if (ACTIVE.equals(targetStatus) && step.isExternalAction()
@@ -1135,6 +1137,20 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally {
             database.endTransaction();
         }
+    }
+
+    List<Task> memoryReferences(String memoryId) throws Exception {
+        ArrayList<Task> references = new ArrayList<>();
+        for (Task task : listTasks()) {
+            if (task.plan != null && !task.plan.context.isEmpty()) {
+                JSONObject workflow = new JSONObject(task.plan.context).optJSONObject("workflow");
+                if (workflow != null && memoryId.equals(workflow.optString("id"))) { references.add(task); continue; }
+            }
+            for (Memory memory : TaskContext.memories(task.plan)) {
+                if (memoryId.equals(memory.id)) { references.add(task); break; }
+            }
+        }
+        return references;
     }
 
     byte[] exportArchive(char[] passphrase) throws Exception {

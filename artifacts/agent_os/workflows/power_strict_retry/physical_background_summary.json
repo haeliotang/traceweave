@@ -1,0 +1,40 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "baseline": {
+    "elapsed_seconds": 600.026,
+    "sample_count": 11,
+    "max_sample_gap_seconds": 60.025,
+    "all_samples_unplugged": true,
+    "all_samples_screen_off": true,
+    "whole_device_charge_drop_uAh": 8000,
+    "same_process": true,
+    "process_cpu_delta_ms": 1019
+  },
+  "work": {
+    "elapsed_seconds": 600.066,
+    "sample_count": 11,
+    "max_sample_gap_seconds": 60.069,
+    "all_samples_unplugged": true,
+    "all_samples_screen_off": true,
+    "whole_device_charge_drop_uAh": 8000,
+    "same_process": true,
+    "process_cpu_delta_ms": 3011
+  },
+  "tasks_submitted": 10,
+  "tasks_completed": 10,
+  "tasks_still_active": 0,
+  "one_ordered_trial_only": true,
+  "sampling_and_probe_cost_included": true,
+  "whole_device_energy_is_not_uid_energy": true,
+  "foreground_controller": true,
+  "same_wake_lock_both_phases": true,
+  "execution_mode": "controlled_in_process_executor_not_background_scheduler",
+  "no_battery_life_or_model_inference_claim": true,
+  "screen_on_events": 0,
+  "power_connected_events": 0,
+  "transition_tracking_available": true,
+  "comparison_conditions_passed": true,
+  "physical_screen_off_conditions_passed": true,
+  "timing_and_dose_conditions_passed": true,
+  "background_deferral_observed": false
+}

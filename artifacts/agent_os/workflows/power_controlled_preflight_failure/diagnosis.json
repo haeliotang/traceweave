@@ -1,0 +1,9 @@
+{
+  "measurement_started": false,
+  "sample_count": 0,
+  "comparison_passed": false,
+  "observed_failure_notice_utc": "2026-10-26T12:52:35.953+00:00",
+  "user_unplug_confirmation_utc": "2026-10-26T12:54:01+00:00",
+  "diagnosis": "The five-minute preflight window expired before the user unplug confirmation; no baseline/work interval exists.",
+  "fix": "Thirty-minute preflight, bounded wake lock while waiting, fresh wake-lock timeout for measurement."
+}

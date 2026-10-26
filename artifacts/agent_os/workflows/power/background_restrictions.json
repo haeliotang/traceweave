@@ -1,0 +1,50 @@
+{
+  "synthetic_only": true,
+  "package": "org.traceform.agentos.actionsvalidation",
+  "original_settings": {
+    "power": "0",
+    "airplane": "0",
+    "wifi": "1",
+    "bucket": "10",
+    "whitelisted": false
+  },
+  "simulated_unplug_for_restriction_test_not_energy_measurement": true,
+  "cases": [
+    {
+      "case": "doze_restricted_power_save",
+      "elapsed_seconds": 40.28,
+      "power_save": "1",
+      "bucket": "45",
+      "deep_idle": "IDLE",
+      "job_state": "waiting",
+      "task": {
+        "status": "active",
+        "executionStep": 0
+      },
+      "passed": true
+    },
+    {
+      "case": "automatic_recovery_after_restrictions_removed",
+      "task": {
+        "status": "completed",
+        "executionStep": 1
+      },
+      "no_forced_job_run": true,
+      "passed": true
+    },
+    {
+      "case": "offline_local_execution",
+      "airplaneMode": true,
+      "activeNetworkAbsent": true,
+      "localTaskCompleted": true,
+      "passed": true
+    }
+  ],
+  "restored_settings": {
+    "power": "0",
+    "airplane": "0",
+    "wifi": "1",
+    "bucket": "10"
+  },
+  "settings_restored": true
+}

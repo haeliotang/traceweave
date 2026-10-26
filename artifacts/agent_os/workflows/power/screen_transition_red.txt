@@ -1,0 +1,24 @@
+test_clustered_samples_do_not_satisfy_equal_frequency (test_background_measurement.MeasurementTests.test_clustered_samples_do_not_satisfy_equal_frequency) ... ok
+test_delayed_sparse_sampling_is_not_a_controlled_comparison (test_background_measurement.MeasurementTests.test_delayed_sparse_sampling_is_not_a_controlled_comparison) ... ok
+test_incomplete_interval_is_not_fabricated (test_background_measurement.MeasurementTests.test_incomplete_interval_is_not_fabricated) ... ok
+test_incomplete_reread_cannot_replace_completed_raw_record (test_background_measurement.MeasurementTests.test_incomplete_reread_cannot_replace_completed_raw_record) ... ok
+test_missing_gauge_and_process_restart_are_not_zero_energy_or_negative_cpu (test_background_measurement.MeasurementTests.test_missing_gauge_and_process_restart_are_not_zero_energy_or_negative_cpu) ... ok
+test_physical_interval_and_cpu_are_measured_separately (test_background_measurement.MeasurementTests.test_physical_interval_and_cpu_are_measured_separately) ... ok
+test_plugging_or_waking_mid_interval_invalidates_conditions (test_background_measurement.MeasurementTests.test_plugging_or_waking_mid_interval_invalidates_conditions) ... ok
+test_regular_controlled_sampling_requires_the_planned_task_dose (test_background_measurement.MeasurementTests.test_regular_controlled_sampling_requires_the_planned_task_dose) ... ok
+test_screen_wake_between_samples_invalidates_controlled_comparison (test_background_measurement.MeasurementTests.test_screen_wake_between_samples_invalidates_controlled_comparison) ... ERROR
+test_screen_wake_does_not_imply_scheduler_deferral (test_background_measurement.MeasurementTests.test_screen_wake_does_not_imply_scheduler_deferral) ... ok
+
+======================================================================
+ERROR: test_screen_wake_between_samples_invalidates_controlled_comparison (test_background_measurement.MeasurementTests.test_screen_wake_between_samples_invalidates_controlled_comparison)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workspace>/agent_os/tests/test_background_measurement.py", line 78, in test_screen_wake_between_samples_invalidates_controlled_comparison
+    self.assertFalse(measurement.controlled_comparison_valid(phase, phase, 10, 1))
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+TypeError: controlled_comparison_valid() takes 3 positional arguments but 4 were given
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+FAILED (errors=1)

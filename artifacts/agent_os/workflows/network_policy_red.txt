@@ -1,0 +1,21 @@
+test_backup_enabled_or_extra_exported_activity_is_rejected (test_release_metadata.BuildReportTests.test_backup_enabled_or_extra_exported_activity_is_rejected) ... ok
+test_build_report_covers_packaged_resources (test_release_metadata.BuildReportTests.test_build_report_covers_packaged_resources) ... ok
+test_hidden_test_component_is_rejected_even_when_not_exported (test_release_metadata.BuildReportTests.test_hidden_test_component_is_rejected_even_when_not_exported) ... ok
+test_network_audit_follows_the_manifest_resource_reference (test_release_metadata.BuildReportTests.test_network_audit_follows_the_manifest_resource_reference) ... FAIL
+
+======================================================================
+FAIL: test_network_audit_follows_the_manifest_resource_reference (test_release_metadata.BuildReportTests.test_network_audit_follows_the_manifest_resource_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workspace>/agent_os/tests/test_release_metadata.py", line 56, in test_network_audit_follows_the_manifest_resource_reference
+    self.assertEqual(verifier.network_policy_path(manifest, resources), 'res/xml/other_policy.xml')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'res/xml/network_security_config.xml' != 'res/xml/other_policy.xml'
+- res/xml/network_security_config.xml
++ res/xml/other_policy.xml
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+FAILED (failures=1)

@@ -1,0 +1,23 @@
+test_build_report_covers_packaged_resources (test_release_metadata.BuildReportTests.test_build_report_covers_packaged_resources) ... FAIL
+
+======================================================================
+FAIL: test_build_report_covers_packaged_resources (test_release_metadata.BuildReportTests.test_build_report_covers_packaged_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<workspace>/agent_os/tests/test_release_metadata.py", line 19, in test_build_report_covers_packaged_resources
+    self.assertEqual(missing, [], "Packaged resources must be part of build provenance")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['agent_os/android/res/xml/accessibility_s[70 chars]xml'] != []
+
+First list contains 2 additional elements.
+First extra element 0:
+'agent_os/android/res/xml/accessibility_service_config.xml'
+
++ []
+- ['agent_os/android/res/xml/accessibility_service_config.xml',
+-  'agent_os/android/res/xml/network_security_config.xml'] : Packaged resources must be part of build provenance
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

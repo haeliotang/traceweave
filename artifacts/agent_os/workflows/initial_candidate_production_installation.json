@@ -1,0 +1,18 @@
+{
+  "same_signer_in_place_upgrade": true,
+  "production_uninstalled": false,
+  "version": "0.5.0",
+  "version_code": 5,
+  "apk_sha256": "eb4c3566aa99ad7ad9894a205e2a5e8b87a2fffe1f6dc34efbf03b5f56c5e605",
+  "installed_apk_matches_candidate": true,
+  "task_count_before": 3,
+  "task_count_after": 3,
+  "task_title_hash_set_unchanged": true,
+  "workflow_and_task_center_entries_visible": true,
+  "package_metadata": {
+    "versionCode": "5 minSdk=26 targetSdk=35",
+    "versionName": "0.5.0",
+    "lastUpdateTime": "2026-10-26 18:30:43",
+    "firstInstallTime": "2026-10-25 10:43:26"
+  }
+}

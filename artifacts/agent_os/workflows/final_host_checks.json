@@ -1,0 +1,10 @@
+{
+  "changed_and_new_files_secret_scan_alerts": 0,
+  "historical_scan_alerts": 165,
+  "historical_alerts_reviewed_digest": 164,
+  "historical_alerts_reviewed_test_placeholder": 1,
+  "changed_text_contains_local_home_or_device_serial": false,
+  "evidence_json_parsed": true,
+  "documentation_local_links_exist": true,
+  "repository_visibility_verified": "private"
+}

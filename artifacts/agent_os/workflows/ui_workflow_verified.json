@@ -1,0 +1,19 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T12:41:51.969812+00:00",
+  "cases": [
+    {
+      "case": "VERIFY_WORKFLOW_UI",
+      "pid": 15392,
+      "passed": true,
+      "result": "10-26 18:26:51.082 15392 15421 I AgentOsWorkflowValidation: PASS workflow checks=7 mode=VERIFY_WORKFLOW_UI"
+    },
+    {
+      "case": "SEED_CENTER_UI",
+      "pid": 15442,
+      "passed": true,
+      "result": "10-26 18:26:52.555 15442 15472 I AgentOsWorkflowValidation: PASS workflow checks=0 mode=SEED_CENTER_UI"
+    }
+  ]
+}

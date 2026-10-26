@@ -1,0 +1,25 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T07:53:37.069014+00:00",
+  "cases": [
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 32311,
+      "passed": true,
+      "result": "10-26 13:38:32.450 32311 32365 I AgentOsWorkflowValidation: PASS workflow checks=20 mode=WORKFLOW_RUNS"
+    },
+    {
+      "case": "MEMORY_CHOICES",
+      "pid": 32418,
+      "passed": true,
+      "result": "10-26 13:38:33.949 32418 32446 I AgentOsWorkflowValidation: PASS workflow checks=11 mode=MEMORY_CHOICES"
+    },
+    {
+      "case": "TASK_CENTER",
+      "pid": 32471,
+      "passed": true,
+      "result": "10-26 13:38:36.527 32471 32499 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=TASK_CENTER"
+    }
+  ]
+}

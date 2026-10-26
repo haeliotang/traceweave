@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T13:10:32.564647+00:00",
+  "cases": [
+    {
+      "case": "WORKFLOW_GUARD",
+      "pid": 18067,
+      "passed": false,
+      "result": "10-26 18:55:33.167 18067 18124 I AgentOsWorkflowValidation: FAIL IllegalStateException: unreviewed document workflow cannot enter the generic executor"
+    }
+  ]
+}

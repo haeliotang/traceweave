@@ -1,0 +1,6 @@
+{
+  "synthetic_only": true,
+  "arming_activity_finishes_and_is_absent_from_activity_history": true,
+  "service_armed": true,
+  "measurement_not_performed_in_this_smoke": true
+}

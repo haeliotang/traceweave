@@ -572,6 +572,10 @@ public final class MainActivity extends Activity {
             view -> startActivity(new Intent(this, ExternalActionActivity.class)));
         addPageButton(taskInputCard, en ? "New verified file task" : "新建可验证文件任务",
             view -> startActivity(new Intent(this, DocumentTaskActivity.class)));
+        addPageButton(taskInputCard, en ? "Reusable workflows" : "可复用工作流",
+            view -> startActivity(new Intent(this, WorkflowActivity.class)));
+        addPageButton(taskInputCard, en ? "Task center" : "任务中心",
+            view -> startActivity(new Intent(this, TaskCenterActivity.class)));
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
@@ -1201,7 +1205,11 @@ public final class MainActivity extends Activity {
         boolean externalDraft = task.plan != null && task.executionStep < task.plan.totalSteps()
             && task.plan.steps.get(task.executionStep).isExternalAction()
             && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(task.executionStep).status);
-        if (!externalDraft && (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
+        boolean documentPlanning = TaskContext.isDocument(task.plan) && task.plan.steps.isEmpty();
+        if (documentPlanning && !isTerminal)
+            addCardActionButton(actions, en ? "Review workflow" : "审阅工作流", view ->
+                startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
+        if (!documentPlanning && !externalDraft && (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
                 || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status))) {
             String label = AgentStore.QUEUED.equals(task.status) ? (en ? "Start" : "开始")
                 : AgentStore.FAILED.equals(task.status) ? (en ? "Retry" : "重试") : (en ? "Resume" : "继续");
@@ -1213,12 +1221,16 @@ public final class MainActivity extends Activity {
         addCardActionButton(actions, en ? "Delete" : "删除", view -> confirmDeleteTask(task), taskButtons);
         detailContainer.addView(actions);
 
-        if (!isTerminal) {
+        if (!isTerminal && !documentPlanning) {
             addCapabilityControls(detailContainer, task);
         }
 
         card.addView(detailContainer);
         taskList.addView(card);
+        if (task.id.equals(getIntent().getStringExtra("focusTaskId"))) {
+            getIntent().removeExtra("focusTaskId");
+            card.post(() -> card.requestRectangleOnScreen(new android.graphics.Rect(0, 0, card.getWidth(), card.getHeight()), true));
+        }
     }
 
     private void addMemoryCandidateControls(LinearLayout card, AgentStore.Task task) {
@@ -1565,6 +1577,20 @@ public final class MainActivity extends Activity {
         metadata.setTextSize(10);
         metadata.setTextColor(0xFF94A3B8);
         card.addView(metadata);
+
+        TextView references = new TextView(this);
+        references.setText(en ? "View tasks using this memory" : "查看引用此记忆的任务");
+        references.setTextColor(0xFF0284C7);
+        references.setOnClickListener(v -> {
+            try {
+                StringBuilder text = new StringBuilder();
+                for (AgentStore.Task task : store.memoryReferences(memory.id)) text.append(task.title).append(" · ").append(task.status).append("\n");
+                new AlertDialog.Builder(this).setTitle(en ? "Historical task references" : "历史任务引用")
+                    .setMessage(text.length() == 0 ? (en ? "No task snapshots reference this memory." : "没有任务快照引用此记忆。") : text.toString())
+                    .setPositiveButton(en ? "Close" : "关闭", null).show();
+            } catch (Exception error) { showError(error); }
+        });
+        card.addView(references);
 
         memoryList.addView(card);
     }
@@ -1941,11 +1967,13 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmDeleteMemory(AgentStore.Memory memory) {
+        boolean en = isEnglish();
         new AlertDialog.Builder(this)
-            .setTitle("删除这条记忆？")
-            .setMessage("删除标记会随加密档案迁移，旧档案不能恢复这条记忆。")
-            .setNegativeButton("保留", null)
-            .setPositiveButton("删除", (dialog, which) -> {
+            .setTitle(en ? "Delete this memory?" : "删除这条记忆？")
+            .setMessage(en ? "A tombstone prevents old archives from restoring this record. Historical task snapshots and generated files retain their copies; delete those separately. You can review task references first."
+                : "删除标记会随加密档案迁移，旧档案不能恢复这条记忆。历史任务快照和已生成文件中的副本仍保留，需要分别删除。可先查看任务引用。")
+            .setNegativeButton(en ? "Keep" : "保留", null)
+            .setPositiveButton(en ? "Delete" : "删除", (dialog, which) -> {
                 try {
                     store.deleteMemory(memory.id);
                     refreshMemories();
@@ -2372,7 +2400,7 @@ public final class MainActivity extends Activity {
         } else if (AgentStore.FAILED.equals(status)) {
             return IconFactory.createBadge(this, en ? "Failed" : "失败", 0xFFFEE2E2, 0xFF991B1B);
         } else if (AgentStore.ACTIVE.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Active" : "执行中", 0xFFDBEAFE, 0xFF1E40AF);
+            return IconFactory.createBadge(this, en ? "Scheduled / active" : "已调度 / 执行中", 0xFFDBEAFE, 0xFF1E40AF);
         } else if (AgentStore.WAITING_FOR_USER.equals(status)) {
             return IconFactory.createBadge(this, en ? "Awaiting user" : "等待用户", 0xFFFEF3C7, 0xFF92400E);
         } else if (AgentStore.PAUSED.equals(status)) {

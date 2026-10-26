@@ -252,3 +252,5 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 - 本仓库现状：[Traceform Native Android SDK](native_android_sdk.md)、[Pixel 6a deployment notes](pixel6a_deployment.md)
 
 **0.4.0 增量：** 模型仅规划待审核的 Markdown 文稿，用户单独确认文件保存，读回后才完成同一任务；响应不能携带 URI、任意能力或工具调用。验收与构建边界见[模型文件闭环](agent_os_model_document_acceptance.md)。公开前检查见[检查报告](public_readiness_20261026.md)，仓库仍保持私有。
+
+**0.5.0 增量：** 在普通 Android 应用边界内增加文稿工作流模板、显式记忆搜索与来源筛选、任务中心、隔离后台/耗电记录，以及同签名候选发布与档案恢复门禁。能力和实测限制见[本轮验收](agent_os_workflows_acceptance.md)，更新与恢复方法见[发布流程](agent_os_release_process.md)。不因此进入 AOSP 系统层或改变仓库可见性。

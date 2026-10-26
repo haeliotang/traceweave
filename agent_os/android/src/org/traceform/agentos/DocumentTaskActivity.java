@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class DocumentTaskActivity extends Activity {
@@ -28,8 +26,7 @@ public final class DocumentTaskActivity extends Activity {
     private EditText markdown;
     private boolean en;
     private boolean busy;
-    private final List<AgentStore.Memory> memories = new ArrayList<>();
-    private final List<CheckBox> selections = new ArrayList<>();
+    private MemorySelectionView memorySelection;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -43,9 +40,7 @@ public final class DocumentTaskActivity extends Activity {
         state.putString(EXTRA_TASK_ID, taskId);
         if (goal != null) state.putString("goal", goal.getText().toString());
         if (markdown != null) state.putString("markdown", markdown.getText().toString());
-        ArrayList<String> selected = new ArrayList<>();
-        for (int index = 0; index < selections.size(); index++) if (selections.get(index).isChecked()) selected.add(memories.get(index).id);
-        state.putStringArrayList("selected", selected);
+        if (memorySelection != null) state.putStringArrayList("selected", memorySelection.selectedIds());
         super.onSaveInstanceState(state);
     }
 
@@ -74,33 +69,19 @@ public final class DocumentTaskActivity extends Activity {
             root.addView(goal);
             label(root, en ? "Select the memories to use. Nothing is selected automatically. This editor works locally."
                 : "选择本次使用的记忆，默认均不选。此编辑器在本地生成草稿。");
-            memories.clear();
-            selections.clear();
-            memories.addAll(store.listPlanningMemories());
-            for (AgentStore.Memory memory : memories) {
-                CheckBox box = new CheckBox(this);
-                box.setText(memory.content + "\n" + memory.source + " · " + memory.id);
-                box.setChecked(state != null && state.getStringArrayList("selected") != null
-                    && state.getStringArrayList("selected").contains(memory.id));
-                selections.add(box);
-                root.addView(box);
-            }
+            memorySelection = new MemorySelectionView(this, store, goal, en, state == null ? null : state.getStringArrayList("selected"));
+            root.addView(memorySelection);
             button(root, en ? "Review context and preview model document request" : "审核上下文并预览模型文稿请求", () -> {
-                ArrayList<String> selected = new ArrayList<>();
-                for (int index = 0; index < selections.size(); index++)
-                    if (selections.get(index).isChecked()) selected.add(memories.get(index).id);
                 startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_DOCUMENT, true)
                     .putExtra(TaskReviewActivity.EXTRA_GOAL, goal.getText().toString())
-                    .putStringArrayListExtra(TaskReviewActivity.EXTRA_SELECTED, selected));
+                    .putStringArrayListExtra(TaskReviewActivity.EXTRA_SELECTED, memorySelection.selectedIds()));
                 finish();
             });
             button(root, en ? "Generate local Markdown draft" : "生成本地 Markdown 草稿", () -> {
                 try {
-                    ArrayList<AgentStore.Memory> chosen = new ArrayList<>();
+                    List<AgentStore.Memory> chosen = memorySelection.chosen();
                     JSONArray sources = new JSONArray();
-                    for (int index = 0; index < selections.size(); index++) if (selections.get(index).isChecked()) {
-                        AgentStore.Memory memory = memories.get(index);
-                        chosen.add(memory);
+                    for (AgentStore.Memory memory : chosen) {
                         sources.put(new JSONObject().put("id", memory.id).put("kind", memory.kind)
                             .put("source", memory.source).put("sourceReference", memory.sourceReference).put("updatedAt", memory.updatedAt));
                     }
@@ -117,6 +98,8 @@ public final class DocumentTaskActivity extends Activity {
             ExecutionPlan.Step step = task.plan.steps.get(0);
             JSONObject value = new JSONObject(step.observation);
             label(root, task.title);
+            button(root, en ? "Save as workflow template" : "保存为工作流模板", () ->
+                startActivity(new Intent(this, WorkflowActivity.class).putExtra(WorkflowActivity.EXTRA_GOAL, task.title)));
             if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status) && AgentStore.WAITING_FOR_USER.equals(task.status)) {
                 if ("model".equals(value.optString("draftOrigin"))) label(root, en ? "Model proposal · review before saving"
                     : "模型建议文稿 · 请审核后再保存");

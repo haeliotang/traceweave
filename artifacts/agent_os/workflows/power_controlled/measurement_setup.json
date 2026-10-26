@@ -1,0 +1,11 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "originally_whitelisted": false,
+  "original_bucket": "10",
+  "original_power_save": "0",
+  "controlled_probe_exemption": true,
+  "physical_usb_disconnect_required": true,
+  "no_global_batterystats_reset": true,
+  "foreground_controller": true,
+  "original_notification_permission": false
+}

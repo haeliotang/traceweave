@@ -14,6 +14,10 @@ import time
 
 
 CASES = {
+    "WORKFLOW_RUNS": ("WorkflowValidationActivity", "WORKFLOW_RUNS", "AgentOsWorkflowValidation"),
+    "MEMORY_CHOICES": ("WorkflowValidationActivity", "MEMORY_CHOICES", "AgentOsWorkflowValidation"),
+    "TASK_CENTER": ("WorkflowValidationActivity", "TASK_CENTER", "AgentOsWorkflowValidation"),
+    "WORKFLOW_GUARD": ("WorkflowValidationActivity", "WORKFLOW_GUARD", "AgentOsWorkflowValidation"),
     "RUN_SUITE": ("ActionFlowValidationActivity", "RUN_SUITE", "AgentOsActionsValidation"),
     "VERIFY_RESTART": ("ActionFlowValidationActivity", "VERIFY_RESTART", "AgentOsActionsValidation"),
     "VERIFY_UPGRADE": ("ActionFlowValidationActivity", "VERIFY_UPGRADE", "AgentOsActionsValidation"),
@@ -29,6 +33,8 @@ for name in ("VERIFY_REVIEW_UI", "INVALID_DRAFT", "SEED_REVIEW_UI", "VERIFY_REVO
     CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
 for name in ("MODEL_DOCUMENT", "MODEL_DOCUMENT_FAILURES", "MODEL_CANCEL_RACE"):
     CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
+for name in ("SEED_WORKFLOW_UI", "OPEN_WORKFLOW_UI", "VERIFY_WORKFLOW_UI", "SEED_CENTER_UI", "OPEN_CENTER_UI", "VERIFY_CENTER_UI", "VERIFY_IMPORTED_WORKFLOWS"):
+    CASES[name] = ("WorkflowValidationActivity", name, "AgentOsWorkflowValidation")
 for name in ("VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
              "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION", "VERIFY_HYBRID_CLOUD_AND_REDACTION"):
     CASES[name] = ("DeviceValidationActivity", "org.traceform.agentos.validation." + name, "AgentOsValidation")

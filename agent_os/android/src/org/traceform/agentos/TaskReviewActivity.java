@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -19,6 +18,7 @@ public final class TaskReviewActivity extends Activity {
     static final String EXTRA_GOAL = "reviewTaskGoal";
     static final String EXTRA_DOCUMENT = "reviewDocumentGoal";
     static final String EXTRA_SELECTED = "reviewSelectedMemories";
+    static final String EXTRA_TASK_ID = "reviewTaskId";
     private AgentStore store;
     private boolean en;
     private boolean busy;
@@ -26,24 +26,33 @@ public final class TaskReviewActivity extends Activity {
     private EditText goal;
     private String taskId;
     private CloudRequest pending;
-    private final List<AgentStore.Memory> memories = new ArrayList<>();
-    private final List<CheckBox> choices = new ArrayList<>();
+    private MemorySelectionView memorySelection;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         store = new AgentStore(this);
         en = "en".equals(getSharedPreferences("agent_os_prefs", MODE_PRIVATE).getString("app_lang", "zh"));
-        document = getIntent().getBooleanExtra(EXTRA_DOCUMENT, false);
-        taskId = state == null ? null : state.getString("taskId");
-        try { selection(state); } catch (Exception error) { fail(error); finish(); }
+        document = state == null ? getIntent().getBooleanExtra(EXTRA_DOCUMENT, false) : state.getBoolean("document", false);
+        taskId = state == null ? getIntent().getStringExtra(EXTRA_TASK_ID) : state.getString("taskId");
+        try {
+            if (state == null && taskId != null) {
+                AgentStore.Task task = store.getTask(taskId);
+                if (task == null || !AgentStore.QUEUED.equals(task.status)) throw new IllegalStateException("Task is no longer awaiting planning");
+                state = new Bundle(); state.putString("goal", task.title);
+                ArrayList<String> ids = new ArrayList<>();
+                for (AgentStore.Memory memory : TaskContext.memories(task.plan)) ids.add(memory.id);
+                state.putStringArrayList("selected", ids);
+                document = TaskContext.isDocument(task.plan);
+            }
+            selection(state);
+        } catch (Exception error) { fail(error); finish(); }
     }
 
     @Override protected void onSaveInstanceState(Bundle state) {
         state.putString("taskId", taskId);
+        state.putBoolean("document", document);
         state.putString("goal", goal.getText().toString());
-        ArrayList<String> selected = new ArrayList<>();
-        for (int index = 0; index < choices.size(); index++) if (choices.get(index).isChecked()) selected.add(memories.get(index).id);
-        state.putStringArrayList("selected", selected);
+        state.putStringArrayList("selected", memorySelection.selectedIds());
         super.onSaveInstanceState(state);
     }
 
@@ -77,17 +86,9 @@ public final class TaskReviewActivity extends Activity {
         root.addView(goal);
         text(root, en ? "Select memories for this task. Nothing is selected automatically. Stored snapshots remain with its history."
             : "选择本次任务允许使用的记忆，默认不选；选定快照随任务历史保留。");
-        memories.clear();
-        choices.clear();
-        memories.addAll(store.listPlanningMemories());
-        for (AgentStore.Memory memory : memories) {
-            CheckBox box = new CheckBox(this);
-            box.setText(memory.content + "\n" + memory.source + " · " + memory.id);
-            ArrayList<String> ids = state == null ? getIntent().getStringArrayListExtra(EXTRA_SELECTED) : state.getStringArrayList("selected");
-            box.setChecked(ids != null && ids.contains(memory.id));
-            choices.add(box);
-            root.addView(box);
-        }
+        ArrayList<String> ids = state == null ? getIntent().getStringArrayListExtra(EXTRA_SELECTED) : state.getStringArrayList("selected");
+        memorySelection = new MemorySelectionView(this, store, goal, en, ids);
+        root.addView(memorySelection);
         button(root, en ? "Plan locally · keep this task local" : "本地规划 · 此任务保持本地", this::planLocally);
         button(root, en ? "Preview one cloud planning request" : "预览本次云端规划请求", () -> {
             try {
@@ -104,15 +105,20 @@ public final class TaskReviewActivity extends Activity {
     private AgentStore.Task prepareTask(boolean localOnly) throws Exception {
         String title = goal.getText().toString().trim();
         if (title.isEmpty() || title.length() > 2000) throw new IllegalArgumentException(en ? "Enter a task goal (up to 2000 characters)" : "请输入 1–2000 字的任务目标");
-        ArrayList<AgentStore.Memory> selected = new ArrayList<>();
-        for (int index = 0; index < choices.size(); index++) if (choices.get(index).isChecked()) selected.add(memories.get(index));
+        List<AgentStore.Memory> selected = memorySelection.chosen();
         String snapshot = TaskContext.selected(selected, localOnly);
         AgentStore.Task existing = taskId == null ? null : store.getTask(taskId);
+        org.json.JSONObject previousContext = existing == null || existing.plan == null || existing.plan.context.isEmpty()
+            ? new org.json.JSONObject() : new org.json.JSONObject(existing.plan.context);
         if (existing == null || !title.equals(existing.title)) {
             existing = store.createTask(title);
             taskId = existing.id;
         }
         if (!AgentStore.QUEUED.equals(existing.status)) throw new IllegalStateException(en ? "Task already started" : "任务已开始，不能替换上下文");
+        org.json.JSONObject context = new org.json.JSONObject(snapshot);
+        if (document) context.put("intent", "verified_document");
+        if (previousContext.has("workflow")) context.put("workflow", previousContext.getJSONObject("workflow"));
+        snapshot = context.toString();
         ExecutionPlan placeholder = new ExecutionPlan(taskId, title, java.util.Collections.emptyList(), System.currentTimeMillis(), 0)
             .withContext(snapshot);
         store.savePlan(taskId, placeholder);
@@ -195,9 +201,7 @@ public final class TaskReviewActivity extends Activity {
                 pending.revoke();
                 Bundle selected = new Bundle();
                 selected.putString("goal", goal.getText().toString());
-                ArrayList<String> ids = new ArrayList<>();
-                for (int index = 0; index < choices.size(); index++) if (choices.get(index).isChecked()) ids.add(memories.get(index).id);
-                selected.putStringArrayList("selected", ids);
+                selected.putStringArrayList("selected", memorySelection.selectedIds());
                 selection(selected);
             } catch (Exception error) { fail(error); }
         });

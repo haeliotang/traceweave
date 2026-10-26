@@ -1,0 +1,19 @@
+{
+  "package": "org.traceform.agentos.documentsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T12:43:04.480856+00:00",
+  "cases": [
+    {
+      "case": "IMPORT_MIGRATION",
+      "pid": 15813,
+      "passed": true,
+      "result": "10-26 18:28:02.760 15813 15853 I AgentOsDocumentsValidation: PASS document_flow checks=21 mode=IMPORT_MIGRATION"
+    },
+    {
+      "case": "VERIFY_IMPORTED_WORKFLOWS",
+      "pid": 15930,
+      "passed": true,
+      "result": "10-26 18:28:05.122 15930 15969 I AgentOsWorkflowValidation: PASS workflow checks=12 mode=VERIFY_IMPORTED_WORKFLOWS"
+    }
+  ]
+}
