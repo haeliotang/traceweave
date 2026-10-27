@@ -1,0 +1,12 @@
+{
+  "launcher_and_round_icon_reference_same_mipmap": true,
+  "adaptive_icon_foreground_and_background_packaged": true,
+  "android_13_monochrome_layer_packaged": true,
+  "foreground_ink_maximum_radius_in_108_viewport": 32.254,
+  "adaptive_safe_radius": 33,
+  "round_mask_margin_verified": true,
+  "production_resource_type": "native_vector",
+  "actual_pixel_system_app_info_icon_visually_verified": true,
+  "full_violet_terminal_visible_inside_round_mask": true,
+  "host_tests_passed": 14
+}

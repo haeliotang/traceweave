@@ -23,6 +23,18 @@ import android.widget.Toast;
 
 public final class AgentFloatingService extends Service {
     private static final String TAG = "AgentFloatingService";
+    private final android.os.Handler sensorHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable sensorRefresh = new Runnable() {
+        @Override public void run() {
+            if (!isExpanded || floatingView == null) return;
+            updateSensorText(isEnglish());
+            sensorHandler.postDelayed(this, 2000);
+        }
+    };
+    private void updateSensorText(boolean en) {
+        if (sensoriumDetailView != null) sensoriumDetailView.setText(SensorContext.describe(
+            PhysicalSensoriumManager.getInstance(this).evaluateCurrentContext(), en));
+    }
 
     public static final String ACTION_SHOW = "org.traceform.agentos.floating.SHOW";
     public static final String ACTION_HIDE = "org.traceform.agentos.floating.HIDE";
@@ -112,7 +124,7 @@ public final class AgentFloatingService extends Service {
             taskDetailView.setText(en ? " Core: Local rule planner ready" : " 核心运行: 本地规则规划已就绪");
         }
         if (sensoriumDetailView != null) {
-            sensoriumDetailView.setText(en ? " Ambient: Stationary · Pocket Gated" : " 环境感知: 姿态静止 · 口袋防误触生效");
+            updateSensorText(en);
         }
         if (btnVoice != null) {
             boolean listening = VoiceInteractionManager.getInstance(this).isListening();
@@ -313,7 +325,7 @@ public final class AgentFloatingService extends Service {
         sensRow.setPadding(0, dp(4), 0, 0);
         sensRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SENSOR, Color.parseColor("#38BDF8"), 13));
         sensoriumDetailView = new TextView(this);
-        sensoriumDetailView.setText(" 环境感知: 姿态静止 · 口袋防误触生效");
+        updateSensorText(isEnglish());
         sensoriumDetailView.setTextColor(Color.parseColor("#38BDF8"));
         sensoriumDetailView.setTextSize(11);
         sensRow.addView(sensoriumDetailView);
@@ -435,6 +447,8 @@ public final class AgentFloatingService extends Service {
 
     private void toggleExpansion() {
         isExpanded = !isExpanded;
+        sensorHandler.removeCallbacks(sensorRefresh);
+        if (isExpanded) sensorHandler.post(sensorRefresh);
         if (isExpanded) {
             updateLocaleTexts();
         }
@@ -641,6 +655,7 @@ public final class AgentFloatingService extends Service {
 
     @Override
     public void onDestroy() {
+        sensorHandler.removeCallbacks(sensorRefresh);
         super.onDestroy();
         if (floatingView != null && windowManager != null) {
             try {

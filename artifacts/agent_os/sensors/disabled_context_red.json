@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-26T19:00:23.145312+00:00",
+  "cases": [
+    {
+      "case": "SENSOR_CONTEXT",
+      "pid": 27734,
+      "passed": false,
+      "result": "10-27 00:45:22.970 27734 27768 I AgentOsWorkflowValidation: FAIL IllegalStateException: disabled sensors must not claim stationary motion"
+    }
+  ]
+}

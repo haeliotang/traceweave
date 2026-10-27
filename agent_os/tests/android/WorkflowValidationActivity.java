@@ -19,6 +19,7 @@ public final class WorkflowValidationActivity extends Activity {
                 if ("MEMORY_CHOICES".equals(getIntent().getAction())) memoryChoices(store);
                 else if ("TASK_CENTER".equals(getIntent().getAction())) taskCenter(store);
                 else if ("WORKFLOW_GUARD".equals(getIntent().getAction())) workflowGuard(store);
+                else if ("SENSOR_CONTEXT".equals(getIntent().getAction())) sensorContext();
                 else if ("SEED_WORKFLOW_UI".equals(getIntent().getAction())) {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
                     store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC camping preference: keep checklists concise");
@@ -61,6 +62,35 @@ public final class WorkflowValidationActivity extends Activity {
 
     private void reset(AgentStore store) {
         for (String table : new String[]{"audit", "tasks", "memories", "tombstones"}) store.getWritableDatabase().delete(table, null, null);
+    }
+    private void sensorContext() throws Exception {
+        PhysicalSensoriumManager sensors = PhysicalSensoriumManager.getInstance(this);
+        sensors.stopMonitoring();
+        JSONObject value = sensors.evaluateCurrentContext();
+        check("Unknown".equals(value.optString("motion_state")), "disabled sensors must not claim stationary motion");
+        check(value.isNull("light_lux"), "disabled sensors must not invent light readings");
+        JSONObject readings = new JSONObject().put("light_lux", 0).put("proximity_cm", 0)
+            .put("temperature_c", 27.4).put("accel_x", 0).put("accel_y", 0).put("accel_z", 9.81)
+            .put("gyro_x", 0).put("gyro_y", 0).put("gyro_z", 0);
+        JSONObject dark = SensorContext.fallback(readings, true);
+        check(dark.getDouble("light_lux") == 0 && dark.getDouble("temperature_c") == 27.4, "fallback preserves measured zero lux and battery temperature");
+        check(!dark.getBoolean("voice_wake_allowed"), "measured near and dark context gates voice wake");
+        readings.put("light_lux", 700).put("gyro_x", 1);
+        JSONObject moving = SensorContext.fallback(readings, true);
+        check(moving.getDouble("light_lux") == 700 && "MotionDetected".equals(moving.getString("motion_state")), "new telemetry changes context without native library");
+        check(moving.getBoolean("voice_wake_allowed"), "updated measured light clears the covering estimate");
+        JSONObject unknown = SensorContext.fallback(new JSONObject(), true);
+        check("Unknown".equals(unknown.getString("motion_state")) && unknown.isNull("in_pocket"), "missing readings remain unknown");
+        check(!SensorContext.describe(unknown, true).contains("150") && !SensorContext.describe(unknown, false).contains("31.5"), "bilingual display does not invent numeric defaults");
+        sensors.startMonitoring();
+        try {
+            long deadline = android.os.SystemClock.elapsedRealtime() + 4000;
+            JSONObject live;
+            do { Thread.sleep(100); live = sensors.evaluateCurrentContext(); }
+            while (sensors.isMonitoring() && live.isNull("light_lux") && android.os.SystemClock.elapsedRealtime() < deadline);
+            check(!sensors.isMonitoring() || !live.isNull("light_lux"), "available Pixel light sensor delivers actual callback data");
+        } finally { sensors.stopMonitoring(); }
+        check(sensors.evaluateCurrentContext().isNull("light_lux"), "stop invalidates previous session readings");
     }
     private void check(boolean value, String message) { checks++; if (!value) throw new IllegalStateException(message); }
     private interface Checked { void run() throws Exception; }

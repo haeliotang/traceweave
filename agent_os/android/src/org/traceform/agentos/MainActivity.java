@@ -48,6 +48,12 @@ public final class MainActivity extends Activity {
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Runnable taskRefresh = this::refreshTasks;
+    private final Runnable sensorRefresh = new Runnable() {
+        @Override public void run() {
+            updateSensorsCard();
+            if (PhysicalSensoriumManager.getInstance(MainActivity.this).isMonitoring()) mainHandler.postDelayed(this, 1000);
+        }
+    };
     private final java.util.ArrayList<Button> persistentButtons = new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> taskButtons = new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> memoryButtons = new java.util.ArrayList<>();
@@ -112,6 +118,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onPause() {
         mainHandler.removeCallbacks(taskRefresh);
+        mainHandler.removeCallbacks(sensorRefresh);
         PhysicalSensoriumManager.getInstance(this).stopMonitoring();
         super.onPause();
     }
@@ -472,34 +479,8 @@ public final class MainActivity extends Activity {
                     Toast.makeText(this, en ? "Enable sensors to view live context" : "请先启用感知，再查看实时状态", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                org.json.JSONObject ctx = sens.evaluateCurrentContext();
                 updateSensorsCard();
-                String motion = ctx.optString("motion_state", "Stationary");
-                boolean pocket = ctx.optBoolean("in_pocket", false);
-                float lux = (float) ctx.optDouble("light_lux", 150.0);
-                float temp = (float) ctx.optDouble("temperature_c", 31.5);
-
-                String motionDisplayZh = "静止 (桌面放置)";
-                String motionDisplayEn = "Still (Tabletop)";
-                if ("Handling".equalsIgnoreCase(motion)) {
-                    motionDisplayZh = "手持操作 (运动活跃)";
-                    motionDisplayEn = "Handling (Active)";
-                } else if ("Walking".equalsIgnoreCase(motion)) {
-                    motionDisplayZh = "行进步态 (移动中)";
-                    motionDisplayEn = "Walking (In Motion)";
-                } else if ("Running".equalsIgnoreCase(motion)) {
-                    motionDisplayZh = "奔跑运动 (高频)";
-                    motionDisplayEn = "Running (High Freq)";
-                } else if ("Vehicle".equalsIgnoreCase(motion)) {
-                    motionDisplayZh = "乘车颠簸 (载具中)";
-                    motionDisplayEn = "Vehicle (In Transit)";
-                }
-
-                String envDisplayZh = pocket ? "口袋防误触生效 (遮挡保护)" : ("光感 " + (int)lux + " Lux 室内照明");
-                String envDisplayEn = pocket ? "Pocket Guard Active (Gated)" : ((int)lux + " Lux Normal");
-
-                Toast.makeText(this, (en ? "Sensors Real-Time: " + motionDisplayEn + ", " + envDisplayEn + " (" + temp + "°C)"
-                        : "环境感知实时刷新: " + motionDisplayZh + "，" + envDisplayZh + " (" + temp + "°C)"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, sensInfo.getText(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(this, "Sensors: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -828,13 +809,14 @@ public final class MainActivity extends Activity {
                 sens.startMonitoring();
             }
             updateSensorToggleButton();
-            updateSensorsCard();
+            mainHandler.removeCallbacks(sensorRefresh);
+            mainHandler.post(sensorRefresh);
             if (!sens.isMonitoring()) {
                 Toast.makeText(this, en ? "Sensor monitoring stopped" : "已停止传感器采集", Toast.LENGTH_SHORT).show();
                 return;
             }
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
-            Toast.makeText(this, (en ? "Pose: " : "姿态: ") + ctx.optString("motion_state") + (en ? ", Env: " : ", 环境: ") + ctx.optString("ambient_environment"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, SensorContext.describe(ctx, en), Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams sensLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
         sensLp.setMargins(dp(3), 0, 0, 0);
@@ -2172,42 +2154,7 @@ public final class MainActivity extends Activity {
 
     private void updateSensorsCard() {
         if (sensInfo == null) return;
-        boolean en = isEnglish();
-        try {
-            PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
-            if (!sens.isMonitoring()) {
-                sensInfo.setText(en ? "Sensor monitoring off\nTap Enable sensors to start" : "传感器采集已关闭\n点击“启用感知”后开始");
-                return;
-            }
-            org.json.JSONObject ctx = sens.evaluateCurrentContext();
-            String motion = ctx.optString("motion_state", "Stationary");
-            boolean pocket = ctx.optBoolean("in_pocket", false);
-            float lux = (float) ctx.optDouble("light_lux", 150.0);
-            float temp = (float) ctx.optDouble("temperature_c", 31.5);
-
-            String motionZh = "静止 · 桌面放置";
-            String motionEn = "Still · Tabletop";
-            if ("Handling".equalsIgnoreCase(motion)) {
-                motionZh = "手持操作 (活跃)";
-                motionEn = "Handling (Active)";
-            } else if ("Walking".equalsIgnoreCase(motion)) {
-                motionZh = "行进步态 (移动)";
-                motionEn = "Walking (Motion)";
-            } else if ("Running".equalsIgnoreCase(motion)) {
-                motionZh = "奔跑运动 (高频)";
-                motionEn = "Running (High)";
-            } else if ("Vehicle".equalsIgnoreCase(motion)) {
-                motionZh = "乘车颠簸 (载具)";
-                motionEn = "Vehicle (Transit)";
-            }
-
-            String envZh = pocket ? "口袋防误触 (遮挡)" : ("光感 " + (int)lux + " Lux");
-            String envEn = pocket ? "Pocket Guard (Gated)" : ((int)lux + " Lux");
-
-            sensInfo.setText((en ? "IMU + Gyro + Light\n" : "IMU + 陀螺仪 + 光感\n")
-                    + (en ? "Pose: " + motionEn + "\n" : "姿态: " + motionZh + "\n")
-                    + (en ? envEn + " · " + temp + "°C" : envZh + " · " + temp + "°C"));
-        } catch (Exception ignored) {}
+        sensInfo.setText(SensorContext.describe(PhysicalSensoriumManager.getInstance(this).evaluateCurrentContext(), isEnglish()));
     }
 
     private void updateSensorToggleButton() {

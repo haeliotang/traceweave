@@ -1,0 +1,4 @@
+{
+  "distinct_isolated_uids_confirmed": true,
+  "scope": "additional read-only device check during the pipeline; later integrated into the script"
+}

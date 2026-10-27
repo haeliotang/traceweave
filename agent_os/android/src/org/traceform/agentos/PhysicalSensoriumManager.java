@@ -27,12 +27,14 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     private final Sensor mLightSensor;
     private final Sensor mProximitySensor;
 
-    private volatile float mAccelX = 0f, mAccelY = 0f, mAccelZ = 9.81f;
+    private volatile float mAccelX = 0f, mAccelY = 0f, mAccelZ = Float.NaN;
     private volatile float mGyroX = 0f, mGyroY = 0f, mGyroZ = 0f;
-    private volatile float mLightLux = 150f;
-    private volatile float mProximityCm = 8.0f;
-    private volatile float mTemperatureC = 31.5f;
-    private volatile float mBatteryLevel = 80.0f;
+    private volatile float mLightLux = Float.NaN;
+    private volatile float mProximityCm = Float.NaN;
+    private volatile float mTemperatureC = Float.NaN;
+    private volatile float mBatteryLevel = Float.NaN;
+
+    private long mAccelAt, mGyroAt, mLightAt, mProximityAt;
 
     private volatile JSONObject mLastContext = new JSONObject();
     private volatile boolean mIsMonitoring = false;
@@ -66,28 +68,23 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
 
     public synchronized void startMonitoring() {
         if (mIsMonitoring || mSensorManager == null) return;
-        mIsMonitoring = true;
+        mAccelAt = mGyroAt = mLightAt = mProximityAt = 0;
+        boolean accel = register(mAccelSensor), gyro = register(mGyroSensor);
+        boolean light = register(mLightSensor), proximity = register(mProximitySensor);
+        mIsMonitoring = accel || gyro || light || proximity;
+    }
 
-        if (mAccelSensor != null) {
-            mSensorManager.registerListener(this, mAccelSensor, SensorManager.SENSOR_DELAY_UI);
-        }
-        if (mGyroSensor != null) {
-            mSensorManager.registerListener(this, mGyroSensor, SensorManager.SENSOR_DELAY_UI);
-        }
-        if (mLightSensor != null) {
-            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_UI);
-        }
-        if (mProximitySensor != null) {
-            mSensorManager.registerListener(this, mProximitySensor, SensorManager.SENSOR_DELAY_UI);
-        }
-        Log.i(TAG, "Physical sensor monitoring started on Pixel 6a");
+    private boolean register(Sensor sensor) {
+        if (sensor == null) return false;
+        try { return mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI); }
+        catch (SecurityException error) { Log.w(TAG, "Sensor access unavailable"); return false; }
     }
 
     public synchronized void stopMonitoring() {
-        if (!mIsMonitoring || mSensorManager == null) return;
+        if (mSensorManager != null) mSensorManager.unregisterListener(this);
         mIsMonitoring = false;
-        mSensorManager.unregisterListener(this);
-        Log.i(TAG, "Physical sensor monitoring stopped");
+        mAccelAt = mGyroAt = mLightAt = mProximityAt = 0;
+        mLastContext = new JSONObject();
     }
 
     public boolean isMonitoring() {
@@ -95,24 +92,31 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event == null || event.values == null) return;
+    public synchronized void onSensorChanged(SensorEvent event) {
+        if (!mIsMonitoring || event == null || event.sensor == null || event.values == null || event.values.length == 0) return;
+        for (float value : event.values) if (Float.isNaN(value) || Float.isInfinite(value)) return;
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
+                if (event.values.length < 3) return;
+                mAccelAt = event.timestamp / 1000000L;
                 mAccelX = event.values[0];
                 mAccelY = event.values[1];
                 mAccelZ = event.values[2];
                 break;
             case Sensor.TYPE_GYROSCOPE:
+                if (event.values.length < 3) return;
+                mGyroAt = event.timestamp / 1000000L;
                 mGyroX = event.values[0];
                 mGyroY = event.values[1];
                 mGyroZ = event.values[2];
                 break;
             case Sensor.TYPE_LIGHT:
+                mLightAt = event.timestamp / 1000000L;
                 mLightLux = event.values[0];
                 break;
             case Sensor.TYPE_PROXIMITY:
+                mProximityAt = event.timestamp / 1000000L;
                 mProximityCm = event.values[0];
                 break;
         }
@@ -121,50 +125,40 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    /**
-     * Executes real-time fusion via the Rust Native physical sensorium engine.
-     */
-    public JSONObject evaluateCurrentContext() {
+    private Object reading(float value, boolean available) {
+        return available && !Float.isNaN(value) && !Float.isInfinite(value) ? value : JSONObject.NULL;
+    }
+
+    public synchronized JSONObject evaluateCurrentContext() {
         updateBatteryAndThermal();
-
         JSONObject telemetry = new JSONObject();
+        long now = android.os.SystemClock.elapsedRealtime();
+        boolean accel = mIsMonitoring && mAccelAt > 0 && now - mAccelAt <= 5000;
+        boolean gyro = mIsMonitoring && mGyroAt > 0 && now - mGyroAt <= 5000;
+        // Light/proximity are on-change sensors: an unchanged value remains valid
+        // during this registration session. Its age is displayed, never invented.
+        boolean light = mIsMonitoring && mLightAt > 0, proximity = mIsMonitoring && mProximityAt > 0;
         try {
-            telemetry.put("accel_x", mAccelX);
-            telemetry.put("accel_y", mAccelY);
-            telemetry.put("accel_z", mAccelZ);
-            telemetry.put("gyro_x", mGyroX);
-            telemetry.put("gyro_y", mGyroY);
-            telemetry.put("gyro_z", mGyroZ);
-            telemetry.put("light_lux", mLightLux);
-            telemetry.put("proximity_cm", mProximityCm);
-            telemetry.put("temperature_c", mTemperatureC);
-            telemetry.put("battery_level", mBatteryLevel);
-
-            if (NativeAgentCore.isAvailable()) {
-                String resultJson = NativeAgentCore.processSensorTelemetry(telemetry.toString());
-                mLastContext = new JSONObject(resultJson);
-                return mLastContext;
+            telemetry.put("accel_x", reading(mAccelX, accel)).put("accel_y", reading(mAccelY, accel)).put("accel_z", reading(mAccelZ, accel));
+            telemetry.put("gyro_x", reading(mGyroX, gyro)).put("gyro_y", reading(mGyroY, gyro)).put("gyro_z", reading(mGyroZ, gyro));
+            telemetry.put("light_lux", reading(mLightLux, light)).put("proximity_cm", reading(mProximityCm, proximity));
+            telemetry.put("light_age_ms", light ? now - mLightAt : JSONObject.NULL);
+            telemetry.put("temperature_c", reading(mTemperatureC, true)).put("battery_level", reading(mBatteryLevel, true));
+            if (NativeAgentCore.isAvailable() && accel && gyro && light && proximity && !Float.isNaN(mTemperatureC) && !Float.isNaN(mBatteryLevel)) {
+                JSONObject result = new JSONObject(NativeAgentCore.processSensorTelemetry(telemetry.toString()));
+                java.util.Iterator<String> keys = telemetry.keys();
+                while (keys.hasNext()) { String key = keys.next(); result.put(key, telemetry.get(key)); }
+                result.put("monitoring", true).put("engine", "native_sensor_fusion");
+                mLastContext = result;
+                return result;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Sensor telemetry fusion failed", e);
-        }
-
-        // Fallback
-        JSONObject fb = new JSONObject();
-        try {
-            fb.put("motion_state", "Stationary");
-            fb.put("ambient_environment", "IndoorLighting");
-            fb.put("in_pocket", false);
-            fb.put("voice_wake_allowed", true);
-            fb.put("thermal_state", "Nominal");
-            fb.put("inference_pacing_ms", 0);
-            fb.put("context_summary", "Device stationary with indoor lighting.");
-        } catch (Exception ignored) {}
-        mLastContext = fb;
-        return fb;
+            mLastContext = SensorContext.fallback(telemetry, mIsMonitoring);
+        } catch (Exception error) { Log.e(TAG, "Sensor context unavailable", error); mLastContext = new JSONObject(); }
+        return mLastContext;
     }
 
     private void updateBatteryAndThermal() {
+        mBatteryLevel = mTemperatureC = Float.NaN;
         try {
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatus = mContext.registerReceiver(null, ifilter);
@@ -174,8 +168,8 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
                 if (level >= 0 && scale > 0) {
                     mBatteryLevel = ((float) level / (float) scale) * 100.0f;
                 }
-                int tempTenths = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 300);
-                mTemperatureC = tempTenths / 10.0f;
+                int tempTenths = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Integer.MIN_VALUE);
+                if (tempTenths != Integer.MIN_VALUE) mTemperatureC = tempTenths / 10.0f;
             }
         } catch (Exception ignored) {}
     }
@@ -184,10 +178,7 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
         return mLastContext;
     }
 
-    public boolean isVoiceWakeAllowed() {
-        if (mProximityCm < 1.0f && mLightLux < 5.0f) {
-            return false;
-        }
-        return mLastContext.optBoolean("voice_wake_allowed", true);
+    public synchronized boolean isVoiceWakeAllowed() {
+        return !mIsMonitoring || mLightAt == 0 || mProximityAt == 0 || !(mProximityCm < 1 && mLightLux < 5);
     }
 }

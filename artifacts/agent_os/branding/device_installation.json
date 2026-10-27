@@ -1,0 +1,11 @@
+{
+  "version": "0.5.1",
+  "version_code": 6,
+  "same_signer_in_place_update": true,
+  "first_install_time_preserved": true,
+  "original_task_count": 3,
+  "task_title_hash_set_preserved": true,
+  "installed_apk_sha256": "3c08ff3864e2da0e2225b4eb154b0f12afccf9cec22619387aae518548da57ff",
+  "installed_apk_matches_candidate": true,
+  "production_uninstalled": false
+}

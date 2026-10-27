@@ -14,6 +14,7 @@ import time
 
 
 CASES = {
+    "SENSOR_CONTEXT": ("WorkflowValidationActivity", "SENSOR_CONTEXT", "AgentOsWorkflowValidation"),
     "WORKFLOW_RUNS": ("WorkflowValidationActivity", "WORKFLOW_RUNS", "AgentOsWorkflowValidation"),
     "MEMORY_CHOICES": ("WorkflowValidationActivity", "MEMORY_CHOICES", "AgentOsWorkflowValidation"),
     "TASK_CENTER": ("WorkflowValidationActivity", "TASK_CENTER", "AgentOsWorkflowValidation"),
@@ -35,7 +36,7 @@ for name in ("MODEL_DOCUMENT", "MODEL_DOCUMENT_FAILURES", "MODEL_CANCEL_RACE"):
     CASES[name] = ("DocumentFlowValidationActivity", name, "AgentOsDocumentsValidation")
 for name in ("SEED_WORKFLOW_UI", "OPEN_WORKFLOW_UI", "VERIFY_WORKFLOW_UI", "SEED_CENTER_UI", "OPEN_CENTER_UI", "VERIFY_CENTER_UI", "VERIFY_IMPORTED_WORKFLOWS"):
     CASES[name] = ("WorkflowValidationActivity", name, "AgentOsWorkflowValidation")
-for name in ("VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
+for name in ("VERIFY_SENSOR_OPT_IN", "VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
              "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION", "VERIFY_HYBRID_CLOUD_AND_REDACTION"):
     CASES[name] = ("DeviceValidationActivity", "org.traceform.agentos.validation." + name, "AgentOsValidation")
 
@@ -48,6 +49,8 @@ def main():
     parser.add_argument("--case", choices=CASES, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.package not in ("org.traceform.agentos.actionsvalidation", "org.traceform.agentos.documentsvalidation"):
+        parser.error("Only isolated validation packages are supported")
     adb = [args.adb, "-s", args.serial]
     package = args.package
 
@@ -87,7 +90,7 @@ def main():
         if not result["passed"]:
             break
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps({"package": package, "synthetic_only": True,
+    args.output.write_text(json.dumps({"package": package, "synthetic_only": all(item["case"] != "SENSOR_CONTEXT" for item in results),
         "recorded_at": datetime.now(timezone.utc).isoformat(), "cases": results}, indent=2) + "\n")
     raise SystemExit(0 if all(item["passed"] for item in results) else 1)
 

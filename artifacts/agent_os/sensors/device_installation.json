@@ -1,0 +1,12 @@
+{
+  "version": "0.5.2",
+  "version_code": 7,
+  "same_signer_in_place_update": true,
+  "original_three_task_title_hashes_preserved": true,
+  "first_install_time_preserved": true,
+  "installed_apk_sha256": "a49ea43248fbd9466c676e42438072da99babd056a0c74d3871a6fad8bd96e18",
+  "installed_apk_matches_candidate": true,
+  "ui_displays_measured_light_and_battery_temperature": true,
+  "ui_reports_sensor_off_after_background_and_resume": true,
+  "collection_left_off": true
+}

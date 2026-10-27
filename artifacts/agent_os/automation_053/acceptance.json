@@ -1,0 +1,10 @@
+{
+  "candidate_sha256": "d61ec7301b845d611220ddc9b60d8a86a49ffb0c72a1c6578ccc43c7c1763900",
+  "automated_device_cases": 30,
+  "cross_install_synthetic_archive_restore": true,
+  "validation_packages_removed": true,
+  "manual_system_picker_ui_not_run": true,
+  "physical_power_trial_not_run": true,
+  "production_update_installed": true,
+  "first_install_time_preserved": true
+}
