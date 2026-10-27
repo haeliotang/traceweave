@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-27T09:14:38.050655+00:00",
+  "cases": [
+    {
+      "case": "SENSOR_WINDOW",
+      "pid": 29643,
+      "passed": false,
+      "result": "10-27 14:59:38.653 29643 29697 I AgentOsWorkflowValidation: FAIL IllegalStateException: a gap must not fabricate a transition from an expired state"
+    }
+  ]
+}

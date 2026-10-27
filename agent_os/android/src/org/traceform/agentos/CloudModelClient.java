@@ -26,6 +26,12 @@ final class CloudModelClient {
     }
 
     CloudRequest preparePlan(AgentStore.Task task, List<CapabilityDescriptor> availableCaps, CloudModelConfig config) throws Exception {
+        return preparePlan(task, availableCaps, config, 1024);
+    }
+
+    CloudRequest preparePlan(AgentStore.Task task, List<CapabilityDescriptor> availableCaps, CloudModelConfig config, int outputTokens) throws Exception {
+        if (outputTokens != 256 && outputTokens != 512 && outputTokens != 1024)
+            throw new IllegalArgumentException("Unsupported output token limit");
         if (TaskContext.localOnly(task.plan)) throw new SecurityException("This task is local-only");
         if (!config.isConfigured()) {
             throw new IllegalArgumentException("Cloud model is not configured or disabled");
@@ -35,6 +41,7 @@ final class CloudModelClient {
         JSONObject requestJson = new JSONObject();
         requestJson.put("model", config.modelName);
         requestJson.put("temperature", config.temperature);
+        requestJson.put("max_tokens", outputTokens);
 
         JSONArray messages = new JSONArray();
 
@@ -82,7 +89,11 @@ final class CloudModelClient {
     }
 
     CloudRequest prepareDocument(AgentStore.Task task, CloudModelConfig config) throws Exception {
-        CloudRequest base = preparePlan(task, java.util.Collections.emptyList(), config);
+        return prepareDocument(task, config, 1024);
+    }
+
+    CloudRequest prepareDocument(AgentStore.Task task, CloudModelConfig config, int outputTokens) throws Exception {
+        CloudRequest base = preparePlan(task, java.util.Collections.emptyList(), config, outputTokens);
         JSONObject body = new JSONObject(base.body);
         JSONArray messages = body.getJSONArray("messages");
         messages.getJSONObject(0).put("content", "Generate a Markdown document for the user's goal using only the selected context. "
@@ -172,7 +183,13 @@ final class CloudModelClient {
         if (choices == null || choices.length() == 0) {
             throw new IllegalStateException("OpenAI response contains no choices");
         }
-        String content = choices.getJSONObject(0).getJSONObject("message").getString("content");
+        JSONObject choice = choices.getJSONObject(0);
+        if (choice.has("finish_reason") && !"stop".equals(choice.getString("finish_reason")))
+            throw new IllegalArgumentException("Planning response did not finish normally");
+        JSONObject message = choice.getJSONObject("message");
+        if (message.has("tool_calls") || message.has("function_call"))
+            throw new SecurityException("Planning response cannot call tools");
+        String content = message.getString("content");
 
         // Locate JSON object within content if wrapped in markdown code fence
         int firstBrace = content.indexOf('{');

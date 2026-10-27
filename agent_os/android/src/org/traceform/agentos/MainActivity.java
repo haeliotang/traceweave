@@ -472,6 +472,8 @@ public final class MainActivity extends Activity {
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
+        addPageButton(sensCard, en ? "Review context observation" : "审核感知观察", view -> reviewSensorObservation());
+
         sensCard.setOnClickListener(v -> {
             try {
                 PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
@@ -651,6 +653,8 @@ public final class MainActivity extends Activity {
         persistentButtons.add(saveMemoryBtn);
         LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
         root.addView(saveMemoryBtn, smLp);
+
+        addPageButton(root, en ? "Review deletion by source" : "按来源审核删除", view -> reviewMemorySourceDeletion());
 
         ScrollView memScroll = new ScrollView(this);
         memScroll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
@@ -1541,6 +1545,15 @@ public final class MainActivity extends Activity {
         content.setPadding(0, dp(4), 0, dp(4));
         card.addView(content);
 
+        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && memory.sourceReference.startsWith("confirmed:sensor:")) {
+            TextView sensorSource = new TextView(this);
+            sensorSource.setText(en ? "Sensor observation · user confirmed" : "感知观察 · 用户已确认");
+            card.addView(sensorSource);
+        }
+        LinearLayout edit = new LinearLayout(this);
+        addCardActionButton(edit, en ? "Edit / expiration" : "修改 / 有效期", view -> editMemory(memory), memoryButtons);
+        card.addView(edit);
+
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && !memory.sourceReference.startsWith("confirmed:")) {
             LinearLayout review = new LinearLayout(this);
             addCardActionButton(review, en ? "Review legacy inference" : "审核历史推断", view ->
@@ -1556,6 +1569,10 @@ public final class MainActivity extends Activity {
 
         TextView metadata = new TextView(this);
         metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
+        if (memory.userEdited) metadata.append(en ? " · User edited" : " · 用户已修正");
+        if (memory.expiresAt > 0) metadata.append((memory.isExpired(System.currentTimeMillis())
+            ? (en ? " · Expired " : " · 已到期 ") : (en ? " · Expires " : " · 到期 "))
+            + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.expiresAt)));
         metadata.setTextSize(10);
         metadata.setTextColor(0xFF94A3B8);
         card.addView(metadata);
@@ -1957,13 +1974,64 @@ public final class MainActivity extends Activity {
             .setNegativeButton(en ? "Keep" : "保留", null)
             .setPositiveButton(en ? "Delete" : "删除", (dialog, which) -> {
                 try {
-                    store.deleteMemory(memory.id);
+                    store.deleteMemoriesReviewed(java.util.Collections.singletonList(memory));
                     refreshMemories();
                 } catch (Exception error) {
                     showError(error);
                 }
             })
             .show();
+    }
+
+    private void editMemory(AgentStore.Memory memory) {
+        boolean en = isEnglish();
+        LinearLayout panel = new LinearLayout(this); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(36, 12, 36, 0);
+        EditText input = new EditText(this); input.setText(memory.content); input.setMinLines(2);
+        if (WorkflowTemplate.isTemplate(memory)) input.setEnabled(false);
+        panel.addView(input);
+        TextView help = new TextView(this);
+        help.setText(en ? "Expiration excludes this memory from new task selections; existing task snapshots remain."
+            : "到期后不再用于新任务选择；已有任务快照仍保留。工作流模板内容请在工作流界面管理。");
+        panel.addView(help);
+        Spinner expiry = new Spinner(this); expiry.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
+            en ? new String[]{"Keep current expiration", "No expiration", "Expire in 7 days", "Expire in 30 days", "Expire in 90 days"}
+                : new String[]{"保持当前有效期", "不设到期时间", "7 天后到期", "30 天后到期", "90 天后到期"}));
+        panel.addView(expiry);
+        new AlertDialog.Builder(this).setTitle(en ? "Edit memory" : "修改记忆").setView(panel)
+            .setNegativeButton(en ? "Cancel" : "取消", null)
+            .setPositiveButton(en ? "Save" : "保存", (dialog, which) -> {
+                try {
+                    int choice = expiry.getSelectedItemPosition();
+                    long expiresAt = choice == 0 ? memory.expiresAt : choice == 1 ? 0
+                        : System.currentTimeMillis() + (choice == 2 ? 7L : choice == 3 ? 30L : 90L) * 24 * 60 * 60 * 1000;
+                    store.reviseMemory(memory, input.getText().toString(), expiresAt);
+                    refreshMemories();
+                } catch (Exception error) { showError(error); }
+            }).show();
+    }
+
+    private void reviewMemorySourceDeletion() {
+        boolean en = isEnglish();
+        String[] labels = en ? new String[]{"User-provided", "Traceform", "All confirmed / inferred suggestions (including sensor)", "Sensor observations only"}
+            : new String[]{"你提供", "Traceform", "全部 Agent 建议（含感知）", "仅感知观察"};
+        new AlertDialog.Builder(this).setTitle(en ? "Choose a source" : "选择来源")
+            .setItems(labels, (dialog, which) -> {
+                try {
+                    java.util.ArrayList<AgentStore.Memory> selected = new java.util.ArrayList<>();
+                    for (AgentStore.Memory memory : store.listMemories()) {
+                        if (!MemorySources.matches(memory, which)) continue;
+                        selected.add(memory);
+                    }
+                    String message = (en ? "Delete " : "删除 ") + selected.size() + (en ? " selected records from " : " 条来源为 ") + labels[which]
+                        + (en ? ". Workflow templates in this source are included. Existing task snapshots and files remain. Changes since this preview are rejected."
+                            : " 的记录（包括此来源的工作流模板）。已有任务快照和文件仍保留。预览后发生变化的记录将拒绝删除。");
+                    new AlertDialog.Builder(this).setTitle(en ? "Review deletion" : "确认删除范围").setMessage(message)
+                        .setNegativeButton(en ? "Cancel" : "取消", null)
+                        .setPositiveButton(en ? "Delete selected records" : "删除选中记录", (confirm, button) -> {
+                            try { store.deleteMemoriesReviewed(selected); refreshMemories(); } catch (Exception error) { showError(error); }
+                        }).show();
+                } catch (Exception error) { showError(error); }
+            }).setNegativeButton(en ? "Cancel" : "取消", null).show();
     }
 
     private void promptExportPassphrase() {
@@ -1977,7 +2045,8 @@ public final class MainActivity extends Activity {
         fields.addView(second);
         new AlertDialog.Builder(this)
             .setTitle("加密导出")
-            .setMessage("请使用至少 12 个字符的长口令，并妥善保存。忘记口令后无法恢复档案内容。")
+            .setMessage(isEnglish() ? "Use and retain a passphrase of at least 12 characters. To restore this archive, the destination must run Agent OS 0.6.0 or later."
+                : "请使用至少 12 个字符的长口令，并妥善保存。新档案需在 Agent OS 0.6.0 或更新版本导入；忘记口令后无法恢复内容。")
             .setView(fields)
             .setNegativeButton("取消", null)
             .setPositiveButton("选择保存位置", (dialog, which) -> {
@@ -2164,6 +2233,41 @@ public final class MainActivity extends Activity {
         sensorToggleButton.setText(en
                 ? (monitoring ? "Stop sensors" : "Enable sensors")
                 : (monitoring ? "停止感知" : "启用感知"));
+    }
+
+    private void reviewSensorObservation() {
+        boolean en = isEnglish();
+        try {
+            PhysicalSensoriumManager sensors = PhysicalSensoriumManager.getInstance(this);
+            org.json.JSONObject event = sensors.lastMotionChange();
+            if (event == null) throw new IllegalStateException(en ? "Enable sensors and wait for a motion-state change" : "请启用感知并等待运动状态发生变化");
+            String from = "LowMotion".equals(event.getString("from")) ? (en ? "low motion" : "低运动") : (en ? "motion detected" : "检测到运动");
+            String to = "LowMotion".equals(event.getString("to")) ? (en ? "low motion" : "低运动") : (en ? "motion detected" : "检测到运动");
+            LinearLayout content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(36, 12, 36, 0);
+            TextView info = new TextView(this);
+            info.setText((en ? "Source: accelerometer + gyroscope; 3-second rule window. This is an observation, not a personal habit.\nObserved: "
+                : "来源：加速度计与陀螺仪，3 秒规则窗口。这是一次观察，不代表个人习惯。\n观察时间：")
+                + DateFormat.getDateTimeInstance().format(new Date(event.getLong("observedAt"))));
+            content.addView(info);
+            EditText text = new EditText(this); text.setMinLines(2);
+            text.setText((en ? "Sensor estimate changed from " : "传感器规则估计由 ") + from + (en ? " to " : " 变为 ") + to);
+            content.addView(text);
+            Spinner expiry = new Spinner(this); expiry.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
+                en ? new String[]{"Expire in 7 days", "Expire in 30 days", "No expiration"} : new String[]{"7 天后到期", "30 天后到期", "不设到期时间"}));
+            content.addView(expiry);
+            new AlertDialog.Builder(this).setTitle(en ? "Review before saving memory" : "保存记忆前审核")
+                .setView(content).setNegativeButton(en ? "Discard" : "放弃", null)
+                .setPositiveButton(en ? "Confirm and save" : "确认并保存", (dialog, which) -> {
+                    try {
+                        org.json.JSONObject latest = sensors.lastMotionChange();
+                        if (latest == null || !latest.toString().equals(event.toString())) throw new IllegalStateException(en ? "Observation changed; review it again" : "观察已变化或采集已停止，请重新审核");
+                        int index = expiry.getSelectedItemPosition();
+                        long expiresAt = index == 2 ? 0 : System.currentTimeMillis() + (index == 0 ? 7L : 30L) * 24 * 60 * 60 * 1000;
+                        store.confirmSensorObservation(event, text.getText().toString(), expiresAt);
+                        refreshMemories();
+                    } catch (Exception error) { showError(error); }
+                }).show();
+        } catch (Exception error) { showError(error); }
     }
 
     private void updateFloatPermStatus() {

@@ -40,7 +40,7 @@ final class MemorySelection {
             if (!selected.contains(cached.id)) continue;
             AgentStore.Memory latest = null;
             for (AgentStore.Memory memory : current) if (cached.id.equals(memory.id)) latest = memory;
-            if (latest == null || latest.updatedAt != cached.updatedAt || !latest.kind.equals(cached.kind) || !latest.content.equals(cached.content)
+            if (latest == null || latest.updatedAt != cached.updatedAt || latest.expiresAt != cached.expiresAt || latest.userEdited != cached.userEdited || !latest.kind.equals(cached.kind) || !latest.content.equals(cached.content)
                     || !latest.source.equals(cached.source) || !latest.sourceReference.equals(cached.sourceReference))
                 throw new IllegalStateException("Selected memory changed or was deleted; reopen and review your selection");
             result.add(latest);

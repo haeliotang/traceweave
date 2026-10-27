@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-27T09:31:00.450539+00:00",
+  "cases": [
+    {
+      "case": "EXPORT_LIFECYCLE",
+      "pid": 1627,
+      "passed": true,
+      "result": "10-27 15:16:01.260  1627  1676 I AgentOsWorkflowValidation: PASS workflow checks=1 mode=EXPORT_LIFECYCLE"
+    }
+  ]
+}

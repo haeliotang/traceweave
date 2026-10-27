@@ -27,7 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 final class MemoryArchive {
     private static final String FORMAT = "org.traceform.agentos.memory";
-    private static final int SCHEMA_VERSION = 5;
+    private static final int SCHEMA_VERSION = 6;
     private static final int ENCRYPTION_VERSION = 3;
     private static final int PBKDF2_ITERATIONS = 600000;
     private static final int SALT_BYTES = 16;
@@ -209,7 +209,8 @@ final class MemoryArchive {
         for (AgentStore.Memory memory : data.memories) {
             memories.put(new JSONObject().put("id", memory.id).put("kind", memory.kind).put("content", memory.content)
                 .put("source", memory.source).put("sourceReference", memory.sourceReference)
-                .put("createdAt", memory.createdAt).put("updatedAt", memory.updatedAt));
+                .put("createdAt", memory.createdAt).put("updatedAt", memory.updatedAt).put("expiresAt", memory.expiresAt)
+                .put("userEdited", memory.userEdited));
         }
         root.put("memories", memories);
         JSONArray audit = new JSONArray();
@@ -279,6 +280,10 @@ final class MemoryArchive {
             if (planJson != null && planJson.getJSONArray("steps").length() > AgentStore.MAX_DYNAMIC_STEPS)
                 throw new IOException("The archive contains an execution plan with too many steps");
             ExecutionPlan plan = planJson == null ? null : ExecutionPlan.fromJson(planJson);
+            if (schemaVersion >= 6 && plan != null) {
+                try { TaskContext.memories(plan); }
+                catch (IllegalStateException error) { throw new IOException("The archive contains an invalid task memory snapshot", error); }
+            }
             data.tasks.add(new AgentStore.Task(id, title, status, createdAt, updatedAt, 0,
                 executionVersion, executionStep, checkpointNote, result, plan));
         }
@@ -294,13 +299,18 @@ final class MemoryArchive {
             String sourceReference = schemaVersion >= 3 ? item.optString("sourceReference", "") : "";
             long createdAt = nonNegative(item.getLong("createdAt"), "memory.createdAt");
             long updatedAt = nonNegative(item.getLong("updatedAt"), "memory.updatedAt");
+            Object rawExpiry = schemaVersion >= 6 ? item.get("expiresAt") : 0;
+            if (!(rawExpiry instanceof Integer) && !(rawExpiry instanceof Long)) throw new IOException("Invalid memory expiration");
+            long expiresAt = nonNegative(((Number) rawExpiry).longValue(), "memory.expiresAt");
+            Object rawEdited = schemaVersion >= 6 && item.has("userEdited") ? item.get("userEdited") : false;
+            if (!(rawEdited instanceof Boolean)) throw new IOException("Invalid memory edit marker");
             if (!memoryIds.add(id)) throw new IOException("The archive contains duplicate memory IDs");
             if (!validMemoryKind(kind) || content.trim().isEmpty() || content.length() > 10000 || updatedAt < createdAt
                     || (!AgentStore.MEMORY_SOURCE_USER.equals(source)
                         && !AgentStore.MEMORY_SOURCE_TRACEFORM.equals(source)
                         && !AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(source)) || sourceReference.length() > 512)
                 throw new IOException("The archive contains an invalid memory record");
-            data.memories.add(new AgentStore.Memory(id, kind, content, source, sourceReference, createdAt, updatedAt));
+            data.memories.add(new AgentStore.Memory(id, kind, content, source, sourceReference, createdAt, updatedAt, expiresAt, (Boolean) rawEdited));
         }
 
         Set<String> tombstoneKeys = new HashSet<>();

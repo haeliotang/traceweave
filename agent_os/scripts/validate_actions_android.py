@@ -15,6 +15,13 @@ import time
 
 CASES = {
     "SENSOR_CONTEXT": ("WorkflowValidationActivity", "SENSOR_CONTEXT", "AgentOsWorkflowValidation"),
+    "SENSOR_WINDOW": ("WorkflowValidationActivity", "SENSOR_WINDOW", "AgentOsWorkflowValidation"),
+    "MEMORY_LIFECYCLE": ("WorkflowValidationActivity", "MEMORY_LIFECYCLE", "AgentOsWorkflowValidation"),
+    "DOCUMENT_CALENDAR_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_CALENDAR_CHAIN", "AgentOsWorkflowValidation"),
+    "VERIFY_CHAIN_RESTART": ("WorkflowValidationActivity", "VERIFY_CHAIN_RESTART", "AgentOsWorkflowValidation"),
+    "CLOUD_PLAN_GUARD": ("WorkflowValidationActivity", "CLOUD_PLAN_GUARD", "AgentOsWorkflowValidation"),
+    "EXPORT_LIFECYCLE": ("WorkflowValidationActivity", "EXPORT_LIFECYCLE", "AgentOsWorkflowValidation"),
+    "IMPORT_LIFECYCLE": ("WorkflowValidationActivity", "IMPORT_LIFECYCLE", "AgentOsWorkflowValidation"),
     "WORKFLOW_RUNS": ("WorkflowValidationActivity", "WORKFLOW_RUNS", "AgentOsWorkflowValidation"),
     "MEMORY_CHOICES": ("WorkflowValidationActivity", "MEMORY_CHOICES", "AgentOsWorkflowValidation"),
     "TASK_CENTER": ("WorkflowValidationActivity", "TASK_CENTER", "AgentOsWorkflowValidation"),

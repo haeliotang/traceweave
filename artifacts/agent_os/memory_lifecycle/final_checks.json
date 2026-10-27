@@ -1,0 +1,49 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": false,
+  "recorded_at": "2026-10-27T09:21:29.948546+00:00",
+  "cases": [
+    {
+      "case": "MEMORY_LIFECYCLE",
+      "pid": 30077,
+      "passed": true,
+      "result": "10-27 15:05:44.814 30077 30123 I AgentOsWorkflowValidation: PASS workflow checks=16 mode=MEMORY_LIFECYCLE"
+    },
+    {
+      "case": "SENSOR_WINDOW",
+      "pid": 30233,
+      "passed": true,
+      "result": "10-27 15:05:46.205 30233 30262 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_WINDOW"
+    },
+    {
+      "case": "SENSOR_CONTEXT",
+      "pid": 30284,
+      "passed": true,
+      "result": "10-27 15:05:47.779 30284 30312 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_CONTEXT"
+    },
+    {
+      "case": "MEMORY_CHOICES",
+      "pid": 30336,
+      "passed": true,
+      "result": "10-27 15:05:49.238 30336 30364 I AgentOsWorkflowValidation: PASS workflow checks=11 mode=MEMORY_CHOICES"
+    },
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 30391,
+      "passed": true,
+      "result": "10-27 15:05:58.744 30391 30424 I AgentOsWorkflowValidation: PASS workflow checks=21 mode=WORKFLOW_RUNS"
+    },
+    {
+      "case": "SNAPSHOT_BOUNDARY",
+      "pid": 30470,
+      "passed": true,
+      "result": "10-27 15:06:07.842 30470 30499 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SNAPSHOT_BOUNDARY"
+    },
+    {
+      "case": "VERIFY_MEMORY_PROVENANCE",
+      "pid": 30545,
+      "passed": true,
+      "result": "10-27 15:06:29.729 30545 30573 I AgentOsValidation: PASS: v3 memory migration preserved encrypted content and marked legacy provenance; the rebuilt index found Chinese content and source; import choices kept or replaced a same-ID memory; a tombstone still won."
+    }
+  ]
+}

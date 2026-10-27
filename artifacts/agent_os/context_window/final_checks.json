@@ -1,0 +1,25 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": false,
+  "recorded_at": "2026-10-27T09:15:05.812497+00:00",
+  "cases": [
+    {
+      "case": "SENSOR_WINDOW",
+      "pid": 29757,
+      "passed": true,
+      "result": "10-27 15:00:03.456 29757 29775 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_WINDOW"
+    },
+    {
+      "case": "SENSOR_CONTEXT",
+      "pid": 29806,
+      "passed": true,
+      "result": "10-27 15:00:05.037 29806 29834 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_CONTEXT"
+    },
+    {
+      "case": "VERIFY_SENSOR_OPT_IN",
+      "pid": 29857,
+      "passed": true,
+      "result": "10-27 15:00:06.388 29857 29886 I AgentOsValidation: PASS: sensor monitoring is inactive on entry and follows explicit start/stop"
+    }
+  ]
+}

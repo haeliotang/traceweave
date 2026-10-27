@@ -137,6 +137,17 @@ public final class DocumentTaskActivity extends Activity {
                     + java.text.DateFormat.getDateTimeInstance().format(new java.util.Date(value.getLong("verifiedAt"))));
                 if (!value.optBoolean("localAccess")) label(root, en ? "Historical receipt only; select a file here to verify. File access is not transferred in an archive."
                     : "仅保留历史回执；请在此设备重新选择文件核验，档案不携带文件访问权限。");
+                if (DocumentAction.locallyVerified(task)) {
+                    label(root, en ? "Continue to a separate calendar draft. It requires its own confirmation; no event is created automatically."
+                        : "可以继续创建独立的日历草稿；需要再次确认，不会自动创建日程。");
+                    button(root, en ? "Continue to calendar draft" : "继续：创建日历草稿", () -> {
+                        try {
+                            AgentStore.Task child = store.createCalendarFollowup(taskId);
+                            startActivity(new Intent(this, ExternalActionActivity.class)
+                                .putExtra(ExternalActionActivity.EXTRA_TASK_ID, child.id));
+                        } catch (Exception error) { fail(error); }
+                    });
+                }
                 if ((AgentStore.OUTCOME_UNKNOWN.equals(task.status) || AgentStore.COMPLETED.equals(task.status))
                         && !value.optString("attemptId").isEmpty()) {
                     if (value.optBoolean("localAccess") && value.has("uri")) {

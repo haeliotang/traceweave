@@ -1,0 +1,43 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": false,
+  "recorded_at": "2026-10-27T09:30:55.544382+00:00",
+  "cases": [
+    {
+      "case": "MEMORY_LIFECYCLE",
+      "pid": 889,
+      "passed": true,
+      "result": "10-27 15:15:32.190   889  1018 I AgentOsWorkflowValidation: PASS workflow checks=20 mode=MEMORY_LIFECYCLE"
+    },
+    {
+      "case": "SENSOR_WINDOW",
+      "pid": 1146,
+      "passed": true,
+      "result": "10-27 15:15:33.539  1146  1188 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_WINDOW"
+    },
+    {
+      "case": "SENSOR_CONTEXT",
+      "pid": 1235,
+      "passed": true,
+      "result": "10-27 15:15:35.092  1235  1289 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=SENSOR_CONTEXT"
+    },
+    {
+      "case": "MEMORY_CHOICES",
+      "pid": 1329,
+      "passed": true,
+      "result": "10-27 15:15:36.594  1329  1402 I AgentOsWorkflowValidation: PASS workflow checks=11 mode=MEMORY_CHOICES"
+    },
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 1449,
+      "passed": true,
+      "result": "10-27 15:15:46.807  1449  1493 I AgentOsWorkflowValidation: PASS workflow checks=21 mode=WORKFLOW_RUNS"
+    },
+    {
+      "case": "SNAPSHOT_BOUNDARY",
+      "pid": 1543,
+      "passed": true,
+      "result": "10-27 15:15:56.061  1543  1571 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SNAPSHOT_BOUNDARY"
+    }
+  ]
+}

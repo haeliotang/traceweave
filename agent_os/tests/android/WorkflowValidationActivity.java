@@ -20,6 +20,13 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("TASK_CENTER".equals(getIntent().getAction())) taskCenter(store);
                 else if ("WORKFLOW_GUARD".equals(getIntent().getAction())) workflowGuard(store);
                 else if ("SENSOR_CONTEXT".equals(getIntent().getAction())) sensorContext();
+                else if ("SENSOR_WINDOW".equals(getIntent().getAction())) sensorWindow();
+                else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
+                else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
+                else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
+                else if ("CLOUD_PLAN_GUARD".equals(getIntent().getAction())) cloudPlanGuard();
+                else if ("EXPORT_LIFECYCLE".equals(getIntent().getAction())) exportLifecycle(store);
+                else if ("IMPORT_LIFECYCLE".equals(getIntent().getAction())) importLifecycle(store);
                 else if ("SEED_WORKFLOW_UI".equals(getIntent().getAction())) {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
                     store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC camping preference: keep checklists concise");
@@ -92,11 +99,176 @@ public final class WorkflowValidationActivity extends Activity {
         } finally { sensors.stopMonitoring(); }
         check(sensors.evaluateCurrentContext().isNull("light_lux"), "stop invalidates previous session readings");
     }
+    private void sensorWindow() throws Exception {
+        MotionWindow window = new MotionWindow();
+        check("Unknown".equals(window.state(1000)), "empty window is unknown");
+        window.add(1000, 100000, 9.81, 0);
+        window.add(1500, 100500, 9.81, 0);
+        check("Unknown".equals(window.state(1500)), "short window cannot assert a stable state");
+        window.add(2300, 101300, 9.81, 0);
+        check("LowMotion".equals(window.state(2300)), "sustained low motion is estimated from a window");
+        check(window.lastChange() == null, "first classification is not a fabricated transition");
+        for (int i = 0; i < 6; i++) window.add(2800 + i * 500, 101800 + i * 500, 10.9, 1);
+        check("MotionDetected".equals(window.state(5300)), "sustained motion changes the estimated state");
+        JSONObject event = window.lastChange();
+        check(event != null && "LowMotion".equals(event.getString("from")) && "MotionDetected".equals(event.getString("to")), "change event includes prior and current estimates");
+        check("accelerometer+gyroscope".equals(event.getString("source")) && !event.has("accel_x"), "event identifies source without storing raw sensor samples");
+        check("Unknown".equals(window.state(8400)), "stale sensor window becomes unknown");
+        long previousEvent = event.getLong("observedAt");
+        window.add(8401, 107401, 9.81, 0);
+        window.add(9001, 108001, 9.81, 0);
+        window.add(9801, 108801, 9.81, 0);
+        check(window.lastChange().getLong("observedAt") == previousEvent, "a gap must not fabricate a transition from an expired state");
+        window.clear();
+        check(window.lastChange() == null && "Unknown".equals(window.state(8000)), "stopping a session clears state and events");
+    }
+    private AgentStore.Memory memoryById(AgentStore store, String id) throws Exception {
+        for (AgentStore.Memory memory : store.listMemories()) if (id.equals(memory.id)) return memory;
+        throw new IllegalStateException("Synthetic memory missing");
+    }
+    private void exportLifecycle(AgentStore store) throws Exception {
+        reset(store);
+        long expires = System.currentTimeMillis() + 86400000L;
+        JSONObject event = new JSONObject().put("kind", "motion_change").put("from", "LowMotion").put("to", "MotionDetected")
+            .put("observedAt", 123456789L).put("source", "accelerometer+gyroscope").put("method", "three_second_rule_window");
+        AgentStore.Memory memory = store.confirmSensorObservation(event, "SYNTHETIC portable observation", expires);
+        store.reviseMemory(memory, "SYNTHETIC corrected portable observation", expires);
+        memory = memoryById(store, memory.id);
+        byte[] archive = store.exportArchive("synthetic-memory-lifecycle".toCharArray());
+        try (java.io.FileOutputStream out = openFileOutput("synthetic-migration.taos", 0)) { out.write(archive); }
+        try (java.io.FileOutputStream out = openFileOutput("migration-ids.json", 0)) {
+            out.write(new JSONObject().put("memoryId", memory.id).put("expiresAt", expires).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+        check(memory.expiresAt == expires && memory.userEdited, "synthetic corrected lifecycle archive prepared");
+    }
+    private void importLifecycle(AgentStore store) throws Exception {
+        reset(store);
+        byte[] ids = java.nio.file.Files.readAllBytes(new java.io.File(getFilesDir(), "migration-ids.json").toPath());
+        JSONObject metadata = new JSONObject(new String(ids, java.nio.charset.StandardCharsets.UTF_8));
+        try (java.io.FileInputStream input = openFileInput("synthetic-migration.taos")) {
+            store.importArchive(input, "synthetic-memory-lifecycle".toCharArray());
+        }
+        AgentStore.Memory memory = memoryById(store, metadata.getString("memoryId"));
+        check(memory.expiresAt == metadata.getLong("expiresAt"), "new installation restores expiration");
+        check(memory.sourceReference.startsWith("confirmed:sensor:motion:"), "new installation restores sensor provenance");
+        check(memory.userEdited && "SYNTHETIC corrected portable observation".equals(memory.content), "new installation restores user correction provenance");
+        check(store.listPlanningMemories().size() == 1, "unexpired restored memory can be selected");
+        check(getContentResolver().getPersistedUriPermissions().isEmpty(), "archive carries no Android file permissions");
+        check(!CloudModelConfig.load(this).isConfigured(), "archive carries no cloud configuration");
+    }
+    private void memoryLifecycle(AgentStore store) throws Exception {
+        reset(store);
+        AgentStore.Memory original = store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC old preference");
+        long expires = System.currentTimeMillis() + 60000;
+        store.reviseMemory(original, "SYNTHETIC corrected preference", expires);
+        AgentStore.Memory revised = memoryById(store, original.id);
+        check(revised.expiresAt == expires && revised.source.equals(original.source) && revised.userEdited, "correction preserves source, marks the user edit and sets expiration");
+        rejects(() -> store.reviseMemory(original, "SYNTHETIC stale edit", 0), "stale correction cannot overwrite a newer version");
+        rejects(() -> store.reviseMemory(revised, "SYNTHETIC invalid expiry", -1), "negative expiration rejected");
+        AgentStore.Task historical = store.createTask("SYNTHETIC history");
+        store.savePlan(historical.id, new ExecutionPlan(historical.id, historical.title, Collections.emptyList(), 1, 0)
+            .withContext(TaskContext.selected(Collections.singletonList(revised))));
+        MemorySelection selection = new MemorySelection(store.listPlanningMemories(), Collections.singletonList(revised.id));
+        store.reviseMemory(revised, "SYNTHETIC expired preference", System.currentTimeMillis() - 1);
+        check(store.listPlanningMemories().isEmpty() && store.listMemories().size() == 1, "expired canonical memory remains visible but is excluded from new planning");
+        rejects(() -> selection.chosen(store.listPlanningMemories()), "an already selected memory cannot enter a new request after expiry");
+        check(TaskContext.memories(store.getTask(historical.id).plan).get(0).expiresAt == expires, "historical task retains its original snapshot and expiration");
+        JSONObject event = new JSONObject().put("kind", "motion_change").put("from", "LowMotion").put("to", "MotionDetected")
+            .put("observedAt", 123456789L).put("source", "accelerometer+gyroscope").put("method", "three_second_rule_window");
+        check(store.listMemories().size() == 1, "an observation alone does not create a memory");
+        AgentStore.Memory confirmed = store.confirmSensorObservation(event, "SYNTHETIC user-reviewed observation", expires);
+        check(confirmed.sourceReference.equals("confirmed:sensor:motion:123456789") && confirmed.expiresAt == expires,
+            "explicit confirmation records sensor provenance and expiration");
+        AgentStore.Memory forged = new AgentStore.Memory("synthetic-forged", AgentStore.MEMORY_FACT, "SYNTHETIC user record",
+            AgentStore.MEMORY_SOURCE_USER, "confirmed:sensor:motion:123456789", 1, 1);
+        check(MemorySources.matches(confirmed, 3) && !MemorySources.matches(forged, 3),
+            "sensor-only deletion preview cannot select a user record with a forged reference");
+        rejects(() -> store.confirmSensorObservation(event, "SYNTHETIC duplicate", expires), "same observation cannot be saved twice");
+        byte[] archive = store.exportArchive("synthetic-memory-lifecycle".toCharArray());
+        reset(store);
+        store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-memory-lifecycle".toCharArray());
+        check(memoryById(store, confirmed.id).expiresAt == expires && memoryById(store, original.id).isExpired(System.currentTimeMillis())
+            && memoryById(store, original.id).userEdited, "archive restores expiry and user edit provenance");
+        check(TaskContext.memories(store.getTask(historical.id).plan).get(0).expiresAt == expires, "archive preserves historical snapshot expiry");
+        check(store.listPlanningMemories().size() == 1, "expired memory remains excluded after import");
+        AgentStore.Memory stale = memoryById(store, confirmed.id), expired = memoryById(store, original.id);
+        store.reviseMemory(stale, "SYNTHETIC changed after deletion preview", expires);
+        rejects(() -> store.deleteMemoriesReviewed(java.util.Arrays.asList(stale, expired)), "bulk deletion rejects a changed selection atomically");
+        check(store.listMemories().size() == 2, "failed reviewed deletion leaves every record intact");
+        AgentStore.Memory latest = memoryById(store, confirmed.id);
+        store.deleteMemoriesReviewed(Collections.singletonList(latest));
+        check(store.listMemories().size() == 1 && store.listMemories().get(0).id.equals(original.id), "reviewed deletion removes only selected source records");
+        byte[] deleted = store.exportArchive("synthetic-memory-lifecycle".toCharArray());
+        check(MemoryArchive.decrypt(new java.io.ByteArrayInputStream(deleted), "synthetic-memory-lifecycle".toCharArray()).tombstones.size() == 1,
+            "reviewed deletion exports a tombstone");
+        AgentStore.Memory expiredWorkflow = store.createMemory(AgentStore.MEMORY_WORKFLOW,
+            new WorkflowTemplate("SYNTHETIC expired workflow", "Plan {{input}}").encode(), AgentStore.MEMORY_SOURCE_USER, "", System.currentTimeMillis() - 1);
+        rejects(() -> WorkflowTemplate.createRun(store, expiredWorkflow.id, "SYNTHETIC"), "expired workflow cannot create a new run");
+        AgentStore.Task saved = store.getTask(historical.id);
+        JSONObject badContext = new JSONObject(saved.plan.context);
+        badContext.getJSONArray("memories").getJSONObject(0).put("expiresAt", 1.5);
+        ExecutionPlan badPlan = saved.plan.withContext(badContext.toString());
+        rejects(() -> TaskContext.memories(badPlan), "fractional snapshot expiration is rejected");
+        MemoryArchive.Data badData = new MemoryArchive.Data();
+        badData.tasks.add(new AgentStore.Task(saved.id, saved.title, saved.status, saved.createdAt, saved.updatedAt,
+            saved.jobId, saved.executionVersion, saved.executionStep, saved.checkpointNote, saved.result, badPlan));
+        byte[] badArchive = MemoryArchive.encrypt(badData, "synthetic-memory-lifecycle".toCharArray());
+        rejects(() -> MemoryArchive.decrypt(new java.io.ByteArrayInputStream(badArchive), "synthetic-memory-lifecycle".toCharArray()),
+            "malformed v6 snapshot is rejected before import");
+    }
     private void check(boolean value, String message) { checks++; if (!value) throw new IllegalStateException(message); }
+
+    private void cloudPlanGuard() throws Exception {
+        JSONObject plan = new JSONObject().put("steps", new JSONArray().put(new JSONObject()
+            .put("capability", "builtin.synthesis").put("scope", "local_inference")));
+        JSONObject message = new JSONObject().put("content", plan.toString());
+        JSONObject choice = new JSONObject().put("finish_reason", "length").put("message", message);
+        JSONObject response = new JSONObject().put("choices", new JSONArray().put(choice));
+        rejects(() -> CloudModelClient.parsePlanResponse("synthetic", "SYNTHETIC", response.toString(), Collections.emptyList()),
+            "truncated response must not become an executable plan");
+        choice.put("finish_reason", "stop");
+        check(CloudModelClient.parsePlanResponse("synthetic", "SYNTHETIC", response.toString(), Collections.emptyList()).totalSteps() == 1,
+            "normal complete plan remains accepted");
+        message.put("tool_calls", new JSONArray());
+        rejects(() -> CloudModelClient.parsePlanResponse("synthetic", "SYNTHETIC", response.toString(), Collections.emptyList()),
+            "tool call output must not become an executable plan");
+    }
+
+    private void documentCalendarChain(AgentStore store) throws Exception {
+        reset(store);
+        AgentStore.Task parent = store.createDocumentTask("SYNTHETIC schedule", "# SYNTHETIC schedule", new JSONArray());
+        rejects(() -> store.createCalendarFollowup(parent.id), "unverified document cannot create followup");
+        JSONObject draft = new JSONObject(parent.plan.steps.get(0).observation);
+        String attempt = store.claimExternalAction(parent.id, 0, draft.getString("draftId"), draft);
+        Uri uri = Uri.parse("content://" + getPackageName() + ".documents.fixture/chain");
+        store.bindDocumentTarget(parent.id, attempt, uri.toString());
+        DocumentAction.writeOnce(getContentResolver(), store, parent.id);
+        check(DocumentAction.locallyVerified(store.getTask(parent.id)), "parent document verified");
+        AgentStore.Task child = store.createCalendarFollowup(parent.id);
+        check(child.id.equals(store.createCalendarFollowup(parent.id).id), "followup creation is idempotent");
+        check(AgentStore.WAITING_FOR_USER.equals(child.status) && "external".equals(TaskCenterState.destination(child)), "followup awaits separate confirmation");
+        JSONObject context = new JSONObject(child.plan.context);
+        check(TaskContext.localOnly(child.plan) && TaskContext.memories(child.plan).isEmpty() && !context.toString().contains("content://"), "no memory, file grant or cloud consent is inherited");
+        check(parent.id.equals(context.getJSONObject("workflowLink").getString("parentTaskId")), "parent link is recorded");
+        JSONObject calendar = new JSONObject(child.plan.steps.get(0).observation);
+        calendar.put("startTime", System.currentTimeMillis() + 3600000).put("endTime", System.currentTimeMillis() + 7200000);
+        String handoff = store.claimExternalAction(child.id, 0, calendar.getString("draftId"), calendar);
+        store.recordExternalOutcome(child.id, 0, handoff, false, "synthetic");
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "external save is not falsely verified");
+        check(child.id.equals(store.createCalendarFollowup(parent.id).id), "unknown result does not create a duplicate");
+        getSharedPreferences("workflow_validation", 0).edit().putString("chainParent", parent.id).putString("chainChild", child.id).commit();
+    }
+
+    private void verifyChainRestart(AgentStore store) throws Exception {
+        String parent = getSharedPreferences("workflow_validation", 0).getString("chainParent", "");
+        String child = getSharedPreferences("workflow_validation", 0).getString("chainChild", "");
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child).status), "unknown handoff survives force stop");
+        check(child.equals(store.createCalendarFollowup(parent).id), "restart cannot replay or duplicate the action");
+    }
     private interface Checked { void run() throws Exception; }
     private void rejects(Checked action, String message) throws Exception {
         boolean rejected = false;
-        try { action.run(); } catch (IllegalArgumentException | IllegalStateException | SecurityException | org.json.JSONException expected) { rejected = true; }
+        try { action.run(); } catch (IllegalArgumentException | IllegalStateException | SecurityException | org.json.JSONException | java.io.IOException expected) { rejected = true; }
         check(rejected, message);
     }
     private void workflows(AgentStore store) throws Exception {

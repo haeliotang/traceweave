@@ -35,6 +35,7 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     private volatile float mBatteryLevel = Float.NaN;
 
     private long mAccelAt, mGyroAt, mLightAt, mProximityAt;
+    private final MotionWindow mMotionWindow = new MotionWindow();
 
     private volatile JSONObject mLastContext = new JSONObject();
     private volatile boolean mIsMonitoring = false;
@@ -69,6 +70,7 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
     public synchronized void startMonitoring() {
         if (mIsMonitoring || mSensorManager == null) return;
         mAccelAt = mGyroAt = mLightAt = mProximityAt = 0;
+        mMotionWindow.clear();
         boolean accel = register(mAccelSensor), gyro = register(mGyroSensor);
         boolean light = register(mLightSensor), proximity = register(mProximitySensor);
         mIsMonitoring = accel || gyro || light || proximity;
@@ -84,6 +86,7 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
         if (mSensorManager != null) mSensorManager.unregisterListener(this);
         mIsMonitoring = false;
         mAccelAt = mGyroAt = mLightAt = mProximityAt = 0;
+        mMotionWindow.clear();
         mLastContext = new JSONObject();
     }
 
@@ -120,6 +123,14 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
                 mProximityCm = event.values[0];
                 break;
         }
+        if ((event.sensor.getType() == Sensor.TYPE_ACCELEROMETER || event.sensor.getType() == Sensor.TYPE_GYROSCOPE)
+                && mAccelAt > 0 && mGyroAt > 0 && Math.abs(mAccelAt - mGyroAt) <= 1000) {
+            try {
+                double a = Math.sqrt(mAccelX*mAccelX + mAccelY*mAccelY + mAccelZ*mAccelZ);
+                double g = Math.sqrt(mGyroX*mGyroX + mGyroY*mGyroY + mGyroZ*mGyroZ);
+                mMotionWindow.add(event.timestamp / 1000000L, System.currentTimeMillis(), a, g);
+            } catch (Exception error) { Log.w(TAG, "Motion window update failed"); }
+        }
     }
 
     @Override
@@ -149,10 +160,16 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
                 java.util.Iterator<String> keys = telemetry.keys();
                 while (keys.hasNext()) { String key = keys.next(); result.put(key, telemetry.get(key)); }
                 result.put("monitoring", true).put("engine", "native_sensor_fusion");
+                result.put("native_motion_estimate", result.optString("motion_state", "Unknown"));
                 mLastContext = result;
-                return result;
+            } else {
+                mLastContext = SensorContext.fallback(telemetry, mIsMonitoring);
             }
-            mLastContext = SensorContext.fallback(telemetry, mIsMonitoring);
+            JSONObject change = mMotionWindow.lastChange();
+            mLastContext.put("motion_state", accel && gyro ? mMotionWindow.state(now) : "Unknown")
+                .put("motion_sample_count", mMotionWindow.sampleCount(now))
+                .put("motion_method", "three_second_rule_window")
+                .put("motion_change", change == null ? JSONObject.NULL : change);
         } catch (Exception error) { Log.e(TAG, "Sensor context unavailable", error); mLastContext = new JSONObject(); }
         return mLastContext;
     }
@@ -172,6 +189,10 @@ public final class PhysicalSensoriumManager implements SensorEventListener {
                 if (tempTenths != Integer.MIN_VALUE) mTemperatureC = tempTenths / 10.0f;
             }
         } catch (Exception ignored) {}
+    }
+
+    synchronized JSONObject lastMotionChange() throws Exception {
+        return mIsMonitoring ? mMotionWindow.lastChange() : null;
     }
 
     public JSONObject getLastContext() {

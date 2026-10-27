@@ -182,6 +182,13 @@ public final class DocumentFlowValidationActivity extends Activity {
             CloudModelConfig config = new CloudModelConfig(true, server.endpoint(), "", "synthetic-document", 15000, 0.1);
             AgentStore.Task task = selectedTask(store, java.util.Collections.singletonList(memory), false);
             CloudRequest request = client.prepareDocument(task, config);
+            CloudRequest bounded = client.prepareDocument(task, config, 256);
+            check(new org.json.JSONObject(bounded.body).getInt("max_tokens") == 256
+                && !bounded.sha256.equals(request.sha256), "output budget is part of the exact approved request");
+            rejects(() -> client.prepareDocument(task, config, 999), "unsupported token limit rejected");
+            check(!CloudFailure.describe(new IllegalStateException("secret endpoint api-key"), true).contains("secret"), "failure display does not expose exception details");
+            check(CloudFailure.describe(new IllegalStateException("Cloud model endpoint returned HTTP 429"), true).contains("quota"), "quota errors are classified locally");
+            check(CloudFailure.describe(new java.net.SocketTimeoutException(), true).contains("timed out"), "timeout describes uncertain provider outcome");
             check(request.documentDraft && request.body.contains(memory.content) && !request.body.contains(excluded.content), "document preview includes only selected context");
             rejects(() -> client.requestApprovedDocument(request, store), "document preview cannot send without approval");
             check(server.count.get() == 0 && writes() == 0, "preview has no network or file effect");

@@ -1,0 +1,13 @@
+{
+  "package": "org.traceform.agentos.documentsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-27T09:31:06.154098+00:00",
+  "cases": [
+    {
+      "case": "IMPORT_LIFECYCLE",
+      "pid": 1730,
+      "passed": true,
+      "result": "10-27 15:16:06.957  1730  1759 I AgentOsWorkflowValidation: PASS workflow checks=6 mode=IMPORT_LIFECYCLE"
+    }
+  ]
+}

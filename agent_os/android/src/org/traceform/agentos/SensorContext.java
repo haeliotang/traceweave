@@ -36,12 +36,16 @@ final class SensorContext {
         if (!value.optBoolean("monitoring")) return en ? "Sensor monitoring off\nTap Enable sensors to start" : "传感器采集已关闭\n点击“启用感知”后开始";
         String motion = value.optString("motion_state", "Unknown");
         String pose = en ? "Waiting / unavailable" : "等待数据 / 不可用";
-        if ("LowMotion".equals(motion)) pose = en ? "Low motion (rule estimate)" : "低运动（规则估计）";
-        else if ("MotionDetected".equals(motion)) pose = en ? "Motion detected (rule estimate)" : "检测到运动（规则估计）";
+        if ("LowMotion".equals(motion)) pose = en ? "Low motion (window estimate)" : "低运动（窗口规则估计）";
+        else if ("MotionDetected".equals(motion)) pose = en ? "Motion detected (window estimate)" : "检测到运动（窗口规则估计）";
         else if (!"Unknown".equals(motion)) pose = (en ? "Native estimate: " : "原生估计：") + motion;
         String light = (en ? "Light: " : "光照：") + reading(value, "light_lux", "Lux", en);
         if (has(value, "light_age_ms")) light += (en ? " · age " : " · ") + value.optLong("light_age_ms") / 1000 + (en ? "s" : " 秒前");
+        JSONObject change = value.optJSONObject("motion_change");
+        String event = change == null ? "" : (en ? "\nMotion change detected · " : "\n检测到运动状态变化 · ")
+            + Math.max(0, (System.currentTimeMillis() - change.optLong("observedAt")) / 1000) + (en ? "s ago" : " 秒前");
         return (en ? "Motion: " : "运动：") + pose + "\n" + light + "\n"
-            + (en ? "Battery temp: " : "电池温度：") + reading(value, "temperature_c", "°C", en);
+            + (en ? "Battery temp: " : "电池温度：") + reading(value, "temperature_c", "°C", en)
+            + (en ? "\nSource: accelerometer + gyroscope" : "\n来源：加速度计 + 陀螺仪") + event;
     }
 }

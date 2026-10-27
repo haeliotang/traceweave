@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ public final class TaskReviewActivity extends Activity {
     private String taskId;
     private CloudRequest pending;
     private MemorySelectionView memorySelection;
+    private Spinner outputLimit;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -53,6 +56,7 @@ public final class TaskReviewActivity extends Activity {
         state.putBoolean("document", document);
         state.putString("goal", goal.getText().toString());
         state.putStringArrayList("selected", memorySelection.selectedIds());
+        state.putInt("outputLimit", outputLimit.getSelectedItemPosition());
         super.onSaveInstanceState(state);
     }
 
@@ -89,13 +93,20 @@ public final class TaskReviewActivity extends Activity {
         ArrayList<String> ids = state == null ? getIntent().getStringArrayListExtra(EXTRA_SELECTED) : state.getStringArrayList("selected");
         memorySelection = new MemorySelectionView(this, store, goal, en, ids);
         root.addView(memorySelection);
+        text(root, en ? "Maximum output tokens for this request (input tokens and actual cost are not capped here):"
+            : "本次请求的最大输出 token 数（输入 token 和实际费用不受此项限制）：");
+        outputLimit = new Spinner(this);
+        outputLimit.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"256", "512", "1024"}));
+        outputLimit.setSelection(state == null ? 2 : state.getInt("outputLimit", 2));
+        root.addView(outputLimit);
         button(root, en ? "Plan locally · keep this task local" : "本地规划 · 此任务保持本地", this::planLocally);
         button(root, en ? "Preview one cloud planning request" : "预览本次云端规划请求", () -> {
             try {
                 AgentStore.Task task = prepareTask(false);
                 CloudModelConfig config = CloudModelConfig.load(this);
-                pending = document ? new CloudModelClient().prepareDocument(task, config)
-                    : new CloudModelClient().preparePlan(task, new CapabilityBroker(this, store).listAvailableCapabilities(task.id), config);
+                int limit = Integer.parseInt(outputLimit.getSelectedItem().toString());
+                pending = document ? new CloudModelClient().prepareDocument(task, config, limit)
+                    : new CloudModelClient().preparePlan(task, new CapabilityBroker(this, store).listAvailableCapabilities(task.id), config, limit);
                 cloudPreview();
             } catch (Exception error) { fail(error); }
         });
@@ -146,6 +157,9 @@ public final class TaskReviewActivity extends Activity {
         LinearLayout root = page(en ? "Exact request preview" : "本次实际请求预览");
         text(root, (en ? "Endpoint: " : "目标端点：") + pending.endpoint);
         text(root, (en ? "Model: " : "模型：") + pending.config.modelName);
+        text(root, (en ? "Request bytes: " : "请求字节数：") + pending.body.getBytes(java.nio.charset.StandardCharsets.UTF_8).length);
+        text(root, en ? "The provider must support max_tokens. This limits output tokens, not input usage or monetary cost."
+            : "服务商需支持 max_tokens。此项限制输出 token，不限制输入用量或实际费用。");
         text(root, en ? "The request below includes the goal, selected memories and capability descriptions. Pattern redaction cannot guarantee removal of all sensitive information. Approval is for this planning request only; later observations stay local."
             : "下方为将发送的目标、所选记忆及能力描述。规则脱敏不能保证移除所有敏感信息。授权仅限本次规划，后续步骤观察保持本地。");
         text(root, pending.body);
@@ -184,11 +198,20 @@ public final class TaskReviewActivity extends Activity {
                             else finish();
                         }
                         else {
-                            fail(error);
                             LinearLayout fallback = page(en ? "Request did not produce a usable plan" : "本次请求未获得可用计划");
+                            text(fallback, CloudFailure.describe(error, en));
                             text(fallback, en ? "No automatic retry will be sent. You can plan locally or review a new request."
                                 : "不会自动重发。可以改为本地规划，或返回重新预览新请求。");
                             button(fallback, en ? "Plan locally" : "改为本地规划", this::planLocally);
+                            button(fallback, en ? "Review a new request" : "重新审核新请求", () -> {
+                                try {
+                                    Bundle selected = new Bundle();
+                                    selected.putString("goal", goal.getText().toString());
+                                    selected.putStringArrayList("selected", memorySelection.selectedIds());
+                                    selected.putInt("outputLimit", outputLimit.getSelectedItemPosition());
+                                    selection(selected);
+                                } catch (Exception problem) { fail(problem); }
+                            });
                             button(fallback, en ? "Back" : "返回", this::finish);
                         }
                     });
@@ -202,6 +225,7 @@ public final class TaskReviewActivity extends Activity {
                 Bundle selected = new Bundle();
                 selected.putString("goal", goal.getText().toString());
                 selected.putStringArrayList("selected", memorySelection.selectedIds());
+                selected.putInt("outputLimit", outputLimit.getSelectedItemPosition());
                 selection(selected);
             } catch (Exception error) { fail(error); }
         });

@@ -97,9 +97,21 @@ final class AgentStore extends SQLiteOpenHelper {
         final String sourceReference;
         final long createdAt;
         final long updatedAt;
+        final long expiresAt;
+        final boolean userEdited;
 
         Memory(String id, String kind, String content, String source, String sourceReference,
                 long createdAt, long updatedAt) {
+            this(id, kind, content, source, sourceReference, createdAt, updatedAt, 0);
+        }
+
+        Memory(String id, String kind, String content, String source, String sourceReference,
+                long createdAt, long updatedAt, long expiresAt) {
+            this(id, kind, content, source, sourceReference, createdAt, updatedAt, expiresAt, false);
+        }
+
+        Memory(String id, String kind, String content, String source, String sourceReference,
+                long createdAt, long updatedAt, long expiresAt, boolean userEdited) {
             this.id = id;
             this.kind = kind;
             this.content = content;
@@ -107,7 +119,11 @@ final class AgentStore extends SQLiteOpenHelper {
             this.sourceReference = sourceReference;
             this.createdAt = createdAt;
             this.updatedAt = updatedAt;
+            this.expiresAt = expiresAt;
+            this.userEdited = userEdited;
         }
+
+        boolean isExpired(long now) { return expiresAt > 0 && now >= expiresAt; }
 
         Memory(String id, String kind, String content, long createdAt, long updatedAt) {
             this(id, kind, content, MEMORY_SOURCE_USER, "", createdAt, updatedAt);
@@ -640,6 +656,39 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally { database.endTransaction(); }
     }
 
+    Task createCalendarFollowup(String parentId) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task parent = requireDocument(parentId);
+            if (!DocumentAction.locallyVerified(parent))
+                throw new IllegalStateException("Verify the document on this device first");
+            for (Task existing : listTasks()) {
+                if (existing.plan == null || existing.plan.context.isEmpty()) continue;
+                JSONObject link = new JSONObject(existing.plan.context).optJSONObject("workflowLink");
+                if (link != null && "document_to_calendar".equals(link.optString("kind"))
+                        && parentId.equals(link.optString("parentTaskId"))) {
+                    database.setTransactionSuccessful();
+                    return existing;
+                }
+            }
+            String hash = new JSONObject(parent.plan.steps.get(0).observation).getString("sha256");
+            JSONObject context = new JSONObject(TaskContext.selected(java.util.Collections.emptyList(), true));
+            context.put("workflowLink", new JSONObject().put("kind", "document_to_calendar")
+                .put("parentTaskId", parentId).put("parentSha256", hash));
+            Task child = createTask(parent.title);
+            ExecutionPlan.Step step = new ExecutionPlan.Step(0, "创建日历草稿", LocalCalendarProvider.CAPABILITY,
+                LocalCalendarProvider.SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+            savePlan(child.id, new ExecutionPlan(child.id, child.title, java.util.Collections.singletonList(step),
+                System.currentTimeMillis(), 0).withContext(context.toString()));
+            transition(child.id, ACTIVE);
+            Task active = getTask(child.id);
+            prepareExternalDraft(child.id, 0, ExternalAction.prepare(active, active.plan.steps.get(0)).toString());
+            database.setTransactionSuccessful();
+            return getTask(child.id);
+        } finally { database.endTransaction(); }
+    }
+
     Task prepareReviewedDocument(String taskId, String content, String expectedFingerprint, String requestSha256) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
@@ -862,7 +911,7 @@ final class AgentStore extends SQLiteOpenHelper {
     List<Memory> listPlanningMemories() throws Exception {
         ArrayList<Memory> trusted = new ArrayList<>();
         for (Memory memory : listMemories()) {
-            if (!MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) || memory.sourceReference.startsWith("confirmed:"))
+            if (!memory.isExpired(System.currentTimeMillis()) && (!MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) || memory.sourceReference.startsWith("confirmed:")))
                 trusted.add(memory);
         }
         return trusted;
@@ -1075,6 +1124,11 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     Memory createMemory(String kind, String content, String source, String sourceReference) throws Exception {
+        return createMemory(kind, content, source, sourceReference, 0);
+    }
+
+    Memory createMemory(String kind, String content, String source, String sourceReference, long expiresAt) throws Exception {
+        if (expiresAt < 0) throw new IllegalArgumentException("Memory expiration must be non-negative");
         String normalized = validateMemory(kind, content);
         String reference = sourceReference == null ? "" : sourceReference.trim();
         if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
@@ -1083,7 +1137,7 @@ final class AgentStore extends SQLiteOpenHelper {
         if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");
         long now = System.currentTimeMillis();
         String id = UUID.randomUUID().toString();
-        byte[] sealed = seal(memoryAad(id), memoryPayload(normalized, source, reference));
+        byte[] sealed = seal(memoryAad(id), memoryPayload(normalized, source, reference, expiresAt));
         ContentValues values = new ContentValues();
         values.put("id", id);
         values.put("kind", kind);
@@ -1091,24 +1145,77 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("updated_at", now);
         values.put("sealed_payload", sealed);
         getWritableDatabase().insertOrThrow("memories", null, values);
-        return new Memory(id, kind, normalized, source, reference, now, now);
+        return new Memory(id, kind, normalized, source, reference, now, now, expiresAt);
+    }
+
+    Memory confirmSensorObservation(JSONObject event, String content, long expiresAt) throws Exception {
+        if (event == null || !"motion_change".equals(event.optString("kind"))
+                || !"accelerometer+gyroscope".equals(event.optString("source"))
+                || !"three_second_rule_window".equals(event.optString("method")) || event.optLong("observedAt") <= 0)
+            throw new IllegalArgumentException("Invalid sensor observation");
+        String from = event.optString("from"), to = event.optString("to");
+        if (!("LowMotion".equals(from) || "MotionDetected".equals(from))
+                || !("LowMotion".equals(to) || "MotionDetected".equals(to)) || from.equals(to))
+            throw new IllegalArgumentException("Invalid sensor observation");
+        String reference = "confirmed:sensor:motion:" + event.getLong("observedAt");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            for (Memory memory : listMemories()) if (reference.equals(memory.sourceReference))
+                throw new IllegalStateException("This observation has already been saved");
+            Memory memory = createMemory(MEMORY_FACT, content, MEMORY_SOURCE_CONSOLIDATION, reference, expiresAt);
+            database.setTransactionSuccessful();
+            return memory;
+        } finally { database.endTransaction(); }
     }
 
     void updateMemory(String id, String kind, String content, String source, String sourceReference) throws Exception {
+        Memory current = getMemory(id);
+        if (current == null) throw new IllegalArgumentException("Memory not found: " + id);
+        updateMemoryChecked(current, kind, content, source, sourceReference, current.expiresAt, false);
+    }
+
+    void reviseMemory(Memory expected, String content, long expiresAt) throws Exception {
+        if (expected == null) throw new IllegalArgumentException("Memory is required");
+        updateMemoryChecked(expected, expected.kind, content, expected.source, expected.sourceReference, expiresAt, true);
+    }
+
+    private Memory getMemory(String id) throws Exception {
+        try (Cursor cursor = getReadableDatabase().query("memories", new String[]{"kind", "created_at", "updated_at", "sealed_payload"},
+                "id=?", new String[]{id}, null, null, null)) {
+            if (!cursor.moveToFirst()) return null;
+            return memoryFromPayload(id, cursor.getString(0), cursor.getLong(1), cursor.getLong(2),
+                unseal(memoryAad(id), cursor.getBlob(3)));
+        }
+    }
+
+    private void updateMemoryChecked(Memory expected, String kind, String content, String source, String sourceReference, long expiresAt, boolean userEdit) throws Exception {
+        if (expiresAt < 0) throw new IllegalArgumentException("Memory expiration must be non-negative");
         String normalized = validateMemory(kind, content);
         String reference = sourceReference == null ? "" : sourceReference.trim();
         if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
                 && !MEMORY_SOURCE_CONSOLIDATION.equals(source))
             throw new IllegalArgumentException("Choose a valid memory source");
         if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");
-        long now = System.currentTimeMillis();
-        byte[] sealed = seal(memoryAad(id), memoryPayload(normalized, source, reference));
-        ContentValues values = new ContentValues();
-        values.put("kind", kind);
-        values.put("updated_at", now);
-        values.put("sealed_payload", sealed);
-        int rows = getWritableDatabase().update("memories", values, "id=?", new String[]{id});
-        if (rows == 0) throw new IllegalArgumentException("Memory not found: " + id);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Memory current = getMemory(expected.id);
+            if (current == null || current.updatedAt != expected.updatedAt || current.expiresAt != expected.expiresAt || current.userEdited != expected.userEdited
+                    || !current.kind.equals(expected.kind) || !current.content.equals(expected.content)
+                    || !current.source.equals(expected.source) || !current.sourceReference.equals(expected.sourceReference))
+                throw new IllegalStateException("Memory changed or was deleted; review it again");
+            if (current.updatedAt == Long.MAX_VALUE) throw new IllegalStateException("Memory timestamp cannot be advanced");
+            long now = Math.max(System.currentTimeMillis(), current.updatedAt + 1);
+            boolean edited = current.userEdited || (userEdit && !current.content.equals(normalized));
+            byte[] sealed = seal(memoryAad(current.id), memoryPayload(normalized, source, reference, expiresAt, edited));
+            ContentValues values = new ContentValues();
+            values.put("kind", kind);
+            values.put("updated_at", now);
+            values.put("sealed_payload", sealed);
+            database.update("memories", values, "id=?", new String[]{current.id});
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
     }
 
     List<Memory> listMemories() throws Exception {
@@ -1137,6 +1244,28 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally {
             database.endTransaction();
         }
+    }
+
+    void deleteMemoriesReviewed(List<Memory> expected) throws Exception {
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            java.util.HashSet<String> ids = new java.util.HashSet<>();
+            for (Memory item : expected) {
+                if (item == null || !ids.add(item.id)) throw new IllegalArgumentException("Invalid memory selection");
+                Memory current = getMemory(item.id);
+                if (current == null || current.updatedAt != item.updatedAt || current.expiresAt != item.expiresAt || current.userEdited != item.userEdited
+                        || !current.kind.equals(item.kind) || !current.content.equals(item.content)
+                        || !current.source.equals(item.source) || !current.sourceReference.equals(item.sourceReference))
+                    throw new IllegalStateException("A memory changed or was deleted; review the selection again");
+            }
+            long now = System.currentTimeMillis();
+            for (Memory item : expected) {
+                addTombstone(database, "memory", item.id, now);
+                database.delete("memories", "id=?", new String[]{item.id});
+            }
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
     }
 
     List<Task> memoryReferences(String memoryId) throws Exception {
@@ -1302,7 +1431,7 @@ final class AgentStore extends SQLiteOpenHelper {
                     values.put("created_at", memory.createdAt);
                     values.put("updated_at", memory.updatedAt);
                     values.put("sealed_payload", seal(memoryAad(memory.id), memoryPayload(
-                        memory.content, memory.source, memory.sourceReference)));
+                        memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                     database.update("memories", values, "id=?", new String[]{memory.id});
                     memoriesReplaced++;
                     continue;
@@ -1313,7 +1442,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 values.put("created_at", memory.createdAt);
                 values.put("updated_at", memory.updatedAt);
                 values.put("sealed_payload", seal(memoryAad(memory.id), memoryPayload(
-                    memory.content, memory.source, memory.sourceReference)));
+                    memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                 database.insertOrThrow("memories", null, values);
                 memoriesImported++;
             }
@@ -1326,8 +1455,16 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     private static byte[] memoryPayload(String content, String source, String sourceReference) throws Exception {
+        return memoryPayload(content, source, sourceReference, 0);
+    }
+
+    private static byte[] memoryPayload(String content, String source, String sourceReference, long expiresAt) throws Exception {
+        return memoryPayload(content, source, sourceReference, expiresAt, false);
+    }
+
+    private static byte[] memoryPayload(String content, String source, String sourceReference, long expiresAt, boolean userEdited) throws Exception {
         return new JSONObject().put("format", MEMORY_PAYLOAD_FORMAT).put("content", content).put("source", source)
-            .put("sourceReference", sourceReference).toString().getBytes(StandardCharsets.UTF_8);
+            .put("sourceReference", sourceReference).put("expiresAt", expiresAt).put("userEdited", userEdited).toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private static Memory memoryFromPayload(String id, String kind, long createdAt, long updatedAt,
@@ -1336,9 +1473,15 @@ final class AgentStore extends SQLiteOpenHelper {
         try {
             JSONObject payload = new JSONObject(decoded);
             if (MEMORY_PAYLOAD_FORMAT.equals(payload.optString("format"))) {
+                Object rawExpiry = payload.has("expiresAt") ? payload.get("expiresAt") : 0;
+                if (!(rawExpiry instanceof Integer) && !(rawExpiry instanceof Long)) throw new IllegalStateException("Invalid memory expiration");
+                long expiry = ((Number) rawExpiry).longValue();
+                if (expiry < 0) throw new IllegalStateException("Invalid memory expiration");
+                Object rawEdited = payload.has("userEdited") ? payload.get("userEdited") : false;
+                if (!(rawEdited instanceof Boolean)) throw new IllegalStateException("Invalid memory edit marker");
                 return new Memory(id, kind, payload.getString("content"),
                     payload.optString("source", MEMORY_SOURCE_USER), payload.optString("sourceReference", ""),
-                    createdAt, updatedAt);
+                    createdAt, updatedAt, expiry, (Boolean) rawEdited);
             }
         } catch (org.json.JSONException ignored) {}
         return new Memory(id, kind, decoded, MEMORY_SOURCE_USER, "", createdAt, updatedAt);

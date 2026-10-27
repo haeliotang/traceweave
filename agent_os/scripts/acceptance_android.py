@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import sys
 
@@ -26,7 +27,8 @@ CASES = ('MODEL_CANCEL_RACE', 'MODEL_DOCUMENT', 'MODEL_DOCUMENT_FAILURES', 'MEMO
          'RUN_SUITE', 'VERIFY_RESTART', 'VERIFY_UPGRADE', 'VERIFY_DYNAMIC_EXECUTOR',
          'VERIFY_EXECUTOR_LIFECYCLE', 'VERIFY_MEMORY_PROVENANCE', 'VERIFY_MEMORY_CONSOLIDATION_AND_UI',
          'VERIFY_DATABASE_MIGRATION', 'WORKFLOW_RUNS', 'MEMORY_CHOICES', 'TASK_CENTER', 'WORKFLOW_GUARD',
-         'VERIFY_SENSOR_OPT_IN', 'SENSOR_CONTEXT')
+         'VERIFY_SENSOR_OPT_IN', 'SENSOR_CONTEXT', 'SENSOR_WINDOW', 'MEMORY_LIFECYCLE',
+         'DOCUMENT_CALENDAR_CHAIN', 'VERIFY_CHAIN_RESTART', 'CLOUD_PLAN_GUARD')
 
 
 def execute(args, **kwargs):
@@ -75,6 +77,7 @@ def main():
     parser.add_argument('--adb', default='adb')
     parser.add_argument('--serial', required=True)
     parser.add_argument('--install', action='store_true', help='Install the verified update in place after all automated checks')
+    parser.add_argument('--legacy-validation-apk', type=Path, help='Optional trusted older isolated source APK for archive compatibility')
     args = parser.parse_args()
     out = args.output_dir.resolve()
     if not args.previous_apk.is_file() or args.previous_apk.resolve().is_relative_to(out):
@@ -114,8 +117,22 @@ def main():
         identity = apk_identity(out / name / 'agent-os.apk', args.build_tools)
         if identity['package'] != expected or not identity['debuggable'] or identity['signer_sha256'] != args.expected_signer.lower():
             raise RuntimeError('Validation APK identity or signer did not match')
+    if args.legacy_validation_apk:
+        legacy_identity = apk_identity(args.legacy_validation_apk, args.build_tools)
+        if legacy_identity['package'] != SOURCE or not legacy_identity['debuggable'] or legacy_identity['signer_sha256'] != args.expected_signer.lower():
+            raise RuntimeError('Legacy validation APK identity or signer did not match')
     installed = []
+    legacy_fixture = None
     try:
+        if args.legacy_validation_apk:
+            execute(adb + ['install', args.legacy_validation_apk])
+            installed.append(SOURCE)
+            execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                     '--case', 'EXPORT_MIGRATION', '--output', out / 'legacy_migration_export.json'])
+            legacy_fixture = {name: execute(adb + ['exec-out', 'run-as', SOURCE, 'cat', 'files/' + name], capture_output=True).stdout
+                              for name in ('synthetic-migration.taos', 'migration-ids.json')}
+            execute(adb + ['uninstall', SOURCE])
+            installed.remove(SOURCE)
         for name, package in (('source', SOURCE), ('target', TARGET)):
             execute(adb + ['install', str(out / name / 'agent-os.apk')])
             installed.append(package)
@@ -129,6 +146,17 @@ def main():
         execute([sys.executable, 'agent_os/scripts/copy_document_validation_fixture.py', '--adb', args.adb, '--serial', args.serial])
         execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
                  '--package', TARGET, '--case', 'IMPORT_MIGRATION', '--output', out / 'migration_import.json'])
+        execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                 '--case', 'EXPORT_LIFECYCLE', '--output', out / 'lifecycle_export.json'])
+        execute([sys.executable, 'agent_os/scripts/copy_document_validation_fixture.py', '--adb', args.adb, '--serial', args.serial])
+        execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                 '--package', TARGET, '--case', 'IMPORT_LIFECYCLE', '--output', out / 'lifecycle_import.json'])
+        if legacy_fixture:
+            for name, payload in legacy_fixture.items():
+                command = shlex.join(['run-as', TARGET, 'sh', '-c', 'cat > files/' + name])
+                execute(adb + ['shell', command], input=payload)
+            execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                     '--package', TARGET, '--case', 'IMPORT_MIGRATION', '--output', out / 'legacy_migration_import.json'])
     finally:
         for package in reversed(installed):
             execute(adb + ['uninstall', package])
@@ -136,6 +164,7 @@ def main():
     verification = verify(candidate / 'agent-os.apk', report, args.build_tools, args.expected_signer, args.previous_apk)
     result = {'candidate_sha256': verification['apk_sha256'], 'automated_device_cases': len(CASES),
               'cross_install_synthetic_archive_restore': True, 'distinct_validation_uids': True,
+              'lifecycle_archive_restore': True, 'legacy_archive_restore_run': legacy_fixture is not None,
               'validation_packages_removed': True,
               'manual_system_picker_ui_not_run': True, 'physical_power_trial_not_run': True,
               'production_update_installed': False}

@@ -69,6 +69,10 @@ public final class WorkflowActivity extends Activity {
                     text(root, en ? "Unsupported workflow · inspect or delete it in Memory Vault" : "不支持的工作流 · 可在记忆库检查或删除");
                     continue;
                 }
+                if (memory.isExpired(System.currentTimeMillis())) {
+                    text(root, recipe.name + (en ? " · Expired; renew in Memory Vault" : " · 已到期，请在记忆库更新有效期"));
+                    continue;
+                }
                 text(root, recipe.name + "\n" + recipe.goalTemplate);
                 EditText input = new EditText(this); input.setHint(en ? "Input for this run" : "本次运行的输入参数"); root.addView(input);
                 runInputs.put(memory.id, input);

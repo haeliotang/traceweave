@@ -54,6 +54,7 @@ final class WorkflowTemplate {
             AgentStore.Memory memory = null;
             for (AgentStore.Memory item : store.listMemories()) if (memoryId.equals(item.id)) memory = item;
             if (memory == null) throw new IllegalArgumentException("Workflow no longer exists");
+            if (memory.isExpired(System.currentTimeMillis())) throw new IllegalStateException("Workflow expired; renew it in the memory vault before running");
             WorkflowTemplate recipe = decode(memory);
             AgentStore.Task task = store.createTask(recipe.render(input));
             JSONObject context = new JSONObject(TaskContext.selected(Collections.emptyList(), true));

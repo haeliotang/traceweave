@@ -22,9 +22,12 @@ final class TaskContext {
     static String selected(List<AgentStore.Memory> memories, boolean localOnly) throws Exception {
         JSONArray selected = new JSONArray();
         for (AgentStore.Memory memory : memories) {
-            selected.put(new JSONObject().put("id", memory.id).put("kind", memory.kind).put("content", memory.content)
+            JSONObject item = new JSONObject().put("id", memory.id).put("kind", memory.kind).put("content", memory.content)
                 .put("source", memory.source).put("sourceReference", memory.sourceReference)
-                .put("createdAt", memory.createdAt).put("updatedAt", memory.updatedAt));
+                .put("createdAt", memory.createdAt).put("updatedAt", memory.updatedAt);
+            if (memory.expiresAt > 0) item.put("expiresAt", memory.expiresAt);
+            if (memory.userEdited) item.put("userEdited", true);
+            selected.put(item);
         }
         String value = new JSONObject().put("selection", "user").put("localOnly", localOnly).put("memories", selected).toString();
         if (value.length() > 64000) throw new IllegalArgumentException("Selected memory snapshot exceeds 64000 characters");
@@ -46,8 +49,14 @@ final class TaskContext {
             JSONArray memories = context.getJSONArray("memories");
             for (int index = 0; index < memories.length(); index++) {
                 JSONObject memory = memories.getJSONObject(index);
+                Object rawExpiry = memory.has("expiresAt") ? memory.get("expiresAt") : 0;
+                if (!(rawExpiry instanceof Integer) && !(rawExpiry instanceof Long)) throw new IllegalStateException("Invalid snapshot expiration");
+                long expiresAt = ((Number) rawExpiry).longValue();
+                if (expiresAt < 0) throw new IllegalStateException("Invalid snapshot expiration");
+                Object rawEdited = memory.has("userEdited") ? memory.get("userEdited") : false;
+                if (!(rawEdited instanceof Boolean)) throw new IllegalStateException("Invalid snapshot edit marker");
                 result.add(new AgentStore.Memory(memory.getString("id"), memory.getString("kind"), memory.getString("content"),
-                    memory.getString("source"), memory.getString("sourceReference"), memory.getLong("createdAt"), memory.getLong("updatedAt")));
+                    memory.getString("source"), memory.getString("sourceReference"), memory.getLong("createdAt"), memory.getLong("updatedAt"), expiresAt, (Boolean) rawEdited));
             }
             return result;
         } catch (Exception error) { throw new IllegalStateException("Invalid selected task memories", error); }
