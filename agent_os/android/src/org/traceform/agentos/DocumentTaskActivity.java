@@ -138,6 +138,11 @@ public final class DocumentTaskActivity extends Activity {
                 if (!value.optBoolean("localAccess")) label(root, en ? "Historical receipt only; select a file here to verify. File access is not transferred in an archive."
                     : "仅保留历史回执；请在此设备重新选择文件核验，档案不携带文件访问权限。");
                 if (DocumentAction.locallyVerified(task)) {
+                    JSONObject context = task.plan.context.isEmpty() ? new JSONObject() : new JSONObject(task.plan.context);
+                    JSONObject workflow = context.optJSONObject("workflow");
+                    JSONArray steps = workflow == null ? null : workflow.optJSONArray("steps");
+                    if (steps != null && steps.length() == 2 && "calendar_draft".equals(steps.optString(1)))
+                        label(root, en ? "Workflow next step: review a calendar draft" : "工作流下一步：审核日历草稿");
                     label(root, en ? "Continue to a separate calendar draft. It requires its own confirmation; no event is created automatically."
                         : "可以继续创建独立的日历草稿；需要再次确认，不会自动创建日程。");
                     button(root, en ? "Continue to calendar draft" : "继续：创建日历草稿", () -> {

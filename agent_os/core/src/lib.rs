@@ -13,6 +13,7 @@ pub mod js_engine;
 pub mod plugin_manager;
 pub mod edge_slm;
 pub mod sync;
+pub mod causal_memory;
 pub mod voice_dsp;
 pub mod screen_agent;
 mod daemon;

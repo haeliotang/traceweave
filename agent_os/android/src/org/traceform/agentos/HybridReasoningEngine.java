@@ -39,18 +39,18 @@ final class HybridReasoningEngine implements ReasoningEngine {
                                       List<AgentStore.Memory> memories) {
         try {
             if (store != null) {
-                store.appendTaskEvent(taskId, "slm_planning_started:micro_slm_v1");
+                store.appendTaskEvent(taskId, "local_rule_planning_started");
             }
             ExecutionPlan plan = slmEngine.plan(taskId, userGoal, availableCaps, memories);
             if (plan != null && !plan.steps.isEmpty()) {
                 if (store != null) {
-                    store.appendTaskEvent(taskId, "slm_planning_completed:" + plan.totalSteps());
+                    store.appendTaskEvent(taskId, "local_rule_planning_completed:" + plan.totalSteps());
                 }
                 return plan;
             }
         } catch (Exception ex) {
             if (store != null) {
-                store.appendTaskEvent(taskId, "slm_planning_fallback:reason=" + ex.getClass().getSimpleName());
+                store.appendTaskEvent(taskId, "local_rule_planning_fallback:reason=" + ex.getClass().getSimpleName());
             }
         }
         return localPlanner.plan(taskId, userGoal, availableCaps, memories);

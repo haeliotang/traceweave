@@ -20,11 +20,14 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("TASK_CENTER".equals(getIntent().getAction())) taskCenter(store);
                 else if ("WORKFLOW_GUARD".equals(getIntent().getAction())) workflowGuard(store);
                 else if ("SENSOR_CONTEXT".equals(getIntent().getAction())) sensorContext();
+                else if ("SENSOR_LIVE_SAMPLES".equals(getIntent().getAction())) sensorLiveSamples();
                 else if ("SENSOR_WINDOW".equals(getIntent().getAction())) sensorWindow();
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
                 else if ("CLOUD_PLAN_GUARD".equals(getIntent().getAction())) cloudPlanGuard();
+                else if ("LOCAL_ENGINE_LABELS".equals(getIntent().getAction())) localEngineLabels();
+                else if ("SCOPED_SUMMARY_CONTRACT".equals(getIntent().getAction())) scopedSummaryContract();
                 else if ("EXPORT_LIFECYCLE".equals(getIntent().getAction())) exportLifecycle(store);
                 else if ("IMPORT_LIFECYCLE".equals(getIntent().getAction())) importLifecycle(store);
                 else if ("SEED_WORKFLOW_UI".equals(getIntent().getAction())) {
@@ -122,6 +125,20 @@ public final class WorkflowValidationActivity extends Activity {
         window.clear();
         check(window.lastChange() == null && "Unknown".equals(window.state(8000)), "stopping a session clears state and events");
     }
+    private void sensorLiveSamples() throws Exception {
+        PhysicalSensoriumManager sensors = PhysicalSensoriumManager.getInstance(this);
+        sensors.stopMonitoring(); sensors.startMonitoring();
+        try {
+            Thread.sleep(5500);
+            JSONObject reading = sensors.evaluateCurrentContext();
+            int count = reading.optInt("motion_sample_count", 0);
+            android.util.Log.i("AgentOsSensorDiagnostics", "live_motion_samples=" + count
+                + " state=" + reading.optString("motion_state", "Unknown")
+                + " accel_available=" + !reading.isNull("accel_x") + " gyro_available=" + !reading.isNull("gyro_x"));
+            check(!reading.isNull("accel_x") && !reading.isNull("gyro_x"), "physical accelerometer and gyroscope deliver events");
+            check(count >= 3, "physical sensor pairing supplies a motion window");
+        } finally { sensors.stopMonitoring(); }
+    }
     private AgentStore.Memory memoryById(AgentStore store, String id) throws Exception {
         for (AgentStore.Memory memory : store.listMemories()) if (id.equals(memory.id)) return memory;
         throw new IllegalStateException("Synthetic memory missing");
@@ -218,6 +235,35 @@ public final class WorkflowValidationActivity extends Activity {
     }
     private void check(boolean value, String message) { checks++; if (!value) throw new IllegalStateException(message); }
 
+    private void localEngineLabels() throws Exception {
+        LocalSlmEngine engine = new LocalSlmEngine();
+        ExecutionPlan plan = engine.plan("synthetic", "SYNTHETIC note", Collections.singletonList(
+            new CapabilityDescriptor(CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE, "note", "", true)), Collections.emptyList());
+        for (ExecutionPlan.Step step : plan.steps) {
+            check(!step.prompt.contains("SLM") && !step.title.contains("SLM"), "rule plan cannot claim model inference");
+        }
+        String result = engine.synthesize("synthetic", "SYNTHETIC", Collections.emptyList());
+        check(!result.contains("SLM") && !result.contains("轻量模型"), "rule summary cannot claim a loaded language model");
+    }
+
+    private void scopedSummaryContract() throws Exception {
+        JSONObject value = new JSONObject().put("provider", "traceform").put("available", false)
+            .put("reason", "no_retained_history").put("initial_state", "")
+            .put("sampled_occupancy_probabilities", new JSONArray()).put("history_records", 0)
+            .put("eligible_pairs", 0).put("horizon_steps", 0).put("rollouts", 0)
+            .put("eligible_for_intervention", false)
+            .put("evidence_scope", "local_retained_history_simulation_not_validated_prediction_or_causal_effect");
+        check(new JSONObject(TraceformProvider.validateScopedSummary(value.toString())).length() == 11,
+            "narrow no-history response is accepted");
+        rejects(() -> TraceformProvider.validateScopedSummary(new JSONObject(value.toString()).put("raw", "synthetic").toString()),
+            "extra source data is rejected");
+        rejects(() -> TraceformProvider.validateScopedSummary(new JSONObject(value.toString()).put("eligible_for_intervention", true).toString()),
+            "summary cannot claim intervention authority");
+        JSONObject excessive = new JSONObject(value.toString()).put("sampled_occupancy_probabilities", new JSONArray().put(
+            new JSONObject().put("step", 1).put("top_states", new JSONArray()).put("raw", "synthetic")));
+        rejects(() -> TraceformProvider.validateScopedSummary(excessive.toString()), "nested raw data is rejected");
+    }
+
     private void cloudPlanGuard() throws Exception {
         JSONObject plan = new JSONObject().put("steps", new JSONArray().put(new JSONObject()
             .put("capability", "builtin.synthesis").put("scope", "local_inference")));
@@ -275,6 +321,19 @@ public final class WorkflowValidationActivity extends Activity {
         reset(store);
         WorkflowTemplate recipe = new WorkflowTemplate("SYNTHETIC checklist", "Prepare a local Markdown checklist for {{input}}.");
         AgentStore.Memory template = store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
+        WorkflowTemplate chained = new WorkflowTemplate("SYNTHETIC file and calendar", "Prepare {{input}}.", true);
+        AgentStore.Memory chainTemplate = store.createMemory(AgentStore.MEMORY_WORKFLOW, chained.encode());
+        check(WorkflowTemplate.decode(chainTemplate).calendarFollowup, "ordered file and calendar recipe survives encoding");
+        AgentStore.Task chainRun = WorkflowTemplate.createRun(store, chainTemplate.id, "SYNTHETIC meeting");
+        JSONArray planned = new JSONObject(chainRun.plan.context).getJSONObject("workflow").getJSONArray("steps");
+        check(planned.length() == 2 && "verified_document".equals(planned.getString(0)) && "calendar_draft".equals(planned.getString(1)), "new run retains ordered steps");
+        check(TaskContext.localOnly(chainRun.plan) && TaskContext.memories(chainRun.plan).isEmpty(), "new chain inherits no memory or cloud consent");
+        JSONObject alteredChain = new JSONObject(chained.encode()).put("steps", new JSONArray().put("calendar_draft").put("verified_document"));
+        AgentStore.Memory badChain = store.createMemory(AgentStore.MEMORY_WORKFLOW, alteredChain.toString());
+        rejects(() -> WorkflowTemplate.decode(badChain), "unordered or unsupported chain cannot execute");
+        JSONObject grantedChain = new JSONObject(chained.encode()).put("uri", "content://unapproved/file");
+        AgentStore.Memory badGrant = store.createMemory(AgentStore.MEMORY_WORKFLOW, grantedChain.toString());
+        rejects(() -> WorkflowTemplate.decode(badGrant), "recipe cannot carry an inherited file grant");
         rejects(() -> new WorkflowTemplate("name", "No input placeholder"), "missing parameter rejected");
         rejects(() -> new WorkflowTemplate("name", "{{input}} {{grant}}"), "unsupported parameter rejected");
         AgentStore.Memory note = store.createMemory(AgentStore.MEMORY_WORKFLOW, "SYNTHETIC legacy workflow note");
@@ -307,6 +366,10 @@ public final class WorkflowValidationActivity extends Activity {
         byte[] archive = store.exportArchive("synthetic-workflow-archive".toCharArray());
         reset(store);
         store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-workflow-archive".toCharArray());
+        check(WorkflowTemplate.decode(memoryById(store, chainTemplate.id)).calendarFollowup,
+            "ordered workflow recipe survives archive restore");
+        check(new JSONObject(store.getTask(chainRun.id).plan.context).getJSONObject("workflow").getJSONArray("steps").length() == 2,
+            "restored run retains ordered workflow snapshot");
         AgentStore.Task imported = store.getTask(first.id);
         JSONObject receipt = new JSONObject(imported.plan.steps.get(0).observation);
         check(!receipt.has("uri") && !receipt.getBoolean("localAccess"), "workflow migration does not inherit file permission");

@@ -1,0 +1,21 @@
+{
+  "synthetic_only": true,
+  "cases": [
+    {
+      "caller": "org.traceform.agentos.actionsvalidation",
+      "passed": true,
+      "result": "10-27 21:14:26.403 24577 24607 I AgentOsScopedProbe: PASS authorized_no_history"
+    },
+    {
+      "caller": "org.traceform.agentos.documentsvalidation",
+      "passed": true,
+      "result": "10-27 21:14:27.836 24649 24677 I AgentOsScopedProbe: PASS wrong_package_denied"
+    },
+    {
+      "caller": "untrusted-synthetic",
+      "passed": true,
+      "result": "10-27 21:15:30.786 24861 24890 I AgentOsScopedProbe: PASS unknown_signer_denied"
+    }
+  ],
+  "isolated_packages_removed": true
+}

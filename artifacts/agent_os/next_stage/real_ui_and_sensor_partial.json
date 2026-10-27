@@ -1,0 +1,27 @@
+{
+  "recorded_at": "2026-10-27T10:22:23.296280+00:00",
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_goal_only": true,
+  "file": {
+    "system_picker_used": true,
+    "application_readback_verified": true,
+    "independently_verified_sha256_before_cleanup": true,
+    "synthetic_file_removed": true
+  },
+  "calendar": {
+    "separately_approved": true,
+    "receiver": "Etar",
+    "synthetic_title_exact_match_found_after_save": true,
+    "app_reported_outcome_unknown": true,
+    "synthetic_event_removed_and_absence_checked": true
+  },
+  "physical_sensors": {
+    "motion_movement_trial": "passed: state change appeared after user movement",
+    "stationary_display": "LowMotion",
+    "raw_sensor_values_saved": false,
+    "light_changed": true,
+    "observation_review": "MotionDetected to LowMotion; discarded without saving",
+    "isolation_package_removed": true,
+    "model_test_files_removed": true
+  }
+}

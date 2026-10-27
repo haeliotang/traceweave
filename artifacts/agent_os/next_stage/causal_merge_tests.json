@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-10-27T15:23:23.025967+00:00",
+  "scope": "experimental pure merge for one memory ID; not connected to transport, Android store or cryptographic pairing",
+  "tests_passed": 6,
+  "checks": [
+    "concurrent edits retained for explicit selection",
+    "clock conflict rejected",
+    "offline replay idempotent",
+    "deletion dominates offline edit",
+    "clock and branch bounds",
+    "two replicas converge after selection"
+  ],
+  "status": "passed"
+}

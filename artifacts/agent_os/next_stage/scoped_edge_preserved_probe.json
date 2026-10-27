@@ -1,0 +1,22 @@
+{
+  "synthetic_only": true,
+  "empty_synthetic_history_database": true,
+  "cases": [
+    {
+      "case": "actionsvalidation",
+      "result": "10-27 21:21:18.146 25646 25667 I AgentOsScopedProbe: PASS authorized_no_history",
+      "passed": true
+    },
+    {
+      "case": "documentsvalidation",
+      "result": "10-27 21:21:19.432 25721 25751 I AgentOsScopedProbe: PASS wrong_package_denied",
+      "passed": true
+    },
+    {
+      "case": "untrusted_signer",
+      "passed": true,
+      "result": "10-27 21:21:33.406 25911 25940 I AgentOsScopedProbe: PASS unknown_signer_denied"
+    }
+  ],
+  "packages_removed": true
+}

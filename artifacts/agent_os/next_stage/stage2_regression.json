@@ -1,0 +1,31 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-27T10:21:36.401824+00:00",
+  "cases": [
+    {
+      "case": "LOCAL_ENGINE_LABELS",
+      "pid": 11511,
+      "passed": true,
+      "result": "10-27 16:06:23.773 11511 11564 I AgentOsWorkflowValidation: PASS workflow checks=3 mode=LOCAL_ENGINE_LABELS"
+    },
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 11585,
+      "passed": true,
+      "result": "10-27 16:06:32.670 11585 11622 I AgentOsWorkflowValidation: PASS workflow checks=28 mode=WORKFLOW_RUNS"
+    },
+    {
+      "case": "DOCUMENT_CALENDAR_CHAIN",
+      "pid": 11673,
+      "passed": true,
+      "result": "10-27 16:06:34.882 11673 11706 I AgentOsWorkflowValidation: PASS workflow checks=8 mode=DOCUMENT_CALENDAR_CHAIN"
+    },
+    {
+      "case": "VERIFY_CHAIN_RESTART",
+      "pid": 11750,
+      "passed": true,
+      "result": "10-27 16:06:37.150 11750 11778 I AgentOsWorkflowValidation: PASS workflow checks=2 mode=VERIFY_CHAIN_RESTART"
+    }
+  ]
+}

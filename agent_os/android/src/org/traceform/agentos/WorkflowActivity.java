@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -19,6 +20,7 @@ public final class WorkflowActivity extends Activity {
     private Bundle restored;
     private EditText nameInput;
     private EditText patternInput;
+    private CheckBox calendarFollowup;
     private final Map<String, EditText> runInputs = new LinkedHashMap<>();
 
     @Override public void onCreate(Bundle state) {
@@ -33,6 +35,7 @@ public final class WorkflowActivity extends Activity {
 
     @Override protected void onSaveInstanceState(Bundle state) {
         state.putString("name", nameInput.getText().toString()); state.putString("pattern", patternInput.getText().toString());
+        state.putBoolean("calendarFollowup", calendarFollowup.isChecked());
         Bundle inputs = new Bundle(); for (Map.Entry<String, EditText> entry : runInputs.entrySet()) inputs.putString(entry.getKey(), entry.getValue().getText().toString());
         state.putBundle("inputs", inputs); super.onSaveInstanceState(state);
     }
@@ -52,10 +55,14 @@ public final class WorkflowActivity extends Activity {
         EditText pattern = new EditText(this); patternInput = pattern; pattern.setHint(en ? "Goal template containing {{input}}" : "包含 {{input}} 的目标模板");
         name.setText(restored == null ? "" : restored.getString("name", ""));
         pattern.setText(restored == null ? getIntent().getStringExtra(EXTRA_GOAL) : restored.getString("pattern", "")); root.addView(pattern);
+        calendarFollowup = new CheckBox(this);
+        calendarFollowup.setText(en ? "After verified file, offer a separately approved calendar draft" : "文件核验后，继续创建需单独确认的日历草稿");
+        calendarFollowup.setChecked(restored != null && restored.getBoolean("calendarFollowup"));
+        root.addView(calendarFollowup);
         runInputs.clear();
         button(root, en ? "Save workflow template" : "保存工作流模板", () -> {
             try {
-                WorkflowTemplate recipe = new WorkflowTemplate(name.getText().toString(), pattern.getText().toString());
+                WorkflowTemplate recipe = new WorkflowTemplate(name.getText().toString(), pattern.getText().toString(), calendarFollowup.isChecked());
                 store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
                 getIntent().removeExtra(EXTRA_GOAL); show();
             } catch (Exception error) { fail(error); }
@@ -73,7 +80,8 @@ public final class WorkflowActivity extends Activity {
                     text(root, recipe.name + (en ? " · Expired; renew in Memory Vault" : " · 已到期，请在记忆库更新有效期"));
                     continue;
                 }
-                text(root, recipe.name + "\n" + recipe.goalTemplate);
+                text(root, recipe.name + "\n" + recipe.goalTemplate + (recipe.calendarFollowup
+                    ? (en ? "\nSteps: verified file → calendar draft" : "\n步骤：核验文件 → 日历草稿") : ""));
                 EditText input = new EditText(this); input.setHint(en ? "Input for this run" : "本次运行的输入参数"); root.addView(input);
                 runInputs.put(memory.id, input);
                 if (restored != null && restored.getBundle("inputs") != null) input.setText(restored.getBundle("inputs").getString(memory.id, ""));

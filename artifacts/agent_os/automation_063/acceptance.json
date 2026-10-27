@@ -1,0 +1,13 @@
+{
+  "candidate_sha256": "c4a1c4076bfda3f3cc0bbc108c31bbfb2d09b0348526dca480b752b9136a6696",
+  "automated_device_cases": 37,
+  "cross_install_synthetic_archive_restore": true,
+  "distinct_validation_uids": true,
+  "lifecycle_archive_restore": true,
+  "legacy_archive_restore_run": true,
+  "validation_packages_removed": true,
+  "manual_system_picker_ui_not_run": true,
+  "physical_power_trial_not_run": true,
+  "production_update_installed": true,
+  "first_install_time_preserved": true
+}

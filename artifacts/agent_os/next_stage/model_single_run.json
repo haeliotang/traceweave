@@ -1,0 +1,12 @@
+{
+  "synthetic_prompt": true,
+  "exit_code": 0,
+  "elapsed_seconds": 3.67,
+  "peak_rss_kib_sampled": 481920,
+  "rss_samples": 3,
+  "cpu_threads": 4,
+  "context_tokens": 512,
+  "output_token_limit": 48,
+  "runtime_commit": "d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3",
+  "model_sha256": "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed"
+}

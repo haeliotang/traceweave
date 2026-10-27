@@ -1,0 +1,25 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-27T15:32:17.037718+00:00",
+  "cases": [
+    {
+      "case": "SCOPED_SUMMARY_CONTRACT",
+      "pid": 25181,
+      "passed": true,
+      "result": "10-27 21:17:06.121 25181 25210 I AgentOsWorkflowValidation: PASS workflow checks=4 mode=SCOPED_SUMMARY_CONTRACT"
+    },
+    {
+      "case": "WORKFLOW_RUNS",
+      "pid": 25230,
+      "passed": true,
+      "result": "10-27 21:17:14.713 25230 25259 I AgentOsWorkflowValidation: PASS workflow checks=28 mode=WORKFLOW_RUNS"
+    },
+    {
+      "case": "LOCAL_ENGINE_LABELS",
+      "pid": 25304,
+      "passed": true,
+      "result": "10-27 21:17:16.947 25304 25339 I AgentOsWorkflowValidation: PASS workflow checks=3 mode=LOCAL_ENGINE_LABELS"
+    }
+  ]
+}

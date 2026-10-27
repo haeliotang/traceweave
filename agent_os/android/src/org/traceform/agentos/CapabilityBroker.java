@@ -82,7 +82,7 @@ public final class CapabilityBroker {
     }
 
     boolean canEnableTraceform() {
-        return traceformProvider.isSignatureMatched();
+        return traceformProvider.hasTrustedService();
     }
 
     void setTraceformEnabled(boolean enabled) throws Exception {
@@ -140,7 +140,7 @@ public final class CapabilityBroker {
         }
         if (isTraceformEnabled()) {
             descriptors.add(new CapabilityDescriptor(TRACEFORM_CAPABILITY, TRACEFORM_SCOPE,
-                "Traceform 本机历史摘要", "通过受控签名 Binder 读取 Traceform 本机历史与模拟摘要", canEnableTraceform()));
+                "Traceform 本机历史摘要", "通过受控 Binder 读取 Traceform 本机历史模拟摘要", canEnableTraceform()));
         }
         return descriptors;
     }

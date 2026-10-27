@@ -22,6 +22,8 @@ GitHub Actions 使用 `agent_os/scripts/ci_android.py` 在托管 runner 的预�
 
 随后 0.6.1 的流水线通过了 35 项隔离用例、不同 UID 的新版档案恢复、0.5.3 档案向新版的合成迁移，以及同签名原位更新和首次安装时间核验，见[验收收据](../artifacts/agent_os/automation_061/acceptance.json)。这一轮不包含人工系统选择器或物理耗电试验。
 
+0.6.3 在同一设备通过 37 项隔离用例、合成档案恢复和同签名原位更新，见[验收收据](../artifacts/agent_os/automation_063/acceptance.json)。这一轮没有重跑人工选择器或物理耗电试验。Edge 的受限摘要更新及其仍可调试的风险另见[后续开发记录](agent_os_next_stage_2026-10-27.md)。
+
 按照 `agent_os/README.md` 准备 SDK、JDK 和签名口令环境变量，再运行：
 
 ```sh

@@ -1,0 +1,10 @@
+{
+  "production_update_installed": true,
+  "same_signer_checked": true,
+  "original_installation_time_preserved": true,
+  "uid_preserved": true,
+  "baseline_code_assets_and_native_preserved": true,
+  "database_not_read": true,
+  "candidate_sha256": "829d8616364d4fe5871c07b8181ae3899e812401419ef6581cf651596fdd2f22",
+  "debuggable_state_preserved": true
+}

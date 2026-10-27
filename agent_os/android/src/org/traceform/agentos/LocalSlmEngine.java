@@ -136,7 +136,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                                         sObj.optString("title", "步骤 " + (steps.size() + 1)),
                                         cap,
                                         sObj.optString("scope", CapabilityBroker.DEMO_NOTE_SCOPE),
-                                        sObj.optString("prompt", ""),
+                                        "本地规则规划",
                                         ExecutionPlan.STEP_PENDING,
                                         "",
                                         0L
@@ -155,7 +155,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                                         "端侧综合推理报告",
                                         "builtin.synthesis",
                                         "local_inference",
-                                        "端侧 SLM 综合多步观测结果并输出结构化分析",
+                                        "使用本地规则整理多步观察",
                                         ExecutionPlan.STEP_PENDING,
                                         "",
                                         0L
@@ -186,7 +186,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "读取示例便笺",
                 CapabilityBroker.DEMO_NOTE_CAPABILITY,
                 CapabilityBroker.DEMO_NOTE_SCOPE,
-                "端侧 SLM 规划：读取本地示例便笺内容",
+                "本地规则规划：读取本地示例便笺内容",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -199,7 +199,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "读取设备运行状态",
                 CapabilityBroker.DEMO_STATUS_CAPABILITY,
                 CapabilityBroker.DEMO_STATUS_SCOPE,
-                "端侧 SLM 规划：获取离线设备运行与网络状态",
+                "本地规则规划：获取设备运行与网络状态",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -212,7 +212,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "读取 Traceform 本机历史摘要",
                 CapabilityBroker.TRACEFORM_CAPABILITY,
                 CapabilityBroker.TRACEFORM_SCOPE,
-                "端侧 SLM 规划：调用底层传感器流形预测摘要",
+                "本地规则规划：读取 Traceform 本机历史摘要",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -226,7 +226,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "读取示例便笺",
                 CapabilityBroker.DEMO_NOTE_CAPABILITY,
                 CapabilityBroker.DEMO_NOTE_SCOPE,
-                "端侧 SLM 兜底规划：读取本地便笺",
+                "本地规则兜底规划：读取本地便笺",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -240,7 +240,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "创建系统日历日程",
                 CapabilityBroker.CALENDAR_CAPABILITY,
                 CapabilityBroker.CALENDAR_SCOPE,
-                "端侧 SLM 规划：生成本地日程待办事项",
+                "本地规则规划：生成日程草稿",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -253,7 +253,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "推送系统任务通知",
                 CapabilityBroker.NOTIFICATION_CAPABILITY,
                 CapabilityBroker.NOTIFICATION_SCOPE,
-                "端侧 SLM 规划：在通知栏推送任务执行状态",
+                "本地规则规划：在通知栏推送任务执行状态",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -266,7 +266,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "打包文本分享导出",
                 CapabilityBroker.SHARE_CAPABILITY,
                 CapabilityBroker.SHARE_SCOPE,
-                "端侧 SLM 规划：生成用于外部系统分享的文本摘要",
+                "本地规则规划：生成用于外部系统分享的文本摘要",
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -279,7 +279,7 @@ final class LocalSlmEngine implements ReasoningEngine {
             "端侧综合推理报告",
             "builtin.synthesis",
             "local_inference",
-            "端侧 SLM 综合多步观测结果并输出结构化分析",
+            "使用本地规则整理多步观察",
             ExecutionPlan.STEP_PENDING,
             "",
             0L
@@ -290,34 +290,8 @@ final class LocalSlmEngine implements ReasoningEngine {
 
     @Override
     public String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
-        if (NativeAgentCore.isAvailable()) {
-            try {
-                org.json.JSONArray stepsArr = new org.json.JSONArray();
-                if (executedSteps != null) {
-                    for (ExecutionPlan.Step s : executedSteps) {
-                        org.json.JSONObject sObj = new org.json.JSONObject();
-                        sObj.put("index", s.index);
-                        sObj.put("title", s.title);
-                        sObj.put("capability", s.capability);
-                        sObj.put("scope", s.scope);
-                        sObj.put("prompt", s.prompt);
-                        sObj.put("status", s.status);
-                        sObj.put("observation", s.observation == null ? "" : s.observation);
-                        sObj.put("executed_at", s.executedAt);
-                        stepsArr.put(sObj);
-                    }
-                }
-                String rep = NativeAgentCore.edgeSlmSynthesize(userGoal == null ? "" : userGoal, stepsArr.toString());
-                if (rep != null && !rep.isEmpty()) {
-                    return rep;
-                }
-            } catch (Exception e) {
-                // Fallback to Java formatting
-            }
-        }
-
         StringBuilder sb = new StringBuilder();
-        sb.append("【端侧 SLM 离线推理报告】\n");
+        sb.append("【本地规则整理结果】\n");
         sb.append("任务意图目标：").append(userGoal == null ? "" : userGoal).append("\n\n");
 
         sb.append("执行观察数据：\n");
@@ -333,7 +307,7 @@ final class LocalSlmEngine implements ReasoningEngine {
             sb.append("(无前序步骤观察数据)\n");
         }
 
-        sb.append("\n本地推理结论：已通过端侧离线轻量模型完成多步意图核对，数据保留在本机安全沙盒，符合最小权限与安全审计要求。");
+        sb.append("\n以上内容由本地规则整理；这不是语言模型生成结果。");
         return sb.toString();
     }
 

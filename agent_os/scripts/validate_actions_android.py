@@ -15,11 +15,14 @@ import time
 
 CASES = {
     "SENSOR_CONTEXT": ("WorkflowValidationActivity", "SENSOR_CONTEXT", "AgentOsWorkflowValidation"),
+    "SENSOR_LIVE_SAMPLES": ("WorkflowValidationActivity", "SENSOR_LIVE_SAMPLES", "AgentOsWorkflowValidation"),
     "SENSOR_WINDOW": ("WorkflowValidationActivity", "SENSOR_WINDOW", "AgentOsWorkflowValidation"),
     "MEMORY_LIFECYCLE": ("WorkflowValidationActivity", "MEMORY_LIFECYCLE", "AgentOsWorkflowValidation"),
     "DOCUMENT_CALENDAR_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_CALENDAR_CHAIN", "AgentOsWorkflowValidation"),
     "VERIFY_CHAIN_RESTART": ("WorkflowValidationActivity", "VERIFY_CHAIN_RESTART", "AgentOsWorkflowValidation"),
     "CLOUD_PLAN_GUARD": ("WorkflowValidationActivity", "CLOUD_PLAN_GUARD", "AgentOsWorkflowValidation"),
+    "LOCAL_ENGINE_LABELS": ("WorkflowValidationActivity", "LOCAL_ENGINE_LABELS", "AgentOsWorkflowValidation"),
+    "SCOPED_SUMMARY_CONTRACT": ("WorkflowValidationActivity", "SCOPED_SUMMARY_CONTRACT", "AgentOsWorkflowValidation"),
     "EXPORT_LIFECYCLE": ("WorkflowValidationActivity", "EXPORT_LIFECYCLE", "AgentOsWorkflowValidation"),
     "IMPORT_LIFECYCLE": ("WorkflowValidationActivity", "IMPORT_LIFECYCLE", "AgentOsWorkflowValidation"),
     "WORKFLOW_RUNS": ("WorkflowValidationActivity", "WORKFLOW_RUNS", "AgentOsWorkflowValidation"),
@@ -97,7 +100,7 @@ def main():
         if not result["passed"]:
             break
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps({"package": package, "synthetic_only": all(item["case"] != "SENSOR_CONTEXT" for item in results),
+    args.output.write_text(json.dumps({"package": package, "synthetic_only": all(item["case"] not in ("SENSOR_CONTEXT", "SENSOR_LIVE_SAMPLES") for item in results),
         "recorded_at": datetime.now(timezone.utc).isoformat(), "cases": results}, indent=2) + "\n")
     raise SystemExit(0 if all(item["passed"] for item in results) else 1)
 

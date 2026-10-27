@@ -434,6 +434,34 @@ mod tests {
     }
 
     #[test]
+    fn two_offline_replicas_propagate_deletion_and_reject_old_archive_replay() {
+        let left = AgentStore::open_in_memory().unwrap();
+        let right = AgentStore::open_in_memory().unwrap();
+        let original = left.create_or_update_memory("fact", "synthetic original", "user", "", "topic", 10).unwrap();
+        let old_archive = export_encrypted_sync_package(&left, "synthetic recovery phrase", "left").unwrap();
+        import_encrypted_sync_package(&right, "synthetic recovery phrase", &old_archive).unwrap();
+
+        let mut offline_edit = original.clone();
+        offline_edit.content = "synthetic offline edit".to_string();
+        offline_edit.updated_at = 100;
+        right.upsert_synced_memory(&offline_edit).unwrap();
+        left.delete_memory(&original.id, 20).unwrap();
+        let deletion = export_encrypted_sync_package(&left, "synthetic recovery phrase", "left").unwrap();
+        assert!(import_encrypted_sync_package(&right, "wrong synthetic phrase", &deletion).is_err());
+        assert_eq!(right.list_memories().unwrap()[0].content, "synthetic offline edit");
+        import_encrypted_sync_package(&right, "synthetic recovery phrase", &deletion).unwrap();
+        assert!(right.list_memories().unwrap().is_empty());
+
+        import_encrypted_sync_package(&right, "synthetic recovery phrase", &old_archive).unwrap();
+        let returned = export_encrypted_sync_package(&right, "synthetic recovery phrase", "right").unwrap();
+        import_encrypted_sync_package(&left, "synthetic recovery phrase", &returned).unwrap();
+        import_encrypted_sync_package(&left, "synthetic recovery phrase", &old_archive).unwrap();
+        assert!(left.list_memories().unwrap().is_empty());
+        assert!(right.list_memories().unwrap().is_empty());
+        assert_eq!(left.list_memory_tombstones().unwrap(), right.list_memory_tombstones().unwrap());
+    }
+
+    #[test]
     fn test_cross_device_task_state_migration() {
         use crate::plan::{ExecutionPlan, Step};
         use crate::task::TaskStatus;

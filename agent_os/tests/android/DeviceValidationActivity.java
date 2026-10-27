@@ -1922,15 +1922,15 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Task did not reach COMPLETED: " + completedTask.status);
             }
 
-            if (!completedTask.result.contains("端侧 SLM 离线推演报告")
+            if (!completedTask.result.contains("本地规则整理结果")
                     || !completedTask.result.contains("读取示例便笺")
                     || !completedTask.result.contains("推送系统任务通知")
                     || !completedTask.result.contains("打包文本分享导出")) {
                 throw new IllegalStateException("Synthesized SLM report missing expected step observations: " + completedTask.result);
             }
 
-            if (auditEventCount(database, execTask.id, "slm_planning_started:micro_slm_v1") != 1
-                    || auditEventCount(database, execTask.id, "slm_planning_completed:" + planned.totalSteps()) != 1) {
+            if (auditEventCount(database, execTask.id, "local_rule_planning_started") != 1
+                    || auditEventCount(database, execTask.id, "local_rule_planning_completed:" + planned.totalSteps()) != 1) {
                 throw new IllegalStateException("SLM planning audit events incomplete for execTask");
             }
 

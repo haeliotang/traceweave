@@ -62,8 +62,12 @@ def main():
     parser.add_argument("--zk-verifier", type=Path, help="Optional ARM64 public-only proof verifier executable")
     parser.add_argument("--private-participant", type=Path, help="Optional ARM64 TLS private-computation participant executable")
     parser.add_argument("--keystore", type=Path, help="Existing local development signing key; required to preserve installed-app upgrade identity across output directories")
+    parser.add_argument("--manifest", type=Path, help="Optional manifest for an isolated validation build")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
+    manifest = (args.manifest or root / "android/AndroidManifest.xml").resolve()
+    if not manifest.is_file():
+        parser.error("The Android manifest must exist")
     sys.path.insert(0, str(root))
     from traceform.representation.manifold_lattice import DynamicalEnergyManifold
     from traceform.representation.normalizer import MultimodalNormalizer
@@ -106,7 +110,7 @@ def main():
                       "expected_grid_coord": list(model.nodes[index].grid_coord)})
     (assets / "parity.json").write_text(json.dumps({"cases": cases}))
     unsigned = build / "traceform-unsigned.apk"
-    subprocess.run([str(args.build_tools / "aapt2"), "link", "-I", str(args.android_jar), "--manifest", str(root / "android/AndroidManifest.xml"), "-A", str(assets), "-o", str(unsigned)], check=True)
+    subprocess.run([str(args.build_tools / "aapt2"), "link", "-I", str(args.android_jar), "--manifest", str(manifest), "-A", str(assets), "-o", str(unsigned)], check=True)
     with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(dex / "classes.dex", "classes.dex")
         archive.write(library, "lib/arm64-v8a/libtraceform.so")
@@ -120,7 +124,7 @@ def main():
     subprocess.run([str(args.build_tools / "apksigner"), "sign", "--ks", str(key), "--ks-pass", "pass:traceform-local", "--out", str(apk), str(aligned)], check=True)
     subprocess.run([str(args.build_tools / "apksigner"), "verify", "--verbose", str(apk)], check=True)
     sdk_classes = build_sdk_jar(classes, build / "traceform-sdk.jar", args.android_jar)
-    sources = [Path(__file__).resolve(), root / "android/AndroidManifest.xml", root / "native/traceform_core.h", root / "native/traceform_core.cpp", root / "native/traceform_jni.cpp", root / "native/traceform_benchmark.cpp", root / "native/periodic_spectrum.h", root / "native/periodic_spectrum.cpp", root / "native/periodic_spectrum_jni.cpp", *java]
+    sources = [Path(__file__).resolve(), manifest, root / "native/traceform_core.h", root / "native/traceform_core.cpp", root / "native/traceform_jni.cpp", root / "native/traceform_benchmark.cpp", root / "native/periodic_spectrum.h", root / "native/periodic_spectrum.cpp", root / "native/periodic_spectrum_jni.cpp", *java]
     report = {"apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(), "apk_bytes": apk.stat().st_size,
               "library_bytes": library.stat().st_size, "abi": "arm64-v8a", "signing": "local_development_only",
               "benchmark_sha256": hashlib.sha256(benchmark.read_bytes()).hexdigest(), "benchmark_bytes": benchmark.stat().st_size,

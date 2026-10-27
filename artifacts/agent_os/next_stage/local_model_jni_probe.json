@@ -1,0 +1,16 @@
+{
+  "result": "passed",
+  "synthetic_only": true,
+  "experimental_not_in_production": true,
+  "model_sha256": "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed",
+  "llama_cpp_commit": "d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3",
+  "result_line": "real_model_utf8_and_cancellation elapsed_ms=2027 output_bytes=43",
+  "checks": [
+    "model digest",
+    "pre-start cancellation",
+    "oversized prompt rejection",
+    "real model generation",
+    "strict UTF-8",
+    "in-flight cancellation"
+  ]
+}

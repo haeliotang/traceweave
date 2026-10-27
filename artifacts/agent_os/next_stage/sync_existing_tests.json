@@ -1,0 +1,22 @@
+{
+  "recorded_at": "2026-10-27T15:09:59.990864+00:00",
+  "scope": "Rust experimental sync, two synthetic in-memory stores; not Android production sync",
+  "initial_sandbox": "loopback socket denied; 7 passed, 1 blocked",
+  "rerun": "8 passed after loopback access",
+  "covered": [
+    "archive encryption roundtrip and wrong passphrase",
+    "metadata tamper rejection",
+    "legacy envelope",
+    "cross-store synthetic task state",
+    "memory tombstone and stale resurrection",
+    "loopback transport framing"
+  ],
+  "not_covered": [
+    "device pairing",
+    "verified end-to-end peer identity",
+    "key recovery and rotation",
+    "concurrent conflict selection",
+    "production Android sync"
+  ],
+  "additional_two_replica_replay": "passed: wrong phrase leaves offline edit intact; deletion wins despite clock skew and old archive replay"
+}
