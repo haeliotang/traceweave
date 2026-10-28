@@ -1,0 +1,11 @@
+{
+  "encrypted_archive_authenticated": true,
+  "database_and_journal_bytes_verified_after_transfer": true,
+  "isolated_database_integrity_debug": true,
+  "isolated_database_integrity_nondebug_upgrade": true,
+  "isolated_package_only": true,
+  "personal_records_displayed": false,
+  "production_edge_changed": false,
+  "full_edge_data_restore_tested": false,
+  "fixture_package_removed": true
+}

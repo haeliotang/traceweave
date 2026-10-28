@@ -1,0 +1,8 @@
+{
+  "synthetic_only": true,
+  "nondebug_to_debug_recovery_and_back": true,
+  "restored_synthetic_database_digest_verified": true,
+  "integrity_verified_before_and_after_rehardening": true,
+  "same_uid_preserved": true,
+  "production_edge_changed": false
+}

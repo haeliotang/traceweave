@@ -1,0 +1,26 @@
+{
+  "recovery_candidate": {
+    "scope": "temporary_debug_recovery_candidate_only_not_installed",
+    "baseline_sha256": "eaaafa9c39266b06704d623afa8b812eadf9e87a55b883a46afcc97e83825d7a",
+    "candidate_sha256": "1cb95bf2110e1af90dcf3c242d9d0ffa6ddf8666a07e6c2951a8949919ceada4",
+    "same_package_and_signer": true,
+    "version_code": 4,
+    "debuggable": true,
+    "existing_code_and_resources_identical": true,
+    "only_version_and_debug_changed": true,
+    "restore_tested": false,
+    "installed": false
+  },
+  "rehardened_candidate": {
+    "scope": "candidate_only_no_database_access_or_install",
+    "baseline_sha256": "1cb95bf2110e1af90dcf3c242d9d0ffa6ddf8666a07e6c2951a8949919ceada4",
+    "candidate_sha256": "af2516c00a36a626a96c2682938164e115e3ee5d51a45121f10156c19e59a7d7",
+    "same_package_and_signer": true,
+    "version_code": 5,
+    "debuggable": false,
+    "existing_code_and_resources_identical": true,
+    "only_version_and_debug_changed": true,
+    "installed": false,
+    "recovery_path_verified": false
+  }
+}

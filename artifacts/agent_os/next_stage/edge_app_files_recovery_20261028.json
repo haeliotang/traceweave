@@ -1,0 +1,9 @@
+{
+  "isolated_package_only": true,
+  "encrypted_archive_authenticated": true,
+  "all_app_file_and_preferences_entries_restored_and_hashed": true,
+  "contents_displayed": false,
+  "fixture_package_removed": true,
+  "production_edge_changed": false,
+  "application_behavior_and_android_keystore_restoration_tested": false
+}
