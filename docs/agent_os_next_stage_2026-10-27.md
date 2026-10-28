@@ -51,6 +51,8 @@ Edge 已同签名原位更新：原 APK 的代码、资源和原生库逐项保�
 
 经用户授权，已暂停 Edge 并把数据库、应用文件和设置流式加密到 Git 忽略的本地归档；缓存目录未包含。归档使用 AES-256-GCM，密钥存储在本机钥匙串，传输摘要和认证标签已核验。用户需要独立保管钥匙串中的可查看恢复密钥；失去密钥会失去解密能力。归档与密钥均不在仓库。加密辅助代码需要 Python `cryptography`，仅供本机备份验证，不是应用的生产恢复功能。
 
+用户已确认自行保存恢复密钥。归档又经过[结构检查](../artifacts/agent_os/next_stage/edge_archive_structure_20261028.json)，包括允许的根目录、必需数据库、条目类型、大小和摘要；个人文件名与摘要只在内存中处理，不保存到验收记录。合成测试覆盖路径越界、重复条目、链接及文件与目录冲突。该检查不直接执行恢复，也不证明应用行为可恢复。
+
 用户的数据库已在隔离应用中恢复，并在调试版和升级后的非调试版分别通过完整性检查；备份中的应用文件和设置也在另一隔离应用中逐项恢复并核对摘要。测试包均已清理，见[数据库验收](../artifacts/agent_os/next_stage/edge_database_recovery_20261028.json)与[文件验收](../artifacts/agent_os/next_stage/edge_app_files_recovery_20261028.json)。四版本[合成演练](../artifacts/agent_os/next_stage/edge_recovery_cycle_20261028.json)覆盖非调试、临时调试恢复及再次关闭调试。对应同签名候选仅在本机构建，[并未安装](../artifacts/agent_os/next_stage/edge_recovery_candidates_20261028.json)。这些检查不证明正式 Edge 的应用行为、系统授予的权限、Android Keystore 或跨设备恢复；尤其卸载可能删除设备绑定密钥。正式包仍未替换。
 
 Agent OS 0.6.3 已通过 37 项隔离真机用例、跨安装合成档案恢复和旧版档案迁移，并以原签名原位更新，首次安装时间保持；[验收记录](../artifacts/agent_os/automation_063/acceptance.json)不包括本轮人工系统选择器或物理功耗试验。已确认系统授予新的摘要权限；没有为验证读取真实历史或代替用户授予任务权限。

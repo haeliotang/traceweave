@@ -3,6 +3,8 @@
 import hashlib
 import io
 import os
+from pathlib import PurePosixPath
+import tarfile
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 MAGIC = b'TFEDGE01'
@@ -105,3 +107,51 @@ class VerifiedPlaintext(io.RawIOBase):
         self.digest.update(plain)
         self.count += len(plain)
         return len(plain)
+
+
+def inspect_recovery_archive(source, key):
+    """Return an in-memory file manifest after authenticated, bounded structural inspection."""
+    plaintext = io.BufferedReader(VerifiedPlaintext(source, key))
+    seen, files, directories, manifest = set(), set(), set(), {}
+    total = 0
+    with tarfile.open(fileobj=plaintext, mode='r|') as archive:
+        for member in archive:
+            name = member.name.removeprefix('./').rstrip('/')
+            path = PurePosixPath(name)
+            if (not name or not path.parts or name.startswith('/') or '\\' in name or str(path) != name
+                    or any(part in ('', '.', '..') for part in path.parts)
+                    or path.parts[0] not in ('databases', 'files', 'shared_prefs')
+                    or any(ord(char) < 32 for char in name)):
+                raise ValueError('Unsafe archive path')
+            if name in seen or len(seen) >= 100_000:
+                raise ValueError('Duplicate or excessive archive entries')
+            seen.add(name)
+            parents = [str(parent) for parent in path.parents if str(parent) != '.']
+            if any(parent in files for parent in parents):
+                raise ValueError('A file is an ancestor of another entry')
+            directories.update(parents)
+            if member.isdir():
+                if name in files:
+                    raise ValueError('Archive entry has conflicting types')
+                directories.add(name)
+                continue
+            if not member.isfile() or name in directories or member.size < 0 or member.size > 25 * 1024**3:
+                raise ValueError('Unsupported archive entry')
+            total += member.size
+            if total > 50 * 1024**3:
+                raise ValueError('Archive exceeds the expanded size limit')
+            files.add(name)
+            digest = hashlib.sha256()
+            count = 0
+            data = archive.extractfile(member)
+            while chunk := data.read(CHUNK):
+                digest.update(chunk)
+                count += len(chunk)
+            if count != member.size:
+                raise ValueError('Archive entry is incomplete')
+            manifest[name] = {'size': count, 'sha256': digest.hexdigest()}
+    while plaintext.read(CHUNK):
+        pass
+    if not plaintext.raw.finished or 'databases/edge.sqlite' not in files:
+        raise ValueError('Archive authentication or required database is missing')
+    return manifest

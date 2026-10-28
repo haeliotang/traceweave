@@ -6,7 +6,7 @@ from pathlib import Path
 from cryptography.exceptions import InvalidTag
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from edge_encrypted_archive import CHUNK, VerifiedPlaintext, encrypt_stream, verify_archive
+from edge_encrypted_archive import CHUNK, VerifiedPlaintext, encrypt_stream, verify_archive, inspect_recovery_archive
 
 
 class EdgeEncryptedArchiveTests(unittest.TestCase):
@@ -59,6 +59,31 @@ class EdgeEncryptedArchiveTests(unittest.TestCase):
         while plaintext.read(CHUNK):
             pass
         self.assertTrue(plaintext.raw.finished)
+
+    def test_recovery_manifest_rejects_unsafe_or_ambiguous_entries(self):
+        def archive(entries):
+            raw = io.BytesIO()
+            with tarfile.open(fileobj=raw, mode='w') as tar:
+                for name, kind in entries:
+                    info = tarfile.TarInfo(name)
+                    if kind == 'link':
+                        info.type = tarfile.SYMTYPE; info.linkname = '../outside'
+                        tar.addfile(info)
+                    else:
+                        info.size = 1; tar.addfile(info, io.BytesIO(b'x'))
+            encrypted = io.BytesIO()
+            encrypt_stream(io.BytesIO(raw.getvalue()), encrypted, b'a' * 32)
+            return encrypted
+        valid = [('databases/edge.sqlite', 'file'), ('files/model/data', 'file')]
+        manifest = inspect_recovery_archive(archive(valid), b'a' * 32)
+        self.assertEqual(set(manifest), {item[0] for item in valid})
+        for invalid in [valid + [('files/../outside', 'file')],
+                        valid + [('files/model/data', 'file')],
+                        valid + [('files/alias', 'link')],
+                        [('databases/edge.sqlite', 'file'), ('files/model', 'file'), ('files/model/data', 'file')],
+                        [('other/secret', 'file')], [('.', 'file')], [('files/data', 'file')]]:
+            with self.assertRaises(ValueError):
+                inspect_recovery_archive(archive(invalid), b'a' * 32)
 
 
 if __name__ == '__main__':
