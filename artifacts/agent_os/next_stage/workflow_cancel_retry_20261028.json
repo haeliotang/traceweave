@@ -1,0 +1,36 @@
+{
+  "synthetic_only": true,
+  "device": "Pixel 6a",
+  "package": "org.traceform.agentos.actionsvalidation",
+  "before_fix": "FAIL: cancelled before handoff permits a new draft while preserving history",
+  "after_fix": [
+    {
+      "case": "DOCUMENT_CALENDAR_CHAIN",
+      "passed": true
+    },
+    {
+      "case": "VERIFY_CHAIN_RESTART",
+      "passed": true
+    },
+    {
+      "case": "WORKFLOW_RUNS",
+      "passed": true
+    },
+    {
+      "case": "WORKFLOW_GUARD",
+      "passed": true
+    },
+    {
+      "case": "TASK_CENTER",
+      "passed": true
+    }
+  ],
+  "restart_scope": "force-stop and relaunch of isolated test package, not a full device reboot",
+  "apk_sha256": "850e49303889e60dd6f6aedc0005b20ef30e5f82679108f2664afcf6244ec444",
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "7e9dca4785cbfb36f66ce2003e545277528415d62c32e0483c7908cbd00a7b09",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "bb360234090af121903493d83806b78fc49febb802a5e95544c537591d58a3bc"
+  },
+  "isolated_package_removed": true,
+  "production_app_updated": false
+}

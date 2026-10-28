@@ -12,6 +12,8 @@
 
 这不是任意步骤编排器：当前只允许规定顺序的文件与日历，不支持任意插件、循环或条件步骤。隔离应用的实际界面已创建模板、选择零条记忆、保存并读回文件，然后显示日历的独立确认；该次在交接前取消并清理文件，记录见[界面验收](../artifacts/agent_os/next_stage/workflow_ui_20261027.json)。0.6.3 生产候选随后完成了完整自动验收；该轮没有重新运行人工系统选择器。
 
+后续隔离真机回归发现，日历草稿在交接前取消后，重新继续只会返回已取消的旧任务。修复后允许创建一个需要重新确认的新草稿，并保留旧任务历史；若已经交接或结果未知，仍返回原任务，避免重复交接。修复前失败、修复后及强制停止后重启的合成测试见[验收记录](../artifacts/agent_os/next_stage/workflow_cancel_retry_20261028.json)。该轮未操作真实日历。修复版 0.6.4 随后通过 37 项隔离用例和跨安装合成档案恢复，同签名原位更新至 Pixel，见[自动验收记录](../artifacts/agent_os/automation_064/acceptance.json)；本轮未重跑旧版档案迁移、人工系统选择器或物理耗电测试。
+
 ## 本地模型评估
 
 独立实验使用 [llama.cpp](https://github.com/ggml-org/llama.cpp) 固定提交 `d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3`，模型为 [Qwen2.5-0.5B-Instruct-GGUF Q4_0](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/main/qwen2.5-0.5b-instruct-q4_0.gguf)，下载文件 SHA-256 与发布页一致。模型和工具临时放在设备 shell 专用测试目录，执行合成提示词，没有连接云端或使用个人记忆。该实验不是应用集成或生产部署。

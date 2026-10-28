@@ -292,6 +292,12 @@ public final class WorkflowValidationActivity extends Activity {
         check(DocumentAction.locallyVerified(store.getTask(parent.id)), "parent document verified");
         AgentStore.Task child = store.createCalendarFollowup(parent.id);
         check(child.id.equals(store.createCalendarFollowup(parent.id).id), "followup creation is idempotent");
+        store.transition(child.id, AgentStore.CANCELLED);
+        AgentStore.Task retry = store.createCalendarFollowup(parent.id);
+        check(!child.id.equals(retry.id) && AgentStore.CANCELLED.equals(store.getTask(child.id).status),
+            "cancelled before handoff permits a new draft while preserving history");
+        child = retry;
+        check(child.id.equals(store.createCalendarFollowup(parent.id).id), "replacement draft is idempotent");
         check(AgentStore.WAITING_FOR_USER.equals(child.status) && "external".equals(TaskCenterState.destination(child)), "followup awaits separate confirmation");
         JSONObject context = new JSONObject(child.plan.context);
         check(TaskContext.localOnly(child.plan) && TaskContext.memories(child.plan).isEmpty() && !context.toString().contains("content://"), "no memory, file grant or cloud consent is inherited");
@@ -302,6 +308,19 @@ public final class WorkflowValidationActivity extends Activity {
         store.recordExternalOutcome(child.id, 0, handoff, false, "synthetic");
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "external save is not falsely verified");
         check(child.id.equals(store.createCalendarFollowup(parent.id).id), "unknown result does not create a duplicate");
+        AgentStore.Task other = store.createDocumentTask("SYNTHETIC cancel after handoff", "# SYNTHETIC", new JSONArray());
+        JSONObject otherDraft = new JSONObject(other.plan.steps.get(0).observation);
+        String otherAttempt = store.claimExternalAction(other.id, 0, otherDraft.getString("draftId"), otherDraft);
+        store.bindDocumentTarget(other.id, otherAttempt, Uri.parse("content://" + getPackageName() + ".documents.fixture/chain_cancel").toString());
+        DocumentAction.writeOnce(getContentResolver(), store, other.id);
+        AgentStore.Task handedOff = store.createCalendarFollowup(other.id);
+        JSONObject otherCalendar = new JSONObject(handedOff.plan.steps.get(0).observation);
+        otherCalendar.put("startTime", System.currentTimeMillis() + 3600000).put("endTime", System.currentTimeMillis() + 7200000);
+        store.claimExternalAction(handedOff.id, 0, otherCalendar.getString("draftId"), otherCalendar);
+        store.transition(handedOff.id, AgentStore.CANCELLED);
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(handedOff.id).status)
+                && handedOff.id.equals(store.createCalendarFollowup(other.id).id),
+            "cancellation after handoff remains unknown and cannot create a duplicate");
         getSharedPreferences("workflow_validation", 0).edit().putString("chainParent", parent.id).putString("chainChild", child.id).commit();
     }
 

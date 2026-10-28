@@ -668,6 +668,11 @@ final class AgentStore extends SQLiteOpenHelper {
                 JSONObject link = new JSONObject(existing.plan.context).optJSONObject("workflowLink");
                 if (link != null && "document_to_calendar".equals(link.optString("kind"))
                         && parentId.equals(link.optString("parentTaskId"))) {
+                    if (CANCELLED.equals(existing.status) && existing.plan.totalSteps() == 1) {
+                        ExecutionPlan.Step step = existing.plan.steps.get(0);
+                        if (ExecutionPlan.STEP_CANCELLED.equals(step.status)
+                                && new JSONObject(step.observation).optString("attemptId").isEmpty()) continue;
+                    }
                     database.setTransactionSuccessful();
                     return existing;
                 }
