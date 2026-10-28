@@ -1,0 +1,10 @@
+{
+  "synthetic_only": true,
+  "debug_to_nondebug_same_signer_upgrade_passed": true,
+  "synthetic_sqlite_and_preferences_preserved": true,
+  "uid_and_first_install_preserved": true,
+  "run_as_rejected_after_upgrade": true,
+  "edge_real_data_read": false,
+  "fixture_package_removed": true,
+  "real_edge_installed": false
+}

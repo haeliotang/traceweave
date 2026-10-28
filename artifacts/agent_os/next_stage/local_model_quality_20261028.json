@@ -1,0 +1,39 @@
+{
+  "synthetic_only": true,
+  "experimental_not_in_production": true,
+  "model_sha256": "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed",
+  "runtime_sha256": "d623c38fbc3b68d213b402f8cbf1692542cd1cb8abe15f6758b11322568e8859",
+  "cases": [
+    {
+      "case": "english_exact",
+      "passed": true,
+      "elapsed_ms": 1114,
+      "output_bytes": 5
+    },
+    {
+      "case": "chinese_exact",
+      "passed": false,
+      "elapsed_ms": 991,
+      "output_bytes": 8
+    },
+    {
+      "case": "arithmetic_exact",
+      "passed": false,
+      "elapsed_ms": 1561,
+      "output_bytes": 12
+    },
+    {
+      "case": "strict_json",
+      "passed": true,
+      "elapsed_ms": 1264,
+      "output_bytes": 18
+    },
+    {
+      "case": "list_three",
+      "passed": true,
+      "elapsed_ms": 1178,
+      "output_bytes": 14
+    }
+  ],
+  "scope": "single_run_smoke_cases_not_comprehensive_quality_or_safety"
+}

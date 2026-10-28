@@ -69,3 +69,22 @@ fn two_replicas_converge_after_user_resolves_offline_conflict() {
     assert_eq!(left_final, vec![selected]);
     assert_eq!(left_final, right_final);
 }
+
+#[test]
+fn resolution_rejects_a_joined_clock_exceeding_the_device_limit() {
+    use std::collections::BTreeMap;
+    let left = Version { clock: Clock((0..32).map(|i| (format!("a{i}"), 1)).collect::<BTreeMap<_, _>>()), value: Some("left".into()) };
+    let right = Version { clock: Clock((0..32).map(|i| (format!("b{i}"), 1)).collect::<BTreeMap<_, _>>()), value: Some("right".into()) };
+    let choices = merge(&[left], &[right]).unwrap();
+    assert!(resolve(&choices, 0, "a0").is_err());
+}
+
+#[test]
+fn resolution_accepts_the_device_limit_when_the_actor_already_exists() {
+    use std::collections::BTreeMap;
+    let value = Version { clock: Clock((0..32).map(|i| (format!("a{i}"), 1)).collect::<BTreeMap<_, _>>()), value: Some("value".into()) };
+    let resolved = resolve(&[value], 0, "a0").unwrap();
+    assert_eq!(resolved.clock.0.len(), 32);
+    assert_eq!(resolved.clock.0["a0"], 2);
+    assert_eq!(merge(&[resolved.clone()], &[]).unwrap(), vec![resolved]);
+}

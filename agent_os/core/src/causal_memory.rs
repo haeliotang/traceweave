@@ -72,7 +72,7 @@ pub fn resolve(choices: &[Version], selected: usize, actor: &str) -> Result<Vers
             *current = (*current).max(*counter);
         }
     }
-    if !clock.contains_key(actor) && clock.len() >= MAX_ACTORS {
+    if clock.len() > MAX_ACTORS || (!clock.contains_key(actor) && clock.len() == MAX_ACTORS) {
         return Err("Too many devices");
     }
     let value = clock.entry(actor.to_string()).or_insert(0);

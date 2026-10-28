@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class LocalModelProbe extends Activity {
     private static final String MODEL_SHA = "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed";
     static { System.loadLibrary("traceform_local_model"); }
-    private static native void prepare();
-    private static native void cancel();
-    private static native byte[] generate(String path, byte[] prompt, int maxTokens);
+    static native void prepare();
+    static native void cancel();
+    static native byte[] generate(String path, byte[] prompt, int maxTokens);
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
