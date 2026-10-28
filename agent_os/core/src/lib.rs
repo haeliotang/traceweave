@@ -14,6 +14,8 @@ pub mod plugin_manager;
 pub mod edge_slm;
 pub mod sync;
 pub mod causal_memory;
+#[cfg(test)]
+mod causal_memory_fixture;
 pub mod voice_dsp;
 pub mod screen_agent;
 mod daemon;

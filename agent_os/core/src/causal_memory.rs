@@ -1,6 +1,8 @@
 //! Experimental merge for versions of one memory. Not connected to Android or a transport.
 //! A tombstone permanently deletes its ID; a deliberate new memory needs a new ID.
 
+#[cfg(test)]
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 const MAX_ACTORS: usize = 32;
@@ -8,9 +10,11 @@ const MAX_BRANCHES: usize = 64;
 const MAX_CONTENT_BYTES: usize = 32_000;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(test, derive(Serialize, Deserialize))]
 pub struct Clock(pub BTreeMap<String, u64>);
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(test, derive(Serialize, Deserialize))]
 pub struct Version {
     pub clock: Clock,
     /// None is a permanent tombstone for this memory ID.
