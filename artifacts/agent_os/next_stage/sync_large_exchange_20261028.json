@@ -1,0 +1,16 @@
+{
+  "synthetic_only": true,
+  "environment": "local loopback on macOS",
+  "scope": "experimental TCP transport only; no device identity or transport authentication",
+  "before_fix": "simultaneous 10 MiB sends failed with Broken pipe after about 10 seconds",
+  "after_fix": {
+    "simultaneous_10_mib_each": "passed",
+    "over_limit_rejected_before_send": "passed",
+    "existing_small_exchange": "passed",
+    "core_library_tests": 84,
+    "causal_merge_tests": 8,
+    "persistent_store_policy_tests": 1
+  },
+  "rustc": "rustc 1.94.0 (4a4ef493e 2026-03-02) (Homebrew)",
+  "source_sha256": "526f30a6be53a8b11a1983bfbc0f4d7b918435716bff8f4b549307fa2bd59e97"
+}

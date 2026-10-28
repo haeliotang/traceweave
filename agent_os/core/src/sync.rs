@@ -11,6 +11,7 @@ const PBKDF2_ROUNDS: u32 = 600_000;
 const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 const SALT_LEN: usize = 16;
+const MAX_ENVELOPE_BYTES: usize = 10 * 1024 * 1024;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TombstoneRecord {
@@ -200,27 +201,33 @@ pub struct P2pSyncEngine;
 impl P2pSyncEngine {
     /// Perform a single P2P sync session between client and server over TCP
     pub fn exchange_envelopes(stream: &mut TcpStream, local_envelope_json: &str) -> Result<String, String> {
-        stream.set_read_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
-        stream.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
-
         let bytes = local_envelope_json.as_bytes();
-        let len = (bytes.len() as u32).to_be_bytes();
-        stream.write_all(&len).map_err(|e| e.to_string())?;
-        stream.write_all(bytes).map_err(|e| e.to_string())?;
-        stream.flush().map_err(|e| e.to_string())?;
-
-        let mut len_buf = [0u8; 4];
-        stream.read_exact(&mut len_buf).map_err(|e| e.to_string())?;
-        let incoming_len = u32::from_be_bytes(len_buf) as usize;
-
-        if incoming_len > 10 * 1024 * 1024 {
+        if bytes.len() > MAX_ENVELOPE_BYTES {
             return Err("Payload exceeds maximum 10MB limit".to_string());
         }
-
-        let mut incoming_bytes = vec![0u8; incoming_len];
-        stream.read_exact(&mut incoming_bytes).map_err(|e| e.to_string())?;
-
-        String::from_utf8(incoming_bytes).map_err(|e| e.to_string())
+        stream.set_read_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
+        stream.set_write_timeout(Some(Duration::from_secs(5))).map_err(|e| e.to_string())?;
+        let mut writer = stream.try_clone().map_err(|e| e.to_string())?;
+        std::thread::scope(|scope| {
+            let sender = scope.spawn(move || -> Result<(), String> {
+                writer.write_all(&(bytes.len() as u32).to_be_bytes()).map_err(|e| e.to_string())?;
+                writer.write_all(bytes).map_err(|e| e.to_string())?;
+                writer.flush().map_err(|e| e.to_string())
+            });
+            let received = (|| -> Result<String, String> {
+                let mut len_buf = [0u8; 4];
+                stream.read_exact(&mut len_buf).map_err(|e| e.to_string())?;
+                let incoming_len = u32::from_be_bytes(len_buf) as usize;
+                if incoming_len > MAX_ENVELOPE_BYTES {
+                    return Err("Payload exceeds maximum 10MB limit".to_string());
+                }
+                let mut incoming_bytes = vec![0u8; incoming_len];
+                stream.read_exact(&mut incoming_bytes).map_err(|e| e.to_string())?;
+                String::from_utf8(incoming_bytes).map_err(|e| e.to_string())
+            })();
+            sender.join().map_err(|_| "Sync sender failed".to_string())??;
+            received
+        })
     }
 }
 
@@ -245,6 +252,37 @@ mod tests {
         assert_eq!(response, "{\"server\": \"ack\"}");
 
         handle.join().unwrap();
+    }
+
+    #[test]
+    fn p2p_exchange_large_envelopes_without_both_peers_blocking() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let ready = std::sync::Arc::new(std::sync::Barrier::new(2));
+        let server_ready = ready.clone();
+        let handle = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            server_ready.wait();
+            P2pSyncEngine::exchange_envelopes(&mut stream, &"s".repeat(10 * 1024 * 1024))
+        });
+        let mut stream = TcpStream::connect(addr).unwrap();
+        ready.wait();
+        let client = P2pSyncEngine::exchange_envelopes(&mut stream, &"c".repeat(10 * 1024 * 1024));
+        let server = handle.join().unwrap();
+        assert_eq!(client.unwrap(), "s".repeat(10 * 1024 * 1024));
+        assert_eq!(server.unwrap(), "c".repeat(10 * 1024 * 1024));
+    }
+
+    #[test]
+    fn p2p_exchange_rejects_oversized_local_envelope_before_writing() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let mut client = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let (mut server, _) = listener.accept().unwrap();
+        let result = P2pSyncEngine::exchange_envelopes(&mut client, &"x".repeat(MAX_ENVELOPE_BYTES + 1));
+        assert!(result.unwrap_err().contains("10MB"));
+        client.shutdown(std::net::Shutdown::Write).unwrap();
+        let mut byte = [0u8; 1];
+        assert_eq!(server.read(&mut byte).unwrap(), 0);
     }
 
 
