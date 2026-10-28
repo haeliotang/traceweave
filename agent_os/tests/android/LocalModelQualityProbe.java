@@ -16,7 +16,8 @@ import org.json.JSONObject;
 
 /** Fixed synthetic cases; scores are observations, never action authorization. */
 public final class LocalModelQualityProbe extends Activity {
-    private static final String SHA = "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed";
+    private static final String SMALL_SHA = "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed";
+    private static final String LARGE_SHA = "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb";
     private static final String[][] CASES = {
         {"english_exact", "Reply with exactly READY and no other words."},
         {"chinese_exact", "只回复两个汉字：完成。不要回复其他内容。"},
@@ -37,7 +38,8 @@ public final class LocalModelQualityProbe extends Activity {
                 }
                 StringBuilder hash = new StringBuilder();
                 for (byte b : digest.digest()) hash.append(String.format(Locale.ROOT, "%02x", b & 255));
-                if (!SHA.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
+                String expected = "qwen15".equals(getIntent().getStringExtra("model")) ? LARGE_SHA : SMALL_SHA;
+                if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 JSONArray results = new JSONArray();
                 for (String[] item : CASES) {
                     LocalModelProbe.prepare();

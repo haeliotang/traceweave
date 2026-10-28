@@ -1,0 +1,42 @@
+{
+  "synthetic_only": true,
+  "experimental_not_in_production": true,
+  "model": "Qwen2.5-0.5B-Instruct Q4_0",
+  "model_sha256": "7671c0c304e6ce5a7fc577bcb12aba01e2c155cc2efd29b2213c95b18edaf6ed",
+  "source": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/main/qwen2.5-0.5b-instruct-q4_0.gguf",
+  "cases": [
+    {
+      "case": "english_exact",
+      "passed": true,
+      "elapsed_ms": 1039,
+      "output_bytes": 5
+    },
+    {
+      "case": "chinese_exact",
+      "passed": false,
+      "elapsed_ms": 1197,
+      "output_bytes": 8
+    },
+    {
+      "case": "arithmetic_exact",
+      "passed": false,
+      "elapsed_ms": 2014,
+      "output_bytes": 12
+    },
+    {
+      "case": "strict_json",
+      "passed": true,
+      "elapsed_ms": 1502,
+      "output_bytes": 18
+    },
+    {
+      "case": "list_three",
+      "passed": true,
+      "elapsed_ms": 1517,
+      "output_bytes": 14
+    }
+  ],
+  "sampled_max_pss_kib": 591449,
+  "scope": "single_run_smoke_cases_not_comprehensive_quality_safety_or_power",
+  "isolated_package_removed": true
+}
