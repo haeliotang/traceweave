@@ -9,6 +9,23 @@ permissions:
   contents: read
 
 jobs:
+  rust-core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: agent_os/core
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.94.0 --profile minimal
+      - name: Test core and persistence policy
+        run: |
+          rustup run 1.94.0 cargo test --locked --lib
+          rustup run 1.94.0 cargo test --locked --test causal_memory_merge --test persistent_store_policy
+
   android-host:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
