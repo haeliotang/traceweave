@@ -55,6 +55,10 @@ Edge 已同签名原位更新：原 APK 的代码、资源和原生库逐项保�
 
 用户的数据库已在隔离应用中恢复，并在调试版和升级后的非调试版分别通过完整性检查；备份中的应用文件和设置也在另一隔离应用中逐项恢复并核对摘要。测试包均已清理，见[数据库验收](../artifacts/agent_os/next_stage/edge_database_recovery_20261028.json)与[文件验收](../artifacts/agent_os/next_stage/edge_app_files_recovery_20261028.json)。四版本[合成演练](../artifacts/agent_os/next_stage/edge_recovery_cycle_20261028.json)覆盖非调试、临时调试恢复及再次关闭调试。对应同签名候选仅在本机构建，[并未安装](../artifacts/agent_os/next_stage/edge_recovery_candidates_20261028.json)。这些检查不证明正式 Edge 的应用行为、系统授予的权限、Android Keystore 或跨设备恢复；尤其卸载可能删除设备绑定密钥。正式包仍未替换。
 
+进一步构建了不具备网络或传感器入口的隔离应用，保留已安装 Edge 的代码、模型资源和原生库，并添加独立测试代码。测试在合成数据上执行四版本升级、清空和恢复数据；模型注册及历史预测夹具在各阶段通过，见[应用级演练](../artifacts/agent_os/next_stage/edge_application_full_cycle_20261028.json)。这验证了该隔离条件下的应用代码，不等于已在正式包中恢复真实数据或验证所有系统权限。
+
+两套现有 APK 签名材料和口令已用用户保存的归档恢复密钥加密到单独的本地备份，未进入仓库；解密后与原件逐字节一致，并在内存中对合成消息签名和验签，见[签名恢复证据](../artifacts/agent_os/next_stage/signing_recovery_20261028.json)。没有用恢复出的副本签署实际 APK。若只把归档留在同一台电脑，电脑损坏仍可能同时丢失备份；需要用户独立保存加密归档和恢复密钥。
+
 Agent OS 0.6.3 已通过 37 项隔离真机用例、跨安装合成档案恢复和旧版档案迁移，并以原签名原位更新，首次安装时间保持；[验收记录](../artifacts/agent_os/automation_063/acceptance.json)不包括本轮人工系统选择器或物理功耗试验。已确认系统授予新的摘要权限；没有为验证读取真实历史或代替用户授予任务权限。
 
 本机检查、隔离回归和实验性模型验证不能替代签名材料的安全备份及恢复演练、独立安全审计、多设备同步实现或真实功耗测试。签名材料、用户档案和模型权重不得进入仓库。

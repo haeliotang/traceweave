@@ -1,0 +1,10 @@
+{
+  "both_existing_certificates_match_installed_apps": true,
+  "encrypted_signing_backup_created": true,
+  "uses_existing_user_saved_backup_key": true,
+  "decrypted_material_matches_originals": true,
+  "restored_keystores_signed_and_verified_synthetic_messages_in_memory": true,
+  "plain_key_files_not_created_by_backup_test": true,
+  "actual_apk_signed_from_restored_copy": false,
+  "separate_offline_backup_of_key_material_confirmed": false
+}

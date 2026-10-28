@@ -1,0 +1,14 @@
+{
+  "synthetic_only": true,
+  "installed_edge_apk_matches_baseline": true,
+  "baseline_code_assets_native_byte_identical": true,
+  "four_version_debug_nondebug_recovery_cycle": true,
+  "synthetic_data_reset_and_restore": true,
+  "synthetic_database_and_preferences_restored": true,
+  "model_registry_and_forecast_passed_each_stage": true,
+  "uid_preserved": true,
+  "run_as_rejected_after_hardening": true,
+  "device_user_data_read": false,
+  "production_edge_changed": false,
+  "real_user_application_restore_tested": false
+}
