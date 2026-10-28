@@ -1,0 +1,21 @@
+{
+  "synthetic_only": true,
+  "device": "Pixel 6a",
+  "validation_package": "org.traceform.agentos.actionsvalidation",
+  "ui_steps": [
+    "opened verified synthetic document",
+    "opened calendar draft",
+    "cancelled before handoff",
+    "opened calendar draft again",
+    "confirmed fresh draft and separate authorization controls"
+  ],
+  "verification": "one cancelled historical task and one waiting draft without an attempt ID",
+  "real_calendar_handoff": false,
+  "isolated_package_removed": true,
+  "apk_sha256": "b6f7a3d2a122c647afb28d4b574371c91b92dd366a24de8e57696a4fbbc03ac2",
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "7e9dca4785cbfb36f66ce2003e545277528415d62c32e0483c7908cbd00a7b09",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "3622e216711d16873a4eb4472fb966d191a0be3dce158311d5b9b4285c0768ca",
+    "agent_os/scripts/validate_actions_android.py": "6561a540f72f0eb526aadc91ac607ede06e181d9375b55ef633623322c0af46c"
+  }
+}

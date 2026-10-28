@@ -20,6 +20,8 @@ CASES = {
     "MEMORY_LIFECYCLE": ("WorkflowValidationActivity", "MEMORY_LIFECYCLE", "AgentOsWorkflowValidation"),
     "DOCUMENT_CALENDAR_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_CALENDAR_CHAIN", "AgentOsWorkflowValidation"),
     "VERIFY_CHAIN_RESTART": ("WorkflowValidationActivity", "VERIFY_CHAIN_RESTART", "AgentOsWorkflowValidation"),
+    "SEED_CALENDAR_RETRY_UI": ("WorkflowValidationActivity", "SEED_CALENDAR_RETRY_UI", "AgentOsWorkflowValidation"),
+    "VERIFY_CALENDAR_RETRY_UI": ("WorkflowValidationActivity", "VERIFY_CALENDAR_RETRY_UI", "AgentOsWorkflowValidation"),
     "CLOUD_PLAN_GUARD": ("WorkflowValidationActivity", "CLOUD_PLAN_GUARD", "AgentOsWorkflowValidation"),
     "LOCAL_ENGINE_LABELS": ("WorkflowValidationActivity", "LOCAL_ENGINE_LABELS", "AgentOsWorkflowValidation"),
     "SCOPED_SUMMARY_CONTRACT": ("WorkflowValidationActivity", "SCOPED_SUMMARY_CONTRACT", "AgentOsWorkflowValidation"),

@@ -25,6 +25,8 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
+                else if ("SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) seedCalendarRetryUi(store);
+                else if ("VERIFY_CALENDAR_RETRY_UI".equals(getIntent().getAction())) verifyCalendarRetryUi(store);
                 else if ("CLOUD_PLAN_GUARD".equals(getIntent().getAction())) cloudPlanGuard();
                 else if ("LOCAL_ENGINE_LABELS".equals(getIntent().getAction())) localEngineLabels();
                 else if ("SCOPED_SUMMARY_CONTRACT".equals(getIntent().getAction())) scopedSummaryContract();
@@ -65,6 +67,10 @@ public final class WorkflowValidationActivity extends Activity {
                 }
                 if (message.startsWith("PASS") && "OPEN_CENTER_UI".equals(getIntent().getAction())) {
                     startActivity(new android.content.Intent(this, TaskCenterActivity.class)); finish();
+                }
+                if (message.startsWith("PASS") && "SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) {
+                    startActivity(new android.content.Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID,
+                        getSharedPreferences("workflow_validation", 0).getString("retryUiParent", ""))); finish();
                 }
             });
         }, "synthetic-workflow-validation").start();
@@ -329,6 +335,31 @@ public final class WorkflowValidationActivity extends Activity {
         String child = getSharedPreferences("workflow_validation", 0).getString("chainChild", "");
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child).status), "unknown handoff survives force stop");
         check(child.equals(store.createCalendarFollowup(parent).id), "restart cannot replay or duplicate the action");
+    }
+    private void seedCalendarRetryUi(AgentStore store) throws Exception {
+        reset(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        AgentStore.Task parent = store.createDocumentTask("SYNTHETIC retry UI", "# SYNTHETIC", new JSONArray());
+        JSONObject draft = new JSONObject(parent.plan.steps.get(0).observation);
+        String attempt = store.claimExternalAction(parent.id, 0, draft.getString("draftId"), draft);
+        store.bindDocumentTarget(parent.id, attempt, Uri.parse("content://" + getPackageName() + ".documents.fixture/retry_ui").toString());
+        DocumentAction.writeOnce(getContentResolver(), store, parent.id);
+        check(DocumentAction.locallyVerified(store.getTask(parent.id)), "synthetic parent verified");
+        getSharedPreferences("workflow_validation", 0).edit().putString("retryUiParent", parent.id).commit();
+    }
+    private void verifyCalendarRetryUi(AgentStore store) throws Exception {
+        String parent = getSharedPreferences("workflow_validation", 0).getString("retryUiParent", "");
+        int cancelled = 0, waiting = 0;
+        for (AgentStore.Task task : store.listTasks()) {
+            if (task.plan == null || task.plan.context.isEmpty()) continue;
+            JSONObject link = new JSONObject(task.plan.context).optJSONObject("workflowLink");
+            if (link == null || !parent.equals(link.optString("parentTaskId"))) continue;
+            if (AgentStore.CANCELLED.equals(task.status)) cancelled++;
+            if (AgentStore.WAITING_FOR_USER.equals(task.status)
+                    && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(0).status)
+                    && new JSONObject(task.plan.steps.get(0).observation).optString("attemptId").isEmpty()) waiting++;
+        }
+        check(cancelled == 1 && waiting == 1, "UI cancellation preserves history and opens one fresh unhanded draft");
     }
     private interface Checked { void run() throws Exception; }
     private void rejects(Checked action, String message) throws Exception {
