@@ -78,6 +78,23 @@ impl AgentStore {
     pub fn open_in_memory() -> Result<Self> {
         Self::open(":memory:")
     }
+
+    #[cfg(test)]
+    pub(crate) fn fail_sync_memory_insert_for_test(&self) -> Result<()> {
+        self.conn.lock().unwrap().execute_batch(
+            "CREATE TEMP TRIGGER fail_sync_memory BEFORE INSERT ON memories
+             BEGIN SELECT RAISE(ABORT, 'synthetic sync failure'); END;"
+        )
+    }
+
+    #[cfg(test)]
+    pub(crate) fn fail_sync_task_journal_for_test(&self) -> Result<()> {
+        self.conn.lock().unwrap().execute_batch(
+            "CREATE TEMP TRIGGER fail_sync_task BEFORE INSERT ON task_journal
+             WHEN NEW.event_type = 'synced_insert'
+             BEGIN SELECT RAISE(ABORT, 'synthetic sync task failure'); END;"
+        )
+    }
 }
 
 static GLOBAL_STORE_SINGLETON: std::sync::RwLock<Option<AgentStore>> = std::sync::RwLock::new(None);
@@ -286,7 +303,14 @@ impl AgentStore {
     }
 
     pub fn upsert_synced_task(&self, task: &Task) -> Result<bool> {
-        let conn = self.conn.lock().unwrap();
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        let result = Self::upsert_synced_task_in(&tx, task)?;
+        tx.commit()?;
+        Ok(result)
+    }
+
+    fn upsert_synced_task_in(conn: &Connection, task: &Task) -> Result<bool> {
         let mut stmt = conn.prepare("SELECT updated_at, title, status, execution_step, result, plan_json FROM tasks WHERE id = ?1")?;
         let mut rows = stmt.query(params![task.id])?;
         if let Some(row) = rows.next()? {
@@ -462,17 +486,22 @@ impl AgentStore {
     pub fn upsert_synced_memory(&self, memory: &MemoryRecord) -> Result<SyncedMemoryResult> {
         let mut conn = self.conn.lock().unwrap();
         let tx = conn.transaction()?;
-        let deleted_at: Option<i64> = tx.query_row(
+        let result = Self::upsert_synced_memory_in(&tx, memory)?;
+        tx.commit()?;
+        Ok(result)
+    }
+
+    fn upsert_synced_memory_in(conn: &Connection, memory: &MemoryRecord) -> Result<SyncedMemoryResult> {
+        let deleted_at: Option<i64> = conn.query_row(
             "SELECT deleted_at FROM memory_tombstones WHERE id = ?1",
             params![memory.id],
             |row| row.get(0),
         ).optional()?;
         if deleted_at.is_some() {
-            tx.commit()?;
             return Ok(SyncedMemoryResult::Skipped);
         }
 
-        let local: Option<(i64, String, String, String, String)> = tx.query_row(
+        let local: Option<(i64, String, String, String, String)> = conn.query_row(
             "SELECT updated_at, kind, content, source, source_reference FROM memories WHERE id = ?1",
             params![memory.id],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
@@ -487,18 +516,17 @@ impl AgentStore {
         if local.as_ref().is_some_and(|(updated_at, kind, content, source, source_reference)| {
             (*updated_at, kind.as_str(), content.as_str(), source.as_str(), source_reference.as_str()) >= remote_key
         }) {
-            tx.commit()?;
             return Ok(SyncedMemoryResult::Skipped);
         }
 
         let result = if local.is_some() {
-            tx.execute(
+            conn.execute(
                 "UPDATE memories SET kind = ?1, content = ?2, source = ?3, source_reference = ?4, updated_at = ?5 WHERE id = ?6",
                 params![memory.kind, memory.content, memory.source, memory.source_reference, memory.updated_at, memory.id],
             )?;
             SyncedMemoryResult::Updated
         } else {
-            tx.execute(
+            conn.execute(
                 "INSERT INTO memories (id, kind, content, source, source_reference, topic_key, created_at, updated_at)
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                 params![memory.id, memory.kind, memory.content, memory.source, memory.source_reference,
@@ -506,27 +534,55 @@ impl AgentStore {
             )?;
             SyncedMemoryResult::Inserted
         };
-        tx.commit()?;
         Ok(result)
     }
 
     pub fn apply_memory_tombstone(&self, id: &str, deleted_at: i64) -> Result<bool> {
         let mut conn = self.conn.lock().unwrap();
         let tx = conn.transaction()?;
-        let local_deleted_at: Option<i64> = tx.query_row(
+        let result = Self::apply_memory_tombstone_in(&tx, id, deleted_at)?;
+        tx.commit()?;
+        Ok(result)
+    }
+
+    fn apply_memory_tombstone_in(conn: &Connection, id: &str, deleted_at: i64) -> Result<bool> {
+        let local_deleted_at: Option<i64> = conn.query_row(
             "SELECT deleted_at FROM memory_tombstones WHERE id = ?1",
             params![id],
             |row| row.get(0),
         ).optional()?;
         let is_newer = local_deleted_at.is_none_or(|timestamp| deleted_at > timestamp);
-        tx.execute(
+        conn.execute(
             "INSERT INTO memory_tombstones (id, deleted_at) VALUES (?1, ?2)
              ON CONFLICT(id) DO UPDATE SET deleted_at = MAX(deleted_at, excluded.deleted_at)",
             params![id, deleted_at],
         )?;
-        tx.execute("DELETE FROM memories WHERE id = ?1", params![id])?;
-        tx.commit()?;
+        conn.execute("DELETE FROM memories WHERE id = ?1", params![id])?;
         Ok(is_newer)
+    }
+
+    pub(crate) fn import_sync_payload(&self, payload: &crate::sync::SyncPayload) -> Result<crate::sync::MergeStats> {
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        let mut stats = crate::sync::MergeStats::default();
+        for tombstone in &payload.tombstones {
+            if Self::apply_memory_tombstone_in(&tx, &tombstone.id, tombstone.deleted_at)? {
+                stats.applied_tombstones += 1;
+            }
+        }
+        for memory in &payload.memories {
+            match Self::upsert_synced_memory_in(&tx, memory)? {
+                SyncedMemoryResult::Inserted => stats.imported_memories += 1,
+                SyncedMemoryResult::Updated => stats.updated_memories += 1,
+                SyncedMemoryResult::Skipped => stats.skipped_records += 1,
+            }
+        }
+        for task in &payload.tasks {
+            if Self::upsert_synced_task_in(&tx, task)? { stats.imported_tasks += 1; }
+            else { stats.skipped_records += 1; }
+        }
+        tx.commit()?;
+        Ok(stats)
     }
 
     pub fn delete_memory(&self, id: &str, deleted_at: i64) -> Result<bool> {

@@ -179,31 +179,7 @@ pub fn import_encrypted_sync_package(
         return Err("Sync envelope device ID does not match its payload".to_string());
     }
 
-    let mut stats = MergeStats::default();
-
-    for tombstone in payload.tombstones {
-        if store.apply_memory_tombstone(&tombstone.id, tombstone.deleted_at).map_err(|e| e.to_string())? {
-            stats.applied_tombstones += 1;
-        }
-    }
-
-    for remote_mem in payload.memories {
-        match store.upsert_synced_memory(&remote_mem).map_err(|e| e.to_string())? {
-            crate::store::SyncedMemoryResult::Inserted => stats.imported_memories += 1,
-            crate::store::SyncedMemoryResult::Updated => stats.updated_memories += 1,
-            crate::store::SyncedMemoryResult::Skipped => stats.skipped_records += 1,
-        }
-    }
-
-    for remote_task in payload.tasks {
-        if store.upsert_synced_task(&remote_task).map_err(|e| e.to_string())? {
-            stats.imported_tasks += 1;
-        } else {
-            stats.skipped_records += 1;
-        }
-    }
-
-    Ok(stats)
+    store.import_sync_payload(&payload).map_err(|e| e.to_string())
 }
 
 use std::io::{Read, Write};
@@ -397,6 +373,38 @@ mod tests {
         let replica = AgentStore::open_in_memory().unwrap();
         import_encrypted_sync_package(&replica, "shared-passphrase", &package).unwrap();
         assert_eq!(replica.list_memory_tombstones().unwrap(), vec![(memory.id, 20)]);
+    }
+
+    #[test]
+    fn failed_import_rolls_back_prior_deletion() {
+        let target = AgentStore::open_in_memory().unwrap();
+        let original = target.create_or_update_memory("fact", "synthetic original", "user", "", "topic", 10).unwrap();
+        target.fail_sync_memory_insert_for_test().unwrap();
+        let mut incoming = original.clone();
+        incoming.id = "synthetic-new-memory".to_string();
+        let payload = SyncPayload {
+            device_id: "synthetic-source".to_string(), timestamp: 30,
+            memories: vec![incoming],
+            tombstones: vec![TombstoneRecord { id: original.id.clone(), deleted_at: 20 }],
+            tasks: vec![],
+        };
+        let encrypted = encrypt_payload("synthetic passphrase", &serde_json::to_vec(&payload).unwrap(), "synthetic-source").unwrap();
+        assert!(import_encrypted_sync_package(&target, "synthetic passphrase", &serde_json::to_string(&encrypted).unwrap()).is_err());
+        assert_eq!(target.list_memories().unwrap(), vec![original]);
+        assert!(target.list_memory_tombstones().unwrap().is_empty());
+    }
+
+    #[test]
+    fn failed_task_journal_rolls_back_task_and_preceding_memory() {
+        let source = AgentStore::open_in_memory().unwrap();
+        source.create_or_update_memory("fact", "synthetic fact", "user", "", "topic", 10).unwrap();
+        let task = source.create_task("synthetic task", 20).unwrap();
+        let archive = export_encrypted_sync_package(&source, "synthetic passphrase", "synthetic-source").unwrap();
+        let target = AgentStore::open_in_memory().unwrap();
+        target.fail_sync_task_journal_for_test().unwrap();
+        assert!(import_encrypted_sync_package(&target, "synthetic passphrase", &archive).is_err());
+        assert!(target.list_memories().unwrap().is_empty());
+        assert!(target.get_task(&task.id).unwrap().is_none());
     }
 
     #[test]

@@ -1,0 +1,10 @@
+{
+  "scope": "rust_synthetic_sync_prototype_not_android_or_authenticated_transport",
+  "failure_reproduced_before_fix": true,
+  "failed_memory_import_rolls_back_prior_deletion": true,
+  "failed_task_journal_rolls_back_task_and_memory": true,
+  "sync_tests_passed": 11,
+  "store_tests_passed": 4,
+  "full_core_library_tests_passed": 82,
+  "device_personal_data_used": false
+}
