@@ -1,0 +1,18 @@
+{
+  "production_update_installed": true,
+  "same_signer_and_version_chain_verified": true,
+  "baseline_code_assets_native_preserved": true,
+  "first_install_uid_and_data_inode_preserved": true,
+  "previous_backup_matches_device_before_update": true,
+  "two_encrypted_backups_verified": true,
+  "external_copies_user_confirmed": true,
+  "recovery_key_user_saved": true,
+  "synthetic_full_application_recovery_passed": true,
+  "real_user_data_restored_in_isolation": true,
+  "nondebug_and_run_as_denial_verified": true,
+  "agent_summary_permission_still_granted": true,
+  "production_database_contents_not_opened_after_update": true,
+  "candidate_sha256": "eaaafa9c39266b06704d623afa8b812eadf9e87a55b883a46afcc97e83825d7a",
+  "launcher_controls_verified": true,
+  "collection_not_started_by_launcher_check": true
+}
