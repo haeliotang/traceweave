@@ -24,6 +24,8 @@ CASES = {
     "VERIFY_CALENDAR_RETRY_UI": ("WorkflowValidationActivity", "VERIFY_CALENDAR_RETRY_UI", "AgentOsWorkflowValidation"),
     "CLOUD_PLAN_GUARD": ("WorkflowValidationActivity", "CLOUD_PLAN_GUARD", "AgentOsWorkflowValidation"),
     "LOCAL_ENGINE_LABELS": ("WorkflowValidationActivity", "LOCAL_ENGINE_LABELS", "AgentOsWorkflowValidation"),
+    "LOCAL_MODEL_DOCUMENT_SEED": ("LocalModelDocumentProbe", "SEED", "AgentOsModelDocument"),
+    "LOCAL_MODEL_DOCUMENT_VERIFY": ("LocalModelDocumentProbe", "VERIFY", "AgentOsModelDocument"),
     "SCOPED_SUMMARY_CONTRACT": ("WorkflowValidationActivity", "SCOPED_SUMMARY_CONTRACT", "AgentOsWorkflowValidation"),
     "EXPORT_LIFECYCLE": ("WorkflowValidationActivity", "EXPORT_LIFECYCLE", "AgentOsWorkflowValidation"),
     "IMPORT_LIFECYCLE": ("WorkflowValidationActivity", "IMPORT_LIFECYCLE", "AgentOsWorkflowValidation"),

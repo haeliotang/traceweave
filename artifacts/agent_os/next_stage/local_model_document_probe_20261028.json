@@ -1,0 +1,28 @@
+{
+  "synthetic_only": true,
+  "device": "Pixel 6a",
+  "network_permission": false,
+  "model": "Qwen2.5-1.5B-Instruct Q4_0",
+  "model_sha256": "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb",
+  "model_runtime": "experimental JNI using pinned llama.cpp build",
+  "generated_draft_awaited_review": true,
+  "review_ui_observed": true,
+  "unapproved_write_rejected": true,
+  "approval": "simulated in isolated test code; no real system picker used",
+  "synthetic_file_readback_verified": true,
+  "real_user_memories_used": false,
+  "production_integration": false,
+  "isolated_package_removed": true,
+  "apk_sha256": "8056775a58af0e5f3b9d10e39b4899893c50ead9f057a38b624fd7817061b768",
+  "source_sha256": {
+    "agent_os/tests/android/LocalModelDocumentProbe.java": "6f68d4a1a332922e6f02f5d54901157529762e2547ed2a45e43d3485db79c6d1",
+    "agent_os/tests/android/manifest-model-document.xml": "f42d25d49d386e9000ac5338c719b91c23a6c4091e6f2db3b936dcee2e152019",
+    "agent_os/tests/android/LocalModelProbe.java": "ee788eea8f13b3b4498d252a4678c60bfd6c85a53fd1ab1c3cdf3c9c4a8a0558",
+    "agent_os/tests/android/DocumentFixtureProvider.java": "4de6964b1579a82bdda54eb948671b51d2276c44843baa30471962b7e826d2d8",
+    "agent_os/scripts/validate_actions_android.py": "40bbb0f27e8b14fc1bc332fa81f5fcd0593da920471742d68af9215dcdf10782"
+  },
+  "validation_runner_cases": [
+    "LOCAL_MODEL_DOCUMENT_SEED",
+    "LOCAL_MODEL_DOCUMENT_VERIFY"
+  ]
+}

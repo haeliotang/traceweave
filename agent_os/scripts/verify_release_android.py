@@ -10,6 +10,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = "org.traceform.agentos"
+MODEL_PROBES = ("LocalModelProbe", "LocalModelQualityProbe", "LocalModelDocumentProbe")
 
 
 def run(*args):
@@ -56,7 +57,7 @@ def check_manifest(nodes):
         raise ValueError("Backup and default cleartext must be disabled")
     for node in nodes:
         name = node["attributes"].get("name", "")
-        if "Validation" in name or "Fixture" in name or "BackgroundProbe" in name or "ControlledProbe" in name or node["name"] == "provider":
+        if "Validation" in name or "Fixture" in name or "BackgroundProbe" in name or "ControlledProbe" in name or any(probe in name for probe in MODEL_PROBES) or node["name"] == "provider":
             raise ValueError("Test components must not be packaged in production")
         if node["name"] == "activity" and node["attributes"].get("exported") == "true" and name not in (".MainActivity", PACKAGE + ".MainActivity"):
             raise ValueError("Only the launcher activity may be exported")
@@ -111,7 +112,7 @@ def verify(apk, report, tools, expected_signer, previous=None):
                 raise ValueError("Cleartext exception must be limited to explicit loopback hosts")
     with zipfile.ZipFile(apk) as archive:
         dex = b"".join(archive.read(n) for n in archive.namelist() if re.fullmatch(r"classes\d*\.dex", n))
-        if any(name in dex for name in (b"BackgroundProbeActivity", b"ControlledProbeService", b"DocumentFlowValidationActivity", b"WorkflowValidationActivity", b"DocumentFixtureProvider")):
+        if any(name in dex for name in (b"BackgroundProbeActivity", b"ControlledProbeService", b"DocumentFlowValidationActivity", b"WorkflowValidationActivity", b"DocumentFixtureProvider", *(probe.encode() for probe in MODEL_PROBES))):
             raise ValueError("Test code was included in production DEX")
     if previous:
         old = apk_identity(previous, tools)

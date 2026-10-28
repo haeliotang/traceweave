@@ -50,6 +50,18 @@ class BuildReportTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verifier.check_manifest(verifier.tree_nodes(text))
 
+    def test_hidden_local_model_probes_are_rejected(self):
+        for name in ("LocalModelProbe", "LocalModelQualityProbe", "LocalModelDocumentProbe"):
+            text = f'''E: application
+  A: allowBackup=false
+  A: usesCleartextTraffic=false
+    E: activity
+      A: name="org.traceform.agentos.{name}"
+      A: exported=false
+'''
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                verifier.check_manifest(verifier.tree_nodes(text))
+
     def test_network_audit_follows_the_manifest_resource_reference(self):
         manifest = verifier.tree_nodes('E: application\n  A: networkSecurityConfig=@0x7f010002\n')
         resources = 'resource 0x7f010002 xml/other_policy\n  () (file) res/xml/other_policy.xml type=XML\n'
