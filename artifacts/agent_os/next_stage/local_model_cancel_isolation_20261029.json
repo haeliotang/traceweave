@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-29",
+  "device": "Pixel 6a",
+  "scope": "isolated Android application, synthetic task, simulated runtime; no network permission or model weights",
+  "waiting_cancellation_does_not_interrupt_active": true,
+  "active_request_cancellation_reaches_runtime": true,
+  "subsequent_request_recovers": true,
+  "isolation_package_removed": true,
+  "real_model_generation_cancellation_verified": false,
+  "host_test_reproduced_failure_before_fix": true,
+  "test_apk_sha256": "4d3121baec835c1f075102cb2f778176e4009d8f9f6317506755eee2b680ae95",
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/LocalModelDraft.java": "2c79d11aeb0fd831e5b44dc49236ee940b96347726afdd91368a9816a9be6845",
+    "agent_os/tests/android/LocalModelDraftHostTest.java": "2e1268bd366ebce7fb20cbc7f13d77752f0fd79d00289b755cce6a45d50bbc58",
+    "agent_os/tests/android/CancelValidationActivity.java": "31a7558bab58d5b2fe74cb18e10bb8ed8a3f0fcd22791975a1282ad65767a51e",
+    "agent_os/tests/android/manifest-model-cancel-isolation.xml": "b31512b00375abc5e249cd401dcaaea9d4fa524c8fb6ce18ffa00dbe3e7bd6e2"
+  }
+}

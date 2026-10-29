@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** On-device text proposal only. The document action remains independently approved. */
 final class LocalModelDraft {
+    private static final Object ACTIVE_LOCK = new Object();
+    private static AtomicBoolean activeRequest;
     private LocalModelDraft() {}
 
     static byte[] prompt(String goal, List<AgentStore.Memory> memories) {
@@ -28,23 +30,30 @@ final class LocalModelDraft {
         byte[] input = prompt(task.title, TaskContext.memories(task.plan));
         synchronized (LocalModelFiles.class) {
             if (!LocalModelFiles.verifyQwen15(model, cancelled)) throw new IllegalStateException("Local model is missing or failed verification");
-            synchronized (cancelled) {
+            try {
+                synchronized (cancelled) {
+                    if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
+                    synchronized (ACTIVE_LOCK) { activeRequest = cancelled; }
+                    LocalModelRuntime.prepare();
+                }
+                byte[] output = LocalModelRuntime.generate(model.getPath(), input, 128);
                 if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
-                LocalModelRuntime.prepare();
+                String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();
+                DocumentAction.validateContent(text);
+                return text;
+            } finally {
+                synchronized (ACTIVE_LOCK) { if (activeRequest == cancelled) activeRequest = null; }
             }
-            byte[] output = LocalModelRuntime.generate(model.getPath(), input, 128);
-            if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
-            String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();
-            DocumentAction.validateContent(text);
-            return text;
         }
     }
 
     static void cancel(AtomicBoolean cancelled) {
         synchronized (cancelled) {
             cancelled.set(true);
-            if (LocalModelRuntime.isAvailable()) LocalModelRuntime.cancel();
+            synchronized (ACTIVE_LOCK) {
+                if (activeRequest == cancelled && LocalModelRuntime.isAvailable()) LocalModelRuntime.cancel();
+            }
         }
     }
 }
