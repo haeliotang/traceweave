@@ -6,7 +6,7 @@ parser=argparse.ArgumentParser(description='Run synthetic isolated Keystore and 
 for arg in ('adb','serial','host','binary','apk'):parser.add_argument('--'+arg,required=True)
 args=parser.parse_args()
 adb=[args.adb,'-s',args.serial];package='org.traceform.agentos.actionsvalidation';target='/data/local/tmp/traceform-live-binding-probe';host=args.host;binary=args.binary
-ids=subprocess.run([host,'ids'],capture_output=True,text=True,check=True).stdout.split();sender,receiver=map(bytes.fromhex,ids);nonce=os.urandom(32)
+ids=subprocess.run([host,'ids'],capture_output=True,text=True,check=True).stdout.split();sender,receiver=map(bytes.fromhex,ids)
 enc=lambda b:base64.b64encode(b).decode(); packages=subprocess.run(adb+['shell','pm','list','packages',package],capture_output=True,text=True,check=True).stdout.splitlines()
 if 'package:'+package in packages:raise RuntimeError('Existing test package must be preserved')
 if subprocess.run(adb+['shell','test','-e',target]).returncode==0:raise RuntimeError('Test executable path exists')
@@ -15,6 +15,20 @@ if spec in subprocess.run(adb+['reverse','--list'],capture_output=True,text=True
 installed=False;copied=False;forwarded=False;server=None;client=None
 try:
  subprocess.run(adb+['install',args.apk],check=True,stdout=subprocess.DEVNULL);installed=True
+ subprocess.run(adb+['push',binary,target],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);copied=True
+ subprocess.run(adb+['shell','chmod','700',target],check=True)
+ subprocess.run(adb+['reverse',spec,spec],check=True,stdout=subprocess.DEVNULL);forwarded=True
+ server=subprocess.Popen([host,'server',str(port)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
+ def line(proc):
+  q=queue.Queue();threading.Thread(target=lambda:q.put(proc.stdout.readline().strip()),daemon=True).start()
+  return q.get(timeout=40)
+ if line(server)!='READY':raise RuntimeError('Server not ready')
+ remote_cmd=shlex.join([target,'client',str(port)]);client=subprocess.Popen(adb+['shell',remote_cmd],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
+ challenge_event=line(server).split()
+ if challenge_event != ['CHALLENGE',sender.hex(),receiver.hex()]:raise RuntimeError('Challenge not requested by expected authenticated peers')
+ nonce=os.urandom(32)
+ server.stdin.write(enc(nonce)+'\n');server.stdin.flush()
+ if line(client) != 'CHALLENGE '+enc(nonce):raise RuntimeError('Challenge was not delivered over the Noise connection')
  subprocess.run(adb+['shell','am','start','-W','-S','-a','SIGN_BINDING_FIXTURE','-n',package+'/org.traceform.agentos.DeviceIdentityValidationActivity','--es','sender',enc(sender),'--es','receiver',enc(receiver),'--es','challenge',enc(nonce)],check=True,stdout=subprocess.DEVNULL)
  proof=None
  for _ in range(40):
@@ -30,19 +44,11 @@ try:
   try:verifier.verify(signature,wrong,ec.ECDSA(hashes.SHA256()))
   except InvalidSignature:continue
   raise RuntimeError('Tampered binding was accepted')
- subprocess.run(adb+['push',binary,target],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);copied=True
- subprocess.run(adb+['shell','chmod','700',target],check=True)
- subprocess.run(adb+['reverse',spec,spec],check=True,stdout=subprocess.DEVNULL);forwarded=True
- server=subprocess.Popen([host,'server',str(port)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
- def line():
-  q=queue.Queue();threading.Thread(target=lambda:q.put(server.stdout.readline().strip()),daemon=True).start()
-  return q.get(timeout=40)
- if line()!='READY':raise RuntimeError('Server not ready')
  body=enc(json.dumps(proof,separators=(',',':')).encode())
- remote_cmd=shlex.join([target,'client',str(port),body]);client=subprocess.Popen(adb+['shell',remote_cmd],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+ client.stdin.write(body+'\n');client.stdin.flush()
  used=set()
  for count in range(2):
-  row=line().split(' ',3)
+  row=line(server).split(' ',3)
   if len(row)!=4 or row[0]!='PROOF':raise RuntimeError('Missing verified transport event')
   observed_sender,observed_receiver=bytes.fromhex(row[1]),bytes.fromhex(row[2]);received=json.loads(base64.b64decode(row[3],validate=True))
   if observed_sender!=sender or observed_receiver!=receiver or base64.b64decode(received['public_key'],validate=True)!=pinned:raise RuntimeError('Unexpected authenticated identity')
@@ -53,7 +59,7 @@ try:
   server.stdin.write(verdict+'\n');server.stdin.flush()
  out,err=client.communicate(timeout=40);server_out,server_err=server.communicate(timeout=15)
  if client.returncode or server.returncode or 'PASS accepted then replay rejected' not in out or 'PASS server closed' not in server_out:raise RuntimeError('Transport completion failed: '+out+err+server_out+server_err)
- print('PASS Pixel Keystore signature verified against actual Noise peers; same-session replay rejected')
+ print('PASS Noise-delivered challenge and Pixel Keystore proof verified; same-session replay rejected')
 finally:
  for proc in (client,server):
   if proc and proc.poll() is None:proc.kill();proc.wait()

@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated synthetic Noise challenge exchange over temporary USB forwarding",
+  "challenge_generated_after_authenticated_connection": true,
+  "challenge_delivered_via_noise": true,
+  "android_keystore_signature_verified_against_noise_peer_ids": true,
+  "altered_nonce_and_reversed_peers_rejected": true,
+  "same_process_repeat_rejected_by_host_supervisor": true,
+  "isolated_app_program_and_forwarding_removed": true,
+  "source_sha256": {
+    "agent_os/tests/libp2p_live_binding/src/main.rs": "dd4a2f7e1340b5ceab63ddb586b5c9eae68e4f7b88104f2daf0025299c474639",
+    "agent_os/tests/libp2p_live_binding/run.py": "eaca0d406f2e169a60ba38a9b1bb13a77bac664689804b905b9ede6187f8ed5b",
+    "agent_os/tests/android/DeviceIdentityValidationActivity.java": "d7491b9b2e3c0f880a6b23f55bae6e0c04e5629cae43bbaabf4af9fd6572704b",
+    "agent_os/android/src/org/traceform/agentos/DeviceIdentity.java": "e9fd8a1fa85f3ca9335c403603855984a31388ee27101aa1f324bd19d3bb544c"
+  },
+  "limitations": [
+    "Test supervisor relays the received challenge to isolated Android signing activity via ADB, not through application integration",
+    "No Noise transcript binding or guarantee that a response uses a particular connection in a multi-connection setting",
+    "Replay detection is process-local and not persisted; no expiration or restart test",
+    "Public deterministic transport keys and public key learned from the same test proof; no user pairing or authentic trust establishment",
+    "No real data, second phone, production sync, or independent security review"
+  ]
+}

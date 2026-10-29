@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
  let server=args.get(1).map(String::as_str)==Some("server");
  if !server && args.get(1).map(String::as_str)!=Some("client") { return Err("invalid role".into()); }
  let port: u16=args.get(2).ok_or("missing port")?.parse()?;
- let proof=if server { String::new() } else { args.get(3).ok_or("missing proof")?.clone() };
+ let mut proof=String::new();
  let remote=if server {peer(2)} else {peer(1)};
  let mut swarm=libp2p::SwarmBuilder::with_existing_identity(key(if server {1} else {2}))
   .with_tokio().with_tcp(tcp::Config::default(),noise::Config::new,yamux::Config::default)?
@@ -28,18 +28,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let mut sent=false;let mut count=0;
   loop { match swarm.select_next_some().await {
    SwarmEvent::NewListenAddr {..}=>{println!("READY");io::stdout().flush().unwrap();},
-   SwarmEvent::ConnectionEstablished {peer_id,..} if !server && !sent=>{assert_eq!(peer_id,remote);swarm.behaviour_mut().message.send_request(&remote,proof.clone());sent=true;},
+   SwarmEvent::ConnectionEstablished {peer_id,..} if !server && !sent=>{assert_eq!(peer_id,remote);swarm.behaviour_mut().message.send_request(&remote,"challenge".to_string());sent=true;},
    SwarmEvent::Behaviour(BehaviourEvent::Message(request_response::Event::Message {peer,message,..}))=>{
     assert_eq!(peer,remote);
     match message {
      Message::Request {request,channel,..} if server=>{
+      if request == "challenge" {
+       println!("CHALLENGE {} {}",hex(&peer.to_bytes()),hex(&swarm.local_peer_id().to_bytes()));io::stdout().flush().unwrap();
+       let mut challenge=String::new();io::stdin().lock().read_line(&mut challenge).unwrap();
+       swarm.behaviour_mut().message.send_response(channel,challenge.trim().to_string()).unwrap();
+       continue;
+      }
       println!("PROOF {} {} {}",hex(&peer.to_bytes()),hex(&swarm.local_peer_id().to_bytes()),request);io::stdout().flush().unwrap();
       let mut verdict=String::new();io::stdin().lock().read_line(&mut verdict).unwrap();
       let response=match verdict.trim() {"ACCEPT"=>"accepted","REJECT"=>"rejected",_=>panic!("invalid verdict")};
       swarm.behaviour_mut().message.send_response(channel,response.to_string()).unwrap();
      },
      Message::Response {response,..} if !server=>{
-      if count==0 {assert_eq!(response,"accepted");count=1;swarm.behaviour_mut().message.send_request(&remote,proof.clone());}
+      if count==0 {
+       println!("CHALLENGE {}",response);io::stdout().flush().unwrap();
+       io::stdin().lock().read_line(&mut proof).unwrap();proof=proof.trim().to_string();
+       count=1;swarm.behaviour_mut().message.send_request(&remote,proof.clone());
+      } else if count==1 {assert_eq!(response,"accepted");count=2;swarm.behaviour_mut().message.send_request(&remote,proof.clone());}
       else {assert_eq!(response,"rejected");println!("PASS accepted then replay rejected");break;}
      },_=>panic!("unexpected message")
     }
