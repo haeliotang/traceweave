@@ -1,0 +1,9 @@
+[package]
+name = "traceform-libp2p-eval"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures = "0.3"
+libp2p = { version = "=0.57.1", default-features = false, features = ["tokio", "tcp", "noise", "yamux", "ed25519", "request-response", "cbor", "macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }

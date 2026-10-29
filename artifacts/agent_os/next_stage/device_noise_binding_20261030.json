@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated synthetic Android Keystore and Mac-to-Pixel Noise experiment over temporary USB forwarding",
+  "keystore_signature_verified_against_authenticated_noise_peers": true,
+  "reversed_peers_and_modified_nonce_rejected": true,
+  "same_process_replay_rejected_by_test_supervisor": true,
+  "isolated_app_test_program_and_forwarding_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/DeviceIdentity.java": "e9fd8a1fa85f3ca9335c403603855984a31388ee27101aa1f324bd19d3bb544c",
+    "agent_os/tests/android/DeviceIdentityValidationActivity.java": "d7491b9b2e3c0f880a6b23f55bae6e0c04e5629cae43bbaabf4af9fd6572704b",
+    "agent_os/tests/libp2p_live_binding/src/main.rs": "cf140aaa6782fb123883ad6fa55107c9540dd8ac1ba5b36821c111d311fbf6f3",
+    "agent_os/tests/libp2p_live_binding/run.py": "f75fd7d0f70fd5004a5b0a9876b57010a35444eb798af420db10cd053e8504bb",
+    "agent_os/tests/libp2p_live_binding/Cargo.lock": "6b4a7c59244b24830eb28f413c30967b67a2dd7a455d67be8fea9ec67f645a92"
+  },
+  "limitations": [
+    "Nonce supplied out of band before connection; no authenticated session challenge or Noise transcript binding",
+    "Replay detection exists only in the host test supervisor memory, not across restarts",
+    "Transport keys are public deterministic test fixtures; no real user pairing or trust establishment",
+    "No production app integration, personal data, second physical device, or independent security review"
+  ]
+}

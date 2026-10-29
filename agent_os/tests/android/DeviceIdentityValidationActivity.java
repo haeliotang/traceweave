@@ -7,6 +7,8 @@ import java.security.KeyFactory;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import android.util.Base64;
+import org.json.JSONObject;
 
 /** Synthetic-only checks in an isolated app UID. */
 public final class DeviceIdentityValidationActivity extends Activity {
@@ -14,6 +16,19 @@ public final class DeviceIdentityValidationActivity extends Activity {
         super.onCreate(state);
         new Thread(() -> {
             try {
+                if ("SIGN_BINDING_FIXTURE".equals(getIntent().getAction())) {
+                    byte[] sender = Base64.decode(getIntent().getStringExtra("sender"), Base64.NO_WRAP);
+                    byte[] receiver = Base64.decode(getIntent().getStringExtra("receiver"), Base64.NO_WRAP);
+                    byte[] challenge = Base64.decode(getIntent().getStringExtra("challenge"), Base64.NO_WRAP);
+                    DeviceIdentity.create();
+                    JSONObject proof = new JSONObject().put("public_key", Base64.encodeToString(DeviceIdentity.publicKey(), Base64.NO_WRAP))
+                        .put("signature", Base64.encodeToString(DeviceIdentity.signTransportBinding(sender, receiver, challenge), Base64.NO_WRAP));
+                    try (java.io.FileOutputStream output = openFileOutput("synthetic-binding.json", MODE_PRIVATE)) {
+                        output.write(proof.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                    Log.i("AgentOsDeviceIdentity", "PASS synthetic_binding_fixture");
+                    return;
+                }
                 String previous = getSharedPreferences("identity_validation", 0).getString("fingerprint", "");
                 if (previous.isEmpty()) {
                     try { DeviceIdentity.publicKey(); throw new IllegalStateException("identity created without request"); }
@@ -69,8 +84,9 @@ public final class DeviceIdentityValidationActivity extends Activity {
                 Log.i("AgentOsDeviceIdentity", "PASS synthetic_identity_sign_verify_restart");
             } catch (Throwable error) {
                 Log.e("AgentOsDeviceIdentity", "FAIL " + error.getClass().getSimpleName() + ": " + error.getMessage());
+            } finally {
+                finish();
             }
-            finish();
         }, "synthetic-device-identity").start();
     }
 }
