@@ -82,6 +82,7 @@ public final class MainActivity extends Activity {
     private long remoteUriExpiresAtElapsed;
     private final Runnable remoteUriExpiry = this::expireRemoteUriGrant;
     private TextView sensInfo;
+    private TextView slmInfo;
     private Button sensorToggleButton;
 
     @Override
@@ -101,6 +102,7 @@ public final class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         updateSensorsCard();
+        updateLocalModelStatus();
         updateSensorToggleButton();
         updateFloatPermStatus();
         expireRemoteUriGrant();
@@ -413,8 +415,8 @@ public final class MainActivity extends Activity {
         });
 
         LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, en ? "Local Planner" : "本地规划", 0xFF6A1B9A);
-        TextView slmInfo = new TextView(this);
-        slmInfo.setText(en ? "Rule-based local planner\nNo GGUF model bundled\nNo throughput benchmark" : "规则式本地规划\n未随包提供 GGUF 模型\n暂无吞吐实测");
+        slmInfo = new TextView(this);
+        updateLocalModelStatus();
         slmInfo.setTextSize(10);
         slmInfo.setLineSpacing(dp(1), 1.0f);
         slmInfo.setTextColor(0xFF475569);
@@ -2215,6 +2217,11 @@ public final class MainActivity extends Activity {
     private void updateSensorsCard() {
         if (sensInfo == null) return;
         sensInfo.setText(SensorContext.describe(PhysicalSensoriumManager.getInstance(this).evaluateCurrentContext(), isEnglish()));
+    }
+
+    private void updateLocalModelStatus() {
+        if (slmInfo == null) return;
+        slmInfo.setText(LocalModelStatus.describe(isEnglish(), LocalModelRuntime.isAvailable(), LocalModelActivity.modelFile(this).isFile()));
     }
 
     private void updateSensorToggleButton() {
