@@ -34,6 +34,7 @@ CASES = {
     "LOCAL_MODEL_DOCUMENT_SEED": ("LocalModelDocumentProbe", "SEED", "AgentOsModelDocument"),
     "LOCAL_MODEL_DOCUMENT_VERIFY": ("LocalModelDocumentProbe", "VERIFY", "AgentOsModelDocument"),
     "LOCAL_MODEL_FILES": ("LocalModelFilesValidationActivity", "SYNTHETIC", "AgentOsModelFiles"),
+    "DEVICE_IDENTITY": ("DeviceIdentityValidationActivity", "SYNTHETIC", "AgentOsDeviceIdentity"),
     "LOCAL_MODEL_FILES_PUBLIC": ("LocalModelFilesValidationActivity", "PUBLIC_MODEL", "AgentOsModelFiles"),
     "SCOPED_SUMMARY_CONTRACT": ("WorkflowValidationActivity", "SCOPED_SUMMARY_CONTRACT", "AgentOsWorkflowValidation"),
     "EXPORT_LIFECYCLE": ("WorkflowValidationActivity", "EXPORT_LIFECYCLE", "AgentOsWorkflowValidation"),

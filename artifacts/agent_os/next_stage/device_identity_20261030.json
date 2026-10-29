@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated Android application UIDs on one physical device",
+  "explicit_creation_required": true,
+  "challenge_signature_verified": true,
+  "tampered_challenge_rejected": true,
+  "private_key_encoding_unavailable": true,
+  "same_uid_stable_across_force_stop": true,
+  "different_uids_have_different_keys": true,
+  "isolated_applications_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/DeviceIdentity.java": "772cf38332813ddf8a7c7a7127feabedbfbee8feeec7b5e682489343b6215121",
+    "agent_os/tests/android/DeviceIdentityValidationActivity.java": "f21171887f1181262917387023883db5a6a244b15da9b8ead426a967ea39693d",
+    "agent_os/tests/android/manifest-device-identity.xml": "0b931e0faba67826820a3e46cae82147d76f19a704d4746426d290fc92c77aa2",
+    "agent_os/scripts/validate_actions_android.py": "31fe24a4fc89d087e2ceda420dfdae87fa42bf6380494d04a774e713095e1b60"
+  },
+  "limitations": [
+    "No user pairing, transfer identity binding, replay prevention or key recovery",
+    "No second physical device or device reboot tested",
+    "No hardware-backed attestation or independent security audit",
+    "Production app does not invoke this component or generate an identity"
+  ]
+}
