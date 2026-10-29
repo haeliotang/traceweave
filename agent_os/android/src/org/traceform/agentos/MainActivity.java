@@ -421,16 +421,7 @@ public final class MainActivity extends Activity {
         slmInfo.setPadding(0, dp(4), 0, 0);
         slmCard.addView(slmInfo);
 
-        slmCard.setOnClickListener(v -> {
-            try {
-                slmInfo.setText(en ? "Rule-based local planner\nNo GGUF model bundled\nNo throughput benchmark"
-                        : "规则式本地规划\n未随包提供 GGUF 模型\n暂无吞吐实测");
-                Toast.makeText(this, en ? "Local planning uses on-device rules; no model performance is claimed."
-                        : "本地规划使用端侧规则逻辑；未声明模型性能。", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(this, (en ? "Edge SLM error: " : "端侧模型状态异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        slmCard.setOnClickListener(v -> startActivity(new Intent(this, LocalModelActivity.class)));
 
         LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);

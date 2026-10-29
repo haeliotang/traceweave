@@ -29,6 +29,27 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("VERIFY_CALENDAR_RETRY_UI".equals(getIntent().getAction())) verifyCalendarRetryUi(store);
                 else if ("CLOUD_PLAN_GUARD".equals(getIntent().getAction())) cloudPlanGuard();
                 else if ("LOCAL_ENGINE_LABELS".equals(getIntent().getAction())) localEngineLabels();
+                else if ("LOCAL_MODEL_DRAFT_BOUNDARY".equals(getIntent().getAction())) localModelDraftBoundary(store);
+                else if ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction())) {
+                    reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+                    if ("SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction())) {
+                        java.util.concurrent.CountDownLatch acquired = new java.util.concurrent.CountDownLatch(1);
+                        new Thread(() -> {
+                            synchronized (LocalModelFiles.class) {
+                                acquired.countDown();
+                                try { Thread.sleep(40000); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+                            }
+                        }, "synthetic-model-contention").start();
+                        if (!acquired.await(2, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("Could not prepare synthetic contention");
+                    }
+                    check(true, "synthetic local model UI seeded");
+                }
+                else if ("VERIFY_LOCAL_MODEL_UI".equals(getIntent().getAction())) verifyLocalModelUi(store, false);
+                else if ("VERIFY_LOCAL_MODEL_CANCEL_UI".equals(getIntent().getAction())) verifyLocalModelUi(store, true);
+                else if ("OPEN_LOCAL_MODEL_MANAGER".equals(getIntent().getAction())) check(true, "open isolated model manager");
+                else if ("VERIFY_LOCAL_MODEL_MANAGER".equals(getIntent().getAction()))
+                    check(LocalModelFiles.verifyQwen15(LocalModelActivity.modelFile(this), new java.util.concurrent.atomic.AtomicBoolean()),
+                        "model selected through system picker verifies on readback");
                 else if ("SCOPED_SUMMARY_CONTRACT".equals(getIntent().getAction())) scopedSummaryContract();
                 else if ("EXPORT_LIFECYCLE".equals(getIntent().getAction())) exportLifecycle(store);
                 else if ("IMPORT_LIFECYCLE".equals(getIntent().getAction())) importLifecycle(store);
@@ -71,6 +92,14 @@ public final class WorkflowValidationActivity extends Activity {
                 if (message.startsWith("PASS") && "SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) {
                     startActivity(new android.content.Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID,
                         getSharedPreferences("workflow_validation", 0).getString("retryUiParent", ""))); finish();
+                }
+                if (message.startsWith("PASS") && ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction()))) {
+                    startActivity(new android.content.Intent(this, TaskReviewActivity.class)
+                        .putExtra(TaskReviewActivity.EXTRA_DOCUMENT, true)
+                        .putExtra(TaskReviewActivity.EXTRA_GOAL, "SYNTHETIC local model checklist")); finish();
+                }
+                if (message.startsWith("PASS") && "OPEN_LOCAL_MODEL_MANAGER".equals(getIntent().getAction())) {
+                    startActivity(new android.content.Intent(this, LocalModelActivity.class)); finish();
                 }
             });
         }, "synthetic-workflow-validation").start();
@@ -284,6 +313,52 @@ public final class WorkflowValidationActivity extends Activity {
         message.put("tool_calls", new JSONArray());
         rejects(() -> CloudModelClient.parsePlanResponse("synthetic", "SYNTHETIC", response.toString(), Collections.emptyList()),
             "tool call output must not become an executable plan");
+    }
+
+    private void localModelDraftBoundary(AgentStore store) throws Exception {
+        reset(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC selected context");
+        check(new String(LocalModelDraft.prompt("SYNTHETIC goal", Collections.singletonList(memory)), java.nio.charset.StandardCharsets.UTF_8)
+            .contains(memory.content), "explicitly selected context reaches the local draft prompt");
+        StringBuilder large = new StringBuilder(); for (int i = 0; i < 5000; i++) large.append('x');
+        rejects(() -> LocalModelDraft.prompt(large.toString(), Collections.emptyList()), "oversized prompt is rejected");
+        AgentStore.Task task = store.createTask("SYNTHETIC local model goal");
+        JSONObject context = new JSONObject(TaskContext.selected(Collections.singletonList(memory), true)).put("intent", "verified_document");
+        store.savePlan(task.id, new ExecutionPlan(task.id, task.title, Collections.emptyList(), 1, 0).withContext(context.toString()));
+        AgentStore.Task prepared = store.prepareLocalModelDocument(task.id, "# SYNTHETIC model proposal", TaskContext.fingerprint(store.getTask(task.id)));
+        JSONObject draft = new JSONObject(prepared.plan.steps.get(0).observation);
+        check(AgentStore.WAITING_FOR_USER.equals(prepared.status) && "on_device_model".equals(draft.getString("draftOrigin")),
+            "on-device output stays an explicitly labelled draft");
+        check(draft.getJSONArray("memorySources").length() == 1 && draft.optString("attemptId").isEmpty(),
+            "draft records selected source without dispatching a write");
+        rejects(() -> DocumentAction.writeOnce(getContentResolver(), store, task.id), "model output cannot authorize a file write");
+        AgentStore.Task cloud = store.createTask("SYNTHETIC nonlocal task");
+        JSONObject cloudContext = new JSONObject(TaskContext.selected(Collections.emptyList(), false)).put("intent", "verified_document");
+        store.savePlan(cloud.id, new ExecutionPlan(cloud.id, cloud.title, Collections.emptyList(), 1, 0).withContext(cloudContext.toString()));
+        rejects(() -> store.prepareLocalModelDocument(cloud.id, "# SYNTHETIC", TaskContext.fingerprint(store.getTask(cloud.id))),
+            "nonlocal context cannot be labelled as an on-device proposal");
+        AgentStore.Task cancelled = store.createTask("SYNTHETIC cancelled generation");
+        store.savePlan(cancelled.id, new ExecutionPlan(cancelled.id, cancelled.title, Collections.emptyList(), 1, 0).withContext(context.toString()));
+        String fingerprint = TaskContext.fingerprint(store.getTask(cancelled.id));
+        store.transition(cancelled.id, AgentStore.CANCELLED);
+        rejects(() -> store.prepareLocalModelDocument(cancelled.id, "# SYNTHETIC", fingerprint), "cancelled generation cannot persist a draft");
+    }
+
+    private void verifyLocalModelUi(AgentStore store, boolean cancelled) throws Exception {
+        AgentStore.Task found = null;
+        for (AgentStore.Task task : store.listTasks())
+            if ("SYNTHETIC local model checklist".equals(task.title)) found = task;
+        check(found != null && TaskContext.localOnly(found.plan) && TaskContext.memories(found.plan).isEmpty(),
+            "synthetic UI run remains local and has no selected memory");
+        if (cancelled) {
+            check(AgentStore.CANCELLED.equals(found.status), "UI cancellation is persisted; got " + found.status);
+        } else {
+            check(AgentStore.WAITING_FOR_USER.equals(found.status) && found.plan.totalSteps() == 1,
+                "model output remains a draft awaiting review");
+            JSONObject draft = new JSONObject(found.plan.steps.get(0).observation);
+            check("on_device_model".equals(draft.getString("draftOrigin")) && draft.optString("attemptId").isEmpty(),
+                "model origin is shown and no file action was dispatched");
+        }
     }
 
     private void documentCalendarChain(AgentStore store) throws Exception {

@@ -28,7 +28,7 @@ CASES = ('MODEL_CANCEL_RACE', 'MODEL_DOCUMENT', 'MODEL_DOCUMENT_FAILURES', 'MEMO
          'VERIFY_EXECUTOR_LIFECYCLE', 'VERIFY_MEMORY_PROVENANCE', 'VERIFY_MEMORY_CONSOLIDATION_AND_UI',
          'VERIFY_DATABASE_MIGRATION', 'WORKFLOW_RUNS', 'MEMORY_CHOICES', 'TASK_CENTER', 'WORKFLOW_GUARD',
          'VERIFY_SENSOR_OPT_IN', 'SENSOR_CONTEXT', 'SENSOR_WINDOW', 'MEMORY_LIFECYCLE',
-         'DOCUMENT_CALENDAR_CHAIN', 'VERIFY_CHAIN_RESTART', 'CLOUD_PLAN_GUARD', 'LOCAL_ENGINE_LABELS',
+         'DOCUMENT_CALENDAR_CHAIN', 'VERIFY_CHAIN_RESTART', 'CLOUD_PLAN_GUARD', 'LOCAL_ENGINE_LABELS', 'LOCAL_MODEL_DRAFT_BOUNDARY',
          'SCOPED_SUMMARY_CONTRACT')
 
 
@@ -79,6 +79,7 @@ def main():
     parser.add_argument('--serial', required=True)
     parser.add_argument('--install', action='store_true', help='Install the verified update in place after all automated checks')
     parser.add_argument('--legacy-validation-apk', type=Path, help='Optional trusted older isolated source APK for archive compatibility')
+    parser.add_argument('--model-runtime', type=Path, help='Optional pinned, locally rebuilt model runtime')
     args = parser.parse_args()
     out = args.output_dir.resolve()
     if not args.previous_apk.is_file() or args.previous_apk.resolve().is_relative_to(out):
@@ -98,8 +99,10 @@ def main():
     common = ['--android-jar', args.android_jar, '--build-tools', args.build_tools,
               '--keystore', args.keystore, '--key-alias', args.key_alias]
     candidate = out / 'production'
-    execute([sys.executable, 'agent_os/scripts/prepare_release_android.py', *common,
-             '--expected-signer', args.expected_signer, '--previous-apk', args.previous_apk, '--output-dir', candidate])
+    release_command = [sys.executable, 'agent_os/scripts/prepare_release_android.py', *common,
+                       '--expected-signer', args.expected_signer, '--previous-apk', args.previous_apk, '--output-dir', candidate]
+    if args.model_runtime: release_command += ['--model-runtime', args.model_runtime]
+    execute(release_command)
     manifest = ROOT / 'agent_os/tests/android/manifest-documents.xml'
     target_manifest = out / 'validation-target.xml'
     text = manifest.read_text()
@@ -110,8 +113,9 @@ def main():
     for name in EXTRAS:
         extra_args.extend(['--extra-source', ROOT / ('agent_os/tests/android/' + name + '.java')])
     for name, target in (('source', manifest), ('target', target_manifest)):
+        native_args = ['--native-lib', args.model_runtime] if args.model_runtime else []
         execute([sys.executable, 'agent_os/scripts/build_android.py', *common, '--manifest', target,
-                 *extra_args, '--output-dir', out / name])
+                 *extra_args, *native_args, '--output-dir', out / name])
     sys.path.insert(0, str(ROOT / 'agent_os/scripts'))
     from verify_release_android import apk_identity, verify
     for name, expected in (('source', SOURCE), ('target', TARGET)):
@@ -162,12 +166,14 @@ def main():
         for package in reversed(installed):
             execute(adb + ['uninstall', package])
     report = json.loads((candidate / 'build_report.json').read_text())
-    verification = verify(candidate / 'agent-os.apk', report, args.build_tools, args.expected_signer, args.previous_apk)
+    verification = verify(candidate / 'agent-os.apk', report, args.build_tools, args.expected_signer, args.previous_apk,
+                          require_model_runtime=bool(args.model_runtime))
     result = {'candidate_sha256': verification['apk_sha256'], 'automated_device_cases': len(CASES),
               'cross_install_synthetic_archive_restore': True, 'distinct_validation_uids': True,
               'lifecycle_archive_restore': True, 'legacy_archive_restore_run': legacy_fixture is not None,
               'validation_packages_removed': True,
               'manual_system_picker_ui_not_run': True, 'physical_power_trial_not_run': True,
+              'model_runtime_included': verification['model_runtime_included'],
               'production_update_installed': False}
     if args.install:
         check_update_base(adb, args.previous_apk)

@@ -114,3 +114,19 @@ Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring
         return nullptr;
     }
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_traceform_agentos_LocalModelRuntime_prepare(JNIEnv *env, jclass type) {
+    Java_org_traceform_agentos_LocalModelProbe_prepare(env, type);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_traceform_agentos_LocalModelRuntime_cancel(JNIEnv *env, jclass type) {
+    Java_org_traceform_agentos_LocalModelProbe_cancel(env, type);
+}
+
+extern "C" JNIEXPORT jbyteArray JNICALL
+Java_org_traceform_agentos_LocalModelRuntime_generate(JNIEnv *env, jclass type, jstring path,
+                                                    jbyteArray prompt, jint max_tokens) {
+    return Java_org_traceform_agentos_LocalModelProbe_generate(env, type, path, prompt, max_tokens);
+}

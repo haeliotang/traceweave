@@ -32,8 +32,9 @@ public final class LocalModelDocumentProbe extends Activity {
                     StringBuilder hash = new StringBuilder();
                     for (byte b : digest.digest()) hash.append(String.format(java.util.Locale.ROOT, "%02x", b & 255));
                     if (!MODEL_SHA.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
-                    LocalModelProbe.prepare();
-                    byte[] bytes = LocalModelProbe.generate(model.getPath(),
+                    if (!LocalModelRuntime.isAvailable()) throw new IllegalStateException("Local model runtime unavailable");
+                    LocalModelRuntime.prepare();
+                    byte[] bytes = LocalModelRuntime.generate(model.getPath(),
                         "Write a short Markdown checklist for a synthetic camping trip."
                             .getBytes(StandardCharsets.UTF_8), 96);
                     String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)

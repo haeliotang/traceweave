@@ -1,0 +1,39 @@
+{
+  "synthetic_only": true,
+  "device": "Pixel 6a",
+  "public_model": "Qwen2.5-1.5B-Instruct Q4_0",
+  "model_sha256": "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb",
+  "model_file_bytes": 1066227232,
+  "network_permission_in_ui_test": false,
+  "isolated_tests": {
+    "checked_import_and_public_readback": true,
+    "system_picker_import": true,
+    "on_device_generation_and_review_ui": true,
+    "model_draft_no_file_attempt": true,
+    "cancel_while_waiting_for_model_resource": true,
+    "synthetic_file_handoff_simulated_separately": true
+  },
+  "production_install": {
+    "version": "0.6.5",
+    "model_imported_and_verified_in_app": true,
+    "synthetic_generation_run_in_production": false,
+    "temporary_download_removed": true
+  },
+  "isolated_package_removed": true,
+  "limitations": [
+    "Cancellation UI was tested while waiting for the model resource, not during token generation",
+    "Model quality and power were not comprehensively measured",
+    "Human file-save confirmation was not performed in the production app"
+  ],
+  "isolated_ui_apk_sha256": "e21de63f7f8dbea8a3b3e47190c82777958e1dffac16b2cd37ef8809f0b94d3c",
+  "tested_source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "1b4c24ca7f4c23dc34b0b79079520c848acefbfc51f59870e4e51e295e9ec284",
+    "agent_os/android/src/org/traceform/agentos/LocalModelActivity.java": "388ce04944fed14b4b203ad527c08ebe60733fce26b67136503032b68d6391c4",
+    "agent_os/android/src/org/traceform/agentos/LocalModelDraft.java": "e528106a8fd4e1fe8a4f77328d1bd2ee8ed307d0c8c13ca8cf1991d0fea2ae06",
+    "agent_os/android/src/org/traceform/agentos/LocalModelFiles.java": "0c4a8f33cc1ea6f0635a88737b6a2f228def9567de272df8c106d8cd6d453aa1",
+    "agent_os/android/src/org/traceform/agentos/LocalModelRuntime.java": "d3f606b1f181f659830693722407af2fc3b0a491472347f117165238f6f5d157",
+    "agent_os/android/src/org/traceform/agentos/TaskReviewActivity.java": "3b5c7d70a966843b802da7a59385e7d8579c4919fa499a19d77837181183da60",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "678e1367e42b7352abd9569fbf42c43ff198bec2beef1771710448ae3664f3b7",
+    "agent_os/build/model-runtime-production-probe/libtraceform_local_model.so": "0e4f09b556ef4882e77d5664c1b119c280cbf739eed715dfb285c3c1eaf11288"
+  }
+}

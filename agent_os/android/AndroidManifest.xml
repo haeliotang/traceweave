@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.traceform.agentos"
-    android:versionCode="13"
-    android:versionName="0.6.4">
+    android:versionCode="14"
+    android:versionName="0.6.5">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -27,6 +27,7 @@
     </queries>
     <application
         android:allowBackup="false"
+        android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="Agent OS Prototype"
@@ -64,6 +65,7 @@
         <activity android:name=".ExternalActionActivity" android:exported="false" />
         <activity android:name=".DocumentTaskActivity" android:exported="false" />
         <activity android:name=".TaskReviewActivity" android:exported="false" />
+        <activity android:name=".LocalModelActivity" android:exported="false" />
         <activity android:name=".WorkflowActivity" android:exported="false" />
         <activity android:name=".TaskCenterActivity" android:exported="false" />
         <activity android:name=".MemoryReviewActivity" android:exported="false" />

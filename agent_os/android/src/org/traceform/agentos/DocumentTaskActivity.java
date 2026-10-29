@@ -103,6 +103,8 @@ public final class DocumentTaskActivity extends Activity {
             if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status) && AgentStore.WAITING_FOR_USER.equals(task.status)) {
                 if ("model".equals(value.optString("draftOrigin"))) label(root, en ? "Model proposal · review before saving"
                     : "模型建议文稿 · 请审核后再保存");
+                if ("on_device_model".equals(value.optString("draftOrigin"))) label(root, en ? "On-device model proposal · review before saving"
+                    : "端侧模型建议文稿 · 请审核后再保存");
                 markdown = new EditText(this);
                 markdown.setMinLines(8);
                 markdown.setText(state == null ? value.getString("content") : state.getString("markdown", value.getString("content")));

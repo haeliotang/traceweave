@@ -78,7 +78,21 @@ def network_policy_path(nodes, resources):
     return files[0]
 
 
-def verify(apk, report, tools, expected_signer, previous=None):
+def check_model_runtime(archive, inputs):
+    path = "lib/arm64-v8a/libtraceform_local_model.so"
+    names = archive.namelist()
+    if path not in names:
+        return False
+    if names.count(path) != 1 or "res/raw/llama_cpp_license.txt" not in names:
+        raise ValueError("Model runtime or its license is missing or ambiguous")
+    labels = [label for label in inputs if label.endswith("/libtraceform_local_model.so")]
+    digest = hashlib.sha256(archive.read(path)).hexdigest()
+    if len(labels) != 1 or inputs[labels[0]] != digest:
+        raise ValueError("Packaged model runtime does not match the build input")
+    return True
+
+
+def verify(apk, report, tools, expected_signer, previous=None, require_model_runtime=False):
     identity = apk_identity(apk, tools)
     if identity["package"] != PACKAGE or identity["debuggable"]:
         raise ValueError("Expected a non-debuggable production APK")
@@ -114,13 +128,17 @@ def verify(apk, report, tools, expected_signer, previous=None):
         dex = b"".join(archive.read(n) for n in archive.namelist() if re.fullmatch(r"classes\d*\.dex", n))
         if any(name in dex for name in (b"BackgroundProbeActivity", b"ControlledProbeService", b"DocumentFlowValidationActivity", b"WorkflowValidationActivity", b"DocumentFixtureProvider", *(probe.encode() for probe in MODEL_PROBES))):
             raise ValueError("Test code was included in production DEX")
+        model_runtime_included = check_model_runtime(archive, inputs)
+        if require_model_runtime and not model_runtime_included:
+            raise ValueError("Required local model runtime is missing")
     if previous:
         old = apk_identity(previous, tools)
         if old["package"] != PACKAGE or old["signer_sha256"] != identity["signer_sha256"] or old["version_code"] >= identity["version_code"]:
             raise ValueError("Previous APK must be the same signer/package and a lower version")
     return {**identity, "apk_sha256": report["apk_sha256"], "input_count": len(inputs),
             "packaged_manifest_checked": True, "packaged_network_policy_checked": True,
-            "test_components_excluded": True, "previous_same_signer_upgrade_checked": previous is not None,
+            "test_components_excluded": True, "model_runtime_included": model_runtime_included,
+            "previous_same_signer_upgrade_checked": previous is not None,
             "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "scope": "local_candidate_only_not_store_release_or_os_ota"}
 
@@ -132,10 +150,11 @@ def main():
     parser.add_argument("--build-tools", type=Path, required=True)
     parser.add_argument("--expected-signer", required=True)
     parser.add_argument("--previous-apk", type=Path)
+    parser.add_argument("--require-model-runtime", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
-        result = verify(args.apk, json.loads(args.report.read_text()), args.build_tools, args.expected_signer, args.previous_apk)
+        result = verify(args.apk, json.loads(args.report.read_text()), args.build_tools, args.expected_signer, args.previous_apk, args.require_model_runtime)
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError, zipfile.BadZipFile) as error:
         raise SystemExit("Release verification failed: " + str(error))
     args.output.parent.mkdir(parents=True, exist_ok=True)

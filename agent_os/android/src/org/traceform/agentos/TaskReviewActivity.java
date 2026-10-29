@@ -30,6 +30,8 @@ public final class TaskReviewActivity extends Activity {
     private CloudRequest pending;
     private MemorySelectionView memorySelection;
     private Spinner outputLimit;
+    private java.util.concurrent.atomic.AtomicBoolean localRequest;
+    private Button modelAction;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -62,8 +64,16 @@ public final class TaskReviewActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (pending != null) pending.revoke();
+        if (busy && localRequest != null) {
+            try { cancelLocalRequest(); } catch (Exception ignored) { LocalModelDraft.cancel(localRequest); }
+        }
         if (!busy) store.close();
         super.onDestroy();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        updateModelAction();
     }
 
     private LinearLayout page(String heading) {
@@ -100,6 +110,14 @@ public final class TaskReviewActivity extends Activity {
         outputLimit.setSelection(state == null ? 2 : state.getInt("outputLimit", 2));
         root.addView(outputLimit);
         button(root, en ? "Plan locally · keep this task local" : "本地规划 · 此任务保持本地", this::planLocally);
+        modelAction = null;
+        if (document) {
+            modelAction = button(root, "", () -> {
+                if (LocalModelRuntime.isAvailable() && LocalModelActivity.modelFile(this).isFile()) draftLocally();
+                else startActivity(new Intent(this, LocalModelActivity.class));
+            });
+            updateModelAction();
+        }
         button(root, en ? "Preview one cloud planning request" : "预览本次云端规划请求", () -> {
             try {
                 AgentStore.Task task = prepareTask(false);
@@ -151,6 +169,68 @@ public final class TaskReviewActivity extends Activity {
             store.savePlan(task.id, plan.withContext(task.plan.context));
             finish();
         } catch (Exception error) { fail(error); }
+    }
+
+    private void draftLocally() {
+        try {
+            AgentStore.Task task = prepareTask(true);
+            String fingerprint = TaskContext.fingerprint(task);
+            java.util.concurrent.atomic.AtomicBoolean token = new java.util.concurrent.atomic.AtomicBoolean();
+            localRequest = token; busy = true;
+            LinearLayout progress = page(en ? "Generating on device…" : "正在设备上生成文稿…");
+            text(progress, en ? "The goal and selected memories stay on this device. The result requires review before saving."
+                : "目标和所选记忆保留在设备上。生成结果需要审核后才能保存。");
+            Button cancel = new Button(this); cancel.setText(en ? "Cancel generation" : "取消生成");
+            cancel.setOnClickListener(view -> {
+                try { cancelLocalRequest(); finish(); } catch (Exception error) { fail(error); }
+            });
+            progress.addView(cancel);
+            new Thread(() -> {
+                Throwable failure = null;
+                try {
+                    String content = LocalModelDraft.generate(task, LocalModelActivity.modelFile(this), token);
+                    synchronized (token) {
+                        if (token.get()) throw new IllegalStateException("Local model request cancelled");
+                        store.prepareLocalModelDocument(task.id, content, fingerprint);
+                    }
+                } catch (Exception | LinkageError error) { failure = error; }
+                Throwable resultError = failure;
+                busy = false;
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) { store.close(); return; }
+                    localRequest = null;
+                    if (resultError == null) openDocument();
+                    else {
+                        LinearLayout fallback = page(en ? "On-device draft unavailable" : "端侧文稿未生成");
+                        text(fallback, en ? "Check the model and selected context, then try again or use the local template."
+                            : "请检查模型和所选上下文，然后重试或使用本地模板。");
+                        button(fallback, en ? "Use local template" : "使用本地模板", this::planLocally);
+                        button(fallback, en ? "Back" : "返回", this::finish);
+                    }
+                });
+            }, "local-model-draft").start();
+        } catch (Exception error) { busy = false; localRequest = null; fail(error); }
+    }
+
+    private void updateModelAction() {
+        if (modelAction == null) return;
+        boolean ready = LocalModelRuntime.isAvailable() && LocalModelActivity.modelFile(this).isFile();
+        modelAction.setText(ready ? (en ? "Draft with on-device model" : "使用端侧模型生成文稿")
+            : (en ? "Set up on-device model" : "配置端侧模型"));
+    }
+
+    private void cancelLocalRequest() throws Exception {
+        java.util.concurrent.atomic.AtomicBoolean token = localRequest;
+        if (token == null) return;
+        synchronized (token) {
+            LocalModelDraft.cancel(token);
+            AgentStore.Task task = store.getTask(taskId);
+            if (task == null) return;
+            boolean ready = AgentStore.WAITING_FOR_USER.equals(task.status) && task.plan != null
+                && task.plan.totalSteps() == 1 && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(0).status)
+                && "on_device_model".equals(new org.json.JSONObject(task.plan.steps.get(0).observation).optString("draftOrigin"));
+            if (AgentStore.QUEUED.equals(task.status) || ready) store.transition(task.id, AgentStore.CANCELLED);
+        }
     }
 
     private void cloudPreview() {
@@ -256,7 +336,9 @@ public final class TaskReviewActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (busy) cancelPlanning();
+        if (busy && localRequest != null) {
+            try { cancelLocalRequest(); finish(); } catch (Exception error) { fail(error); }
+        } else if (busy) cancelPlanning();
         else super.onBackPressed();
     }
 
@@ -266,12 +348,13 @@ public final class TaskReviewActivity extends Activity {
         view.setTextIsSelectable(true);
         root.addView(view);
     }
-    private void button(LinearLayout root, String value, Runnable action) {
+    private Button button(LinearLayout root, String value, Runnable action) {
         Button button = new Button(this);
         button.setText(value);
         button.setAllCaps(false);
         button.setOnClickListener(view -> { if (!busy) action.run(); });
         root.addView(button);
+        return button;
     }
     private void fail(Exception error) { Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show(); }
 }

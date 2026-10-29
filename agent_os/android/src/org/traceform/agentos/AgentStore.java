@@ -695,17 +695,29 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     Task prepareReviewedDocument(String taskId, String content, String expectedFingerprint, String requestSha256) throws Exception {
+        return prepareReviewedDocument(taskId, content, expectedFingerprint, requestSha256,
+            requestSha256.isEmpty() ? "local_template" : "model");
+    }
+
+    Task prepareLocalModelDocument(String taskId, String content, String expectedFingerprint) throws Exception {
+        return prepareReviewedDocument(taskId, content, expectedFingerprint, "", "on_device_model");
+    }
+
+    private Task prepareReviewedDocument(String taskId, String content, String expectedFingerprint,
+                                         String requestSha256, String origin) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
             Task task = getTask(taskId);
             if (task == null || !QUEUED.equals(task.status) || !expectedFingerprint.equals(TaskContext.fingerprint(task)))
                 throw new SecurityException("Task changed while its document was being prepared");
+            if ("on_device_model".equals(origin) && (!TaskContext.isDocument(task.plan) || !TaskContext.localOnly(task.plan)))
+                throw new SecurityException("On-device drafts require a local-only document task");
             org.json.JSONArray sources = new org.json.JSONArray();
             for (Memory memory : TaskContext.memories(task.plan))
                 sources.put(new JSONObject().put("id", memory.id).put("kind", memory.kind).put("source", memory.source)
                     .put("sourceReference", memory.sourceReference).put("updatedAt", memory.updatedAt));
-            JSONObject draft = DocumentAction.draft(content, sources).put("draftOrigin", requestSha256.isEmpty() ? "local_template" : "model");
+            JSONObject draft = DocumentAction.draft(content, sources).put("draftOrigin", origin);
             if (!requestSha256.isEmpty()) draft.put("requestSha256", requestSha256);
             ExecutionPlan.Step step = new ExecutionPlan.Step(0, "保存 Markdown 并读回核验", DocumentAction.CAPABILITY,
                 DocumentAction.SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
