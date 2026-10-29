@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-29",
+  "scope": "Mac receiver and Pixel 6a shell client; synthetic data over temporary USB reverse forwarding",
+  "fixed_public_test_keys_only": true,
+  "noise_peer_verified_by_server": true,
+  "receiver_process_exit_after_commit_before_reply": true,
+  "first_client_observed_connection_closed": true,
+  "retry_receives_duplicate_acknowledgement": true,
+  "effect_and_receipt_each_exactly_once": true,
+  "temporary_database_forwarding_and_device_binary_removed": true,
+  "lockfile_packages_all_platforms_including_probe": 345,
+  "source_sha256": {
+    "agent_os/tests/libp2p_retry/Cargo.toml": "8e5aff9da0ae7e4a6248f92f713a8528d57b14c843790a229b461b4020bf06a7",
+    "agent_os/tests/libp2p_retry/Cargo.lock": "376ea02df76bdb10af17136712d7f605240050727e4d6b0193fda071dcfe0ba0",
+    "agent_os/tests/libp2p_retry/src/main.rs": "a8367e3394d3b3e7a7811d6e8c412270a82d25357ddae53cd3876ce5dc357eab"
+  },
+  "limitations": [
+    "Synthetic fixture uses a fixed operation ID and public deterministic keys",
+    "No Android app integration, real user memory or durable device identities",
+    "No power-loss durability, receipt retention, revocation, replay security or adversarial test",
+    "One USB trial; no real wireless, reconnect policy or clock/offline behavior",
+    "Plaintext synthetic SQLite; not a production implementation"
+  ]
+}

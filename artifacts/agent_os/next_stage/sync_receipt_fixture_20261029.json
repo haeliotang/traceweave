@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-29",
+  "scope": "host-only test fixture, synthetic plaintext SQLite, test configuration only",
+  "core_lib_tests_passed": 88,
+  "receipt_and_causal_fixture_tests_passed": 8,
+  "duplicate_after_reopen_applies_once": true,
+  "same_operation_id_different_payload_rejected": true,
+  "operation_id_scoped_by_supplied_peer": true,
+  "different_peer_same_operation_is_independent": true,
+  "two_connections_concurrent_retry": true,
+  "injected_failure_rolls_back_effect_and_receipt": true,
+  "actual_child_process_exit_before_commit_rolls_back": true,
+  "actual_child_process_exit_after_commit_before_reply_preserves_receipt": true,
+  "initial_full_run_local_socket_denied": true,
+  "full_run_with_loopback_access_passed": true,
+  "source_sha256": "70ba06de04fc6fade01f08d7abbf98d4443f79fd927a17d8e88226f98ab19d93",
+  "limitations": [
+    "Peer identity is a caller-supplied fixture string, not authenticated",
+    "No network or Android integration and no real memory merge is performed in the receipt fixture",
+    "Synthetic process exit is not a power-loss or storage-durability guarantee",
+    "Receipts have no retention, compaction, device revocation or resource-exhaustion policy",
+    "No cryptographic replay or security proof; not production code"
+  ]
+}

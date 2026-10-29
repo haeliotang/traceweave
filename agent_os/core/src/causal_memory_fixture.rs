@@ -33,6 +33,35 @@ fn choose(db: &mut Connection, id: &str, reviewed: &[Version], index: usize, act
 mod tests {
     use super::*;
     use crate::causal_memory::Clock;
+    use sha2::{Digest, Sha256};
+    #[derive(Debug, PartialEq)]
+    enum Receipt { Applied, Duplicate }
+    fn receipt_schema(db: &Connection) -> Result<(), String> {
+        db.execute_batch("CREATE TABLE IF NOT EXISTS receipts (peer TEXT NOT NULL, operation TEXT NOT NULL, digest BLOB NOT NULL, PRIMARY KEY(peer, operation));
+            CREATE TABLE IF NOT EXISTS effects (value INTEGER NOT NULL);
+            INSERT INTO effects(value) SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM effects);").map_err(|e| e.to_string())
+    }
+    fn effect_count(db: &Connection) -> i64 {
+        db.query_row("SELECT value FROM effects", [], |row| row.get(0)).unwrap()
+    }
+    fn apply_once(db: &mut Connection, peer: &str, operation: &str, body: &[u8], fail: bool) -> Result<Receipt, String> {
+        apply_once_with_hook(db, peer, operation, body, fail, |_| {})
+    }
+    fn apply_once_with_hook(db: &mut Connection, peer: &str, operation: &str, body: &[u8], fail: bool, hook: impl Fn(&str)) -> Result<Receipt, String> {
+        let digest = Sha256::digest(body).to_vec();
+        let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).map_err(|e| e.to_string())?;
+        let old: Option<Vec<u8>> = tx.query_row("SELECT digest FROM receipts WHERE peer = ?1 AND operation = ?2", params![peer, operation], |row| row.get(0)).optional().map_err(|e| e.to_string())?;
+        if let Some(old) = old {
+            return if old == digest { Ok(Receipt::Duplicate) } else { Err("Operation ID reused with different content".into()) };
+        }
+        tx.execute("UPDATE effects SET value = value + 1", []).map_err(|e| e.to_string())?;
+        tx.execute("INSERT INTO receipts(peer, operation, digest) VALUES (?1, ?2, ?3)", params![peer, operation, digest]).map_err(|e| e.to_string())?;
+        if fail { return Err("Synthetic failure before commit".into()); }
+        hook("before_commit");
+        tx.commit().map_err(|e| e.to_string())?;
+        hook("after_commit");
+        Ok(Receipt::Applied)
+    }
     struct Fixture(std::path::PathBuf);
     impl Fixture {
         fn new() -> Self {
@@ -98,5 +127,70 @@ mod tests {
         tx.commit().unwrap();
         assert!(worker.join().unwrap().is_err());
         assert_eq!(read(&writer, "fixture").unwrap(), vec![deleted]);
+    }
+
+    #[test]
+    fn retry_after_lost_response_is_applied_once_even_after_reopen() {
+        let dir = Fixture::new(); let mut db = dir.db("retry.sqlite");
+        receipt_schema(&db).unwrap();
+        assert_eq!(apply_once(&mut db, "device-a", "operation-1", b"synthetic", false).unwrap(), Receipt::Applied);
+        drop(db);
+        let mut reopened = dir.db("retry.sqlite");
+        assert_eq!(apply_once(&mut reopened, "device-a", "operation-1", b"synthetic", false).unwrap(), Receipt::Duplicate);
+        assert_eq!(effect_count(&reopened), 1);
+        assert!(apply_once(&mut reopened, "device-a", "operation-1", b"different", false).is_err());
+        assert_eq!(effect_count(&reopened), 1);
+        assert_eq!(apply_once(&mut reopened, "device-b", "operation-1", b"synthetic", false).unwrap(), Receipt::Applied);
+        assert_eq!(effect_count(&reopened), 2);
+    }
+
+    #[test]
+    fn failed_transaction_does_not_create_effect_or_receipt() {
+        let dir = Fixture::new(); let mut db = dir.db("rollback.sqlite"); receipt_schema(&db).unwrap();
+        assert!(apply_once(&mut db, "device-a", "operation-1", b"synthetic", true).is_err());
+        drop(db);
+        let mut reopened = dir.db("rollback.sqlite");
+        assert_eq!(effect_count(&reopened), 0);
+        assert_eq!(apply_once(&mut reopened, "device-a", "operation-1", b"synthetic", false).unwrap(), Receipt::Applied);
+        assert_eq!(effect_count(&reopened), 1);
+    }
+
+    #[test]
+    fn concurrent_retries_commit_only_one_effect() {
+        let dir = Fixture::new(); let mut first = dir.db("race.sqlite"); receipt_schema(&first).unwrap();
+        let mut second = dir.db("race.sqlite");
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(2)); let other = barrier.clone();
+        let worker = std::thread::spawn(move || { other.wait(); apply_once(&mut second, "device-a", "operation-1", b"synthetic", false).unwrap() });
+        barrier.wait();
+        let one = apply_once(&mut first, "device-a", "operation-1", b"synthetic", false).unwrap();
+        let two = worker.join().unwrap();
+        assert_ne!(one, two); assert_eq!(effect_count(&first), 1);
+    }
+
+    #[test]
+    fn process_exit_at_transaction_boundaries() {
+        const CHILD_MODE: &str = "TRACEFORM_RECEIPT_FIXTURE_CHILD";
+        const CHILD_PATH: &str = "TRACEFORM_RECEIPT_FIXTURE_DB";
+        if let Ok(stage) = std::env::var(CHILD_MODE) {
+            let path = std::path::PathBuf::from(std::env::var_os(CHILD_PATH).unwrap());
+            let mut db = open(&path).unwrap(); receipt_schema(&db).unwrap();
+            let _ = apply_once_with_hook(&mut db, "device-a", "operation-1", b"synthetic", false, |point| {
+                if point == stage { std::process::exit(71); }
+            });
+            panic!("requested exit point was not reached");
+        }
+        for stage in ["before_commit", "after_commit"] {
+            let dir = Fixture::new(); let path = dir.0.join("crash.sqlite");
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "causal_memory_fixture::tests::process_exit_at_transaction_boundaries"])
+                .env(CHILD_MODE, stage).env(CHILD_PATH, &path).status().unwrap();
+            assert_eq!(status.code(), Some(71));
+            let mut db = open(&path).unwrap();
+            let expected = if stage == "before_commit" { 0 } else { 1 };
+            assert_eq!(effect_count(&db), expected);
+            let result = apply_once(&mut db, "device-a", "operation-1", b"synthetic", false).unwrap();
+            assert_eq!(result, if stage == "before_commit" { Receipt::Applied } else { Receipt::Duplicate });
+            assert_eq!(effect_count(&db), 1);
+        }
     }
 }
