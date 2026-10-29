@@ -26,6 +26,8 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
                 else if ("VERIFY_SHARE_RESTART".equals(getIntent().getAction())) verifyShareRestart(store);
+                else if ("EXPORT_SHARE_MIGRATION".equals(getIntent().getAction())) exportShareMigration(store);
+                else if ("IMPORT_SHARE_MIGRATION".equals(getIntent().getAction())) importShareMigration(store);
                 else if ("SEED_SHARE_UI".equals(getIntent().getAction())) seedShareUi(store);
                 else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
                 else if ("SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) seedCalendarRetryUi(store);
@@ -414,6 +416,33 @@ public final class WorkflowValidationActivity extends Activity {
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(retry.id).status), "archive preserves unknown share result");
         getSharedPreferences("workflow_validation", 0).edit().putString("shareRecipe", template.id)
             .putString("shareParent", parent.id).putString("shareChild", retry.id).commit();
+    }
+
+    private void exportShareMigration(AgentStore store) throws Exception {
+        documentShareChain(store);
+        android.content.SharedPreferences prefs = getSharedPreferences("workflow_validation", 0);
+        JSONObject ids = new JSONObject().put("recipe", prefs.getString("shareRecipe", ""))
+            .put("parent", prefs.getString("shareParent", "")).put("child", prefs.getString("shareChild", ""));
+        try (java.io.FileOutputStream out = openFileOutput("share-migration.taos", 0)) {
+            out.write(store.exportArchive("synthetic-share-migration".toCharArray()));
+        }
+        try (java.io.FileOutputStream out = openFileOutput("share-migration-ids.json", 0)) {
+            out.write(ids.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+    }
+
+    private void importShareMigration(AgentStore store) throws Exception {
+        reset(store);
+        try (java.io.FileInputStream in = openFileInput("share-migration.taos")) {
+            store.importArchive(in, "synthetic-share-migration".toCharArray());
+        }
+        byte[] data = java.nio.file.Files.readAllBytes(new java.io.File(getFilesDir(), "share-migration-ids.json").toPath());
+        JSONObject ids = new JSONObject(new String(data, java.nio.charset.StandardCharsets.UTF_8));
+        getSharedPreferences("workflow_validation", 0).edit().putString("shareRecipe", ids.getString("recipe"))
+            .putString("shareParent", ids.getString("parent")).putString("shareChild", ids.getString("child")).commit();
+        verifyShareRestart(store);
+        check(getContentResolver().getPersistedUriPermissions().isEmpty(), "new installation has no inherited file grants");
+        check(!CloudModelConfig.load(this).isConfigured(), "new installation has no inherited cloud configuration");
     }
 
     private void seedShareUi(AgentStore store) throws Exception {

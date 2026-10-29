@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two distinct isolated debug app installations with synthetic data",
+  "distinct_uids_verified": true,
+  "export_share_checks": 16,
+  "import_share_checks": 7,
+  "force_stop_restart_checks": 5,
+  "user_interface_created_share_template": true,
+  "user_interface_started_run_and_showed_empty_memory_selection": true,
+  "both_isolated_apps_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/WorkflowTemplate.java": "47c3c2eb2a493153572bf3a9a30264c7b1f5b45fb11acd02bcd21a8f9e6a5735",
+    "agent_os/android/src/org/traceform/agentos/WorkflowActivity.java": "feb9a59925a8c823c4a461971144c7aa46465a07abb48e93e467061dc0c9f2f3",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "d63448c8807fc0efce26f20cb12353ef113e269b1274e258057164ecdf320c4c",
+    "agent_os/scripts/validate_actions_android.py": "48e3489fab3e5137bd846138da83bea81673ffe6469268d3da0aded56aaad20c"
+  },
+  "limitations": [
+    "Both installations used the same physical device",
+    "The UI run stopped at the review screen; no real picker or actual sending was exercised in this test",
+    "No full device reboot or production application update"
+  ]
+}

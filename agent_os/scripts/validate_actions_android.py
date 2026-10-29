@@ -21,6 +21,8 @@ CASES = {
     "DOCUMENT_CALENDAR_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_CALENDAR_CHAIN", "AgentOsWorkflowValidation"),
     "DOCUMENT_SHARE_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_SHARE_CHAIN", "AgentOsWorkflowValidation"),
     "VERIFY_SHARE_RESTART": ("WorkflowValidationActivity", "VERIFY_SHARE_RESTART", "AgentOsWorkflowValidation"),
+    "EXPORT_SHARE_MIGRATION": ("WorkflowValidationActivity", "EXPORT_SHARE_MIGRATION", "AgentOsWorkflowValidation"),
+    "IMPORT_SHARE_MIGRATION": ("WorkflowValidationActivity", "IMPORT_SHARE_MIGRATION", "AgentOsWorkflowValidation"),
     "SEED_SHARE_UI": ("WorkflowValidationActivity", "SEED_SHARE_UI", "AgentOsWorkflowValidation"),
     "VERIFY_CHAIN_RESTART": ("WorkflowValidationActivity", "VERIFY_CHAIN_RESTART", "AgentOsWorkflowValidation"),
     "SEED_CALENDAR_RETRY_UI": ("WorkflowValidationActivity", "SEED_CALENDAR_RETRY_UI", "AgentOsWorkflowValidation"),

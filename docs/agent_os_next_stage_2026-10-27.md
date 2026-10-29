@@ -20,6 +20,8 @@
 
 后续在同一隔离安装中导出、清空并导入合成档案，确认版本 3 模板和分享任务状态保留、文件访问不迁移；强制停止后重启验证结果未知状态及新运行不继承授权。隔离界面显示合成文件内容供审核，打开系统分享选择器后直接退出，应用显示无法验证发送且不会自动重放，见[恢复与界面记录](../artifacts/agent_os/next_stage/workflow_share_recovery_ui_20261030.json)。本轮没有跨安装迁移、整机重启、模板创建界面、真实文件选择器或实际发送验证，也没有更新正式应用。
 
+随后在两套不同 UID 的隔离安装之间迁移合成分享工作流，目标应用验证模板、未知结果和不继承文件权限及云端配置；强制停止后重启再次检查。另在隔离界面创建分享模板并开始一次合成运行，审核页显示正确目标且记忆默认未选，见[跨安装记录](../artifacts/agent_os/next_stage/workflow_share_cross_install_20261030.json)。两套安装位于同一手机；界面运行停在审核页，未测试真实文件选择器、实际发送或整机重启。
+
 ## 本地模型评估
 
 独立实验使用 [llama.cpp](https://github.com/ggml-org/llama.cpp) 固定提交 `d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3`，模型为 [Qwen2.5-0.5B-Instruct-GGUF Q4_0](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/main/qwen2.5-0.5b-instruct-q4_0.gguf)，下载文件 SHA-256 与发布页一致。模型和工具临时放在设备 shell 专用测试目录，执行合成提示词，没有连接云端或使用个人记忆。该实验不是应用集成或生产部署。
