@@ -44,7 +44,7 @@
 
 当前 Android 正式应用只有用户主动的加密档案导入/导出；现有 Rust 同步实验不等于正式应用的自动同步。两套隔离内存库的现有测试覆盖加密包往返、错误口令、元数据篡改、旧包、删除墓碑和时钟偏差下的旧记录拒绝；[测试结果](../artifacts/agent_os/next_stage/sync_existing_tests.json)不证明设备配对或跨设备恢复已实现。
 
-Android 存储层新增档案逐条冲突审核接口：先解密并保留供本次审核的快照，每个冲突必须明确选择，提交事务内重新核对冲突集合及本机记录，变化时中止，删除标记继续优先。隔离真机合成档案验证了分别保留与替换、缺少选择、审核后编辑和审核后删除，见[测试记录](../artifacts/agent_os/next_stage/archive_individual_review_20261030.json)。0.6.8 已接入逐条审核界面；中文界面通过系统选择器、两条不同选择、最终确认及保存结果的隔离验收，见[界面记录](../artifacts/agent_os/next_stage/archive_review_ui_20261030.json)。英文界面尚未单独真机验收；审核期间解密内容保留在应用内存中。这不是自动同步或因果版本合并。
+Android 存储层新增档案逐条冲突审核接口：先解密并保留供本次审核的快照，每个冲突必须明确选择，提交事务内重新核对冲突集合及本机记录，变化时中止，删除标记继续优先。隔离真机合成档案验证了分别保留与替换、缺少选择、审核后编辑和审核后删除，见[测试记录](../artifacts/agent_os/next_stage/archive_individual_review_20261030.json)。0.6.8 已接入逐条审核界面；中文和英文界面分别通过系统选择器、两条不同选择、最终确认及保存结果的隔离验收，见[中文记录](../artifacts/agent_os/next_stage/archive_review_ui_20261030.json)和[英文记录](../artifacts/agent_os/next_stage/archive_review_ui_english_20261030.json)。审核期间解密内容保留在应用内存中。这不是自动同步或因果版本合并。
 
 Rust 同步原型的导入现已将删除、记忆和任务放入同一数据库事务：合成故障注入验证，后续记忆写入或任务日志失败时，先前删除及写入会一起回滚。11 项同步测试、4 项存储测试和 82 项核心单元测试通过，见[记录](../artifacts/agent_os/next_stage/sync_atomic_import_20261028.json)。该修复不改变原型的最后写入胜出冲突策略，也没有接入 Android、设备配对或经过认证的传输。
 
