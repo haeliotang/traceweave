@@ -1,7 +1,9 @@
 from pathlib import Path
+import importlib.util
 import subprocess
 import sys
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,6 +17,22 @@ class ValidationSafetyTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Only isolated validation packages are supported', result.stderr)
         self.assertNotIn('CalledProcessError', result.stderr)
+
+    def test_scoped_history_rejects_production_or_nondebug_apk_before_adb(self):
+        path = ROOT / 'agent_os/scripts/validate_scoped_history_android.py'
+        spec = importlib.util.spec_from_file_location('validate_scoped_history_android', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        argv = ['probe', '--adb', '/no-such-adb', '--serial', 'unused', '--edge-apk', 'edge.apk',
+                '--probe-apk', 'probe.apk', '--build-tools', 'tools']
+        for identity in ({'package': 'org.traceform.edge', 'debuggable': True},
+                         {'package': 'org.traceform.edge.validation', 'debuggable': False}):
+            with self.subTest(identity=identity), mock.patch.object(sys, 'argv', argv), \
+                    mock.patch.object(module, 'apk_identity', return_value=identity), \
+                    mock.patch.object(module.subprocess, 'run') as adb:
+                with self.assertRaisesRegex(RuntimeError, 'isolated debug packages'):
+                    module.main()
+                adb.assert_not_called()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated debug applications; six recent model-bound synthetic history rows",
+  "synthetic_history_rows": 6,
+  "expected_continuous_pairs": 5,
+  "authorized_scoped_binder_summary_available": true,
+  "agent_os_summary_contract_validation_passed": true,
+  "sampled_steps": 4,
+  "raw_tokens_and_occupancy_and_source_digest_not_returned": true,
+  "intervention_eligibility_false": true,
+  "test_script_repeat_passed": true,
+  "isolated_applications_and_synthetic_history_removed": true,
+  "real_history_read": false,
+  "edge_validation_apk_sha256": "0497f7887f2ec0bcb23629238086ef08ce6886c8aa0d40c1285ceb46d538096c",
+  "agent_validation_apk_sha256": "68c7f8e6f0e17c77bad6459984a93407c8918ccf19bcdc6128b1c1c039b5f2a9",
+  "source_sha256": {
+    "agent_os/tests/android/ScopedTraceformProbe.java": "bf31a757f9fda057114651dd34725694bdb4c6501902787fb6b1e5b24a3067be",
+    "agent_os/scripts/validate_scoped_history_android.py": "098ee95954b0f44bfb1a44dae3b8f9e4baefb426a649ac530de02771b90a5e94",
+    "agent_os/android/src/org/traceform/agentos/TraceformProvider.java": "44f10f7d2587f2327285b1beb1afe793913792b903273b1cce59669f5f3b07e7",
+    "android/src/org/traceform/edge/HistorySummaryService.java": "a59c68edc2b0d2a58a0d312d2ea5ccb1c5c62b24e785c0a367733b146ef5aa9e",
+    "android/src/org/traceform/edge/HistoryForecast.java": "4480e54123541fe8558a43ab858d02282ec0cb7f79b69e1350c8a2663410751c",
+    "agent_os/tests/test_validation_runner.py": "1c08f02e6ef147a4264df8f9793db0ef612d95f35e79e50f09e97f3ec2b6561a"
+  },
+  "limitations": [
+    "Service and caller are isolated debug packages, not installed production identities",
+    "Agent OS summary validator exercised directly; production TraceformProvider read and UI were not exercised",
+    "Six artificial rows cannot establish real-history summary quality, performance or bias",
+    "Prebuilt isolated Edge validation APK was reused; hash identifies the tested artifact"
+  ],
+  "preflight_rejects_production_or_nondebug_before_adb": true
+}
