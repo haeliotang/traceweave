@@ -1,0 +1,15 @@
+{
+  "candidate_sha256": "90e1f2a6e641f4b0adca8022b537fe2abc14376c2ec66a6cceacf076ed56b8a6",
+  "automated_device_cases": 39,
+  "cross_install_synthetic_archive_restore": true,
+  "distinct_validation_uids": true,
+  "lifecycle_archive_restore": true,
+  "legacy_archive_restore_run": false,
+  "validation_packages_removed": true,
+  "manual_system_picker_ui_not_run": true,
+  "physical_power_trial_not_run": true,
+  "model_runtime_included": true,
+  "production_update_installed": true,
+  "first_install_time_preserved": true,
+  "synthetic_picker_individual_review_run": true
+}

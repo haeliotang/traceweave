@@ -28,6 +28,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("EXPORT_MIGRATION".equals(getIntent().getAction())) exportMigration(store);
                 else if ("IMPORT_MIGRATION".equals(getIntent().getAction()) || "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction())) importMigration(store);
                 else if ("REVIEW_ARCHIVE_CONFLICTS".equals(getIntent().getAction())) reviewArchiveConflicts(store);
+                else if ("SEED_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) seedArchiveReviewUi(store);
+                else if ("VERIFY_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) verifyArchiveReviewUi(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
                 else if ("DUPLICATE_RECEIPT".equals(getIntent().getAction())) duplicateReceipt(store);
                 else if ("SEED_CLOUD_UI".equals(getIntent().getAction())) {
@@ -513,6 +515,28 @@ public final class DocumentFlowValidationActivity extends Activity {
     }
 
     private static final String ARCHIVE_PASSWORD = "synthetic-documents-migration-only";
+
+    private void seedArchiveReviewUi(AgentStore store) throws Exception {
+        for (String table : java.util.Arrays.asList("audit", "tasks", "memories", "tombstones")) store.getWritableDatabase().delete(table, null, null);
+        AgentStore.Memory first = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC UI local first");
+        AgentStore.Memory second = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC UI local second");
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.memories.add(new AgentStore.Memory(first.id, first.kind, "SYNTHETIC UI archive first", first.createdAt, first.updatedAt));
+        data.memories.add(new AgentStore.Memory(second.id, second.kind, "SYNTHETIC UI archive second", second.createdAt, second.updatedAt));
+        byte[] archive = MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray());
+        try (java.io.OutputStream output = new java.io.FileOutputStream(new java.io.File(getFilesDir(), "synthetic-review.taos"))) { output.write(archive); }
+        getSharedPreferences("document_validation", 0).edit().putString("review_first", first.id).putString("review_second", second.id).commit();
+        check(true, "synthetic review fixture created");
+    }
+
+    private void verifyArchiveReviewUi(AgentStore store) throws Exception {
+        String first = getSharedPreferences("document_validation", 0).getString("review_first", "");
+        String second = getSharedPreferences("document_validation", 0).getString("review_second", "");
+        java.util.Map<String, String> values = new java.util.HashMap<>();
+        for (AgentStore.Memory memory : store.listMemories()) values.put(memory.id, memory.content);
+        check("SYNTHETIC UI archive first".equals(values.get(first)) && "SYNTHETIC UI local second".equals(values.get(second)),
+            "UI imported the separately selected versions");
+    }
 
     private void reviewArchiveConflicts(AgentStore store) throws Exception {
         for (String table : java.util.Arrays.asList("audit", "tasks", "memories", "tombstones")) store.getWritableDatabase().delete(table, null, null);

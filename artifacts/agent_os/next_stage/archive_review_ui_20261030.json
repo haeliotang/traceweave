@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "synthetic_only": true,
+  "system_picker_selected_fixture": true,
+  "two_conflicts_show_content_and_metadata": true,
+  "first_archive_second_local": true,
+  "explicit_final_confirmation": true,
+  "persisted_results_verified": true,
+  "isolated_app_and_fixture_removed": true,
+  "real_user_data_used": false,
+  "limitations": [
+    "Chinese interface tested; English interface built but not manually verified on device",
+    "Conflict edits and deletions during review checked in separate isolated storage test",
+    "No physical power trial",
+    "Not automatic multi-device synchronization"
+  ],
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "950806eda45d9f9e58b5f74e89e060a124a48a0cccb67f6b1fc969ecc19bf311",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "5c1e2c872f78312cea6e4a0b752dfe00e866a601630b4cfb5260dc7aef584480",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "08da44c076650607c78ab5424bb52bbdfab63c116953bc3fbcd2dc7297f10d50"
+  },
+  "validation_apk_sha256": "2def863ca297a62a0d1f7739c6fd2fb01d2e22891c3a44766f4c858a3f3caf1d"
+}

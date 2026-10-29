@@ -2091,39 +2091,28 @@ public final class MainActivity extends Activity {
     }
 
     private void promptImportPassphrase(Uri uri) {
-        new AlertDialog.Builder(this)
-            .setTitle("处理同 ID 记忆冲突")
-            .setMessage("请选择本次导入如何处理同 ID 的记忆。任务记录仍保留本机版本；任何删除墓碑始终优先。")
-            .setNegativeButton("取消", (dialog, which) -> setBusy(false, "导入已取消"))
-            .setNeutralButton("采用档案中的记忆", (dialog, which) -> promptImportPassphrase(uri, true))
-            .setPositiveButton("保留本机记忆", (dialog, which) -> promptImportPassphrase(uri, false))
-            .setOnCancelListener(dialog -> setBusy(false, "导入已取消"))
-            .show();
-    }
-
-    private void promptImportPassphrase(Uri uri, boolean preferArchiveMemories) {
-        EditText input = passwordField("档案口令");
+        boolean en = isEnglish();
+        EditText input = passwordField(en ? "Archive passphrase" : "档案口令");
         LinearLayout holder = new LinearLayout(this);
         holder.setPadding(dp(24), dp(8), dp(24), 0);
         holder.addView(input);
         new AlertDialog.Builder(this)
-            .setTitle("解锁并导入档案")
-            .setMessage(preferArchiveMemories
-                ? "新增本机不存在的记录；同 ID 记忆将采用档案版本；本机或档案中的删除标记始终优先。任务冲突保留本机版本。"
-                : "新增本机不存在的记录；同 ID 记忆与任务均保留本机版本；本机或档案中的删除标记始终优先。")
+            .setTitle(en ? "Unlock archive" : "解锁档案")
+            .setMessage(en ? "Review conflicting memories before importing. Deletions take priority; existing tasks stay local."
+                : "导入前逐条审核冲突记忆。删除标记优先；已有任务保留本机版本。")
             .setView(holder)
-            .setNegativeButton("取消", (dialog, which) -> setBusy(false, "导入已取消"))
-            .setPositiveButton("导入", (dialog, which) -> {
+            .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+            .setPositiveButton(en ? "Review" : "审核", (dialog, which) -> {
                 char[] passphrase = input.getText().toString().toCharArray();
                 input.setText("");
                 if (passphrase.length == 0) {
                     setBusy(false, "");
-                    showMessage("请输入档案口令");
+                    showMessage(en ? "Enter the archive passphrase" : "请输入档案口令");
                     return;
                 }
-                importArchive(uri, passphrase, preferArchiveMemories);
+                reviewArchive(uri, passphrase);
             })
-            .setOnCancelListener(dialog -> setBusy(false, "导入已取消"))
+            .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
             .show();
     }
 
@@ -2162,33 +2151,93 @@ public final class MainActivity extends Activity {
         });
     }
 
-    private void importArchive(Uri uri, char[] passphrase, boolean preferArchiveMemories) {
-        setBusy(true, "正在解密、校验并合并档案…");
+    private void reviewArchive(Uri uri, char[] passphrase) {
+        setBusy(true, isEnglish() ? "Unlocking archive…" : "正在解密并校验档案…");
         io.execute(() -> {
-            AgentStore.ImportResult result = null;
+            AgentStore.ArchiveReview review = null;
             Exception failure = null;
             try (InputStream input = getContentResolver().openInputStream(uri)) {
                 if (input == null) throw new java.io.IOException("无法打开所选档案");
-                result = store.importArchive(input, passphrase, preferArchiveMemories);
+                review = store.reviewArchive(input, passphrase);
+            } catch (Exception error) { failure = error; }
+            finally { clear(passphrase); }
+            AgentStore.ArchiveReview result = review;
+            Exception error = failure;
+            mainHandler.post(() -> {
+                if (destroyed) return;
+                if (error != null) { setBusy(false, ""); showError(error); return; }
+                reviewArchiveConflict(result, new java.util.ArrayList<>(result.conflicts.keySet()), 0, new java.util.LinkedHashMap<>());
+            });
+        });
+    }
+
+    private void reviewArchiveConflict(AgentStore.ArchiveReview review, List<String> ids, int index, java.util.Map<String, Boolean> choices) {
+        boolean en = isEnglish();
+        if (index == ids.size()) {
+            new AlertDialog.Builder(this)
+                .setTitle(en ? "Confirm archive import" : "确认导入档案")
+                .setMessage(en ? "Import the archive with the reviewed choices? Deletions take priority."
+                    : "按已审核的选择导入档案？删除标记仍然优先。")
+                .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+                .setPositiveButton(en ? "Import" : "导入", (dialog, which) -> importReviewedArchive(review, choices))
+                .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+                .show();
+            return;
+        }
+        String id = ids.get(index);
+        AgentStore.ArchiveConflict conflict = review.conflicts.get(id);
+        new AlertDialog.Builder(this)
+            .setTitle((en ? "Memory conflict " : "记忆冲突 ") + (index + 1) + "/" + ids.size())
+            .setMessage((en ? "On this device:\n" : "本机：\n") + archiveMemoryDescription(conflict.local, en)
+                + (en ? "\n\nIn the archive:\n" : "\n\n档案：\n") + archiveMemoryDescription(conflict.incoming, en))
+            .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+            .setNeutralButton(en ? "Use archive" : "采用档案", (dialog, which) -> {
+                choices.put(id, true); reviewArchiveConflict(review, ids, index + 1, choices);
+            })
+            .setPositiveButton(en ? "Keep local" : "保留本机", (dialog, which) -> {
+                choices.put(id, false); reviewArchiveConflict(review, ids, index + 1, choices);
+            })
+            .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+            .show();
+    }
+
+    private String archiveMemoryDescription(AgentStore.Memory memory, boolean en) {
+        String expires = memory.expiresAt == 0 ? (en ? "None" : "无") : DateFormat.getDateTimeInstance().format(new Date(memory.expiresAt));
+        return memory.content + (en ? "\nType: " : "\n类型：") + memory.kind
+            + (en ? " · Source: " : " · 来源：") + memory.source
+            + (memory.sourceReference.isEmpty() ? "" : " (" + memory.sourceReference + ")")
+            + (en ? "\nExpires: " : "\n有效期至：") + expires
+            + (en ? " · User edited: " : " · 用户修改：") + (memory.userEdited ? (en ? "Yes" : "是") : (en ? "No" : "否"));
+    }
+
+    private void importReviewedArchive(AgentStore.ArchiveReview review, java.util.Map<String, Boolean> choices) {
+        setBusy(true, isEnglish() ? "Importing archive…" : "正在合并档案…");
+        io.execute(() -> {
+            AgentStore.ImportResult result = null;
+            Exception failure = null;
+            try {
+                result = store.importReviewedArchive(review, choices);
             } catch (Exception error) {
                 failure = error;
-            } finally {
-                clear(passphrase);
             }
             AgentStore.ImportResult importResult = result;
             Exception importFailure = failure;
             mainHandler.post(() -> {
                 if (destroyed) return;
-                setBusy(false, importFailure == null ? "档案已导入" : "导入失败");
+                boolean en = isEnglish();
+                setBusy(false, importFailure == null ? (en ? "Archive imported" : "档案已导入") : (en ? "Import failed" : "导入失败"));
                 if (importFailure != null) {
                     showError(importFailure);
                 } else {
                     refreshTasks();
                     refreshMemories();
-                    showMessage("导入完成：任务 " + importResult.tasksImported + " 条，记忆 "
-                        + importResult.memoriesImported + " 条，删除标记 " + importResult.tombstonesApplied
-                        + " 条；记忆冲突 " + importResult.memoryConflicts + " 条，采用档案 "
-                        + importResult.memoriesReplaced + " 条；跳过 " + importResult.recordsSkipped + " 条");
+                    showMessage(en ? "Imported tasks: " + importResult.tasksImported + "; memories: " + importResult.memoriesImported
+                        + "; deletions: " + importResult.tombstonesApplied + "; conflicts: " + importResult.memoryConflicts
+                        + "; archive choices: " + importResult.memoriesReplaced + "; skipped: " + importResult.recordsSkipped
+                        : "导入完成：任务 " + importResult.tasksImported + " 条，记忆 "
+                            + importResult.memoriesImported + " 条，删除标记 " + importResult.tombstonesApplied
+                            + " 条；记忆冲突 " + importResult.memoryConflicts + " 条，采用档案 "
+                            + importResult.memoriesReplaced + " 条；跳过 " + importResult.recordsSkipped + " 条");
                 }
             });
         });
