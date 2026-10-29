@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "synthetic_only": true,
+  "old_behavior_reproduced": true,
+  "identical_record_requires_no_choice": true,
+  "identical_record_not_counted_as_conflict": true,
+  "change_after_preview_rejected": true,
+  "different_versions_still_require_choices": true,
+  "deleted_memory_not_restored": true,
+  "isolated_package_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "4d4e2486dd6ae2d1c43251ddfa52babc0e99730d3a2dd29b7692626b7f9acf3d",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "cd4d6f0ef6e2f004fc6138e3682817e223b8c6c6b42bae8b16c894103bf5fea1"
+  },
+  "limitations": [
+    "No new manual system-picker run",
+    "No physical power measurement",
+    "Not automatic synchronization"
+  ]
+}

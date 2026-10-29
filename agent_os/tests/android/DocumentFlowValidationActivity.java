@@ -542,6 +542,16 @@ public final class DocumentFlowValidationActivity extends Activity {
         for (String table : java.util.Arrays.asList("audit", "tasks", "memories", "tombstones")) store.getWritableDatabase().delete(table, null, null);
         AgentStore.Memory first = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC local first");
         AgentStore.Memory second = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC local second");
+        MemoryArchive.Data identical = new MemoryArchive.Data();
+        identical.memories.add(first);
+        byte[] sameArchive = MemoryArchive.encrypt(identical, ARCHIVE_PASSWORD.toCharArray());
+        AgentStore.ArchiveReview sameReview = store.reviewArchive(new java.io.ByteArrayInputStream(sameArchive), ARCHIVE_PASSWORD.toCharArray());
+        check(sameReview.conflicts.isEmpty(), "identical memory does not require a conflict decision");
+        AgentStore.ImportResult sameResult = store.importReviewedArchive(sameReview, java.util.Collections.emptyMap());
+        check(sameResult.memoryConflicts == 0 && sameResult.memoriesReplaced == 0, "identical import does not count as conflict or replacement");
+        store.reviseMemory(first, first.content, 0);
+        rejects(() -> store.importReviewedArchive(sameReview, java.util.Collections.emptyMap()),
+            "previously identical memory changed during review");
         MemoryArchive.Data data = new MemoryArchive.Data();
         data.memories.add(new AgentStore.Memory(first.id, first.kind, "SYNTHETIC archive first", first.createdAt, first.updatedAt));
         data.memories.add(new AgentStore.Memory(second.id, second.kind, "SYNTHETIC archive second", second.createdAt, second.updatedAt));

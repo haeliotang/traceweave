@@ -1391,7 +1391,7 @@ final class AgentStore extends SQLiteOpenHelper {
         for (Memory incoming : data.memories) {
             if (deleted.contains(incoming.id) || hasTombstone(database, "memory", incoming.id)) continue;
             Memory local = getMemory(incoming.id);
-            if (local != null) conflicts.put(incoming.id, new ArchiveConflict(local, incoming));
+            if (local != null && !sameMemory(local, incoming)) conflicts.put(incoming.id, new ArchiveConflict(local, incoming));
         }
         return conflicts;
     }
@@ -1506,6 +1506,10 @@ final class AgentStore extends SQLiteOpenHelper {
                     continue;
                 }
                 if (exists(database, "memories", memory.id)) {
+                    if (review != null && sameMemory(getMemory(memory.id), memory)) {
+                        recordsSkipped++;
+                        continue;
+                    }
                     memoryConflicts++;
                     if (!(review == null ? preferArchiveMemories : Boolean.TRUE.equals(choices.get(memory.id)))) {
                         recordsSkipped++;
