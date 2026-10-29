@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-29",
+  "libp2p_version": "0.57.1",
+  "scope": "synthetic ephemeral identities on a single-device loopback; not an Android application or cross-device test",
+  "host_pass": true,
+  "pixel_android_arm64_pass": true,
+  "authenticated_peer_identity": true,
+  "live_revocation_closes_connection": true,
+  "revoked_peer_reconnect_denied": true,
+  "unknown_peer_denied": true,
+  "incorrect_target_peer_id_rejected": true,
+  "real_user_data_used": false,
+  "external_network_used": false,
+  "pixel_probe_removed": true,
+  "android_ndk_version": "26.3.11579264",
+  "android_release_binary_bytes": 3311448,
+  "android_release_binary_stripped_bytes": 2035648,
+  "android_release_binary_sha256": "f79033054505908d7f01ef1c6756ca5cc9aad6cfb53f0b70d64971ac638ded50",
+  "lockfile_packages_all_platforms": 332,
+  "android_dependency_tree_unique_including_probe": 163,
+  "test_source_sha256": {
+    "agent_os/tests/libp2p/Cargo.toml": "a17e52db7cbb06405cc58cf86a74e9e1860cc1dbb39f2556b9a922ff1d9e6445",
+    "agent_os/tests/libp2p/Cargo.lock": "849b2cd1d5453437d3ee71799da16870bff5d07a9c63445b1cf6489181d24de9",
+    "agent_os/tests/libp2p/src/main.rs": "9c4228d7b3b4225a0f7170af56f1eca0d71b0d40e0331790e166cc7b56fbd8fd"
+  },
+  "limitations": [
+    "No persistent keys or pairing UX",
+    "No payload transfer, synchronization, replay protection or at-rest encryption",
+    "No two-device or Android application lifecycle test",
+    "No production integration or independent security audit"
+  ]
+}
