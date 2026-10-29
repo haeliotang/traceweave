@@ -23,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('adb', 'serial', 'edge-apk', 'probe-apk', 'build-tools'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--case', choices=('summary', 'broker'), default='summary')
     args = parser.parse_args()
     for path, package in ((args.edge_apk, EDGE), (args.probe_apk, PROBE)):
         identity = apk_identity(Path(path), Path(args.build_tools))
@@ -62,8 +63,11 @@ def main():
             command = shlex.join(['run-as', EDGE, 'sh', '-c', 'mkdir -p databases && cat > databases/edge.sqlite'])
             with path.open('rb') as payload:
                 run('shell', command, stdin=payload)
+        activity = 'ScopedTraceformProbe' if args.case == 'summary' else 'ScopedBrokerProbe'
+        tag = 'AgentOsScopedProbe' if args.case == 'summary' else 'AgentOsScopedBroker'
+        expected = 'PASS authorized_synthetic_history' if args.case == 'summary' else 'PASS denied_granted_summary_revoked_denied'
         run('shell', 'am', 'start', '-W', '-S', '-a', 'AVAILABLE_HISTORY', '-n',
-            PROBE + '/org.traceform.agentos.ScopedTraceformProbe', stdout=subprocess.DEVNULL)
+            PROBE + '/org.traceform.agentos.' + activity, stdout=subprocess.DEVNULL)
         pid = None
         for _ in range(20):
             result = subprocess.run(adb + ['shell', 'pidof', PROBE], capture_output=True, text=True)
@@ -74,13 +78,13 @@ def main():
         if not pid:
             raise RuntimeError('Validation process never started')
         for _ in range(60):
-            logs = run('logcat', '-d', '--pid=' + pid, '-s', 'AgentOsScopedProbe:I', '*:S',
+            logs = run('logcat', '-d', '--pid=' + pid, '-s', tag + ':I', '*:S',
                        capture_output=True, text=True).stdout
             lines = [line for line in logs.splitlines() if 'PASS' in line or 'FAIL' in line]
             if lines:
-                if 'PASS authorized_synthetic_history' not in lines[-1]:
+                if expected not in lines[-1]:
                     raise RuntimeError('Isolated service probe failed: ' + lines[-1])
-                print('PASS non-empty synthetic history through scoped Binder and Agent OS summary validation')
+                print('PASS non-empty synthetic history: ' + args.case)
                 break
             time.sleep(.5)
         else:

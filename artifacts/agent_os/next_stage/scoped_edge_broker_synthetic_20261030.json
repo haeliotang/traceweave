@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated debug applications; six model-bound synthetic history rows",
+  "pregrant_denied": true,
+  "different_agent_denied": true,
+  "authorized_broker_provider_scoped_binder_read": true,
+  "summary_available_with_five_continuous_pairs": true,
+  "revoked_grant_denied": true,
+  "isolated_applications_and_synthetic_history_removed": true,
+  "real_history_read": false,
+  "edge_validation_apk_sha256": "0497f7887f2ec0bcb23629238086ef08ce6886c8aa0d40c1285ceb46d538096c",
+  "agent_validation_apk_sha256": "f62be7348b3948656acf418c35442fd73fcc36275334f2d372a5f10402aa31a8",
+  "source_sha256": {
+    "agent_os/tests/android/ScopedBrokerProbe.java": "864a13253715dc157b707a91fc3e70ab2c04f133d40319e82e7ec5830e65297b",
+    "agent_os/tests/android/manifest-scoped-broker.xml": "107c6803513c474248c928ec804de3605a38b64eee4091414a42683d8dd8dbc0",
+    "agent_os/tests/android/scoped_provider_test_identity.patch": "7706328e3e60fb836fb0cd100eb1ee75dc11894ab3113715798f02508ce39c18",
+    "agent_os/scripts/validate_scoped_history_android.py": "5cbb6b20efdf85c88cf3b879d09de4fea571ef79dbd4000f23fc496cff87d4c2",
+    "agent_os/android/src/org/traceform/agentos/TraceformProvider.java": "44f10f7d2587f2327285b1beb1afe793913792b903273b1cce59669f5f3b07e7",
+    "agent_os/android/src/org/traceform/agentos/CapabilityBroker.java": "e12eb3c0b939538e061c53a9714b4f52ddbc9aaec4db078833e7c24487933cbb"
+  },
+  "limitations": [
+    "Provider was built from a test-only source overlay addressing the validation package and permission",
+    "Grant was issued by test code, not an interactive user approval",
+    "Production packages and real history were not exercised",
+    "No UI, summary quality, performance, or adversarial security conclusions"
+  ]
+}

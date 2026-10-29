@@ -1,0 +1,15 @@
+--- agent_os/android/src/org/traceform/agentos/TraceformProvider.java
++++ isolated-test/TraceformProvider.java
+@@ -22,10 +22,10 @@
+ final class TraceformProvider implements CapabilityProvider {
+     static final String CAPABILITY = "traceform.local_history.read";
+     static final String SCOPE = "traceform.local_history_summary_v1";
+-    static final String PACKAGE = "org.traceform.edge";
++    static final String PACKAGE = "org.traceform.edge.validation";
+     private static final String SERVICE = "org.traceform.edge.EdgeService";
+     private static final String SUMMARY_SERVICE = "org.traceform.edge.HistorySummaryService";
+-    private static final String SUMMARY_PERMISSION = "org.traceform.edge.READ_HISTORY_SUMMARY";
++    private static final String SUMMARY_PERMISSION = "org.traceform.edge.validation.READ_HISTORY_SUMMARY";
+     private static final String EDGE_CERT_SHA256 = "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c";
+     private static final String PERMISSION = "org.traceform.edge.CANONICAL_INPUT";
+     private static final String PREFERENCES = "agent_os_provider_preferences";
