@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-29",
+  "scope": "Mac host and Pixel 6a shell process via temporary USB reverse forwarding",
+  "synthetic_request_and_response_received": true,
+  "peer_ids_checked": true,
+  "transport": "libp2p 0.57.1 Noise TCP request-response CBOR",
+  "test_identities": "public deterministic fixtures; not secure production keys",
+  "initial_attempt": "server exited immediately after response flush; client reported connection closed before receiving response",
+  "successful_attempt": "server remained running until client closed after receiving response",
+  "forwarding_removed": true,
+  "temporary_android_executable_removed": true,
+  "personal_data_used": false,
+  "lockfile_packages_all_platforms_including_probe": 337,
+  "source_sha256": {
+    "agent_os/tests/libp2p_wire/Cargo.toml": "23975a414eeef6b479950496df99bc9b56e1e77db80ad0e1b576859f48651baa",
+    "agent_os/tests/libp2p_wire/Cargo.lock": "6b4a7c59244b24830eb28f413c30967b67a2dd7a455d67be8fea9ec67f645a92",
+    "agent_os/tests/libp2p_wire/src/main.rs": "74d7e55160aa86f0a7acbba7b03496f68dcf17dd8cdbc51912fa0ecd51261b26"
+  },
+  "limitations": [
+    "One exchange via USB forwarding, not wireless or two phones",
+    "No Android app integration, persistent identity, pairing, revocation or recovery",
+    "No app-level replay defense, conflict handling or storage encryption",
+    "Waiting for connection close is not a reliable receipt or retry protocol",
+    "No independent security review"
+  ]
+}
