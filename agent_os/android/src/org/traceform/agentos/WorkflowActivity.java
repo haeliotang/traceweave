@@ -21,6 +21,7 @@ public final class WorkflowActivity extends Activity {
     private EditText nameInput;
     private EditText patternInput;
     private CheckBox calendarFollowup;
+    private CheckBox shareFollowup;
     private final Map<String, EditText> runInputs = new LinkedHashMap<>();
 
     @Override public void onCreate(Bundle state) {
@@ -36,6 +37,7 @@ public final class WorkflowActivity extends Activity {
     @Override protected void onSaveInstanceState(Bundle state) {
         state.putString("name", nameInput.getText().toString()); state.putString("pattern", patternInput.getText().toString());
         state.putBoolean("calendarFollowup", calendarFollowup.isChecked());
+        state.putBoolean("shareFollowup", shareFollowup.isChecked());
         Bundle inputs = new Bundle(); for (Map.Entry<String, EditText> entry : runInputs.entrySet()) inputs.putString(entry.getKey(), entry.getValue().getText().toString());
         state.putBundle("inputs", inputs); super.onSaveInstanceState(state);
     }
@@ -59,10 +61,16 @@ public final class WorkflowActivity extends Activity {
         calendarFollowup.setText(en ? "After verified file, offer a separately approved calendar draft" : "文件核验后，继续创建需单独确认的日历草稿");
         calendarFollowup.setChecked(restored != null && restored.getBoolean("calendarFollowup"));
         root.addView(calendarFollowup);
+        shareFollowup = new CheckBox(this);
+        shareFollowup.setText(en ? "After verified file, offer a separately approved share draft" : "文件核验后，继续创建需单独确认的分享草稿");
+        shareFollowup.setChecked(restored != null && restored.getBoolean("shareFollowup"));
+        calendarFollowup.setOnCheckedChangeListener((view, checked) -> { if (checked) shareFollowup.setChecked(false); });
+        shareFollowup.setOnCheckedChangeListener((view, checked) -> { if (checked) calendarFollowup.setChecked(false); });
+        root.addView(shareFollowup);
         runInputs.clear();
         button(root, en ? "Save workflow template" : "保存工作流模板", () -> {
             try {
-                WorkflowTemplate recipe = new WorkflowTemplate(name.getText().toString(), pattern.getText().toString(), calendarFollowup.isChecked());
+                WorkflowTemplate recipe = new WorkflowTemplate(name.getText().toString(), pattern.getText().toString(), calendarFollowup.isChecked(), shareFollowup.isChecked());
                 store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
                 getIntent().removeExtra(EXTRA_GOAL); show();
             } catch (Exception error) { fail(error); }
@@ -81,7 +89,8 @@ public final class WorkflowActivity extends Activity {
                     continue;
                 }
                 text(root, recipe.name + "\n" + recipe.goalTemplate + (recipe.calendarFollowup
-                    ? (en ? "\nSteps: verified file → calendar draft" : "\n步骤：核验文件 → 日历草稿") : ""));
+                    ? (en ? "\nSteps: verified file → calendar draft" : "\n步骤：核验文件 → 日历草稿")
+                    : recipe.shareFollowup ? (en ? "\nSteps: verified file → share draft" : "\n步骤：核验文件 → 分享草稿") : ""));
                 EditText input = new EditText(this); input.setHint(en ? "Input for this run" : "本次运行的输入参数"); root.addView(input);
                 runInputs.put(memory.id, input);
                 if (restored != null && restored.getBundle("inputs") != null) input.setText(restored.getBundle("inputs").getString(memory.id, ""));

@@ -16,6 +16,8 @@
 
 另在隔离应用的实际界面，从合成文稿进入日历草稿，交接前取消，再次进入后确认显示新的待授权草稿；测试读取到一条已取消历史和一条尚未交接的草稿。没有打开真实日历或创建日程，见[界面记录](../artifacts/agent_os/next_stage/workflow_cancel_retry_ui_20261028.json)。
 
+新增版本 3 模板可选择“核验文稿 → 分享草稿”。创建分享草稿前重新读取所选文件，核对大小与摘要；草稿需单独审核授权，交接结果未知时不自动重发。Pixel 隔离应用从合成工作流实例验证文件变更拒绝、草稿幂等、取消重试及未知结果，原有文稿和日历测试也通过，见[测试记录](../artifacts/agent_os/next_stage/workflow_share_20261030.json)。该轮没有操作分享界面、系统分享选择器或真实数据，也没有测试版本 3 档案迁移或重启恢复；旧版本不能运行新模板。
+
 ## 本地模型评估
 
 独立实验使用 [llama.cpp](https://github.com/ggml-org/llama.cpp) 固定提交 `d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3`，模型为 [Qwen2.5-0.5B-Instruct-GGUF Q4_0](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/main/qwen2.5-0.5b-instruct-q4_0.gguf)，下载文件 SHA-256 与发布页一致。模型和工具临时放在设备 shell 专用测试目录，执行合成提示词，没有连接云端或使用个人记忆。该实验不是应用集成或生产部署。

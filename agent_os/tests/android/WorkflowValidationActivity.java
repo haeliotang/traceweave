@@ -24,6 +24,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("SENSOR_WINDOW".equals(getIntent().getAction())) sensorWindow();
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
+                else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
                 else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
                 else if ("SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) seedCalendarRetryUi(store);
                 else if ("VERIFY_CALENDAR_RETRY_UI".equals(getIntent().getAction())) verifyCalendarRetryUi(store);
@@ -359,6 +360,44 @@ public final class WorkflowValidationActivity extends Activity {
             check("on_device_model".equals(draft.getString("draftOrigin")) && draft.optString("attemptId").isEmpty(),
                 "model origin is shown and no file action was dispatched");
         }
+    }
+
+    private void documentShareChain(AgentStore store) throws Exception {
+        reset(store);
+        WorkflowTemplate recipe = new WorkflowTemplate("SYNTHETIC share", "Prepare {{input}}", false, true);
+        AgentStore.Memory template = store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
+        check(WorkflowTemplate.decode(template).shareFollowup, "share recipe survives encoding");
+        AgentStore.Task run = WorkflowTemplate.createRun(store, template.id, "SYNTHETIC report");
+        check("share_draft".equals(new JSONObject(run.plan.context).getJSONObject("workflow").getJSONArray("steps").getString(1)), "share step retained in snapshot");
+        AgentStore.Task parent = store.prepareReviewedDocument(run.id, "# SYNTHETIC approved content", TaskContext.fingerprint(run), "");
+        AgentStore.Task unverified = parent;
+        rejects(() -> DocumentAction.readVerifiedContent(getContentResolver(), unverified), "unverified document cannot be shared");
+        JSONObject draft = new JSONObject(parent.plan.steps.get(0).observation);
+        String attempt = store.claimExternalAction(parent.id, 0, draft.getString("draftId"), draft);
+        Uri uri = Uri.parse("content://" + getPackageName() + ".documents.fixture/share_chain");
+        store.bindDocumentTarget(parent.id, attempt, uri.toString());
+        DocumentAction.writeOnce(getContentResolver(), store, parent.id);
+        parent = store.getTask(parent.id);
+        String content = DocumentAction.readVerifiedContent(getContentResolver(), parent);
+        check("# SYNTHETIC approved content".equals(content), "file is read and verified before share");
+        String parentId = parent.id;
+        rejects(() -> store.createShareFollowup(parentId, "SYNTHETIC altered", uri.toString()), "changed content rejected");
+        rejects(() -> store.createShareFollowup(parentId, content, uri.toString() + "_other"), "stale selected URI rejected");
+        AgentStore.Task child = store.createShareFollowup(parent.id, content, uri.toString());
+        check(child.id.equals(store.createShareFollowup(parent.id, content, uri.toString()).id), "share draft creation is idempotent");
+        JSONObject share = new JSONObject(child.plan.steps.get(0).observation);
+        check(AgentStore.WAITING_FOR_USER.equals(child.status) && content.equals(share.getString("content")), "verified content awaits separate share confirmation");
+        check(TaskContext.localOnly(child.plan) && TaskContext.memories(child.plan).isEmpty() && !child.plan.context.contains("content://"), "share inherits no file grant or memory selection");
+        store.transition(child.id, AgentStore.CANCELLED);
+        AgentStore.Task retry = store.createShareFollowup(parent.id, content, uri.toString());
+        check(!child.id.equals(retry.id), "cancelled draft may be recreated without sending");
+        share = new JSONObject(retry.plan.steps.get(0).observation);
+        String handoff = store.claimExternalAction(retry.id, 0, share.getString("draftId"), share);
+        store.recordExternalOutcome(retry.id, 0, handoff, false, "synthetic");
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(retry.id).status) && retry.id.equals(store.createShareFollowup(parent.id, content, uri.toString()).id), "unknown handoff is not resent");
+        try (java.io.OutputStream out = getContentResolver().openOutputStream(uri, "wt")) { out.write("SYNTHETIC modified".getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
+        AgentStore.Task saved = parent;
+        rejects(() -> DocumentAction.readVerifiedContent(getContentResolver(), saved), "modified file rejected before new share");
     }
 
     private void documentCalendarChain(AgentStore store) throws Exception {

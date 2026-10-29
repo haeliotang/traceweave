@@ -10,15 +10,22 @@ final class WorkflowTemplate {
     final String name;
     final String goalTemplate;
     final boolean calendarFollowup;
+    final boolean shareFollowup;
 
     WorkflowTemplate(String name, String goalTemplate) {
         this(name, goalTemplate, false);
     }
 
     WorkflowTemplate(String name, String goalTemplate, boolean calendarFollowup) {
+        this(name, goalTemplate, calendarFollowup, false);
+    }
+
+    WorkflowTemplate(String name, String goalTemplate, boolean calendarFollowup, boolean shareFollowup) {
+        if (calendarFollowup && shareFollowup) throw new IllegalArgumentException("Choose one followup");
         this.name = name.trim();
         this.goalTemplate = goalTemplate.trim();
         this.calendarFollowup = calendarFollowup;
+        this.shareFollowup = shareFollowup;
         if (this.name.isEmpty() || this.name.length() > 100 || this.goalTemplate.length() > 1800
                 || !this.goalTemplate.contains("{{input}}")
                 || this.goalTemplate.replace("{{input}}", "").contains("{{")
@@ -27,10 +34,10 @@ final class WorkflowTemplate {
     }
 
     String encode() throws Exception {
-        JSONObject value = new JSONObject().put("format", FORMAT).put("version", calendarFollowup ? 2 : 1)
-            .put("type", calendarFollowup ? "markdown_review_save_calendar" : "markdown_review_save")
+        JSONObject value = new JSONObject().put("format", FORMAT).put("version", shareFollowup ? 3 : calendarFollowup ? 2 : 1)
+            .put("type", shareFollowup ? "markdown_review_save_share" : calendarFollowup ? "markdown_review_save_calendar" : "markdown_review_save")
             .put("name", name).put("goalTemplate", goalTemplate);
-        if (calendarFollowup) value.put("steps", new JSONArray().put("verified_document").put("calendar_draft"));
+        if (calendarFollowup || shareFollowup) value.put("steps", new JSONArray().put("verified_document").put(shareFollowup ? "share_draft" : "calendar_draft"));
         return value.toString();
     }
 
@@ -49,9 +56,12 @@ final class WorkflowTemplate {
         boolean chained = value.length() == 6 && Integer.valueOf(2).equals(value.opt("version"))
             && "markdown_review_save_calendar".equals(value.optString("type")) && steps != null
             && steps.length() == 2 && "verified_document".equals(steps.optString(0)) && "calendar_draft".equals(steps.optString(1));
-        if ((!legacy && !chained) || !(value.get("name") instanceof String) || !(value.get("goalTemplate") instanceof String))
+        boolean shared = value.length() == 6 && Integer.valueOf(3).equals(value.opt("version"))
+            && "markdown_review_save_share".equals(value.optString("type")) && steps != null
+            && steps.length() == 2 && "verified_document".equals(steps.optString(0)) && "share_draft".equals(steps.optString(1));
+        if ((!legacy && !chained && !shared) || !(value.get("name") instanceof String) || !(value.get("goalTemplate") instanceof String))
             throw new IllegalArgumentException("Unsupported workflow recipe; permissions and file targets cannot be imported");
-        return new WorkflowTemplate(value.getString("name"), value.getString("goalTemplate"), chained);
+        return new WorkflowTemplate(value.getString("name"), value.getString("goalTemplate"), chained, shared);
     }
 
     String render(String input) {
@@ -76,7 +86,7 @@ final class WorkflowTemplate {
             JSONObject workflow = new JSONObject().put("id", memory.id)
                 .put("updatedAt", memory.updatedAt).put("name", recipe.name).put("goalTemplate", recipe.goalTemplate)
                 .put("input", input.trim());
-            if (recipe.calendarFollowup) workflow.put("steps", new JSONArray().put("verified_document").put("calendar_draft"));
+            if (recipe.calendarFollowup || recipe.shareFollowup) workflow.put("steps", new JSONArray().put("verified_document").put(recipe.shareFollowup ? "share_draft" : "calendar_draft"));
             context.put("intent", "verified_document").put("workflow", workflow);
             store.savePlan(task.id, new ExecutionPlan(task.id, task.title, Collections.emptyList(), System.currentTimeMillis(), 0)
                 .withContext(context.toString()));

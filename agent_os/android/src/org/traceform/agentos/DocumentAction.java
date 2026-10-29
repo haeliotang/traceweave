@@ -71,6 +71,28 @@ final class DocumentAction {
         } catch (Exception error) { return false; }
     }
 
+    static String readVerifiedContent(ContentResolver resolver, AgentStore.Task task) throws Exception {
+        if (!locallyVerified(task)) throw new IllegalStateException("Verify the document on this device first");
+        JSONObject receipt = new JSONObject(task.plan.steps.get(0).observation);
+        Uri uri = contentUri(receipt.getString("uri"));
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (InputStream input = resolver.openInputStream(uri)) {
+            if (input == null) throw new java.io.IOException("Document provider is unavailable");
+            byte[] buffer = new byte[4096];
+            int count;
+            while ((count = input.read(buffer)) != -1) {
+                if (bytes.size() + count > MAX_BYTES) throw new java.io.IOException("Document exceeds the verified size limit");
+                bytes.write(buffer, 0, count);
+            }
+        }
+        byte[] data = bytes.toByteArray();
+        if (data.length != receipt.getInt("byteCount") || !sha256(data).equals(receipt.getString("sha256")))
+            throw new IllegalStateException("The document changed since verification; verify it again before sharing");
+        String text = StandardCharsets.UTF_8.newDecoder().decode(java.nio.ByteBuffer.wrap(data)).toString();
+        validateContent(text);
+        return text;
+    }
+
     static Uri contentUri(String value) {
         Uri uri = Uri.parse(value);
         if (!"content".equals(uri.getScheme()) || uri.getAuthority() == null || value.length() > 2000)

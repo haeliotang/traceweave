@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated test app with synthetic document; no real sharing or personal data",
+  "cases": {
+    "DOCUMENT_SHARE_CHAIN": 12,
+    "WORKFLOW_RUNS": 28,
+    "DOCUMENT_CALENDAR_CHAIN": 11
+  },
+  "new_chain_started_from_workflow_instance": true,
+  "file_changed_after_verification_rejected": true,
+  "cancel_before_handoff_can_retry": true,
+  "unknown_handoff_does_not_repeat": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "5a87d673c719d906be15f60e5310d5496903e3fc5f6f10d65ce501420f43e8ab",
+    "agent_os/android/src/org/traceform/agentos/DocumentAction.java": "58af3570d1ca21f047c67d5e8a6dcd85e7e356d1a0e6c152c7571cd34f63a5be",
+    "agent_os/android/src/org/traceform/agentos/DocumentTaskActivity.java": "416d9d64964fa043fd13a273d584906138b9c709b7cea9409db30628b3423450",
+    "agent_os/android/src/org/traceform/agentos/WorkflowActivity.java": "feb9a59925a8c823c4a461971144c7aa46465a07abb48e93e467061dc0c9f2f3",
+    "agent_os/android/src/org/traceform/agentos/WorkflowTemplate.java": "47c3c2eb2a493153572bf3a9a30264c7b1f5b45fb11acd02bcd21a8f9e6a5735",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "2926172461791315361069e5041bc0908932f5428b62cc69756cb4fc19eeb328",
+    "agent_os/scripts/validate_actions_android.py": "04d63c3d9ed6c27cf68af0a6ba787bab382586968448f56e1f09c46a57e2c9d2"
+  },
+  "limitations": [
+    "Share workflow UI and Android share chooser were not exercised in this run",
+    "Existing workflow and calendar regression preceded the final test-only change",
+    "No production APK update, archive migration of version 3 recipe, reboot recovery, or live sharing was tested"
+  ]
+}

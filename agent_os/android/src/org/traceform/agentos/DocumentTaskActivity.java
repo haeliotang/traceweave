@@ -145,6 +145,10 @@ public final class DocumentTaskActivity extends Activity {
                     JSONArray steps = workflow == null ? null : workflow.optJSONArray("steps");
                     if (steps != null && steps.length() == 2 && "calendar_draft".equals(steps.optString(1)))
                         label(root, en ? "Workflow next step: review a calendar draft" : "工作流下一步：审核日历草稿");
+                    if (steps != null && steps.length() == 2 && "share_draft".equals(steps.optString(1))) {
+                        label(root, en ? "Workflow next step: review a share draft" : "工作流下一步：审核分享草稿");
+                        button(root, en ? "Continue to share draft" : "继续：创建分享草稿", this::shareInBackground);
+                    }
                     label(root, en ? "Continue to a separate calendar draft. It requires its own confirmation; no event is created automatically."
                         : "可以继续创建独立的日历草稿；需要再次确认，不会自动创建日程。");
                     button(root, en ? "Continue to calendar draft" : "继续：创建日历草稿", () -> {
@@ -201,6 +205,34 @@ public final class DocumentTaskActivity extends Activity {
             else store.selectDocumentForVerification(taskId, uri.toString());
             verifyInBackground(request == CREATE_DOCUMENT);
         } catch (Exception error) { fail(error); try { show(null); } catch (Exception ignored) {} }
+    }
+
+    private void shareInBackground() {
+        if (busy) return;
+        busy = true;
+        TextView progress = new TextView(this);
+        progress.setText(en ? "Checking the verified file before sharing…" : "正在检查已核验文件，准备分享草稿…");
+        setContentView(progress);
+        new Thread(() -> {
+            Exception failure = null;
+            AgentStore.Task child = null;
+            try {
+                AgentStore.Task parent = store.getTask(taskId);
+                JSONObject receipt = new JSONObject(parent.plan.steps.get(0).observation);
+                String content = DocumentAction.readVerifiedContent(getContentResolver(), parent);
+                child = store.createShareFollowup(taskId, content, receipt.getString("uri"));
+            } catch (Exception error) { failure = error; }
+            Exception error = failure;
+            AgentStore.Task result = child;
+            busy = false;
+            runOnUiThread(() -> {
+                if (isDestroyed()) { store.close(); return; }
+                if (error != null) fail(error);
+                try { show(null); } catch (Exception problem) { fail(problem); }
+                if (result != null) startActivity(new Intent(this, ExternalActionActivity.class)
+                    .putExtra(ExternalActionActivity.EXTRA_TASK_ID, result.id));
+            });
+        }, "verified-share-draft").start();
     }
 
     private void verifyInBackground(boolean write) {

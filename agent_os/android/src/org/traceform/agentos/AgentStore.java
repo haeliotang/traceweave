@@ -696,6 +696,44 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally { database.endTransaction(); }
     }
 
+    Task createShareFollowup(String parentId, String content, String expectedUri) throws Exception {
+        DocumentAction.validateContent(content);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            Task parent = requireDocument(parentId);
+            if (!DocumentAction.locallyVerified(parent)) throw new IllegalStateException("Verify the document on this device first");
+            JSONObject receipt = new JSONObject(parent.plan.steps.get(0).observation);
+            String hash = DocumentAction.sha256(content.getBytes(StandardCharsets.UTF_8));
+            if (!expectedUri.equals(receipt.optString("uri")) || !hash.equals(receipt.optString("sha256")))
+                throw new IllegalStateException("The document changed during review");
+            for (Task existing : listTasks()) {
+                if (existing.plan == null || existing.plan.context.isEmpty()) continue;
+                JSONObject link = new JSONObject(existing.plan.context).optJSONObject("workflowLink");
+                if (link == null || !"document_to_share".equals(link.optString("kind")) || !parentId.equals(link.optString("parentTaskId"))) continue;
+                if (CANCELLED.equals(existing.status) && existing.plan.totalSteps() == 1) {
+                    ExecutionPlan.Step step = existing.plan.steps.get(0);
+                    if (ExecutionPlan.STEP_CANCELLED.equals(step.status) && new JSONObject(step.observation).optString("attemptId").isEmpty()) continue;
+                }
+                database.setTransactionSuccessful();
+                return existing;
+            }
+            JSONObject context = new JSONObject(TaskContext.selected(java.util.Collections.emptyList(), true));
+            context.put("workflowLink", new JSONObject().put("kind", "document_to_share").put("parentTaskId", parentId).put("parentSha256", hash));
+            Task child = createTask(parent.title);
+            ExecutionPlan.Step step = new ExecutionPlan.Step(0, "审核分享草稿", LocalShareProvider.CAPABILITY,
+                LocalShareProvider.SCOPE, "", ExecutionPlan.STEP_PENDING, "", 0);
+            savePlan(child.id, new ExecutionPlan(child.id, child.title, java.util.Collections.singletonList(step),
+                System.currentTimeMillis(), 0).withContext(context.toString()));
+            transition(child.id, ACTIVE);
+            JSONObject draft = new JSONObject().put("provider", "system.share").put("status", "ready_for_sharing")
+                .put("subject", parent.title).put("content", content).put("draftId", UUID.randomUUID().toString());
+            prepareExternalDraft(child.id, 0, draft.toString());
+            database.setTransactionSuccessful();
+            return getTask(child.id);
+        } finally { database.endTransaction(); }
+    }
+
     Task prepareReviewedDocument(String taskId, String content, String expectedFingerprint, String requestSha256) throws Exception {
         return prepareReviewedDocument(taskId, content, expectedFingerprint, requestSha256,
             requestSha256.isEmpty() ? "local_template" : "model");
