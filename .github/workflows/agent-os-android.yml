@@ -33,10 +33,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Rebuild pinned on-device model runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init "$RUNNER_TEMP/llama-source"
+          git -C "$RUNNER_TEMP/llama-source" fetch --depth=1 https://github.com/ggml-org/llama.cpp.git d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3
+          git -C "$RUNNER_TEMP/llama-source" checkout --detach FETCH_HEAD
+          python3 agent_os/scripts/build_experimental_model_runtime.py \
+            --llama-source "$RUNNER_TEMP/llama-source" \
+            --ndk "$ANDROID_NDK_HOME" \
+            --output-dir agent_os/build/model-runtime-ci
       - name: Build and verify with disposable signing identity
         shell: bash
         run: |
           set -euo pipefail
           python3 agent_os/scripts/ci_android.py \
             --android-jar "$ANDROID_HOME/platforms/android-35/android.jar" \
-            --build-tools "$ANDROID_HOME/build-tools/35.0.0"
+            --build-tools "$ANDROID_HOME/build-tools/35.0.0" \
+            --model-runtime agent_os/build/model-runtime-ci/libtraceform_local_model.so
