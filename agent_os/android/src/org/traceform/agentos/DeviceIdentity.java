@@ -3,6 +3,7 @@ package org.traceform.agentos;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -15,6 +16,7 @@ import java.util.Locale;
 final class DeviceIdentity {
     static final String ALIAS = "org.traceform.agentos.device-identity.v1";
     private static final byte[] DOMAIN = "traceform-device-identity-challenge-v1\0".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] BINDING_DOMAIN = "traceform-device-transport-binding-v1\0".getBytes(StandardCharsets.UTF_8);
 
     private DeviceIdentity() {}
 
@@ -54,7 +56,24 @@ final class DeviceIdentity {
     }
 
     static byte[] signChallenge(byte[] challenge) throws Exception {
-        byte[] message = challengeMessage(challenge);
+        return sign(challengeMessage(challenge));
+    }
+
+    static byte[] transportBindingMessage(byte[] sender, byte[] receiver, byte[] challenge) {
+        if (sender == null || sender.length == 0 || sender.length > 128
+                || receiver == null || receiver.length == 0 || receiver.length > 128
+                || challenge == null || challenge.length != 32 || java.util.Arrays.equals(sender, receiver))
+            throw new IllegalArgumentException("Distinct bounded transport identities and a 32-byte challenge are required");
+        return ByteBuffer.allocate(BINDING_DOMAIN.length + 2 + sender.length + 2 + receiver.length + challenge.length)
+            .put(BINDING_DOMAIN).putShort((short) sender.length).put(sender)
+            .putShort((short) receiver.length).put(receiver).put(challenge).array();
+    }
+
+    static byte[] signTransportBinding(byte[] sender, byte[] receiver, byte[] challenge) throws Exception {
+        return sign(transportBindingMessage(sender, receiver, challenge));
+    }
+
+    private static byte[] sign(byte[] message) throws Exception {
         Signature signature = Signature.getInstance("SHA256withECDSA");
         signature.initSign((PrivateKey) keys(false).getKey(ALIAS, null));
         signature.update(message);

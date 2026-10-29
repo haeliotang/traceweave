@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated Android application; synthetic byte identifiers and challenges",
+  "keystore_signature_and_verification": true,
+  "sender_receiver_reversal_rejected": true,
+  "changed_challenge_rejected": true,
+  "cross_domain_signature_rejected": true,
+  "empty_oversized_and_identical_identifiers_rejected": true,
+  "length_prefix_ambiguity_rejected": true,
+  "isolated_application_and_identity_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/DeviceIdentity.java": "e9fd8a1fa85f3ca9335c403603855984a31388ee27101aa1f324bd19d3bb544c",
+    "agent_os/tests/android/DeviceIdentityValidationActivity.java": "56cd71fecb8cdabcf28a02697203db1c06d423042ae0c5867c73201c18148bd6"
+  },
+  "validation_apk_sha256": "ba51cd8c8a963c21508381473f525c41c7b8958ac8dd9451bbb2c99d7f0fe038",
+  "limitations": [
+    "No actual Noise session or validated PeerId; byte values are synthetic",
+    "No replay cache, expiration, mutual confirmation, or production pairing",
+    "No user data, second physical device or independent security review"
+  ]
+}

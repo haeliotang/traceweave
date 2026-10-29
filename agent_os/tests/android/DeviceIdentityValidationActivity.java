@@ -33,6 +33,31 @@ public final class DeviceIdentityValidationActivity extends Activity {
                 verifier.initVerify(KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey)));
                 verifier.update(DeviceIdentity.challengeMessage(challenge));
                 if (verifier.verify(signed)) throw new IllegalStateException("altered challenge accepted");
+                byte[] sender = new byte[]{1, 2, 3}, receiver = new byte[]{4, 5, 6};
+                byte[] nonce = new byte[32]; Arrays.fill(nonce, (byte) 7);
+                byte[] binding = DeviceIdentity.signTransportBinding(sender, receiver, nonce);
+                verifier.initVerify(KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey)));
+                verifier.update(DeviceIdentity.transportBindingMessage(sender, receiver, nonce));
+                if (!verifier.verify(binding)) throw new IllegalStateException("binding signature failed");
+                verifier.initVerify(KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey)));
+                verifier.update(DeviceIdentity.transportBindingMessage(receiver, sender, nonce));
+                if (verifier.verify(binding)) throw new IllegalStateException("reversed transport identities accepted");
+                nonce[0] ^= 1;
+                verifier.initVerify(KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey)));
+                verifier.update(DeviceIdentity.transportBindingMessage(sender, receiver, nonce));
+                if (verifier.verify(binding)) throw new IllegalStateException("altered binding challenge accepted");
+                verifier.initVerify(KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey)));
+                verifier.update(DeviceIdentity.challengeMessage(nonce));
+                if (verifier.verify(binding)) throw new IllegalStateException("binding signature accepted in another context");
+                try { DeviceIdentity.signTransportBinding(new byte[0], receiver, nonce); throw new IllegalStateException("empty identity accepted"); }
+                catch (IllegalArgumentException expected) { }
+                try { DeviceIdentity.signTransportBinding(sender, new byte[129], nonce); throw new IllegalStateException("oversized identity accepted"); }
+                catch (IllegalArgumentException expected) { }
+                try { DeviceIdentity.signTransportBinding(sender, sender, nonce); throw new IllegalStateException("same identity accepted"); }
+                catch (IllegalArgumentException expected) { }
+                if (Arrays.equals(DeviceIdentity.transportBindingMessage(new byte[]{1}, new byte[]{2, 3}, nonce),
+                        DeviceIdentity.transportBindingMessage(new byte[]{1, 2}, new byte[]{3}, nonce)))
+                    throw new IllegalStateException("ambiguous identity encoding");
                 if (!Arrays.equals(publicKey, DeviceIdentity.publicKey())) throw new IllegalStateException("identity changed");
                 java.security.KeyStore keys = java.security.KeyStore.getInstance("AndroidKeyStore"); keys.load(null);
                 if (keys.getKey(DeviceIdentity.ALIAS, null).getEncoded() != null) throw new IllegalStateException("private key exportable");
