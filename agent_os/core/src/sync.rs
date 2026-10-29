@@ -106,6 +106,10 @@ pub fn encrypt_payload(passphrase: &str, plaintext: &[u8], device_id: &str) -> R
 
 /// Decrypts a SyncEnvelope using the user's passphrase.
 pub fn decrypt_payload(passphrase: &str, envelope: &SyncEnvelope) -> Result<Vec<u8>, String> {
+    if envelope.salt_b64.len() > MAX_ENVELOPE_BYTES || envelope.nonce_b64.len() > MAX_ENVELOPE_BYTES
+        || envelope.ciphertext_b64.len() > MAX_ENVELOPE_BYTES || envelope.device_id.len() > MAX_ENVELOPE_BYTES {
+        return Err("Sync envelope exceeds size limit".to_string());
+    }
     if envelope.version != 1 && envelope.version != 2 {
         return Err("Unsupported sync envelope version".to_string());
     }
@@ -170,6 +174,9 @@ pub fn import_encrypted_sync_package(
     passphrase: &str,
     envelope_json: &str,
 ) -> Result<MergeStats, String> {
+    if envelope_json.len() > MAX_ENVELOPE_BYTES {
+        return Err("Sync envelope exceeds size limit".to_string());
+    }
     let envelope: SyncEnvelope = serde_json::from_str(envelope_json)
         .map_err(|e| format!("Invalid sync envelope JSON: {}", e))?;
 
@@ -335,6 +342,15 @@ mod tests {
         modified.device_id = "device-2".to_string();
 
         assert!(decrypt_payload("passphrase", &modified).is_err());
+    }
+
+    #[test]
+    fn oversized_sync_inputs_are_rejected_before_decoding() {
+        let mut envelope = encrypt_payload("synthetic", b"ok", "device").unwrap();
+        envelope.ciphertext_b64 = "A".repeat(MAX_ENVELOPE_BYTES + 1);
+        assert_eq!(decrypt_payload("synthetic", &envelope).unwrap_err(), "Sync envelope exceeds size limit");
+        let store = AgentStore::open_in_memory().unwrap();
+        assert_eq!(import_encrypted_sync_package(&store, "synthetic", &" ".repeat(MAX_ENVELOPE_BYTES + 1)).unwrap_err(), "Sync envelope exceeds size limit");
     }
 
     #[test]
