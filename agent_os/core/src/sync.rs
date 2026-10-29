@@ -164,8 +164,16 @@ pub fn export_encrypted_sync_package(
     let payload_bytes = serde_json::to_vec(&payload)
         .map_err(|e| format!("Failed to serialize sync payload: {}", e))?;
 
+    if payload_bytes.len() > MAX_ENVELOPE_BYTES {
+        return Err("Sync envelope exceeds size limit".to_string());
+    }
+
     let envelope = encrypt_payload(passphrase, &payload_bytes, device_id)?;
-    serde_json::to_string(&envelope).map_err(|e| format!("Failed to serialize envelope: {}", e))
+    let serialized = serde_json::to_string(&envelope).map_err(|e| format!("Failed to serialize envelope: {}", e))?;
+    if serialized.len() > MAX_ENVELOPE_BYTES {
+        return Err("Sync envelope exceeds size limit".to_string());
+    }
+    Ok(serialized)
 }
 
 /// Imports and merges an encrypted sync package using tombstone-first, deterministic LWW semantics.
@@ -351,6 +359,15 @@ mod tests {
         assert_eq!(decrypt_payload("synthetic", &envelope).unwrap_err(), "Sync envelope exceeds size limit");
         let store = AgentStore::open_in_memory().unwrap();
         assert_eq!(import_encrypted_sync_package(&store, "synthetic", &" ".repeat(MAX_ENVELOPE_BYTES + 1)).unwrap_err(), "Sync envelope exceeds size limit");
+    }
+
+    #[test]
+    fn export_rejects_envelope_too_large_for_import_and_transport() {
+        let store = AgentStore::open_in_memory().unwrap();
+        let result = export_encrypted_sync_package(&store, "synthetic", &"x".repeat(MAX_ENVELOPE_BYTES));
+        assert!(matches!(result, Err(ref message) if message == "Sync envelope exceeds size limit"));
+        let escaped = export_encrypted_sync_package(&store, "synthetic", &"\"".repeat(2_400_000));
+        assert!(matches!(escaped, Err(ref message) if message == "Sync envelope exceeds size limit"));
     }
 
     #[test]
