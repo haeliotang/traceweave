@@ -1,0 +1,36 @@
+--- agent_os/android/native/experimental_local_model.cpp
++++ instrumented-for-test.cpp
+@@ -1,4 +1,5 @@
+ #include <jni.h>
++#include <android/log.h>
+ #include "llama.h"
+ #include <atomic>
+ #include <mutex>
+@@ -43,6 +44,7 @@
+ extern "C" JNIEXPORT void JNICALL
+ Java_org_traceform_agentos_LocalModelProbe_cancel(JNIEnv *, jclass) {
+     cancelled.store(true);
++    __android_log_print(ANDROID_LOG_INFO, "TraceformTokenProbe", "CANCEL_SIGNAL");
+ }
+ 
+ extern "C" JNIEXPORT jbyteArray JNICALL
+@@ -100,16 +102,19 @@
+             char buffer[256];
+             int bytes = llama_token_to_piece(vocab, next, buffer, sizeof(buffer), 0, false);
+             require(bytes >= 0 && result.size() + static_cast<size_t>(bytes) <= 32768, "Local model output exceeds the limit");
++            if (i == 0) __android_log_print(ANDROID_LOG_INFO, "TraceformTokenProbe", "FIRST_PIECE");
+             result.append(buffer, static_cast<size_t>(bytes));
+             tokens[0] = next;
+             batch = llama_batch_get_one(tokens.data(), 1);
+         }
+         require(!cancelled.load(), "Local model request cancelled");
++        __android_log_print(ANDROID_LOG_INFO, "TraceformTokenProbe", "COMPLETED");
+         jbyteArray output = env->NewByteArray(static_cast<jsize>(result.size()));
+         require(output != nullptr, "Cannot allocate local model output");
+         env->SetByteArrayRegion(output, 0, static_cast<jsize>(result.size()), reinterpret_cast<const jbyte *>(result.data()));
+         return output;
+     } catch (const std::exception &error) {
++        if (cancelled.load()) __android_log_print(ANDROID_LOG_INFO, "TraceformTokenProbe", "ABORTED");
+         if (!env->ExceptionCheck()) env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), error.what());
+         return nullptr;
+     }

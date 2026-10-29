@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-29",
+  "device": "Pixel 6a",
+  "synthetic_only": true,
+  "public_model": "Qwen2.5-1.5B-Instruct Q4_0",
+  "model_sha256": "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb",
+  "network_permission": false,
+  "cancelled_state_verified": true,
+  "synthetic_provider_not_accessed": true,
+  "synthetic_fixture_file_absent": true,
+  "isolated_app_and_model_removed": true,
+  "native_instrumentation": "Android log markers after first non-end token piece, cancellation signal, successful completion and cancelled exception; test-only -llog linkage; no artificial wait",
+  "isolated_apk_sha256": "1d88ca0ba77f488a42e9f3208af797c58d34a5380ef897d29ef5fde20890f50e",
+  "instrumented_runtime_sha256": "85eec30613223edd36561f2727e48c5636267e0875858823d860c591d72ff218",
+  "input_sha256": {
+    "agent_os/android/native/experimental_local_model.cpp": "4c5d0e89a356503e8158883fe0c355c2dfa2e44b3b7244e3250d48fb83743e15",
+    "agent_os/android/src/org/traceform/agentos/LocalModelDraft.java": "2c79d11aeb0fd831e5b44dc49236ee940b96347726afdd91368a9816a9be6845",
+    "agent_os/android/src/org/traceform/agentos/TaskReviewActivity.java": "3b5c7d70a966843b802da7a59385e7d8579c4919fa499a19d77837181183da60",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "678e1367e42b7352abd9569fbf42c43ff198bec2beef1771710448ae3664f3b7",
+    "agent_os/tests/android/manifest-model-ui.xml": "a4da2a55f5a07863655a8c56a4be4b4e33cfc2bd620f412d3e6231139a969c90"
+  },
+  "limitations": [
+    "Isolated instrumented build, not the installed production application",
+    "Single synthetic task and cancellation timing; not a general performance, quality or energy test",
+    "No precise latency or repeated reliability measurement"
+  ],
+  "instrumentation_patch_sha256": "a9b52b212f0e391e072d710aa9e4ae35e9716557c6c6469b83de98fcb134bc7e",
+  "first_text_piece_observed": true,
+  "ui_cancel_after_first_piece": true,
+  "native_cancel_signal_and_abort_in_order": true,
+  "successful_native_completion_before_abort": false
+}
