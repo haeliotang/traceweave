@@ -26,7 +26,7 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("VERIFY_MEMORY_REVIEW".equals(getIntent().getAction())) verifyMemoryReview(store);
                 else if ("SEED_DOCUMENT_UI".equals(getIntent().getAction())) seedDocumentUi(store);
                 else if ("EXPORT_MIGRATION".equals(getIntent().getAction())) exportMigration(store);
-                else if ("IMPORT_MIGRATION".equals(getIntent().getAction())) importMigration(store);
+                else if ("IMPORT_MIGRATION".equals(getIntent().getAction()) || "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction())) importMigration(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
                 else if ("DUPLICATE_RECEIPT".equals(getIntent().getAction())) duplicateReceipt(store);
                 else if ("SEED_CLOUD_UI".equals(getIntent().getAction())) {
@@ -547,6 +547,9 @@ public final class DocumentFlowValidationActivity extends Activity {
     }
 
     private void importMigration(AgentStore store) throws Exception {
+        CloudModelConfig cloudBefore = CloudModelConfig.load(this);
+        if ("IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction()))
+            check(cloudBefore.enabled && "synthetic-target-credential".equals(cloudBefore.apiKey), "target synthetic cloud credential is present before import");
         for (String table : java.util.Arrays.asList("audit", "tasks", "memories", "tombstones")) store.getWritableDatabase().delete(table, null, null);
         byte[] archive = read(new java.io.File(getFilesDir(), "synthetic-migration.taos"));
         org.json.JSONObject ids = new org.json.JSONObject(new String(read(new java.io.File(getFilesDir(), "migration-ids.json")), "UTF-8"));
@@ -583,6 +586,10 @@ public final class DocumentFlowValidationActivity extends Activity {
         check(TaskContext.localOnly(policy.plan) && TaskContext.memories(policy.plan).get(0).id.equals(conflict.id), "selected memory identity preserved; imported execution is local-only");
         CloudModelConfig config = new CloudModelConfig(true, "http://127.0.0.1:58999/chat/completions", "", "synthetic-fixture", 15000, 0.1);
         rejects(() -> new CloudModelClient().preparePlan(policy, java.util.Collections.emptyList(), config), "archive does not confer cloud consent");
+        CloudModelConfig cloudAfter = CloudModelConfig.load(this);
+        check(cloudAfter.enabled == cloudBefore.enabled && cloudAfter.endpointUrl.equals(cloudBefore.endpointUrl)
+            && cloudAfter.apiKey.equals(cloudBefore.apiKey) && cloudAfter.modelName.equals(cloudBefore.modelName),
+            "archive does not overwrite target cloud configuration or migrate source credentials");
         AgentStore.Task reviewed = store.getTask(ids.getString("reviewed"));
         org.json.JSONObject choices = new org.json.JSONObject(reviewed.plan.memoryDecisions);
         check(choices.length() == 2 && "SYNTHETIC user-edited preference".equals(choices.getJSONObject("0").getString("content"))

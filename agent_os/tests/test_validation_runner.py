@@ -34,6 +34,26 @@ class ValidationSafetyTests(unittest.TestCase):
                     module.main()
                 adb.assert_not_called()
 
+    def test_legacy_migration_rejects_unsafe_packages_or_signers_before_adb(self):
+        path = ROOT / 'agent_os/scripts/validate_legacy_migration_android.py'
+        spec = importlib.util.spec_from_file_location('validate_legacy_migration_android', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        argv = ['probe', '--adb', '/no-such-adb', '--serial', 'unused', '--source-apk', 'old.apk',
+                '--target-apk', 'new.apk', '--build-tools', 'tools']
+        valid = {'package': 'org.traceform.agentos.actionsvalidation', 'debuggable': True, 'signer_sha256': 'a'}
+        cases = [([{'package': 'org.traceform.agentos', 'debuggable': True}], 'isolated debug packages'),
+                 ([{'package': 'org.traceform.agentos.actionsvalidation', 'debuggable': False}], 'isolated debug packages'),
+                 ([valid, {'package': 'org.traceform.agentos.documentsvalidation', 'debuggable': True,
+                           'signer_sha256': 'b'}], 'signers differ')]
+        for identities, message in cases:
+            with self.subTest(message=message), mock.patch.object(sys, 'argv', argv), \
+                    mock.patch.object(module, 'apk_identity', side_effect=identities), \
+                    mock.patch.object(module.subprocess, 'run') as adb:
+                with self.assertRaisesRegex(RuntimeError, message):
+                    module.main()
+                adb.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

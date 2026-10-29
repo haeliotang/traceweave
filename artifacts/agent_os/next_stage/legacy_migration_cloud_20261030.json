@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "0.5.3-era source to current 0.6.7-code target; two isolated debug packages and distinct UIDs",
+  "old_synthetic_archive_exported": true,
+  "synthetic_source_and_target_cloud_credentials_distinct": true,
+  "target_credential_loaded_before_import": true,
+  "target_cloud_configuration_preserved_after_import": true,
+  "source_file_authorization_not_inherited": true,
+  "cloud_planning_consent_not_inherited": true,
+  "history_receipt_and_conflict_choices_checked": true,
+  "tombstone_prevents_restoration": true,
+  "isolated_packages_and_synthetic_archive_removed": true,
+  "real_data_used": false,
+  "source_apk_sha256": "369c64accbdf0af91e9c662281f559041eafb761bc222f6e516d39f3e4713e64",
+  "target_apk_sha256": "6e45cae9a42e4fd7a48e6f3030d165517e965d7b5a9516b1e76943c2fed11ef2",
+  "source_sha256": {
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "63193c89c21295cdb70a12cd03716e07a187b6cecb06a1d44b5822c47446ecdb",
+    "agent_os/scripts/validate_actions_android.py": "67a5fabea30d1d79663a7efd72890b1cdb0e82ed57b5d462e5d45380e032a397",
+    "agent_os/scripts/validate_legacy_migration_android.py": "21a85b52e85d27258e9120fb056f264971a6b468c812369d63bffedc478070c4",
+    "agent_os/scripts/copy_document_validation_fixture.py": "73150b1c15e6b08a3ae2061c2616118fb1ab38e274966b415549f32c99ed19f6",
+    "agent_os/tests/test_validation_runner.py": "2eef9b89acd2346bfb51552caca9a3595241b2447f38f9cc504472b1d0186260",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "1b4c24ca7f4c23dc34b0b79079520c848acefbfc51f59870e4e51e295e9ec284",
+    "agent_os/android/src/org/traceform/agentos/MemoryArchive.java": "07f910dbec68057e1eaa27022993d496ae584b2729ec172a9e5a38db10e6ab41",
+    "agent_os/android/src/org/traceform/agentos/CloudModelConfig.java": "594dccf600c9c593d03e49bc93d0825dc4a081d4bc11babd5ccf9175e52a4ec7"
+  },
+  "limitations": [
+    "Synthetic archive and synthetic cloud credentials only; no real account or production data",
+    "Isolated target built from current source plus test-only checks, not the installed production package",
+    "Does not validate future archive schemas or a real user-selected file picker",
+    "Not a physical power-loss test"
+  ]
+}
