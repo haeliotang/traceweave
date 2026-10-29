@@ -27,6 +27,7 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SEED_DOCUMENT_UI".equals(getIntent().getAction())) seedDocumentUi(store);
                 else if ("EXPORT_MIGRATION".equals(getIntent().getAction())) exportMigration(store);
                 else if ("IMPORT_MIGRATION".equals(getIntent().getAction()) || "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction())) importMigration(store);
+                else if ("REVIEW_ARCHIVE_CONFLICTS".equals(getIntent().getAction())) reviewArchiveConflicts(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
                 else if ("DUPLICATE_RECEIPT".equals(getIntent().getAction())) duplicateReceipt(store);
                 else if ("SEED_CLOUD_UI".equals(getIntent().getAction())) {
@@ -512,6 +513,39 @@ public final class DocumentFlowValidationActivity extends Activity {
     }
 
     private static final String ARCHIVE_PASSWORD = "synthetic-documents-migration-only";
+
+    private void reviewArchiveConflicts(AgentStore store) throws Exception {
+        for (String table : java.util.Arrays.asList("audit", "tasks", "memories", "tombstones")) store.getWritableDatabase().delete(table, null, null);
+        AgentStore.Memory first = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC local first");
+        AgentStore.Memory second = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC local second");
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.memories.add(new AgentStore.Memory(first.id, first.kind, "SYNTHETIC archive first", first.createdAt, first.updatedAt));
+        data.memories.add(new AgentStore.Memory(second.id, second.kind, "SYNTHETIC archive second", second.createdAt, second.updatedAt));
+        byte[] archive = MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray());
+        AgentStore.ArchiveReview review = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        check(review.conflicts.size() == 2, "two conflicts are reviewable");
+        java.util.Map<String, Boolean> choices = new java.util.HashMap<>();
+        choices.put(first.id, true); choices.put(second.id, false);
+        store.importReviewedArchive(review, choices);
+        java.util.Map<String, String> values = new java.util.HashMap<>();
+        for (AgentStore.Memory memory : store.listMemories()) values.put(memory.id, memory.content);
+        check("SYNTHETIC archive first".equals(values.get(first.id)) && "SYNTHETIC local second".equals(values.get(second.id)), "individual choices applied");
+        AgentStore.ArchiveReview stale = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        AgentStore.Memory current = null;
+        for (AgentStore.Memory memory : store.listMemories()) if (second.id.equals(memory.id)) current = memory;
+        store.reviseMemory(current, "SYNTHETIC changed during review", 0);
+        rejects(() -> store.importReviewedArchive(stale, choices), "changed conflict invalidates review");
+        values.clear();
+        for (AgentStore.Memory memory : store.listMemories()) values.put(memory.id, memory.content);
+        check("SYNTHETIC changed during review".equals(values.get(second.id)), "stale import leaves new edit intact");
+        choices.remove(second.id);
+        rejects(() -> store.importReviewedArchive(stale, choices), "missing decision is rejected");
+        choices.put(second.id, false);
+        AgentStore.ArchiveReview beforeDeletion = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        store.deleteMemory(first.id);
+        rejects(() -> store.importReviewedArchive(beforeDeletion, choices), "deletion invalidates reviewed conflict set");
+        check(store.listMemories().size() == 1, "stale reviewed import cannot restore deleted memory");
+    }
 
     private void exportMigration(AgentStore store) throws Exception {
         AgentStore.Memory selected = store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC migration selected memory");

@@ -16,6 +16,8 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.UUID;
 
@@ -1345,6 +1347,64 @@ final class AgentStore extends SQLiteOpenHelper {
 
     ImportResult importArchive(java.io.InputStream input, char[] passphrase, boolean preferArchiveMemories) throws Exception {
         MemoryArchive.Data data = MemoryArchive.decrypt(input, passphrase);
+        return importArchiveData(data, preferArchiveMemories, null, null);
+    }
+
+    static final class ArchiveConflict {
+        final Memory local;
+        final Memory incoming;
+        ArchiveConflict(Memory local, Memory incoming) { this.local = local; this.incoming = incoming; }
+    }
+
+    static final class ArchiveReview {
+        private final MemoryArchive.Data data;
+        final Map<String, ArchiveConflict> conflicts;
+        private ArchiveReview(MemoryArchive.Data data, Map<String, ArchiveConflict> conflicts) {
+            this.data = data;
+            this.conflicts = java.util.Collections.unmodifiableMap(conflicts);
+        }
+    }
+
+    ArchiveReview reviewArchive(java.io.InputStream input, char[] passphrase) throws Exception {
+        MemoryArchive.Data data = MemoryArchive.decrypt(input, passphrase);
+        SQLiteDatabase database = getReadableDatabase();
+        database.beginTransactionNonExclusive();
+        try {
+            Map<String, ArchiveConflict> conflicts = archiveConflicts(database, data);
+            database.setTransactionSuccessful();
+            return new ArchiveReview(data, conflicts);
+        } finally { database.endTransaction(); }
+    }
+
+    ImportResult importReviewedArchive(ArchiveReview review, Map<String, Boolean> choices) throws Exception {
+        if (review == null || choices == null) throw new IllegalArgumentException("A choice for every reviewed conflict is required");
+        Map<String, Boolean> snapshot = new LinkedHashMap<>(choices);
+        if (!snapshot.keySet().equals(review.conflicts.keySet()) || snapshot.containsValue(null))
+            throw new IllegalArgumentException("A choice for every reviewed conflict is required");
+        return importArchiveData(review.data, false, review, snapshot);
+    }
+
+    private Map<String, ArchiveConflict> archiveConflicts(SQLiteDatabase database, MemoryArchive.Data data) throws Exception {
+        Set<String> deleted = new HashSet<>();
+        for (Tombstone tombstone : data.tombstones) if ("memory".equals(tombstone.entityType)) deleted.add(tombstone.entityId);
+        Map<String, ArchiveConflict> conflicts = new LinkedHashMap<>();
+        for (Memory incoming : data.memories) {
+            if (deleted.contains(incoming.id) || hasTombstone(database, "memory", incoming.id)) continue;
+            Memory local = getMemory(incoming.id);
+            if (local != null) conflicts.put(incoming.id, new ArchiveConflict(local, incoming));
+        }
+        return conflicts;
+    }
+
+    private static boolean sameMemory(Memory a, Memory b) {
+        return a.id.equals(b.id) && a.kind.equals(b.kind) && a.content.equals(b.content)
+            && a.source.equals(b.source) && a.sourceReference.equals(b.sourceReference)
+            && a.createdAt == b.createdAt && a.updatedAt == b.updatedAt
+            && a.expiresAt == b.expiresAt && a.userEdited == b.userEdited;
+    }
+
+    private ImportResult importArchiveData(MemoryArchive.Data data, boolean preferArchiveMemories,
+            ArchiveReview review, Map<String, Boolean> choices) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
         int tasksImported = 0;
         int memoriesImported = 0;
@@ -1354,6 +1414,14 @@ final class AgentStore extends SQLiteOpenHelper {
         int recordsSkipped = 0;
         database.beginTransaction();
         try {
+            if (review != null) {
+                Map<String, ArchiveConflict> current = archiveConflicts(database, data);
+                if (!current.keySet().equals(review.conflicts.keySet())) throw new IllegalStateException("Memory conflicts changed since review");
+                for (String id : current.keySet()) {
+                    if (!sameMemory(current.get(id).local, review.conflicts.get(id).local))
+                        throw new IllegalStateException("Memory conflicts changed since review");
+                }
+            }
             for (Tombstone tombstone : data.tombstones) {
                 boolean newTombstone = addTombstone(database, tombstone.entityType, tombstone.entityId, tombstone.deletedAt);
                 int deleted;
@@ -1439,7 +1507,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 }
                 if (exists(database, "memories", memory.id)) {
                     memoryConflicts++;
-                    if (!preferArchiveMemories) {
+                    if (!(review == null ? preferArchiveMemories : Boolean.TRUE.equals(choices.get(memory.id)))) {
                         recordsSkipped++;
                         continue;
                     }

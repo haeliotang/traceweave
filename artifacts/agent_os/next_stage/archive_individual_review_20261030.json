@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated debug app using synthetic encrypted archive",
+  "individual_choices": true,
+  "stale_edit_rejected": true,
+  "missing_choice_rejected": true,
+  "deleted_memory_not_restored": true,
+  "test_checks": 9,
+  "isolated_app_removed": true,
+  "production_ui_integrated": false,
+  "automatic_sync_implemented": false,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "5c1e2c872f78312cea6e4a0b752dfe00e866a601630b4cfb5260dc7aef584480",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "1eec99d80eaa459bd35d4f119afdd50b39fd1d197a364a8637a9747c48e23508",
+    "agent_os/scripts/validate_actions_android.py": "6b59ae671d9292784cec9d55fbb07d0ce83c12f19ecb555ce19c2da37c696e83"
+  }
+}
