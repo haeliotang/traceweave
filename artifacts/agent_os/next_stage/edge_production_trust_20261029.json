@@ -1,0 +1,17 @@
+{
+  "edge_version": "0.2-hardened",
+  "actual_production_edge": true,
+  "known_signer_permission_granted": true,
+  "descriptor_confirmed": true,
+  "different_package_denied_before_history_read": true,
+  "history_content_read": false,
+  "edge_prior_stopped_state_restored": true,
+  "validation_package_removed": true,
+  "apk_sha256": "1e8373424d420ed8d8964fe4c8f11fdf27f5407e58d627e775c257f9ba24a65c",
+  "source_sha256": {
+    "agent_os/tests/android/EdgeProductionTrustProbe.java": "2780be3ce074620a83eddd6fd20407e44489bc8d9b9ecfb69f8a13a5abd80cd7",
+    "agent_os/tests/android/manifest-edge-production-trust.xml": "b6a4bef72a8b012da356ff328987c7aa58aa0faf6cf086aff47cc0dda9c2f6dc"
+  },
+  "scope": "negative identity and descriptor check, not a production history-summary read",
+  "sensor_collection_requested": false
+}

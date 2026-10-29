@@ -1,0 +1,23 @@
+{
+  "synthetic_only": true,
+  "network_permission": false,
+  "automerge_version": "0.0.9",
+  "dependency_sha256": {
+    "jar": "7629272a27287b675cd26209cb53ec9aaf4b0e3ecb464fb4df7e7a08b9e24c8e",
+    "aar": "fbc19dda6567f48109d68c02c962fe03b9000fe54470bf4e8dd59b9b0b2c732f",
+    "slf4j": "0818930dc8d7debb403204611691da58e49d42c50b6ffcfdce02dadb7c3c2b6c"
+  },
+  "apk_sha256": "dcde8caa7842c32d5f2f4407029dd7ce0669af7f41a273d9acd086eca0f18953",
+  "concurrent_edits_and_resolution_passed": true,
+  "save_load_and_old_replay_passed": true,
+  "concurrent_edit_visible_after_delete": true,
+  "old_value_readable_at_historical_head": true,
+  "separate_tombstone_survived_honest_offline_edit_and_old_replay": true,
+  "isolated_package_removed": true,
+  "source_sha256": {
+    "agent_os/tests/automerge/AutomergeConflictProbe.java": "199a50a12cd6ebbb9273a233478f40bf89c8fddf24aadede4f084d346ad0c0fd",
+    "agent_os/tests/automerge/AutomergeValidationActivity.java": "9995a2b5b830fc6cc41be6c194d949d8e951daaa9f437f84c67fb305c05a6490",
+    "agent_os/tests/automerge/AndroidManifest.xml": "0c875943bbf0043f5eff9796c8a25f442db66b8ccdfa1f9608eddf5a35a59e63"
+  },
+  "scope": "compatibility experiment only; no production sync, authentication or encryption"
+}
