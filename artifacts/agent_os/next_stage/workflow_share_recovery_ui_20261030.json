@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated synthetic share workflow",
+  "checks": {
+    "DOCUMENT_SHARE_CHAIN": 16,
+    "VERIFY_SHARE_RESTART": 5,
+    "SEED_SHARE_UI": 1
+  },
+  "archive_restore_within_same_install": true,
+  "force_stop_after_import": true,
+  "share_preview_ui_observed": true,
+  "system_share_chooser_opened": true,
+  "chooser_dismissed_without_recipient_or_send": true,
+  "unknown_outcome_visible_after_return": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "5a87d673c719d906be15f60e5310d5496903e3fc5f6f10d65ce501420f43e8ab",
+    "agent_os/android/src/org/traceform/agentos/DocumentAction.java": "58af3570d1ca21f047c67d5e8a6dcd85e7e356d1a0e6c152c7571cd34f63a5be",
+    "agent_os/android/src/org/traceform/agentos/DocumentTaskActivity.java": "416d9d64964fa043fd13a273d584906138b9c709b7cea9409db30628b3423450",
+    "agent_os/android/src/org/traceform/agentos/ExternalActionActivity.java": "37eba14e1bffb219c178e225adc5a9fb95750320e0655bbd94909ace6393a55c",
+    "agent_os/android/src/org/traceform/agentos/WorkflowTemplate.java": "47c3c2eb2a493153572bf3a9a30264c7b1f5b45fb11acd02bcd21a8f9e6a5735",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "b96390f6b89dcd98eff2b50d79f9205b5da129054e2624f91397abb77542872f",
+    "agent_os/scripts/validate_actions_android.py": "25f39c53822385321e9871ab86c9cd5b14a5b4a2a60b6d568ffbaceadc0b0b04"
+  },
+  "limitations": [
+    "No second installation or device was used for archive migration",
+    "No full device reboot, template creation UI, real file picker, or actual sending was tested",
+    "Production application was not updated",
+    "Migration and force-stop checks used an earlier validation build; UI seed was added afterwards without changing those checks"
+  ]
+}

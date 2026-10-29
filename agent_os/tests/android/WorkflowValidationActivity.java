@@ -25,6 +25,8 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
+                else if ("VERIFY_SHARE_RESTART".equals(getIntent().getAction())) verifyShareRestart(store);
+                else if ("SEED_SHARE_UI".equals(getIntent().getAction())) seedShareUi(store);
                 else if ("VERIFY_CHAIN_RESTART".equals(getIntent().getAction())) verifyChainRestart(store);
                 else if ("SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) seedCalendarRetryUi(store);
                 else if ("VERIFY_CALENDAR_RETRY_UI".equals(getIntent().getAction())) verifyCalendarRetryUi(store);
@@ -89,6 +91,10 @@ public final class WorkflowValidationActivity extends Activity {
                 }
                 if (message.startsWith("PASS") && "OPEN_CENTER_UI".equals(getIntent().getAction())) {
                     startActivity(new android.content.Intent(this, TaskCenterActivity.class)); finish();
+                }
+                if (message.startsWith("PASS") && "SEED_SHARE_UI".equals(getIntent().getAction())) {
+                    startActivity(new android.content.Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID,
+                        getSharedPreferences("workflow_validation", 0).getString("shareUiParent", ""))); finish();
                 }
                 if (message.startsWith("PASS") && "SEED_CALENDAR_RETRY_UI".equals(getIntent().getAction())) {
                     startActivity(new android.content.Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID,
@@ -398,6 +404,45 @@ public final class WorkflowValidationActivity extends Activity {
         try (java.io.OutputStream out = getContentResolver().openOutputStream(uri, "wt")) { out.write("SYNTHETIC modified".getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
         AgentStore.Task saved = parent;
         rejects(() -> DocumentAction.readVerifiedContent(getContentResolver(), saved), "modified file rejected before new share");
+        byte[] archive = store.exportArchive("synthetic-share-migration".toCharArray());
+        reset(store);
+        store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-share-migration".toCharArray());
+        check(WorkflowTemplate.decode(memoryById(store, template.id)).shareFollowup, "archive restores share workflow recipe");
+        AgentStore.Task imported = store.getTask(parent.id);
+        check("share_draft".equals(new JSONObject(imported.plan.context).getJSONObject("workflow").getJSONArray("steps").getString(1)), "archive restores workflow snapshot");
+        check(!DocumentAction.locallyVerified(imported) && !new JSONObject(imported.plan.steps.get(0).observation).has("uri"), "imported receipt inherits no file access");
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(retry.id).status), "archive preserves unknown share result");
+        getSharedPreferences("workflow_validation", 0).edit().putString("shareRecipe", template.id)
+            .putString("shareParent", parent.id).putString("shareChild", retry.id).commit();
+    }
+
+    private void seedShareUi(AgentStore store) throws Exception {
+        reset(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        AgentStore.Memory recipe = store.createMemory(AgentStore.MEMORY_WORKFLOW,
+            new WorkflowTemplate("SYNTHETIC share UI", "Prepare {{input}}", false, true).encode());
+        AgentStore.Task run = WorkflowTemplate.createRun(store, recipe.id, "SYNTHETIC UI checklist");
+        AgentStore.Task parent = store.prepareReviewedDocument(run.id, "# SYNTHETIC UI checklist\n- item", TaskContext.fingerprint(run), "");
+        JSONObject draft = new JSONObject(parent.plan.steps.get(0).observation);
+        String attempt = store.claimExternalAction(parent.id, 0, draft.getString("draftId"), draft);
+        Uri uri = Uri.parse("content://" + getPackageName() + ".documents.fixture/share_ui");
+        store.bindDocumentTarget(parent.id, attempt, uri.toString());
+        DocumentAction.writeOnce(getContentResolver(), store, parent.id);
+        getSharedPreferences("workflow_validation", 0).edit().putString("shareUiParent", parent.id).commit();
+        check(DocumentAction.locallyVerified(store.getTask(parent.id)), "synthetic workflow document ready for UI review");
+    }
+
+    private void verifyShareRestart(AgentStore store) throws Exception {
+        android.content.SharedPreferences prefs = getSharedPreferences("workflow_validation", 0);
+        AgentStore.Memory recipe = memoryById(store, prefs.getString("shareRecipe", ""));
+        check(WorkflowTemplate.decode(recipe).shareFollowup, "share recipe persists after force-stop");
+        AgentStore.Task parent = store.getTask(prefs.getString("shareParent", ""));
+        AgentStore.Task child = store.getTask(prefs.getString("shareChild", ""));
+        check(parent != null && !DocumentAction.locallyVerified(parent), "imported file access remains unavailable after restart");
+        check(child != null && AgentStore.OUTCOME_UNKNOWN.equals(child.status), "unknown share handoff persists after restart");
+        rejects(() -> store.createShareFollowup(parent.id, "# SYNTHETIC approved content", "content://synthetic/old"), "restart cannot restore a file grant or resend");
+        AgentStore.Task fresh = WorkflowTemplate.createRun(store, recipe.id, "SYNTHETIC fresh run");
+        check(TaskContext.localOnly(fresh.plan) && TaskContext.memories(fresh.plan).isEmpty(), "restored recipe starts without inherited permissions");
     }
 
     private void documentCalendarChain(AgentStore store) throws Exception {
