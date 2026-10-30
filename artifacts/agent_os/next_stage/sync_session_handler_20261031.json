@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated package, synthetic seeds, loopback",
+  "checks": {
+    "distinct_peers_from_persisted_seeds": true,
+    "multi_peer_allow_list": true,
+    "java_handler_invoked_over_jni": true,
+    "response_returned_to_client": true,
+    "unpaired_peer_rejected": true
+  },
+  "cases": [
+    {
+      "case": "SYNC_HANDLER_EXCHANGE",
+      "pid": 10926,
+      "passed": true,
+      "result": "10-31 01:19:46.803 10926 10967 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=SYNC_HANDLER_EXCHANGE"
+    },
+    {
+      "case": "SYNC_UNPAIRED_REJECTED",
+      "pid": 11011,
+      "passed": true,
+      "result": "10-31 01:20:19.304 11011 11040 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_UNPAIRED_REJECTED"
+    }
+  ],
+  "limitations": [
+    "Application handler is a synthetic echo; memory records are not exchanged yet",
+    "Single process loopback only; two installs will be wired next",
+    "Unpaired rejection relies on the dial timing out (no fast-fail path)",
+    "No receipts or manifest diff yet"
+  ]
+}

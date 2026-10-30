@@ -71,7 +71,7 @@ impl BindingVerifier for Ed25519BindingVerifier {
 
 fn new_swarm(
     identity: &DeviceIdentity,
-    expected_peer: PeerId,
+    allowed: &[PeerId],
 ) -> Result<libp2p::Swarm<Behaviour>, TransportError> {
     Ok(libp2p::SwarmBuilder::with_existing_identity(identity.keypair().clone())
         .with_tokio()
@@ -79,7 +79,9 @@ fn new_swarm(
         .map_err(|error| TransportError::Io(error.to_string()))?
         .with_behaviour(|_| {
             let mut allow = Allow::<AllowedPeers>::default();
-            allow.allow_peer(expected_peer);
+            for peer in allowed {
+                allow.allow_peer(*peer);
+            }
             Behaviour {
                 allow,
                 message: cbor::Behaviour::new(
@@ -92,16 +94,31 @@ fn new_swarm(
         .build())
 }
 
-/// Accept one session, verify the binding, then echo bounded frames.
-pub async fn serve(
+/// Handles application requests after the binding is verified.
+pub trait SessionHandler {
+    fn handle(&mut self, request: Vec<u8>) -> Result<Vec<u8>, TransportError>;
+}
+
+struct EchoHandler;
+
+impl SessionHandler for EchoHandler {
+    fn handle(&mut self, request: Vec<u8>) -> Result<Vec<u8>, TransportError> {
+        Ok(request)
+    }
+}
+
+/// Accept one session, verify the binding, then hand bounded frames to the handler.
+pub async fn serve_with(
     identity: DeviceIdentity,
-    expected_peer: PeerId,
+    allowed: Vec<PeerId>,
     listen: Multiaddr,
     verifier: &(dyn BindingVerifier + Send + Sync),
     public_key: Vec<u8>,
+    mut handler: Box<dyn SessionHandler + Send>,
     timeout: Duration,
 ) -> Result<SessionSummary, TransportError> {
-    let mut swarm = new_swarm(&identity, expected_peer)?;
+    let expected_peer = *allowed.first().ok_or(TransportError::Protocol("empty peer allow-list"))?;
+    let mut swarm = new_swarm(&identity, &allowed)?;
     swarm.listen_on(listen).map_err(|error| TransportError::Connect(error.to_string()))?;
     let mut budget = SessionBudget::new();
     let mut bound = false;
@@ -123,7 +140,9 @@ pub async fn serve(
                                 continue;
                             }
                             budget.accept(request.len()).map_err(|_| TransportError::Protocol("session budget exceeded"))?;
-                            let _ = swarm.behaviour_mut().message.send_response(channel, request);
+                            let response = handler.handle(request)?;
+                            budget.accept(response.len()).map_err(|_| TransportError::Protocol("session budget exceeded"))?;
+                            let _ = swarm.behaviour_mut().message.send_response(channel, response);
                         }
                         Message::Response { .. } => {}
                     }
@@ -139,14 +158,31 @@ pub async fn serve(
     .map_err(|_| TransportError::Timeout)?
 }
 
-/// Dial one peer, send a signed binding, then one echo request.
-pub async fn dial(
+/// Single-peer convenience wrapper used by the host probe.
+pub async fn serve(
+    identity: DeviceIdentity,
+    expected_peer: PeerId,
+    listen: Multiaddr,
+    verifier: &(dyn BindingVerifier + Send + Sync),
+    public_key: Vec<u8>,
+    timeout: Duration,
+) -> Result<SessionSummary, TransportError> {
+    serve_with(identity, vec![expected_peer], listen, verifier, public_key,
+        Box::new(EchoHandler), timeout).await
+}
+
+/// Dial one peer, send a signed binding, then one payload and return the response.
+pub async fn dial_payload(
     identity: DeviceIdentity,
     address: Multiaddr,
     expected_peer: PeerId,
+    payload: &[u8],
     timeout: Duration,
-) -> Result<SessionSummary, TransportError> {
-    let mut swarm = new_swarm(&identity, expected_peer)?;
+) -> Result<(Vec<u8>, SessionSummary), TransportError> {
+    if payload.len() > MAX_FRAME_BYTES {
+        return Err(TransportError::Protocol("payload too large"));
+    }
+    let mut swarm = new_swarm(&identity, &[expected_peer])?;
     let nonce = [7u8; 32];
     let signed = identity.sign(&transcript(&identity.device_id(), &identity.peer_id_bytes(), &nonce));
     let binding = encode_binding(&identity.device_id(), &nonce, &signed);
@@ -173,16 +209,14 @@ pub async fn dial(
                             if response != b"OK" {
                                 return Err(TransportError::Binding(BindingError::SignatureRejected));
                             }
-                            budget.accept(4).map_err(|_| TransportError::Protocol("session budget exceeded"))?;
-                            swarm.behaviour_mut().message.send_request(&expected_peer, b"ping".to_vec());
+                            budget.accept(payload.len()).map_err(|_| TransportError::Protocol("session budget exceeded"))?;
+                            swarm.behaviour_mut().message.send_request(&expected_peer, payload.to_vec());
                             sent_payload = true;
                         }
                         Message::Response { response, .. } => {
-                            if response != b"ping" {
-                                return Err(TransportError::Protocol("echo mismatch"));
-                            }
                             budget.accept(response.len()).map_err(|_| TransportError::Protocol("session budget exceeded"))?;
-                            return Ok(SessionSummary { binding_verified: true, frames: budget.frames(), bytes: budget.bytes() });
+                            return Ok((response, SessionSummary {
+                                binding_verified: true, frames: budget.frames(), bytes: budget.bytes() }));
                         }
                         Message::Request { .. } => {}
                     }
@@ -196,6 +230,20 @@ pub async fn dial(
     })
     .await
     .map_err(|_| TransportError::Timeout)?
+}
+
+/// Echo convenience used by the host probe.
+pub async fn dial(
+    identity: DeviceIdentity,
+    address: Multiaddr,
+    expected_peer: PeerId,
+    timeout: Duration,
+) -> Result<SessionSummary, TransportError> {
+    let (response, summary) = dial_payload(identity, address, expected_peer, b"ping", timeout).await?;
+    if response != b"ping" {
+        return Err(TransportError::Protocol("echo mismatch"));
+    }
+    Ok(summary)
 }
 
 /// Build a loopback multiaddress for tests and probes.

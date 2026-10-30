@@ -5,10 +5,11 @@
 
 use crate::binding::transcript;
 use crate::identity::DeviceIdentity;
-use crate::transport::{dial, loopback, serve, Ed25519BindingVerifier};
-use jni::objects::{JByteArray, JClass};
+use crate::transport::{dial, dial_payload, loopback, serve, serve_with, Ed25519BindingVerifier, SessionHandler, TransportError};
+use jni::objects::{GlobalRef, JByteArray, JClass, JObject, JString};
 use jni::sys::{jboolean, jint, jstring, JNI_FALSE, JNI_TRUE};
-use jni::JNIEnv;
+use jni::{JNIEnv, JavaVM};
+use libp2p::PeerId;
 use std::time::Duration;
 
 static VERIFIER: Ed25519BindingVerifier = Ed25519BindingVerifier;
@@ -45,6 +46,57 @@ fn loopback_summary(port: u16) -> Result<String, String> {
             client_summary.frames, server_summary.frames
         ))
     })
+}
+
+fn to_hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn from_hex(value: &str) -> Option<Vec<u8>> {
+    if !value.len().is_multiple_of(2) || value.len() > 512 {
+        return None;
+    }
+    (0..value.len()).step_by(2).map(|index| u8::from_str_radix(&value[index..index + 2], 16).ok()).collect()
+}
+
+fn seed_from_hex(value: &str) -> Option<[u8; 32]> {
+    let bytes = from_hex(value)?;
+    if bytes.len() != 32 {
+        return None;
+    }
+    let mut seed = [0u8; 32];
+    seed.copy_from_slice(&bytes);
+    Some(seed)
+}
+
+fn peer_from_hex(value: &str) -> Option<PeerId> {
+    let bytes = from_hex(value)?;
+    PeerId::from_bytes(&bytes).ok()
+}
+
+struct JniHandler {
+    vm: JavaVM,
+    object: GlobalRef,
+}
+
+impl SessionHandler for JniHandler {
+    fn handle(&mut self, request: Vec<u8>) -> Result<Vec<u8>, TransportError> {
+        let mut env = self
+            .vm
+            .attach_current_thread()
+            .map_err(|_| TransportError::Protocol("could not attach to the JVM"))?;
+        let input = env
+            .byte_array_from_slice(&request)
+            .map_err(|_| TransportError::Protocol("could not allocate byte array"))?;
+        let result = env
+            .call_method(&self.object, "handle", "([B)[B", &[(&input).into()])
+            .map_err(|_| TransportError::Protocol("handler call failed"))?;
+        let value = result
+            .l()
+            .map_err(|_| TransportError::Protocol("handler returned no bytes"))?;
+        env.convert_byte_array(&JByteArray::from(value))
+            .map_err(|_| TransportError::Protocol("could not read handler response"))
+    }
 }
 
 fn verify_p256(message: &[u8], signature: &[u8], public_key: &[u8]) -> bool {
@@ -118,4 +170,156 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeVerifyP256(
     let signature = env.convert_byte_array(&signature).unwrap_or_default();
     let public_key = env.convert_byte_array(&public_key).unwrap_or_default();
     if verify_p256(&message, &signature, &public_key) { JNI_TRUE } else { JNI_FALSE }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePeerId(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(bytes) = seed_from_hex(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let identity = DeviceIdentity::from_bytes(bytes);
+    match env.new_string(to_hex(&identity.peer_id_bytes())) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+    port: jint,
+    allowed_csv: JString,
+    client_public_key: JString,
+    handler: JObject,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let allowed_csv: String = match env.get_string(&allowed_csv) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let client_public_key: String = match env.get_string(&client_public_key) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(public_key) = from_hex(&client_public_key) else {
+        return std::ptr::null_mut();
+    };
+    let Some(seed) = seed_from_hex(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let mut allowed = Vec::new();
+    for item in allowed_csv.split(',') {
+        match peer_from_hex(item.trim()) {
+            Some(peer) => allowed.push(peer),
+            None => return std::ptr::null_mut(),
+        }
+    }
+    if allowed.is_empty() {
+        return std::ptr::null_mut();
+    }
+    let vm = match env.get_java_vm() {
+        Ok(vm) => vm,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let object = match env.new_global_ref(&handler) {
+        Ok(value) => value,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let identity = DeviceIdentity::from_bytes(seed);
+    let runtime = match tokio::runtime::Builder::new_multi_thread().enable_all().build() {
+        Ok(runtime) => runtime,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let result = runtime.block_on(serve_with(
+        identity,
+        allowed,
+        loopback(port as u16),
+        &VERIFIER,
+        public_key,
+        Box::new(JniHandler { vm, object }),
+        Duration::from_secs(30),
+    ));
+    let message = match result {
+        Ok(summary) => format!("OK {} {}", summary.frames, summary.bytes),
+        Err(error) => format!("FAIL {error}"),
+    };
+    match env.new_string(message) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeDialOnce(
+    mut env: JNIEnv<'_>,
+    _class: JClass<'_>,
+    seed: JString<'_>,
+    port: jint,
+    expected_peer: JString<'_>,
+    payload: JByteArray<'_>,
+) -> jni::sys::jbyteArray {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let expected: String = match env.get_string(&expected_peer) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(seed) = seed_from_hex(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let Some(peer) = peer_from_hex(&expected) else {
+        return std::ptr::null_mut();
+    };
+    let payload = match env.convert_byte_array(&payload) {
+        Ok(value) => value,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let identity = DeviceIdentity::from_bytes(seed);
+    let runtime = match tokio::runtime::Builder::new_multi_thread().enable_all().build() {
+        Ok(runtime) => runtime,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let result = runtime.block_on(dial_payload(identity, loopback(port as u16), peer, &payload, Duration::from_secs(30)));
+    match result {
+        Ok((response, _summary)) => match env.byte_array_from_slice(&response) {
+            Ok(value) => value.into_raw(),
+            Err(_) => std::ptr::null_mut(),
+        },
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePublicKey(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(bytes) = seed_from_hex(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let identity = DeviceIdentity::from_bytes(bytes);
+    match env.new_string(to_hex(&identity.public_key_bytes())) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
 }

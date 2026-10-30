@@ -16,7 +16,12 @@ pub struct DeviceIdentity {
 impl DeviceIdentity {
     /// Deterministic identity for tests and probes.
     pub fn from_seed(seed: u8) -> Self {
-        let keypair = Keypair::ed25519_from_bytes([seed; 32]).expect("seed is a valid ed25519 secret");
+        Self::from_bytes([seed; 32])
+    }
+
+    /// Identity derived from a persisted 32-byte seed.
+    pub fn from_bytes(seed: [u8; 32]) -> Self {
+        let keypair = Keypair::ed25519_from_bytes(seed).expect("seed is a valid ed25519 secret");
         Self::from_keypair(keypair)
     }
 

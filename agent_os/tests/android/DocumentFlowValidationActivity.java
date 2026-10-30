@@ -57,6 +57,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("PAIR_REENTRY".equals(getIntent().getAction())) pairReentry(store);
                 else if ("PAIR_ROTATE".equals(getIntent().getAction())) pairRotate(store);
                 else if ("PAIR_UI_REVOKED".equals(getIntent().getAction())) pairUiRevoked(store);
+                else if ("SYNC_HANDLER_EXCHANGE".equals(getIntent().getAction())) syncHandlerExchange(store);
+                else if ("SYNC_UNPAIRED_REJECTED".equals(getIntent().getAction())) syncUnpairedRejected(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -610,6 +612,49 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private void syncHandlerExchange(AgentStore store) throws Exception {
+        final String seedA = shortHash("sync-install-a");
+        final String seedB = shortHash("sync-install-b");
+        String peerA = SyncProbe.nativePeerId(seedA);
+        String peerB = SyncProbe.nativePeerId(seedB);
+        String publicB = SyncProbe.nativePublicKey(seedB);
+        check(peerA != null && peerB != null && !peerA.equals(peerB), "two distinct peers derived from seeds");
+        final String[] serverResult = new String[1];
+        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47901, peerB, publicB,
+            request -> {
+                byte[] prefix = "ack:".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                byte[] reply = new byte[prefix.length + request.length];
+                System.arraycopy(prefix, 0, reply, 0, prefix.length);
+                System.arraycopy(request, 0, reply, prefix.length, request.length);
+                return reply;
+            }), "sync-server");
+        server.start();
+        Thread.sleep(900);
+        byte[] response = SyncProbe.nativeDialOnce(seedB, 47901, peerA,
+            "hello".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        server.join(30000);
+        check(response != null, "dial returned a response");
+        check("ack:hello".equals(new String(response, java.nio.charset.StandardCharsets.UTF_8)),
+            "server handler response arrived over the transport");
+        check(serverResult[0] != null && serverResult[0].startsWith("OK"), "server finished the session");
+    }
+
+    private void syncUnpairedRejected(AgentStore store) throws Exception {
+        final String seedA = shortHash("sync-install-a");
+        final String seedC = shortHash("sync-install-c");
+        String peerC = SyncProbe.nativePeerId(seedC);
+        String publicC = SyncProbe.nativePublicKey(seedC);
+        final String[] serverResult = new String[1];
+        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47902, peerC, publicC,
+            request -> request), "sync-server-unpaired");
+        server.start();
+        Thread.sleep(900);
+        byte[] response = SyncProbe.nativeDialOnce(shortHash("sync-install-d"), 47902, SyncProbe.nativePeerId(seedA),
+            "hello".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        server.join(30000);
+        check(response == null, "an unpaired peer receives no response");
     }
 
     private void pairUiRevoked(AgentStore store) throws Exception {
