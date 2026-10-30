@@ -1,0 +1,15 @@
+{
+  "candidate_sha256": "dee97556b93d84355b7abf07a5c3289517bbc5561b04ff296dd759ed2cda8664",
+  "automated_device_cases": 43,
+  "cross_install_synthetic_archive_restore": true,
+  "distinct_validation_uids": true,
+  "lifecycle_archive_restore": true,
+  "share_workflow_archive_restore": true,
+  "legacy_archive_restore_run": false,
+  "validation_packages_removed": true,
+  "manual_system_picker_ui_not_run": true,
+  "physical_power_trial_not_run": true,
+  "model_runtime_included": true,
+  "production_update_installed": true,
+  "first_install_time_preserved": true
+}

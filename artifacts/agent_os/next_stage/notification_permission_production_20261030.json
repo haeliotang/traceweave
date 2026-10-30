@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "production_version": "0.6.14",
+  "production_version_code": 23,
+  "first_install_time_preserved": "2026-10-25 10:43:26",
+  "first_launch_prompt_shown": true,
+  "denied_path": {
+    "permission_denied": true,
+    "relaunch_does_not_prompt_again": true,
+    "app_relaunched_normally": true,
+    "crash_record_found": false,
+    "note": "after denying, the production process was gone and the launcher was shown; the app relaunched normally and no crash entry was found"
+  },
+  "retry_path": {
+    "settings_row_shown": "Notifications: not enabled",
+    "retry_button_shown": "Enable notifications",
+    "system_prompt_shown_again": true,
+    "permission_granted": true,
+    "settings_row_after_grant": "Notifications: enabled"
+  },
+  "isolated_denial_check": {
+    "package": "org.traceform.agentos.actionsvalidation",
+    "toast_observed": "通知权限被拒绝；需在系统设置中开启后通知能力才可用",
+    "app_stayed_alive": true
+  },
+  "production_capability_state": {
+    "post_notifications_granted": true,
+    "channel_created_by_previous_synthetic_test": true
+  },
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af9b93a0355ca426af533e6d630c9e32caa12817b697f01ed0250d7ef6769cef",
+    "agent_os/android/AndroidManifest.xml": "23bfc3fef10e88cdb8c7b3b6a63cfe218cd024121ece19ae7d5ca1e18e046df5"
+  },
+  "limitations": [
+    "The first denial happened right after the acceptance pipeline; the production process ended and the launcher was shown, so the denial toast was not captured there",
+    "Denial behaviour was reproduced and captured in the isolated package instead",
+    "Notification delivery itself was verified earlier with synthetic content only"
+  ]
+}

@@ -71,6 +71,7 @@ public final class MainActivity extends Activity {
     private Button btnToggleVoice;
     private TextView traceformStatus;
     private static final int REQ_RECORD_AUDIO = 2001;
+    private static final int REQ_NOTIFICATIONS = 7002;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
@@ -96,6 +97,7 @@ public final class MainActivity extends Activity {
         refreshMemories();
         scheduleRemoteUriExpiry();
         updateSensorsCard();
+        maybeRequestNotificationPermission(false);
     }
 
     @Override
@@ -153,7 +155,31 @@ public final class MainActivity extends Activity {
             } else {
                 Toast.makeText(this, "需要麦克风权限以启用实时 VAD 拾音", Toast.LENGTH_LONG).show();
             }
+        } else if (requestCode == REQ_NOTIFICATIONS) {
+            boolean granted = grantResults.length > 0
+                && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            showMessage(granted
+                ? (isEnglish() ? "Notifications enabled" : "通知已启用")
+                : (isEnglish() ? "Notifications denied; enable them in system settings to use the notification capability"
+                                : "通知权限被拒绝；需在系统设置中开启后通知能力才可用"));
         }
+    }
+
+    private boolean notificationsGranted() {
+        return android.os.Build.VERSION.SDK_INT < 33
+            || checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                == android.content.pm.PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void maybeRequestNotificationPermission(boolean userInitiated) {
+        if (notificationsGranted()) {
+            if (userInitiated) showMessage(isEnglish() ? "Notifications are already enabled" : "通知权限已授予");
+            return;
+        }
+        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
+        if (!userInitiated && prefs.getBoolean("notification_prompt_shown", false)) return;
+        prefs.edit().putBoolean("notification_prompt_shown", true).apply();
+        requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, REQ_NOTIFICATIONS);
     }
 
     private boolean checkAudioPermission() {
@@ -681,6 +707,22 @@ public final class MainActivity extends Activity {
         addActionButton(archiveActions, en ? "Export Archive" : "加密导出", view -> promptExportPassphrase());
         addActionButton(archiveActions, en ? "Import Archive" : "导入档案", view -> chooseArchiveToImport());
         root.addView(archiveActions);
+
+        LinearLayout notificationRow = new LinearLayout(this);
+        notificationRow.setOrientation(LinearLayout.HORIZONTAL);
+        boolean notificationGranted = notificationsGranted();
+        TextView notificationState = new TextView(this);
+        notificationState.setText(en ? (notificationGranted ? "Notifications: enabled" : "Notifications: not enabled")
+                                     : (notificationGranted ? "通知权限：已启用" : "通知权限：未启用"));
+        notificationState.setTextSize(11);
+        notificationState.setTextColor(0xFF64748B);
+        notificationState.setPadding(0, dp(6), dp(8), dp(6));
+        notificationRow.addView(notificationState);
+        if (!notificationGranted) {
+            addActionButton(notificationRow, en ? "Enable notifications" : "启用通知",
+                view -> maybeRequestNotificationPermission(true));
+        }
+        root.addView(notificationRow);
 
         activityStatus = new TextView(this);
         activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");

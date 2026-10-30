@@ -15,7 +15,7 @@
 | 7 | 分享预览 + 系统分享选择器 | Sharesheet | 2026-10-30 | [workflow_share_recovery_ui_20261030](../artifacts/agent_os/next_stage/workflow_share_recovery_ui_20261030.json) | 部分验收（未选接收方） | B3 |
 | 8 | 实际发送到接收应用 | Sharesheet | 未测 | — | 未测 | B3 |
 | 9 | 日历草稿交接 | Etar | 2026-10-27 | [real_ui_and_sensor_partial](../artifacts/agent_os/next_stage/real_ui_and_sensor_partial.json) | 部分验收（一次，后续未重跑） | 后续轮次补测 |
-| 10 | 通知权限弹窗 | 系统权限 | 2026-10-30 | [notification_permission_ui_20261030](../artifacts/agent_os/next_stage/notification_permission_ui_20261030.json) | 已验收（允许/拒绝） | 正式应用不会主动申请，见 A7 |
+| 10 | 通知权限弹窗 | 系统权限 | 2026-10-30 | [notification_permission_production_20261030](../artifacts/agent_os/next_stage/notification_permission_production_20261030.json) | 已验收（正式应用首次启动/拒绝/重试） | 隔离包的允许与拒绝见 [notification_permission_ui_20261030](../artifacts/agent_os/next_stage/notification_permission_ui_20261030.json) |
 | 11 | 选择器取消/返回未知结果 | DocumentsUI / Sharesheet | 2026-10-30 | [workflow_share_e2e_20261030](../artifacts/agent_os/next_stage/workflow_share_e2e_20261030.json)、[workflow_ui_20261027](../artifacts/agent_os/next_stage/workflow_ui_20261027.json) | 部分验收（取消路径） | 结果未知的界面提示见 7 |
 | 12 | 档案导入过期拒绝（页面停留后变更） | DocumentsUI + 应用内 | 2026-10-30 | [archive_delete_stale_ui_20261030](../artifacts/agent_os/next_stage/archive_delete_stale_ui_20261030.json) | 已验收（拒绝 + 重新审核） | — |
 | 13 | 多数量删除确认 | 应用内确认页 | 2026-10-30 | [archive_delete_multi_ui_20261030](../artifacts/agent_os/next_stage/archive_delete_multi_ui_20261030.json) | 已验收（3+3） | 更大数量未测 |
