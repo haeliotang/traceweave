@@ -26,6 +26,9 @@ def main():
     parser.add_argument('--output-dir', type=Path, required=True)
     args = parser.parse_args()
     out = args.output_dir
+    if out.exists():
+        for stale in out.glob('*.json'):
+            stale.unlink()
     out.mkdir(parents=True, exist_ok=True)
     adb = [args.adb, '-s', args.serial]
 
@@ -72,6 +75,16 @@ def main():
     serve_and_exchange('fourth')
     case(NODE_A, 'SYNC_VERIFY_AFTER_DELETE', 'deleted-a')
     case(NODE_B, 'SYNC_VERIFY_AFTER_DELETE', 'deleted-b')
+    case(NODE_A, 'SYNC_REVOKE_NODE_B', 'revoke-b')
+    server = subprocess.Popen([sys.executable, str(ROOT / 'agent_os/scripts/validate_actions_android.py'),
+                               '--adb', args.adb, '--serial', args.serial, '--package', NODE_A,
+                               '--case', 'SYNC_NODE_SERVE', '--output', str(out / 'revoked-server.json')],
+                              cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    time.sleep(4)
+    case(NODE_B, 'SYNC_EXPECT_REVOKED', 'revoked-client')
+    server.wait(timeout=90)
+    if server.returncode != 0:
+        raise RuntimeError(f'revoked server failed: {server.communicate()}')
     cases = []
     for path in sorted(out.glob('*.json')):
         cases.extend(json.loads(path.read_text()).get('cases', []))
@@ -81,7 +94,7 @@ def main():
         'cases': cases,
         'all_passed': all(item['passed'] for item in cases),
         'scenarios': ['record_roundtrip', 'retry_after_failure', 'convergence', 'concurrent_conflict',
-                      'user_resolution', 'deletion_propagation'],
+                      'user_resolution', 'deletion_propagation', 'revocation_refusal'],
     }
     (out / 'e2e.json').write_text(json.dumps(receipt, indent=2) + '\n')
     print('sync e2e:', 'PASS' if receipt['all_passed'] else 'FAIL', len(cases), 'cases')

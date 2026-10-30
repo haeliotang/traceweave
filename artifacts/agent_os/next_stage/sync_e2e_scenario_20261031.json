@@ -9,9 +9,10 @@
     "convergence",
     "concurrent_conflict",
     "user_resolution",
-    "deletion_propagation"
+    "deletion_propagation",
+    "revocation_refusal"
   ],
-  "case_count": 38,
+  "case_count": 23,
   "all_passed": true,
   "checks": {
     "record_roundtrip_restores_memory": true,
@@ -21,243 +22,153 @@
     "concurrent_edits_become_two_candidates_on_both": true,
     "user_resolution_converges_to_one_version": true,
     "deletion_propagates_and_does_not_reappear": true,
-    "peer_memory_survives_deletion": true
+    "peer_memory_survives_deletion": true,
+    "revoked_device_refused_on_next_request": true
   },
   "cases": [
     {
       "case": "SYNC_VERIFY_CONFLICT",
-      "pid": 17920,
+      "pid": 20671,
       "passed": true,
-      "result": "10-31 01:50:50.232 17920 17950 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
+      "result": "10-31 01:55:08.617 20671 20701 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
     },
     {
       "case": "SYNC_VERIFY_CONFLICT",
-      "pid": 17971,
+      "pid": 20722,
       "passed": true,
-      "result": "10-31 01:50:51.631 17971 18000 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
+      "result": "10-31 01:55:10.032 20722 20751 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
     },
     {
       "case": "SYNC_DELETE_OWN",
-      "pid": 18309,
+      "pid": 21058,
       "passed": true,
-      "result": "10-31 01:51:04.446 18309 18338 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_DELETE_OWN"
+      "result": "10-31 01:55:22.797 21058 21087 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_DELETE_OWN"
     },
     {
       "case": "SYNC_VERIFY_AFTER_DELETE",
-      "pid": 18496,
+      "pid": 21246,
       "passed": true,
-      "result": "10-31 01:51:12.980 18496 18526 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
+      "result": "10-31 01:55:31.241 21246 21275 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
     },
     {
       "case": "SYNC_VERIFY_AFTER_DELETE",
-      "pid": 18548,
+      "pid": 21296,
       "passed": true,
-      "result": "10-31 01:51:14.419 18548 18577 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
-    },
-    {
-      "case": "SYNC_VERIFY_CONFLICT",
-      "pid": 16685,
-      "passed": true,
-      "result": "10-31 01:49:55.050 16685 16716 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
-    },
-    {
-      "case": "SYNC_VERIFY_CONFLICT",
-      "pid": 16738,
-      "passed": true,
-      "result": "10-31 01:49:56.419 16738 16767 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_VERIFY_CONFLICT"
-    },
-    {
-      "case": "SYNC_DELETE_OWN",
-      "pid": 17073,
-      "passed": true,
-      "result": "10-31 01:50:09.234 17073 17102 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_DELETE_OWN"
-    },
-    {
-      "case": "SYNC_VERIFY_AFTER_DELETE",
-      "pid": 17256,
-      "passed": true,
-      "result": "10-31 01:50:17.201 17256 17285 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
-    },
-    {
-      "case": "SYNC_VERIFY_AFTER_DELETE",
-      "pid": 17307,
-      "passed": true,
-      "result": "10-31 01:50:18.650 17307 17336 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
+      "result": "10-31 01:55:32.637 21296 21325 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
     },
     {
       "case": "SYNC_EDIT_A",
-      "pid": 16449,
+      "pid": 20434,
       "passed": true,
-      "result": "10-31 01:49:45.168 16449 16479 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_A"
+      "result": "10-31 01:54:58.646 20434 20464 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_A"
     },
     {
       "case": "SYNC_EDIT_B",
-      "pid": 16500,
+      "pid": 20487,
       "passed": true,
-      "result": "10-31 01:49:46.587 16500 16529 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_B"
+      "result": "10-31 01:55:00.050 20487 20517 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_B"
     },
     {
       "case": "SYNC_NODE_EXCHANGE",
-      "pid": 16378,
+      "pid": 20366,
       "passed": true,
-      "result": "10-31 01:49:42.861 16378 16411 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+      "result": "10-31 01:54:56.418 20366 20398 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
     },
     {
       "case": "SYNC_NODE_SERVE",
-      "pid": 16313,
+      "pid": 20302,
       "passed": true,
-      "result": "10-31 01:49:42.817 16313 16343 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+      "result": "10-31 01:54:56.353 20302 20332 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
     },
     {
       "case": "SYNC_NODE_EXCHANGE",
-      "pid": 17186,
+      "pid": 21173,
       "passed": true,
-      "result": "10-31 01:50:15.279 17186 17219 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+      "result": "10-31 01:55:28.886 21173 21206 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
     },
     {
       "case": "SYNC_NODE_SERVE",
-      "pid": 17124,
+      "pid": 21109,
       "passed": true,
-      "result": "10-31 01:50:15.253 17124 17153 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
-    },
-    {
-      "case": "SYNC_RESOLVE_B_EDIT",
-      "pid": 16786,
-      "passed": true,
-      "result": "10-31 01:49:57.843 16786 16816 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RESOLVE_B_EDIT"
-    },
-    {
-      "case": "SYNC_VERIFY_RESOLVED",
-      "pid": 16973,
-      "passed": true,
-      "result": "10-31 01:50:06.392 16973 17003 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
-    },
-    {
-      "case": "SYNC_VERIFY_RESOLVED",
-      "pid": 17023,
-      "passed": true,
-      "result": "10-31 01:50:07.826 17023 17053 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
-    },
-    {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 16613,
-      "passed": true,
-      "result": "10-31 01:49:52.715 16613 16646 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
-    },
-    {
-      "case": "SYNC_NODE_SERVE",
-      "pid": 16550,
-      "passed": true,
-      "result": "10-31 01:49:52.653 16550 16580 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
-    },
-    {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 16901,
-      "passed": true,
-      "result": "10-31 01:50:04.022 16901 16933 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
-    },
-    {
-      "case": "SYNC_NODE_SERVE",
-      "pid": 16838,
-      "passed": true,
-      "result": "10-31 01:50:03.979 16838 16867 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
-    },
-    {
-      "case": "SYNC_EDIT_A",
-      "pid": 17687,
-      "passed": true,
-      "result": "10-31 01:50:40.319 17687 17716 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_A"
-    },
-    {
-      "case": "SYNC_EDIT_B",
-      "pid": 17737,
-      "passed": true,
-      "result": "10-31 01:50:41.725 17737 17766 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EDIT_B"
-    },
-    {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 17617,
-      "passed": true,
-      "result": "10-31 01:50:38.000 17617 17650 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
-    },
-    {
-      "case": "SYNC_NODE_SERVE",
-      "pid": 17553,
-      "passed": true,
-      "result": "10-31 01:50:37.942 17553 17583 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
-    },
-    {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 18423,
-      "passed": true,
-      "result": "10-31 01:51:10.705 18423 18456 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
-    },
-    {
-      "case": "SYNC_NODE_SERVE",
-      "pid": 18360,
-      "passed": true,
-      "result": "10-31 01:51:10.654 18360 18389 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+      "result": "10-31 01:55:28.845 21109 21138 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
     },
     {
       "case": "SYNC_RECORD_ROUNDTRIP",
-      "pid": 17443,
+      "pid": 20191,
       "passed": true,
-      "result": "10-31 01:50:30.906 17443 17468 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_ROUNDTRIP"
+      "result": "10-31 01:54:49.308 20191 20220 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_ROUNDTRIP"
     },
     {
       "case": "SYNC_RESOLVE_B_EDIT",
-      "pid": 18021,
+      "pid": 20771,
       "passed": true,
-      "result": "10-31 01:50:53.071 18021 18051 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RESOLVE_B_EDIT"
+      "result": "10-31 01:55:11.447 20771 20800 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RESOLVE_B_EDIT"
     },
     {
       "case": "SYNC_VERIFY_RESOLVED",
-      "pid": 18209,
+      "pid": 20959,
       "passed": true,
-      "result": "10-31 01:51:01.551 18209 18238 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
+      "result": "10-31 01:55:19.996 20959 20988 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
     },
     {
       "case": "SYNC_VERIFY_RESOLVED",
-      "pid": 18259,
+      "pid": 21009,
       "passed": true,
-      "result": "10-31 01:51:02.975 18259 18289 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
+      "result": "10-31 01:55:21.389 21009 21038 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_RESOLVED"
     },
     {
       "case": "SYNC_DIAL_UNREACHABLE",
-      "pid": 17494,
+      "pid": 20243,
       "passed": true,
-      "result": "10-31 01:50:32.206 17494 17524 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_DIAL_UNREACHABLE"
+      "result": "10-31 01:54:50.611 20243 20272 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_DIAL_UNREACHABLE"
     },
     {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 17849,
+      "case": "SYNC_REVOKE_NODE_B",
+      "pid": 21345,
       "passed": true,
-      "result": "10-31 01:50:48.049 17849 17881 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+      "result": "10-31 01:55:33.984 21345 21374 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_REVOKE_NODE_B"
     },
     {
-      "case": "SYNC_NODE_SERVE",
-      "pid": 17786,
+      "case": "SYNC_EXPECT_REVOKED",
+      "pid": 21460,
       "passed": true,
-      "result": "10-31 01:50:47.980 17786 17815 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
-    },
-    {
-      "case": "SYNC_NODE_EXCHANGE",
-      "pid": 18137,
-      "passed": true,
-      "result": "10-31 01:50:59.307 18137 18169 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+      "result": "10-31 01:55:39.527 21460 21492 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_EXPECT_REVOKED"
     },
     {
       "case": "SYNC_NODE_SERVE",
-      "pid": 18072,
+      "pid": 21397,
       "passed": true,
-      "result": "10-31 01:50:59.233 18072 18103 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+      "result": "10-31 01:55:39.515 21397 21426 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+    },
+    {
+      "case": "SYNC_NODE_EXCHANGE",
+      "pid": 20600,
+      "passed": true,
+      "result": "10-31 01:55:06.484 20600 20632 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+    },
+    {
+      "case": "SYNC_NODE_SERVE",
+      "pid": 20536,
+      "passed": true,
+      "result": "10-31 01:55:06.421 20536 20566 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+    },
+    {
+      "case": "SYNC_NODE_EXCHANGE",
+      "pid": 20886,
+      "passed": true,
+      "result": "10-31 01:55:17.723 20886 20919 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+    },
+    {
+      "case": "SYNC_NODE_SERVE",
+      "pid": 20823,
+      "passed": true,
+      "result": "10-31 01:55:17.652 20823 20852 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
     }
   ],
   "limitations": [
     "Fixed synthetic seeds identify the nodes; pairing records are not yet consumed by the transport",
     "Loopback on one device only; no wireless or relay path",
-    "Live disconnect on pairing revocation is still not enforced for an idle session",
-    "No protocol receipts or manifest diff; each session exchanges the full record set",
-    "Receipts and retry cover a single failure, not repeated partitions"
+    "An idle session is not proactively closed when the pairing is revoked; the next request is refused and the session ends",
+    "No protocol receipts or manifest diff; each session exchanges the full record set"
   ]
 }

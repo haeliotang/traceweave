@@ -74,6 +74,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_RESOLVE_B_EDIT".equals(getIntent().getAction())) syncResolveBEdit(store);
                 else if ("SYNC_VERIFY_RESOLVED".equals(getIntent().getAction())) syncVerifyResolved(store);
                 else if ("SYNC_DIAL_UNREACHABLE".equals(getIntent().getAction())) syncDialUnreachable(store);
+                else if ("SYNC_REVOKE_NODE_B".equals(getIntent().getAction())) syncRevokeNodeB(store);
+                else if ("SYNC_EXPECT_REVOKED".equals(getIntent().getAction())) syncExpectRevoked(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -639,6 +641,10 @@ public final class DocumentFlowValidationActivity extends Activity {
         AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, marker);
         store.mergeMemoryVersions(memory.id,
             java.util.Collections.singletonList(mergeVersion(actor, 1, shortHash(marker), false)));
+        if ("node-a".equals(actor)) {
+            store.savePairing("node-b", shortHash("node-b-fingerprint"), SyncProbe.nativePeerId(SYNC_SEED_B),
+                SyncPairing.STATUS_ACTIVE);
+        }
         getSharedPreferences("document_validation", 0).edit().putBoolean("sync_seeded_" + actor, true).commit();
     }
 
@@ -649,6 +655,20 @@ public final class DocumentFlowValidationActivity extends Activity {
                     || "SYNTHETIC sync B edit".equals(content)) return memory;
         }
         return null;
+    }
+
+    private void syncRevokeNodeB(AgentStore store) throws Exception {
+        check(SyncPairing.isActive(store, "node-b", shortHash("node-b-fingerprint")), "node B is paired before revocation");
+        SyncPairing.revoke(store, "node-b");
+        check(!SyncPairing.isActive(store, "node-b", shortHash("node-b-fingerprint")), "node B is revoked");
+    }
+
+    private void syncExpectRevoked(AgentStore store) throws Exception {
+        byte[] request = SyncExchange.encode(store.exportSyncRecords());
+        byte[] response = SyncProbe.nativeDialOnce(SYNC_SEED_B, 47911, SyncProbe.nativePeerId(SYNC_SEED_A), request);
+        String text = response == null ? "" : new String(response, java.nio.charset.StandardCharsets.UTF_8);
+        check(text.contains("revoked"), "revoked device is refused at the next request");
+        check(!store.listMemories().isEmpty(), "the refused exchange changed nothing locally");
     }
 
     private void syncDialUnreachable(AgentStore store) throws Exception {
@@ -728,8 +748,16 @@ public final class DocumentFlowValidationActivity extends Activity {
         seedSyncNode(store, SYNC_NODE_A_MEMORY, "node-a");
         String peerB = SyncProbe.nativePeerId(SYNC_SEED_B);
         String publicB = SyncProbe.nativePublicKey(SYNC_SEED_B);
-        String result = SyncProbe.nativeServeOnce(SYNC_SEED_A, 47911, peerB, publicB,
-            request -> SyncExchange.handle(store, request));
+        String result = SyncProbe.nativeServeOnce(SYNC_SEED_A, 47911, peerB, publicB, request -> {
+            boolean active;
+            try {
+                active = SyncPairing.isActive(store, "node-b", shortHash("node-b-fingerprint"));
+            } catch (Exception error) {
+                active = false;
+            }
+            if (!active) return "{\"error\":\"revoked\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            return SyncExchange.handle(store, request);
+        });
         check(result != null && result.startsWith("OK"), "sync node A served one exchange: " + result);
     }
 
