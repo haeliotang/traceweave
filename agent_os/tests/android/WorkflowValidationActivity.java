@@ -25,6 +25,11 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
+                else if ("MEMORY_BRANCH_SEED".equals(getIntent().getAction())) memoryBranchSeed(store);
+                else if ("MEMORY_BRANCH_TARGET_EDIT".equals(getIntent().getAction())) memoryBranchTargetEdit(store);
+                else if ("MEMORY_BRANCH_SOURCE_EDIT".equals(getIntent().getAction())) memoryBranchSourceEdit(store);
+                else if ("MEMORY_BRANCH_TARGET_RESOLVE".equals(getIntent().getAction())) memoryBranchTargetResolve(store);
+                else if ("MEMORY_BRANCH_SOURCE_RESOLVE".equals(getIntent().getAction())) memoryBranchSourceResolve(store);
                 else if ("SHARE_ESCAPED_CONTENT".equals(getIntent().getAction())) shareEscapedContent(store);
                 else if ("VERIFY_SHARE_RESTART".equals(getIntent().getAction())) verifyShareRestart(store);
                 else if ("EXPORT_SHARE_MIGRATION".equals(getIntent().getAction())) exportShareMigration(store);
@@ -399,6 +404,61 @@ public final class WorkflowValidationActivity extends Activity {
         reset(store);
         store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-escaped-share".toCharArray());
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "escaped share task survives archive restore");
+    }
+
+    private static final String BRANCH_PASSWORD = "synthetic-offline-branch-passphrase";
+    private void writeBranchFile(String name, byte[] bytes) throws Exception {
+        try (java.io.FileOutputStream out = openFileOutput(name, 0)) { out.write(bytes); }
+    }
+    private JSONObject branchIds() throws Exception {
+        return new JSONObject(new String(java.nio.file.Files.readAllBytes(new java.io.File(getFilesDir(), "branch-ids.json").toPath()), java.nio.charset.StandardCharsets.UTF_8));
+    }
+    private byte[] branchFile(String name) throws Exception {
+        return java.nio.file.Files.readAllBytes(new java.io.File(getFilesDir(), name).toPath());
+    }
+    private void memoryBranchSeed(AgentStore store) throws Exception {
+        reset(store);
+        AgentStore.Memory conflict = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC common version");
+        AgentStore.Memory deleted = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC old deleted content");
+        writeBranchFile("branch-ids.json", new JSONObject().put("conflict", conflict.id).put("deleted", deleted.id).toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        writeBranchFile("branch-initial.taos", store.exportArchive(BRANCH_PASSWORD.toCharArray()));
+        check(store.listMemories().size() == 2, "source initial isolated memories created");
+    }
+    private void memoryBranchTargetEdit(AgentStore store) throws Exception {
+        reset(store);
+        store.importArchive(new java.io.ByteArrayInputStream(branchFile("branch-initial.taos")), BRANCH_PASSWORD.toCharArray());
+        JSONObject ids = branchIds();
+        store.reviseMemory(memoryById(store, ids.getString("conflict")), "SYNTHETIC target offline edit", 0);
+        check(store.listMemories().size() == 2, "target imported baseline and edited while offline");
+    }
+    private void memoryBranchSourceEdit(AgentStore store) throws Exception {
+        JSONObject ids = branchIds();
+        store.reviseMemory(memoryById(store, ids.getString("conflict")), "SYNTHETIC source offline edit", 0);
+        store.deleteMemory(ids.getString("deleted"));
+        writeBranchFile("branch-source.taos", store.exportArchive(BRANCH_PASSWORD.toCharArray()));
+        check(store.listMemories().size() == 1, "source offline edit and deletion recorded");
+    }
+    private void memoryBranchTargetResolve(AgentStore store) throws Exception {
+        JSONObject ids = branchIds(); String conflict = ids.getString("conflict"), deleted = ids.getString("deleted");
+        AgentStore.ArchiveReview review = store.reviewArchive(new java.io.ByteArrayInputStream(branchFile("branch-source.taos")), BRANCH_PASSWORD.toCharArray());
+        check(review.conflicts.size() == 1 && review.conflicts.containsKey(conflict), "offline edits are presented for explicit choice");
+        check("SYNTHETIC source offline edit".equals(review.conflicts.get(conflict).incoming.content)
+            && "SYNTHETIC target offline edit".equals(review.conflicts.get(conflict).local.content), "both alternatives are retained for review");
+        store.importReviewedArchive(review, java.util.Collections.singletonMap(conflict, false));
+        check("SYNTHETIC target offline edit".equals(memoryById(store, conflict).content) && store.listMemories().size() == 1, "chosen target edit survives and deletion propagates");
+        store.importArchive(new java.io.ByteArrayInputStream(branchFile("branch-initial.taos")), BRANCH_PASSWORD.toCharArray());
+        check(store.listMemories().size() == 1 && store.listMemories().get(0).id.equals(conflict), "old archive cannot revive deleted memory");
+        writeBranchFile("branch-target.taos", store.exportArchive(BRANCH_PASSWORD.toCharArray()));
+        check(!conflict.equals(deleted), "deleted record is distinct");
+    }
+    private void memoryBranchSourceResolve(AgentStore store) throws Exception {
+        JSONObject ids = branchIds(); String conflict = ids.getString("conflict");
+        AgentStore.ArchiveReview review = store.reviewArchive(new java.io.ByteArrayInputStream(branchFile("branch-target.taos")), BRANCH_PASSWORD.toCharArray());
+        check(review.conflicts.size() == 1 && review.conflicts.containsKey(conflict), "source explicitly reviews target decision");
+        store.importReviewedArchive(review, java.util.Collections.singletonMap(conflict, true));
+        check("SYNTHETIC target offline edit".equals(memoryById(store, conflict).content) && store.listMemories().size() == 1, "source converges to reviewed target edit without restoring deletion");
+        store.importArchive(new java.io.ByteArrayInputStream(branchFile("branch-initial.taos")), BRANCH_PASSWORD.toCharArray());
+        check(store.listMemories().size() == 1, "source also rejects old deleted content");
     }
 
     private void documentShareChain(AgentStore store) throws Exception {

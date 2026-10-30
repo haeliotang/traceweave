@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated debug installations with independent UIDs and synthetic memories",
+  "offline_concurrent_edits_reviewed": true,
+  "both_conflict_candidates_visible_to_test_code": true,
+  "target_choice_and_source_review_converged": true,
+  "deletion_propagated": true,
+  "old_archive_cannot_revive_deleted_memory_on_either_install": true,
+  "reproducible_script_rerun": true,
+  "isolated_apps_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "c9d431483d5db41bc75e5d0ad3d42743c72718ae53cd6af3418c569f1f275843",
+    "agent_os/android/src/org/traceform/agentos/MemoryArchive.java": "07f910dbec68057e1eaa27022993d496ae584b2729ec172a9e5a38db10e6ab41",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "830563301661b5225bf5e2b589542b1a008c286948c5e192f499e250772095d7",
+    "agent_os/scripts/validate_actions_android.py": "0b0c958fe06141c95d6975d2f2d21e4f12bfbf8a21c6e3e3701c727c304a7429",
+    "agent_os/scripts/validate_memory_branches_android.py": "76e7d3792814577c588381fca91ffb0dad97a541d1b9599605d0666bbc9d0b23"
+  },
+  "limitations": [
+    "Same physical device, no second phone, user interaction, device pairing, transport or automated sync",
+    "Choices were made by synthetic test code using manual archive import, not causal merge",
+    "Does not establish cryptographic recovery key safety, malicious-device resistance or deletion of historical backups"
+  ]
+}
