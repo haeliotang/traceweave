@@ -59,6 +59,10 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("PAIR_UI_REVOKED".equals(getIntent().getAction())) pairUiRevoked(store);
                 else if ("SYNC_HANDLER_EXCHANGE".equals(getIntent().getAction())) syncHandlerExchange(store);
                 else if ("SYNC_UNPAIRED_REJECTED".equals(getIntent().getAction())) syncUnpairedRejected(store);
+                else if ("SYNC_RECORD_APPLY".equals(getIntent().getAction())) syncRecordApply(store);
+                else if ("SYNC_RECORD_DELETE".equals(getIntent().getAction())) syncRecordDelete(store);
+                else if ("SYNC_RECORD_CONCURRENT".equals(getIntent().getAction())) syncRecordConcurrent(store);
+                else if ("SYNC_RECORD_ROUNDTRIP".equals(getIntent().getAction())) syncRecordRoundtrip(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -612,6 +616,63 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private static AgentStore.SyncRecord syncRecord(String id, String content, String actor, long counter, boolean tombstone) throws Exception {
+        java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+        clock.put(actor, counter);
+        return new AgentStore.SyncRecord(id, AgentStore.MEMORY_FACT, content, AgentStore.MEMORY_SOURCE_USER, "", 0,
+            clock, tombstone ? null : shortHash(content), tombstone);
+    }
+
+    private void syncRecordApply(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC sync v1");
+        store.mergeMemoryVersions(memory.id,
+            java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("SYNTHETIC sync v1"), false)));
+        int applied = store.mergeSyncRecords(java.util.Collections.singletonList(
+            syncRecord(memory.id, "SYNTHETIC sync v2", "device-a", 2, false)));
+        check(applied == 1, "newer remote record is applied");
+        check("SYNTHETIC sync v2".equals(store.listMemories().get(0).content), "remote content replaced the local copy");
+        check(store.listMemoryVersions(memory.id).size() == 1, "only the newer version remains");
+    }
+
+    private void syncRecordDelete(AgentStore store) throws Exception {
+        String id = store.listMemories().get(0).id;
+        int applied = store.mergeSyncRecords(java.util.Collections.singletonList(
+            syncRecord(id, null, "device-b", 1, true)));
+        check(applied == 1, "remote tombstone is applied");
+        check(store.listMemories().isEmpty(), "tombstone deleted the memory");
+        try (android.database.Cursor cursor = store.getReadableDatabase().query("tombstones",
+                new String[]{"entity_id"}, "entity_type=? AND entity_id=?", new String[]{"memory", id}, null, null, null)) {
+            check(cursor.getCount() == 1, "deletion marker stored");
+        }
+    }
+
+    private void syncRecordConcurrent(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC base");
+        store.mergeMemoryVersions(memory.id,
+            java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("SYNTHETIC base"), false)));
+        int applied = store.mergeSyncRecords(java.util.Collections.singletonList(
+            syncRecord(memory.id, "SYNTHETIC other", "device-b", 1, false)));
+        check(applied == 0, "concurrent record is kept as a candidate, not applied");
+        check("SYNTHETIC base".equals(store.listMemories().get(0).content), "concurrent record does not overwrite content");
+        check(store.listMemoryVersions(memory.id).size() == 2, "both candidates are stored");
+    }
+
+    private void syncRecordRoundtrip(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC roundtrip");
+        store.mergeMemoryVersions(memory.id,
+            java.util.Collections.singletonList(mergeVersion("device-a", 4, shortHash("SYNTHETIC roundtrip"), false)));
+        java.util.List<AgentStore.SyncRecord> exported = store.exportSyncRecords();
+        check(exported.size() == 1, "one versioned record is exported");
+        store.getWritableDatabase().delete("memories", null, null);
+        store.getWritableDatabase().delete("memory_versions", null, null);
+        int applied = store.mergeSyncRecords(exported);
+        check(applied == 1 && store.listMemories().size() == 1, "exported record restores the memory");
+        check("SYNTHETIC roundtrip".equals(store.listMemories().get(0).content), "restored content matches");
     }
 
     private void syncHandlerExchange(AgentStore store) throws Exception {

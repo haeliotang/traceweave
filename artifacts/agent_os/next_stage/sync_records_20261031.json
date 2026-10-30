@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated package, synthetic memories, single store",
+  "checks": {
+    "newer_record_applied": true,
+    "remote_tombstone_applied": true,
+    "concurrent_record_kept_as_candidate": true,
+    "export_restores_memory": true,
+    "hash_mismatch_rejected_by_merge": true
+  },
+  "cases": [
+    {
+      "case": "SYNC_RECORD_APPLY",
+      "pid": 11307,
+      "passed": true,
+      "result": "10-31 01:27:21.137 11307 11347 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_APPLY"
+    },
+    {
+      "case": "SYNC_RECORD_DELETE",
+      "pid": 11372,
+      "passed": true,
+      "result": "10-31 01:27:22.492 11372 11401 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_DELETE"
+    },
+    {
+      "case": "SYNC_RECORD_CONCURRENT",
+      "pid": 11423,
+      "passed": true,
+      "result": "10-31 01:27:23.884 11423 11452 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_CONCURRENT"
+    },
+    {
+      "case": "SYNC_RECORD_ROUNDTRIP",
+      "pid": 11474,
+      "passed": true,
+      "result": "10-31 01:27:25.296 11474 11503 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=SYNC_RECORD_ROUNDTRIP"
+    }
+  ],
+  "limitations": [
+    "Records are merged through the store API; the transport does not carry them yet",
+    "Unversioned legacy memories are skipped by export until a clock is assigned",
+    "No receipts, manifest diff or two-install exchange yet"
+  ]
+}

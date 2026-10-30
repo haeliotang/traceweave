@@ -1277,6 +1277,134 @@ final class AgentStore extends SQLiteOpenHelper {
         return active;
     }
 
+    static final class SyncRecord {
+        final String id;
+        final String kind;
+        final String content;
+        final String source;
+        final String reference;
+        final long expiresAt;
+        final java.util.TreeMap<String, Long> clock;
+        final String contentHash;
+        final boolean tombstone;
+
+        SyncRecord(String id, String kind, String content, String source, String reference, long expiresAt,
+                   java.util.TreeMap<String, Long> clock, String contentHash, boolean tombstone) {
+            this.id = id;
+            this.kind = kind;
+            this.content = content;
+            this.source = source;
+            this.reference = reference;
+            this.expiresAt = expiresAt;
+            this.clock = clock;
+            this.contentHash = contentHash;
+            this.tombstone = tombstone;
+        }
+    }
+
+    /** Memories that already carry a version, plus memory tombstones. Legacy unversioned rows are skipped. */
+    List<SyncRecord> exportSyncRecords() throws Exception {
+        ArrayList<SyncRecord> records = new ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("memories",
+                new String[]{"id", "kind", "updated_at", "sealed_payload"}, null, null, null, null, null)) {
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                String content;
+                String source;
+                String reference;
+                long expiresAt;
+                try {
+                    org.json.JSONObject payload = new org.json.JSONObject(
+                        new String(unseal(memoryAad(id), cursor.getBlob(3)), StandardCharsets.UTF_8));
+                    content = payload.getString("content");
+                    source = payload.optString("source", MEMORY_SOURCE_USER);
+                    reference = payload.optString("sourceReference", "");
+                    expiresAt = payload.optLong("expiresAt", 0);
+                } catch (Exception error) {
+                    continue;
+                }
+                String hash = sha256Hex(content);
+                java.util.TreeMap<String, Long> clock = versionClock(id, hash);
+                if (clock == null) continue;
+                records.add(new SyncRecord(id, cursor.getString(1), content, source, reference, expiresAt, clock, hash, false));
+            }
+        }
+        try (Cursor cursor = getReadableDatabase().query("tombstones", new String[]{"entity_id"},
+                "entity_type=?", new String[]{"memory"}, null, null, null)) {
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                java.util.TreeMap<String, Long> clock = versionClock(id, null);
+                if (clock != null)
+                    records.add(new SyncRecord(id, MEMORY_FACT, null, MEMORY_SOURCE_USER, "", 0, clock, null, true));
+            }
+        }
+        return records;
+    }
+
+    private java.util.TreeMap<String, Long> versionClock(String memoryId, String hash) {
+        for (MemoryMerge.Version version : listMemoryVersions(memoryId)) {
+            if (hash == null ? version.tombstone : hash.equals(version.contentHash)) return version.clock;
+        }
+        return null;
+    }
+
+    /** Merge remote records transactionally; a single surviving version applies its content. */
+    int mergeSyncRecords(List<SyncRecord> records) throws Exception {
+        if (records == null || records.size() > 500) throw new IllegalArgumentException("Too many records in one batch");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            int applied = 0;
+            for (SyncRecord record : records) {
+                if (record.id == null || record.id.isEmpty() || record.id.length() > 64)
+                    throw new IllegalArgumentException("Invalid record id");
+                MemoryMerge.Version version;
+                if (record.tombstone) {
+                    version = new MemoryMerge.Version(record.clock, null, true);
+                } else {
+                    String hash = sha256Hex(record.content);
+                    if (!hash.equals(record.contentHash))
+                        throw new IllegalArgumentException("Record content does not match its hash");
+                    version = new MemoryMerge.Version(record.clock, hash, false);
+                }
+                List<MemoryMerge.Version> merged = MemoryMerge.merge(listMemoryVersions(record.id),
+                    java.util.Collections.singletonList(version));
+                replaceMemoryVersions(database, record.id, merged);
+                if (merged.size() == 1 && merged.get(0).tombstone) {
+                    database.delete("memories", "id=?", new String[]{record.id});
+                    ContentValues marker = new ContentValues();
+                    marker.put("entity_type", "memory");
+                    marker.put("entity_id", record.id);
+                    marker.put("deleted_at", System.currentTimeMillis());
+                    database.insertWithOnConflict("tombstones", null, marker, SQLiteDatabase.CONFLICT_REPLACE);
+                    applied++;
+                } else if (!record.tombstone && merged.size() == 1
+                        && record.contentHash.equals(merged.get(0).contentHash)) {
+                    String normalized = validateMemory(record.kind, record.content);
+                    String reference = record.reference == null ? "" : record.reference.trim();
+                    byte[] sealed = seal(memoryAad(record.id),
+                        memoryPayload(normalized, record.source, reference, record.expiresAt));
+                    ContentValues values = new ContentValues();
+                    values.put("kind", record.kind);
+                    values.put("updated_at", System.currentTimeMillis());
+                    values.put("sealed_payload", sealed);
+                    int updated = database.update("memories", values, "id=?", new String[]{record.id});
+                    if (updated == 0) {
+                        values.put("id", record.id);
+                        values.put("created_at", System.currentTimeMillis());
+                        database.insertOrThrow("memories", null, values);
+                    }
+                    database.delete("tombstones", "entity_type=? AND entity_id=?", new String[]{"memory", record.id});
+                    applied++;
+                }
+            }
+            database.setTransactionSuccessful();
+            return applied;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
     /** Versions known for one memory id, as persisted by merge or resolve. */
     List<MemoryMerge.Version> listMemoryVersions(String memoryId) {
         ArrayList<MemoryMerge.Version> versions = new ArrayList<>();
