@@ -8,17 +8,22 @@
     "WORKFLOW_GUARD_V4": "checks=6",
     "TASK_CENTER": "checks=10",
     "PAIR_CREATE": "checks=6",
-    "PAIR_UI_VERIFY": "checks=3 after pairing through the real settings dialog"
+    "PAIR_UI_VERIFY": "checks=3 after pairing through the real settings dialog",
+    "RUN_SUITE": "checks=48 (action flows reset and rerun on the refactored code)",
+    "RUN_DOCUMENTS": "checks=20",
+    "VERIFY_DOCUMENT_RESTART": "checks=8"
   },
   "blocked_by_fixture": {
     "VERIFY_WORKFLOW_UI": "needs two completed runs of an interactively created workflow template (trip A / trip B)",
-    "SEED_CENTER_UI": "same UI-created template fixture"
+    "SEED_CENTER_UI": "same UI-created template fixture",
+    "VERIFY_UI": "needs two tasks created interactively with accept/reject of memory suggestions"
   },
   "notes": [
     "The settings pairing dialog was exercised end to end after the refactor: enter fingerprint, show code, pair, verify",
     "WorkflowActivity itself was not modified by this refactor and opens successfully",
     "The fixture cases are not regressions; they require an interactive template that does not exist in a fresh install",
-    "Host suite: 27 tests pass"
+    "Host suite: 27 tests pass",
+    "RUN_SUITE resets the isolated DB, so the later document cases start from a clean store"
   ],
   "limitations": [
     "Only a subset of the 100+ device cases was rerun",

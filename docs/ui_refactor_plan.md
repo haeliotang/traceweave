@@ -40,7 +40,9 @@
 
 ### 阶段 5：验收（进行中 2026-10-31）
 - 设备回归（2026-10-31）：`OPEN_WORKFLOW_UI`、`WORKFLOW_GUARD_V4`、`TASK_CENTER`、`PAIR_CREATE`、`PAIR_UI_VERIFY` 通过；其中配对是在重构后的设置页通过真实对话框完成的。`VERIFY_WORKFLOW_UI`、`SEED_CENTER_UI` 因缺少“界面创建的工作流模板”夹具而无法运行（不是回归）。见 [ui_regression_20261031](../artifacts/agent_os/next_stage/ui_regression_20261031.json)。
-- 待办：补一次交互式夹具（模板 + 两次运行）后可跑完整 UI 流程用例；深色模式与多字号仍未验证。
+- 补充回归（同日）：`RUN_SUITE` 48 项、`RUN_DOCUMENTS` 20 项、`VERIFY_DOCUMENT_RESTART` 8 项全部通过；`VERIFY_UI` 同样依赖交互式夹具（接受/拒绝候选记忆）而无法在全新安装上运行。
+- 截图索引：[ui_screenshots.md](ui_screenshots.md)。
+- 待办：交互式夹具（工作流模板 + 两次运行；候选记忆接受/拒绝）后可补跑剩余 UI 流程用例；深色模式与多字号仍未验证。
 
 ## 验收标准
 
