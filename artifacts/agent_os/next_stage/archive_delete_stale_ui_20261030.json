@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app, English confirm page, synthetic archive with one memory and one task deletion marker",
+  "review_snapshot_before_mutation": true,
+  "mutation_after_review": "local memory content changed 60 seconds after seeding while the confirmation dialog was open",
+  "stale_import_rejected": true,
+  "rejection_message": "Records affected by archive deletions changed; review again",
+  "rejected_import_changed_nothing": true,
+  "re_review_confirm_page_counts": {
+    "local_memories": 1,
+    "local_tasks": 1
+  },
+  "re_reviewed_import_removed_targets": true,
+  "isolated_app_and_synthetic_archive_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af73c02813915b7850dd2b18c4def158731f76ed3b3c94eadc5cb24fb90b027b",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "ff6f9410a5226bef5ab167d7ecdfb52b924e61e4f62a5a40e7f81191210b321a",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "51eb35068c20826c0d720370d76e2ae02f8ae7b599a91d3a7a12f0fae8797f90",
+    "agent_os/scripts/validate_actions_android.py": "4b0a5ec9d060d2a011f2027ded2d88d8da3db8965b71067acfe5f7a13bada7f1"
+  },
+  "limitations": [
+    "Synthetic data only; no production archive or user memory was imported",
+    "The mutation was produced by test code inside the isolated package, not by a second real client",
+    "Only the English interface was checked"
+  ]
+}

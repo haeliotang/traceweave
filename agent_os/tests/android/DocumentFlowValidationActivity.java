@@ -38,6 +38,9 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SEED_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) seedArchiveDeleteUi(store);
                 else if ("VERIFY_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) verifyArchiveDeleteUi(store);
                 else if ("SEED_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) seedArchiveDeleteMultiUi(store);
+                else if ("SEED_ARCHIVE_DELETE_UI_STALE".equals(getIntent().getAction())) seedArchiveDeleteUiStale(store);
+                else if ("VERIFY_ARCHIVE_DELETE_UI_STALE".equals(getIntent().getAction())) verifyArchiveDeleteUiStale(store);
+                else if ("VERIFY_ARCHIVE_DELETE_UI_RETRY".equals(getIntent().getAction())) verifyArchiveDeleteUiRetry(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
                 else if ("VERIFY_EXPORT_UI".equals(getIntent().getAction())) verifyExportUi(store);
@@ -572,6 +575,53 @@ public final class DocumentFlowValidationActivity extends Activity {
     private void verifyArchiveDeleteUi(AgentStore store) throws Exception {
         String task = getSharedPreferences("document_validation", 0).getString("delete_ui_task", "");
         check(store.getTask(task) == null && store.listMemories().isEmpty(), "reviewed deletion removed only synthetic targets");
+    }
+
+    private void verifyArchiveDeleteUiRetry(AgentStore store) throws Exception {
+        String memoryId = getSharedPreferences("document_validation", 0).getString("stale_memory", "");
+        String taskId = getSharedPreferences("document_validation", 0).getString("stale_task", "");
+        boolean memoryGone = true;
+        for (AgentStore.Memory memory : store.listMemories()) if (memory.id.equals(memoryId)) memoryGone = false;
+        check(memoryGone, "re-reviewed import removed the changed memory");
+        check(store.getTask(taskId) == null, "re-reviewed import removed the task");
+    }
+
+    private void seedArchiveDeleteUiStale(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        final AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC stale review memory");
+        final AgentStore.Task task = store.createTask("SYNTHETIC stale review task");
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.tombstones.add(new AgentStore.Tombstone("memory", memory.id, System.currentTimeMillis()));
+        data.tombstones.add(new AgentStore.Tombstone("task", task.id, System.currentTimeMillis()));
+        try (java.io.OutputStream output = openFileOutput("synthetic-delete-stale.taos", 0)) {
+            output.write(MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray()));
+        }
+        getSharedPreferences("document_validation", 0).edit()
+            .putString("stale_memory", memory.id).putString("stale_task", task.id).commit();
+        new Thread(() -> {
+            try {
+                Thread.sleep(60000);
+                try (AgentStore delayed = new AgentStore(this)) {
+                    delayed.updateMemory(memory.id, memory.kind, "SYNTHETIC mutation after review started",
+                        memory.source, memory.sourceReference);
+                }
+                Log.i("AgentOsDocumentsValidation", "STALE_MUTATION_APPLIED");
+            } catch (Exception error) {
+                Log.e("AgentOsDocumentsValidation", "STALE_MUTATION_FAILED", error);
+            }
+        }, "stale-mutation").start();
+        check(true, "synthetic stale-review archive prepared; mutation scheduled in 60 seconds");
+    }
+
+    private void verifyArchiveDeleteUiStale(AgentStore store) throws Exception {
+        String memoryId = getSharedPreferences("document_validation", 0).getString("stale_memory", "");
+        String taskId = getSharedPreferences("document_validation", 0).getString("stale_task", "");
+        boolean mutated = false;
+        for (AgentStore.Memory memory : store.listMemories())
+            if (memory.id.equals(memoryId) && "SYNTHETIC mutation after review started".equals(memory.content)) mutated = true;
+        check(mutated, "changed memory survived the rejected import");
+        check(store.getTask(taskId) != null, "task survived the rejected import");
     }
 
     private void seedArchiveDeleteMultiUi(AgentStore store) throws Exception {

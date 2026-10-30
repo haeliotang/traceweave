@@ -22,6 +22,11 @@
   "limitations": [
     "Synthetic data only; the production database was never exported",
     "The test harness moved the saved file back into the isolated app for verification; the app itself did not re-read the picked URI",
-    "Cancelled save and wrong-passphrase paths were not exercised in this run"
-  ]
+    "Wrong passphrase and cancel paths were checked in a second run of the same build"
+  ],
+  "wrong_passphrase_rejected": true,
+  "wrong_passphrase_message": "两次输入的口令不一致",
+  "cancelled_save_show_result": "导出已取消",
+  "cancel_wrote_no_file": true,
+  "no_new_file_after_cancel": true
 }
