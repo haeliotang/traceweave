@@ -26,6 +26,117 @@ public final class LocalModelQualityProbe extends Activity {
         {"list_three", "List exactly these three words, one per line: water, tent, map."}
     };
 
+    private static final String[][] QUALITY_CASES = {
+        {"english_exact", "Reply with exactly READY and no other words.", "exact", "READY"},
+        {"english_exact", "Reply with exactly OK and no other words.", "exact", "OK"},
+        {"english_exact", "Reply with exactly DONE and no other words.", "exact", "DONE"},
+        {"english_exact", "Reply with exactly HELLO and no other words.", "exact", "HELLO"},
+        {"english_exact", "Reply with exactly STOP and no other words.", "exact", "STOP"},
+        {"english_exact", "Reply with exactly YES and no other words.", "exact", "YES"},
+        {"english_exact", "Reply with exactly NO and no other words.", "exact", "NO"},
+        {"english_exact", "Reply with exactly GREEN and no other words.", "exact", "GREEN"},
+        {"english_exact", "Reply with exactly NORTH and no other words.", "exact", "NORTH"},
+        {"english_exact", "Reply with exactly END and no other words.", "exact", "END"},
+        {"chinese_exact", "只回复两个汉字：完成。不要回复其他内容。", "exact", "完成"},
+        {"chinese_exact", "只回复两个汉字：确定。不要回复其他内容。", "exact", "确定"},
+        {"chinese_exact", "只回复两个汉字：停止。不要回复其他内容。", "exact", "停止"},
+        {"chinese_exact", "只回复两个汉字：开始。不要回复其他内容。", "exact", "开始"},
+        {"chinese_exact", "只回复两个汉字：通过。不要回复其他内容。", "exact", "通过"},
+        {"chinese_exact", "只回复两个汉字：失败。不要回复其他内容。", "exact", "失败"},
+        {"chinese_exact", "只回复两个汉字：安全。不要回复其他内容。", "exact", "安全"},
+        {"chinese_exact", "只回复两个汉字：继续。不要回复其他内容。", "exact", "继续"},
+        {"chinese_exact", "只回复两个汉字：正确。不要回复其他内容。", "exact", "正确"},
+        {"chinese_exact", "只回复两个汉字：结束。不要回复其他内容。", "exact", "结束"},
+        {"arithmetic_exact", "Reply with the number only: 17 + 25 = ?", "exact", "42"},
+        {"arithmetic_exact", "Reply with the number only: 13 + 29 = ?", "exact", "42"},
+        {"arithmetic_exact", "Reply with the number only: 48 + 17 = ?", "exact", "65"},
+        {"arithmetic_exact", "Reply with the number only: 36 + 27 = ?", "exact", "63"},
+        {"arithmetic_exact", "Reply with the number only: 54 + 19 = ?", "exact", "73"},
+        {"arithmetic_exact", "Reply with the number only: 28 + 44 = ?", "exact", "72"},
+        {"arithmetic_exact", "Reply with the number only: 63 + 18 = ?", "exact", "81"},
+        {"arithmetic_exact", "Reply with the number only: 75 + 26 = ?", "exact", "101"},
+        {"arithmetic_exact", "Reply with the number only: 39 + 41 = ?", "exact", "80"},
+        {"arithmetic_exact", "Reply with the number only: 88 + 12 = ?", "exact", "100"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"status\":\"ready\"}", "json", "status", "ready"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"mode\":\"local\"}", "json", "mode", "local"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"ok\":\"true\"}", "json", "ok", "true"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"count\":\"3\"}", "json", "count", "3"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"name\":\"tent\"}", "json", "name", "tent"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"level\":\"2\"}", "json", "level", "2"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"color\":\"green\"}", "json", "color", "green"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"state\":\"idle\"}", "json", "state", "idle"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"unit\":\"meter\"}", "json", "unit", "meter"},
+        {"strict_json", "Reply with JSON only, no markdown: {\"flag\":\"off\"}", "json", "flag", "off"},
+        {"list_three", "List exactly these three words, one per line: water, tent, map.", "lines", "water,tent,map"},
+        {"list_three", "List exactly these three words, one per line: red, green, blue.", "lines", "red,green,blue"},
+        {"list_three", "List exactly these three words, one per line: one, two, three.", "lines", "one,two,three"},
+        {"list_three", "List exactly these three words, one per line: north, south, east.", "lines", "north,south,east"},
+        {"list_three", "List exactly these three words, one per line: cat, dog, bird.", "lines", "cat,dog,bird"},
+        {"list_three", "List exactly these three words, one per line: sun, moon, star.", "lines", "sun,moon,star"},
+        {"list_three", "List exactly these three words, one per line: apple, pear, plum.", "lines", "apple,pear,plum"},
+        {"list_three", "List exactly these three words, one per line: pen, book, bag.", "lines", "pen,book,bag"},
+        {"list_three", "List exactly these three words, one per line: rain, snow, wind.", "lines", "rain,snow,wind"},
+        {"list_three", "List exactly these three words, one per line: fork, knife, spoon.", "lines", "fork,knife,spoon"},
+    };
+
+    private boolean checkQualityCase(String[] item, String output) {
+        String trimmed = output.trim();
+        if ("exact".equals(item[2])) return trimmed.equals(item[3]);
+        if ("json".equals(item[2])) {
+            try {
+                org.json.JSONObject value = new org.json.JSONObject(trimmed);
+                return item[4].equals(value.optString(item[3]));
+            } catch (Exception error) {
+                return false;
+            }
+        }
+        if ("lines".equals(item[2])) {
+            String[] expected = item[3].split(",");
+            String[] actual = trimmed.isEmpty() ? new String[0] : trimmed.split("\\s*\\n\\s*");
+            if (actual.length != expected.length) return false;
+            for (int index = 0; index < expected.length; index++) if (!expected[index].equals(actual[index].trim())) return false;
+            return true;
+        }
+        return false;
+    }
+
+    private void runQuality50(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        java.util.LinkedHashMap<String, int[]> byCategory = new java.util.LinkedHashMap<>();
+        int passed = 0;
+        for (String[] item : QUALITY_CASES) {
+            String category = item[0];
+            String output;
+            long startedAt = SystemClock.elapsedRealtime();
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96),
+                    StandardCharsets.UTF_8);
+            } catch (Exception error) {
+                output = "<error: " + error.getMessage() + ">";
+            }
+            long elapsedMs = SystemClock.elapsedRealtime() - startedAt;
+            boolean ok = checkQualityCase(item, output);
+            if (ok) passed++;
+            int[] counts = byCategory.computeIfAbsent(category, ignored -> new int[2]);
+            counts[1]++;
+            if (ok) counts[0]++;
+            results.put(new JSONObject().put("category", category).put("prompt", item[1])
+                .put("expected", item.length > 4 ? item[3] + "=" + item[4] : item[3])
+                .put("output", output.length() > 200 ? output.substring(0, 200) : output)
+                .put("elapsed_ms", elapsedMs).put("passed", ok));
+        }
+        JSONObject categories = new JSONObject();
+        for (java.util.Map.Entry<String, int[]> entry : byCategory.entrySet())
+            categories.put(entry.getKey(), entry.getValue()[0] + "/" + entry.getValue()[1]);
+        JSONObject summary = new JSONObject().put("passed", passed).put("total", QUALITY_CASES.length)
+            .put("by_category", categories).put("cases", results);
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "quality50.json"))) {
+            output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "QUALITY50_DONE " + passed + "/" + QUALITY_CASES.length + " " + categories);
+    }
+
     private JSONObject telemetry() throws Exception {
         android.content.Intent battery = registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
         android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
@@ -100,6 +211,10 @@ public final class LocalModelQualityProbe extends Activity {
                 for (byte b : digest.digest()) hash.append(String.format(Locale.ROOT, "%02x", b & 255));
                 String expected = "qwen15".equals(getIntent().getStringExtra("model")) ? LARGE_SHA : SMALL_SHA;
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
+                if ("QUALITY50".equals(getIntent().getAction())) {
+                    runQuality50(model);
+                    return;
+                }
                 if ("STRESS".equals(getIntent().getAction())) {
                     runStress(model);
                     return;

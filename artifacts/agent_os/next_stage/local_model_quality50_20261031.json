@@ -1,0 +1,433 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "model": "Qwen2.5-1.5B-Instruct Q4_0 (sha256 dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb)",
+  "model_bytes": 1066227232,
+  "runtime": "pinned llama.cpp runtime, production-probe build",
+  "scope": "isolated package, synthetic prompts, 96 new tokens, greedy decoding",
+  "total": 50,
+  "passed": 26,
+  "by_category": {
+    "english_exact": "9/10",
+    "chinese_exact": "6/10",
+    "arithmetic_exact": "9/10",
+    "strict_json": "0/10",
+    "list_three": "2/10"
+  },
+  "json_valid_without_code_fences": "10/10",
+  "timing_ms": {
+    "median": 2698.5,
+    "min": 2222,
+    "max": 4295,
+    "note": "includes a prepare() call before every case"
+  },
+  "cases": [
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly READY and no other words.",
+      "expected": "READY",
+      "output": "READY",
+      "elapsed_ms": 2907,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly OK and no other words.",
+      "expected": "OK",
+      "output": "OK",
+      "elapsed_ms": 2301,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly DONE and no other words.",
+      "expected": "DONE",
+      "output": "DONE",
+      "elapsed_ms": 2225,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly HELLO and no other words.",
+      "expected": "HELLO",
+      "output": "HELLO",
+      "elapsed_ms": 2418,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly STOP and no other words.",
+      "expected": "STOP",
+      "output": "OK STOP",
+      "elapsed_ms": 2365,
+      "passed": false
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly YES and no other words.",
+      "expected": "YES",
+      "output": "YES",
+      "elapsed_ms": 2222,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly NO and no other words.",
+      "expected": "NO",
+      "output": "NO",
+      "elapsed_ms": 2348,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly GREEN and no other words.",
+      "expected": "GREEN",
+      "output": "GREEN",
+      "elapsed_ms": 2290,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly NORTH and no other words.",
+      "expected": "NORTH",
+      "output": "NORTH",
+      "elapsed_ms": 2421,
+      "passed": true
+    },
+    {
+      "category": "english_exact",
+      "prompt": "Reply with exactly END and no other words.",
+      "expected": "END",
+      "output": "END",
+      "elapsed_ms": 2324,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：完成。不要回复其他内容。",
+      "expected": "完成",
+      "output": "完成",
+      "elapsed_ms": 2514,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：确定。不要回复其他内容。",
+      "expected": "确定",
+      "output": "好的。",
+      "elapsed_ms": 2476,
+      "passed": false
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：停止。不要回复其他内容。",
+      "expected": "停止",
+      "output": "继续。",
+      "elapsed_ms": 2416,
+      "passed": false
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：开始。不要回复其他内容。",
+      "expected": "开始",
+      "output": "开始",
+      "elapsed_ms": 2464,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：通过。不要回复其他内容。",
+      "expected": "通过",
+      "output": "成功",
+      "elapsed_ms": 2361,
+      "passed": false
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：失败。不要回复其他内容。",
+      "expected": "失败",
+      "output": "放弃。",
+      "elapsed_ms": 2438,
+      "passed": false
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：安全。不要回复其他内容。",
+      "expected": "安全",
+      "output": "安全",
+      "elapsed_ms": 2418,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：继续。不要回复其他内容。",
+      "expected": "继续",
+      "output": "继续",
+      "elapsed_ms": 2475,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：正确。不要回复其他内容。",
+      "expected": "正确",
+      "output": "正确",
+      "elapsed_ms": 2399,
+      "passed": true
+    },
+    {
+      "category": "chinese_exact",
+      "prompt": "只回复两个汉字：结束。不要回复其他内容。",
+      "expected": "结束",
+      "output": "结束",
+      "elapsed_ms": 2431,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 17 + 25 = ?",
+      "expected": "42",
+      "output": "42",
+      "elapsed_ms": 2606,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 13 + 29 = ?",
+      "expected": "42",
+      "output": "42",
+      "elapsed_ms": 2710,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 48 + 17 = ?",
+      "expected": "65",
+      "output": "65",
+      "elapsed_ms": 2645,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 36 + 27 = ?",
+      "expected": "63",
+      "output": "63",
+      "elapsed_ms": 2623,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 54 + 19 = ?",
+      "expected": "73",
+      "output": "73",
+      "elapsed_ms": 2635,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 28 + 44 = ?",
+      "expected": "72",
+      "output": "72",
+      "elapsed_ms": 2687,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 63 + 18 = ?",
+      "expected": "81",
+      "output": "81",
+      "elapsed_ms": 2768,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 75 + 26 = ?",
+      "expected": "101",
+      "output": "101",
+      "elapsed_ms": 2795,
+      "passed": true
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 39 + 41 = ?",
+      "expected": "80",
+      "output": "70",
+      "elapsed_ms": 2682,
+      "passed": false
+    },
+    {
+      "category": "arithmetic_exact",
+      "prompt": "Reply with the number only: 88 + 12 = ?",
+      "expected": "100",
+      "output": "100",
+      "elapsed_ms": 2806,
+      "passed": true
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"status\":\"ready\"}",
+      "expected": "status=ready",
+      "output": "```json\n{\"status\":\"ready\"}\n```",
+      "elapsed_ms": 3204,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"mode\":\"local\"}",
+      "expected": "mode=local",
+      "output": "```json\n{\n  \"mode\": \"local\"\n}\n```",
+      "elapsed_ms": 3776,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"ok\":\"true\"}",
+      "expected": "ok=true",
+      "output": "```json\n{\"ok\":\"true\"}\n```",
+      "elapsed_ms": 3123,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"count\":\"3\"}",
+      "expected": "count=3",
+      "output": "```json\n{\"count\":\"3\"}\n```",
+      "elapsed_ms": 3173,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"name\":\"tent\"}",
+      "expected": "name=tent",
+      "output": "```json\n{\n  \"name\": \"tent\"\n}\n```",
+      "elapsed_ms": 3626,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"level\":\"2\"}",
+      "expected": "level=2",
+      "output": "```json\n{\n  \"level\": \"2\"\n}\n```",
+      "elapsed_ms": 3606,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"color\":\"green\"}",
+      "expected": "color=green",
+      "output": "```json\n{\"color\":\"green\"}\n```",
+      "elapsed_ms": 3365,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"state\":\"idle\"}",
+      "expected": "state=idle",
+      "output": "```json\n{\n  \"state\": \"idle\"\n}\n```",
+      "elapsed_ms": 3579,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"unit\":\"meter\"}",
+      "expected": "unit=meter",
+      "output": "```json\n{\n  \"unit\": \"meter\"\n}\n```",
+      "elapsed_ms": 3604,
+      "passed": false
+    },
+    {
+      "category": "strict_json",
+      "prompt": "Reply with JSON only, no markdown: {\"flag\":\"off\"}",
+      "expected": "flag=off",
+      "output": "```json\n{\"flag\":\"off\"}\n```",
+      "elapsed_ms": 3264,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: water, tent, map.",
+      "expected": "water,tent,map",
+      "output": "Sure, here they are:\n\n1. Water\n2. Tent\n3. Map",
+      "elapsed_ms": 4072,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: red, green, blue.",
+      "expected": "red,green,blue",
+      "output": "Red\nGreen\nBlue",
+      "elapsed_ms": 3049,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: one, two, three.",
+      "expected": "one,two,three",
+      "output": "Sure, here they are:\n\n1. one\n2. two\n3. three",
+      "elapsed_ms": 4295,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: north, south, east.",
+      "expected": "north,south,east",
+      "output": "Sure, here they are:\n\n1. North\n2. South\n3. East",
+      "elapsed_ms": 4182,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: cat, dog, bird.",
+      "expected": "cat,dog,bird",
+      "output": "Sure, here they are:\n\n1. cat\n2. dog\n3. bird",
+      "elapsed_ms": 4157,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: sun, moon, star.",
+      "expected": "sun,moon,star",
+      "output": "Sure, here they are:\n\n1. Sun\n2. Moon\n3. Star",
+      "elapsed_ms": 4160,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: apple, pear, plum.",
+      "expected": "apple,pear,plum",
+      "output": "apple\npear\nplum",
+      "elapsed_ms": 3211,
+      "passed": true
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: pen, book, bag.",
+      "expected": "pen,book,bag",
+      "output": "Pen\nBook\nBag",
+      "elapsed_ms": 3072,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: rain, snow, wind.",
+      "expected": "rain,snow,wind",
+      "output": "Sure, here they are:\n\n1. Rain\n2. Snow\n3. Wind",
+      "elapsed_ms": 4280,
+      "passed": false
+    },
+    {
+      "category": "list_three",
+      "prompt": "List exactly these three words, one per line: fork, knife, spoon.",
+      "expected": "fork,knife,spoon",
+      "output": "fork\nknife\nspoon",
+      "elapsed_ms": 3221,
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Single model, single run, 50 hand-written prompts; not a general capability claim",
+    "Scoring is exact string match (JSON key/value, exact word, exact number, exact three lines)",
+    "96-token cap and greedy decoding only; temperature and longer contexts are not sampled",
+    "Per-case timing includes re-preparing the runtime, so it is not steady-state latency",
+    "No thermal or power control during the run"
+  ]
+}
