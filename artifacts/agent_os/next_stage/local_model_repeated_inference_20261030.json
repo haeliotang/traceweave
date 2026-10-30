@@ -1,0 +1,366 @@
+{
+  "before": {
+    "battery_temperature_tenths_c": 300,
+    "battery_level_percent": 100,
+    "plugged": 1,
+    "thermal_status": 0,
+    "process_pss_kib": 103263
+  },
+  "results": [
+    {
+      "round": 1,
+      "case": "english_exact",
+      "elapsed_ms": 2230,
+      "output_bytes": 5,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 123611
+      }
+    },
+    {
+      "round": 1,
+      "case": "chinese_exact",
+      "elapsed_ms": 2371,
+      "output_bytes": 6,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 124254
+      }
+    },
+    {
+      "round": 1,
+      "case": "arithmetic_exact",
+      "elapsed_ms": 2604,
+      "output_bytes": 2,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 124419
+      }
+    },
+    {
+      "round": 1,
+      "case": "strict_json",
+      "elapsed_ms": 3175,
+      "output_bytes": 30,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 124695
+      }
+    },
+    {
+      "round": 1,
+      "case": "list_three",
+      "elapsed_ms": 4085,
+      "output_bytes": 45,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 124811
+      }
+    },
+    {
+      "round": 2,
+      "case": "english_exact",
+      "elapsed_ms": 2319,
+      "output_bytes": 5,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125027
+      }
+    },
+    {
+      "round": 2,
+      "case": "chinese_exact",
+      "elapsed_ms": 2461,
+      "output_bytes": 6,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125175
+      }
+    },
+    {
+      "round": 2,
+      "case": "arithmetic_exact",
+      "elapsed_ms": 2694,
+      "output_bytes": 2,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125351
+      }
+    },
+    {
+      "round": 2,
+      "case": "strict_json",
+      "elapsed_ms": 3212,
+      "output_bytes": 30,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125351
+      }
+    },
+    {
+      "round": 2,
+      "case": "list_three",
+      "elapsed_ms": 4517,
+      "output_bytes": 45,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125467
+      }
+    },
+    {
+      "round": 3,
+      "case": "english_exact",
+      "elapsed_ms": 2588,
+      "output_bytes": 5,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 125571
+      }
+    },
+    {
+      "round": 3,
+      "case": "chinese_exact",
+      "elapsed_ms": 2866,
+      "output_bytes": 6,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122691
+      }
+    },
+    {
+      "round": 3,
+      "case": "arithmetic_exact",
+      "elapsed_ms": 3089,
+      "output_bytes": 2,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122443
+      }
+    },
+    {
+      "round": 3,
+      "case": "strict_json",
+      "elapsed_ms": 3724,
+      "output_bytes": 30,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122551
+      }
+    },
+    {
+      "round": 3,
+      "case": "list_three",
+      "elapsed_ms": 4437,
+      "output_bytes": 45,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122637
+      }
+    },
+    {
+      "round": 4,
+      "case": "english_exact",
+      "elapsed_ms": 2683,
+      "output_bytes": 5,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122499
+      }
+    },
+    {
+      "round": 4,
+      "case": "chinese_exact",
+      "elapsed_ms": 2831,
+      "output_bytes": 6,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122711
+      }
+    },
+    {
+      "round": 4,
+      "case": "arithmetic_exact",
+      "elapsed_ms": 3015,
+      "output_bytes": 2,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122659
+      }
+    },
+    {
+      "round": 4,
+      "case": "strict_json",
+      "elapsed_ms": 3557,
+      "output_bytes": 30,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122723
+      }
+    },
+    {
+      "round": 4,
+      "case": "list_three",
+      "elapsed_ms": 4680,
+      "output_bytes": 45,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122783
+      }
+    },
+    {
+      "round": 5,
+      "case": "english_exact",
+      "elapsed_ms": 2739,
+      "output_bytes": 5,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122819
+      }
+    },
+    {
+      "round": 5,
+      "case": "chinese_exact",
+      "elapsed_ms": 2791,
+      "output_bytes": 6,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122795
+      }
+    },
+    {
+      "round": 5,
+      "case": "arithmetic_exact",
+      "elapsed_ms": 3105,
+      "output_bytes": 2,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122841
+      }
+    },
+    {
+      "round": 5,
+      "case": "strict_json",
+      "elapsed_ms": 3747,
+      "output_bytes": 30,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122927
+      }
+    },
+    {
+      "round": 5,
+      "case": "list_three",
+      "elapsed_ms": 4456,
+      "output_bytes": 45,
+      "after": {
+        "battery_temperature_tenths_c": 300,
+        "battery_level_percent": 100,
+        "plugged": 1,
+        "thermal_status": 0,
+        "process_pss_kib": 122867
+      }
+    }
+  ],
+  "stop_reason": "completed",
+  "after": {
+    "battery_temperature_tenths_c": 300,
+    "battery_level_percent": 100,
+    "plugged": 1,
+    "thermal_status": 0,
+    "process_pss_kib": 122863
+  },
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "synthetic_only": true,
+  "model": "Qwen2.5-1.5B-Instruct Q4_0",
+  "model_sha256": "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb",
+  "device_validation_apk_sha256": "3dbcc9e666aef3e5450667c545e628670fe6000d31079d12d74202eb8408d2b0",
+  "runtime_sha256": "d623c38fbc3b68d213b402f8cbf1692542cd1cb8abe15f6758b11322568e8859",
+  "source_sha256": {
+    "agent_os/tests/android/LocalModelQualityProbe.java": "495db815546eeb1a534d5b18aff972af35939aad82aa315387d6850c2684a4a8",
+    "agent_os/tests/android/LocalModelProbe.java": "ee788eea8f13b3b4498d252a4678c60bfd6c85a53fd1ab1c3cdf3c9c4a8a0558",
+    "agent_os/tests/android/manifest-model-quality.xml": "f3fb3b130c970a136759cd943a160f2d73ff47c5e6f8e3264fd6230d9dc2c359",
+    "agent_os/scripts/validate_local_model_stress_android.py": "f58e8560f32b83daf60336e5f8c10c0038e98058db60f4dc426039ea8cb45b48"
+  },
+  "isolated_app_and_model_removed": true,
+  "limit_notes": [
+    "5 rounds of 5 fixed synthetic prompts, each generation reloads the model; no output quality score",
+    "Process PSS is sampled after each call, not at peak; battery temperature and thermal status are intermittent system readings",
+    "USB was plugged in and battery reported full; no meaningful battery drain or energy per request can be inferred",
+    "A preceding run completed but its logs were truncated and discarded; device was not returned to a controlled baseline",
+    "Test runtime is experimental and no real personal data or production app was used",
+    "Reusable host runner was syntax-checked but this measurement used its equivalent temporary predecessor"
+  ]
+}

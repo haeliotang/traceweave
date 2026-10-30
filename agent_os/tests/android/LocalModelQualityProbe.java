@@ -26,6 +26,47 @@ public final class LocalModelQualityProbe extends Activity {
         {"list_three", "List exactly these three words, one per line: water, tent, map."}
     };
 
+    private JSONObject telemetry() throws Exception {
+        android.content.Intent battery = registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
+        android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+        return new JSONObject().put("battery_temperature_tenths_c", battery == null ? -1 : battery.getIntExtra("temperature", -1))
+            .put("battery_level_percent", battery == null ? -1 : battery.getIntExtra("level", -1))
+            .put("plugged", battery == null ? -1 : battery.getIntExtra("plugged", -1))
+            .put("thermal_status", power == null ? -1 : power.getCurrentThermalStatus())
+            .put("process_pss_kib", android.os.Debug.getPss());
+    }
+
+    private void runStress(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        JSONObject before = telemetry();
+        String stopReason = "completed";
+        for (int round = 0; round < 5; round++) {
+            for (String[] item : CASES) {
+                JSONObject current = telemetry();
+                if (current.optInt("thermal_status", -1) >= android.os.PowerManager.THERMAL_STATUS_SEVERE
+                        || current.optInt("battery_temperature_tenths_c", -1) >= 420) {
+                    stopReason = "thermal_guard";
+                    break;
+                }
+                LocalModelProbe.prepare();
+                long start = SystemClock.elapsedRealtime();
+                byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96);
+                StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw));
+                results.put(new JSONObject().put("round", round + 1).put("case", item[0])
+                    .put("elapsed_ms", SystemClock.elapsedRealtime() - start).put("output_bytes", raw.length)
+                    .put("after", telemetry()));
+            }
+            if (!"completed".equals(stopReason)) break;
+        }
+        JSONObject result = new JSONObject().put("before", before).put("results", results)
+            .put("stop_reason", stopReason).put("after", telemetry());
+        try (java.io.FileOutputStream output = openFileOutput("synthetic-stress-result.json", 0)) {
+            output.write(result.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "STRESS_RESULT_READY");
+    }
+
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         new Thread(() -> {
@@ -40,6 +81,10 @@ public final class LocalModelQualityProbe extends Activity {
                 for (byte b : digest.digest()) hash.append(String.format(Locale.ROOT, "%02x", b & 255));
                 String expected = "qwen15".equals(getIntent().getStringExtra("model")) ? LARGE_SHA : SMALL_SHA;
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
+                if ("STRESS".equals(getIntent().getAction())) {
+                    runStress(model);
+                    return;
+                }
                 JSONArray results = new JSONArray();
                 for (String[] item : CASES) {
                     LocalModelProbe.prepare();
