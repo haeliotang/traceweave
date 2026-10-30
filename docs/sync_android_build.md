@@ -44,7 +44,7 @@ $TOOLCHAIN/bin/llvm-readelf -lW target/aarch64-linux-android/release/libtracefor
 ## 已验证
 
 - 2026-10-31：加入上述 rustflags 后重建，四个 LOAD 段 Align 均为 `0x4000`（修复前为 `0x1000`，隔离包启动时系统报“不符合 16 KB 对齐要求”）。
-- 尚未在设备上复测系统警告是否消失（当时手机未连接）；下次安装隔离包时确认。
+- 2026-10-31 在设备上复测：用对齐后的库重建隔离包并安装，启动时不再出现 16 KB 对齐警告。
 
 ## 注意
 

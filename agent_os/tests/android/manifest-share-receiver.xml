@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.traceform.agentos.sharereceiver" android:versionCode="1" android:versionName="share-receiver-test">
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
+    <application android:label="Agent OS Share Receiver" android:debuggable="true" android:allowBackup="false">
+        <activity android:name="org.traceform.agentos.SyntheticShareReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

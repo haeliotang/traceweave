@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated workflow package + a test-only share receiver app; synthetic document only",
+  "flow": [
+    "create share workflow template",
+    "run with input camping",
+    "save draft via system picker",
+    "readback verification",
+    "create share draft",
+    "authorize and open system share",
+    "pick Agent OS Share Receiver in the chooser"
+  ],
+  "checks": {
+    "template_created_in_ui": true,
+    "draft_written_once_and_verified_by_readback": true,
+    "share_preview_shown": true,
+    "system_chooser_selected_receiver": true,
+    "receiver_stored_the_text": true,
+    "app_reported_unknown_outcome": true,
+    "no_automatic_replay": true
+  },
+  "received": {
+    "bytes": 274,
+    "first_line": "# Sharecampingsummary"
+  },
+  "receiver": "org.traceform.agentos.sharereceiver (test-only ACTION_SEND text/plain recorder)",
+  "limitations": [
+    "The receiver is a purpose-built test app, not a third-party consumer app",
+    "Only loopback/local sharing; no real messaging or cloud target",
+    "The chooser required expanding the sheet to show all targets",
+    "The app cannot verify delivery by design; the toast says the outcome is unknown"
+  ]
+}
