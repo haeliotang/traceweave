@@ -37,6 +37,11 @@ final class T {
         add("status.archive_local", "AES-GCM · local only", "AES-GCM · 仅本机");
         add("status.sensors_off", "Off · tap to enable", "已关闭 · 点击开启");
         add("status.vision_off", "OCR off · ring off", "OCR 关闭 · 指环未连");
+        add("settings.section_data", "Data & archive", "数据与存档");
+        add("settings.section_sync", "Sync", "同步");
+        add("settings.section_services", "Services & extensions", "服务与扩展");
+        add("settings.note_export", "Local data is exported only on demand. Import merges by ID; tombstones win.",
+            "本机数据仅在你选择时导出。导入时按 ID 合并，删除墓碑优先。");
     }
 
     private T() {}

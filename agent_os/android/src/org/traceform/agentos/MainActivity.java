@@ -909,11 +909,12 @@ public final class MainActivity extends Activity {
         ScrollView scroll = new ScrollView(this);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(16), dp(20), dp(12));
+        root.setPadding(dp(16), dp(10), dp(16), dp(8));
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.SHIELD,
                 en ? "Data Management & Providers" : "数据管理与扩展服务", 0xFF334155, 16);
         root.addView(titleRow);
+        root.addView(Ui.section(this, T.s("settings.section_data", en)));
 
         LinearLayout archiveActions = new LinearLayout(this);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
@@ -937,6 +938,15 @@ public final class MainActivity extends Activity {
                 view -> maybeRequestNotificationPermission(true));
         }
         root.addView(notificationRow);
+        activityStatus = new TextView(this);
+        activityStatus.setText(T.s("settings.note_export", en));
+        activityStatus.setTextSize(10);
+        activityStatus.setTextColor(0xFF64748B);
+        activityStatus.setPadding(0, dp(2), 0, 0);
+        root.addView(activityStatus);
+
+        root.addView(Ui.section(this, T.s("settings.section_sync", en)));
+
 
         LinearLayout pairingRow = new LinearLayout(this);
         pairingRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -991,12 +1001,7 @@ public final class MainActivity extends Activity {
         syncRow.addView(autoSync);
         root.addView(syncRow);
 
-        activityStatus = new TextView(this);
-        activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
-        activityStatus.setTextSize(11);
-        activityStatus.setTextColor(0xFF64748B);
-        activityStatus.setPadding(0, dp(4), 0, dp(8));
-        root.addView(activityStatus);
+        root.addView(Ui.section(this, T.s("settings.section_services", en)));
 
         traceformStatus = new TextView(this);
         traceformStatus.setTextSize(12);
