@@ -178,8 +178,11 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    private final Context appContext;
+
     AgentStore(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.appContext = context.getApplicationContext();
     }
 
     @Override
@@ -1266,6 +1269,14 @@ final class AgentStore extends SQLiteOpenHelper {
                     cursor.getString(3), cursor.getLong(4)));
         }
         return pairings;
+    }
+
+    boolean syncAutoEnabled() {
+        return appContext.getSharedPreferences("agent_os_prefs", 0).getBoolean("sync_auto", false);
+    }
+
+    void setSyncAutoEnabled(boolean enabled) {
+        appContext.getSharedPreferences("agent_os_prefs", 0).edit().putBoolean("sync_auto", enabled).apply();
     }
 
     void deletePairing(String deviceId) {

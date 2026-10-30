@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "sync entry and auto-sync toggle exercised with two isolated installs (A/B) on one device",
+  "ui": {
+    "settings_sync_row": "shows paired count and this device sync id, with Wait for peer / Sync now",
+    "pairing_dialog": "shows local fingerprint and sync id, accepts remote fingerprint and remote sync id",
+    "auto_sync": "checkbox, default off, confirmation dialog, persisted in preferences"
+  },
+  "manual_sync": {
+    "dial_result": "同步完成；应用 0 条变更",
+    "serve_result": "对端已完成同步"
+  },
+  "auto_sync": {
+    "default": false,
+    "enabled_pref": true,
+    "disabled_pref": false,
+    "on_resume_attempt": "serve side reported 对端已完成同步 without tapping Sync now"
+  },
+  "fixed_during_test": {
+    "pairing_code_symmetry": "codes differed because the digest included fingerprints in device order; now sorted + canonical nonce"
+  },
+  "limitations": [
+    "Both peers were validation installs; the production APK does not package the sync library yet",
+    "Both stores were empty, so the UI run applied 0 records; record convergence is covered by the C6 device suite",
+    "Auto-sync is foreground-only and attempts once per process; no background service",
+    "Ports are fixed and only loopback/local network is used"
+  ]
+}

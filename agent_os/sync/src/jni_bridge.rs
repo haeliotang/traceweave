@@ -313,3 +313,37 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePublicKey(
         Err(_) => std::ptr::null_mut(),
     }
 }
+
+// Production-facing names: the app class is SyncTransport; tests use SyncProbe.
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePeerId(
+    env: JNIEnv,
+    class: JClass,
+    seed: JString,
+) -> jstring {
+    Java_org_traceform_agentos_SyncProbe_nativePeerId(env, class, seed)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeServeOnce(
+    env: JNIEnv,
+    class: JClass,
+    seed: JString,
+    port: jint,
+    allowed_csv: JString,
+    handler: JObject,
+) -> jstring {
+    Java_org_traceform_agentos_SyncProbe_nativeServeOnce(env, class, seed, port, allowed_csv, handler)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialOnce(
+    env: JNIEnv<'_>,
+    class: JClass<'_>,
+    seed: JString<'_>,
+    port: jint,
+    expected_peer: JString<'_>,
+    payload: JByteArray<'_>,
+) -> jni::sys::jbyteArray {
+    Java_org_traceform_agentos_SyncProbe_nativeDialOnce(env, class, seed, port, expected_peer, payload)
+}

@@ -19,18 +19,34 @@ final class SyncPairing {
         return value != null && value.matches("[0-9a-f]{64}");
     }
 
-    /** Six decimal digits derived from both fingerprints and a shared nonce. */
+    /** Canonical nonce: both devices must derive the same bytes regardless of direction. */
+    static byte[] pairingNonce(String firstFingerprint, String secondFingerprint) throws Exception {
+        if (!validFingerprint(firstFingerprint) || !validFingerprint(secondFingerprint))
+            throw new IllegalArgumentException("Both fingerprints must be 32-byte hex values");
+        String low = firstFingerprint.compareTo(secondFingerprint) <= 0 ? firstFingerprint : secondFingerprint;
+        String high = low.equals(firstFingerprint) ? secondFingerprint : firstFingerprint;
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        digest.update("traceform-pairing-nonce-v1".getBytes(StandardCharsets.UTF_8));
+        digest.update(low.getBytes(StandardCharsets.UTF_8));
+        digest.update((byte) 0);
+        digest.update(high.getBytes(StandardCharsets.UTF_8));
+        return digest.digest();
+    }
+
+    /** Six decimal digits derived from both fingerprints; direction-independent. */
     static String code(String localFingerprint, String remoteFingerprint, byte[] nonce) throws Exception {
         if (!validFingerprint(localFingerprint) || !validFingerprint(remoteFingerprint))
             throw new IllegalArgumentException("Both fingerprints must be 32-byte hex values");
         if (localFingerprint.equals(remoteFingerprint))
             throw new IllegalArgumentException("A device cannot pair with itself");
         if (nonce == null || nonce.length != 32) throw new IllegalArgumentException("A 32-byte nonce is required");
+        String low = localFingerprint.compareTo(remoteFingerprint) <= 0 ? localFingerprint : remoteFingerprint;
+        String high = low.equals(localFingerprint) ? remoteFingerprint : localFingerprint;
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         digest.update("traceform-pairing-v1".getBytes(StandardCharsets.UTF_8));
-        digest.update(localFingerprint.getBytes(StandardCharsets.UTF_8));
+        digest.update(low.getBytes(StandardCharsets.UTF_8));
         digest.update((byte) 0);
-        digest.update(remoteFingerprint.getBytes(StandardCharsets.UTF_8));
+        digest.update(high.getBytes(StandardCharsets.UTF_8));
         digest.update((byte) 0);
         digest.update(nonce);
         byte[] hashed = digest.digest();

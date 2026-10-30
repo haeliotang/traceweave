@@ -72,6 +72,7 @@ public final class MainActivity extends Activity {
     private TextView traceformStatus;
     private static final int REQ_RECORD_AUDIO = 2001;
     private static final int REQ_NOTIFICATIONS = 7002;
+    private static final int SYNC_PORT = 47960;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
@@ -108,6 +109,7 @@ public final class MainActivity extends Activity {
         updateSensorToggleButton();
         updateFloatPermStatus();
         expireRemoteUriGrant();
+        maybeAutoSync();
         try {
             store.recoverExternalActions();
             int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
@@ -689,6 +691,108 @@ public final class MainActivity extends Activity {
         refreshMemories();
     }
 
+    private boolean autoSyncAttempted;
+
+    private String syncSeed() {
+        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
+        String seed = prefs.getString("sync_seed", "");
+        if (seed.isEmpty()) {
+            byte[] raw = new byte[32];
+            new java.security.SecureRandom().nextBytes(raw);
+            StringBuilder builder = new StringBuilder();
+            for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
+            seed = builder.toString();
+            prefs.edit().putString("sync_seed", seed).apply();
+        }
+        return seed;
+    }
+
+    private String localSyncId() {
+        if (!SyncTransport.available()) return "";
+        try {
+            String value = SyncTransport.nativePeerId(syncSeed());
+            return value == null ? "" : value;
+        } catch (Throwable error) {
+            return "";
+        }
+    }
+
+    private AgentStore.Pairing syncTarget() throws Exception {
+        for (AgentStore.Pairing pairing : store.activePairings())
+            if (pairing.peerId != null && !pairing.peerId.isEmpty()) return pairing;
+        return null;
+    }
+
+    private void maybeAutoSync() {
+        if (autoSyncAttempted || store == null) return;
+        try {
+            if (!store.syncAutoEnabled() || !SyncTransport.available()) return;
+            if (syncTarget() == null) return;
+            autoSyncAttempted = true;
+            startSyncDial();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void startSyncServe() {
+        boolean en = isEnglish();
+        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
+        try {
+            final AgentStore.Pairing target = syncTarget();
+            if (target == null) { showMessage(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
+            showMessage(en ? "Waiting for the peer…" : "正在等待对端…");
+            io.execute(() -> {
+                String outcome;
+                try {
+                    String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
+                        request -> SyncRecords.handle(store, request));
+                    outcome = result != null && result.startsWith("OK")
+                        ? (isEnglish() ? "Peer synced" : "对端已完成同步")
+                        : (isEnglish() ? "Wait failed: " + result : "等待失败：" + result);
+                } catch (Throwable error) {
+                    outcome = (isEnglish() ? "Wait failed: " : "等待失败：") + error.getMessage();
+                }
+                final String message = outcome;
+                mainHandler.post(() -> { if (!destroyed) showMessage(message); });
+            });
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
+    private void startSyncDial() {
+        boolean en = isEnglish();
+        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
+        try {
+            final AgentStore.Pairing target = syncTarget();
+            if (target == null) { showMessage(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
+            io.execute(() -> {
+                String outcome;
+                try {
+                    byte[] payload = SyncRecords.encode(store.exportSyncRecords());
+                    byte[] response = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
+                    if (response == null) {
+                        outcome = isEnglish() ? "Sync failed: no response from the peer" : "同步失败：对端没有响应";
+                    } else {
+                        int applied = SyncRecords.merge(store, response);
+                        outcome = isEnglish() ? "Synced; " + applied + " change(s) applied" : "同步完成；应用 " + applied + " 条变更";
+                    }
+                } catch (Throwable error) {
+                    outcome = (isEnglish() ? "Sync failed: " : "同步失败：") + error.getMessage();
+                }
+                final String message = outcome;
+                mainHandler.post(() -> {
+                    if (destroyed) return;
+                    showMessage(message);
+                    refreshTasks();
+                    refreshMemories();
+                });
+            });
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
     private void showPairingList() {
         final boolean en = isEnglish();
         try {
@@ -737,11 +841,19 @@ public final class MainActivity extends Activity {
             TextView localView = new TextView(this);
             localView.setText((en ? "This device: " : "本机：") + local);
             localView.setTextSize(11);
+            TextView syncView = new TextView(this);
+            String localSyncId = localSyncId();
+            syncView.setText((en ? "Sync ID: " : "同步 ID：") + (localSyncId.isEmpty() ? "—" : localSyncId));
+            syncView.setTextSize(11);
+            EditText remoteSync = new EditText(this);
+            remoteSync.setHint(en ? "Peer sync ID (hex, optional)" : "对端同步 ID（十六进制，可选）");
             LinearLayout holder = new LinearLayout(this);
             holder.setOrientation(LinearLayout.VERTICAL);
             holder.setPadding(dp(24), dp(8), dp(24), 0);
             holder.addView(localView);
+            holder.addView(syncView);
             holder.addView(remote);
+            holder.addView(remoteSync);
             new AlertDialog.Builder(this)
                 .setTitle(en ? "Pair a device" : "配对新设备")
                 .setView(holder)
@@ -753,10 +865,10 @@ public final class MainActivity extends Activity {
                         return;
                     }
                     try {
-                        byte[] nonce = java.security.MessageDigest.getInstance("SHA-256")
-                            .digest((local + remoteValue).getBytes("UTF-8"));
+                        byte[] nonce = SyncPairing.pairingNonce(local, remoteValue);
                         String code = SyncPairing.code(local, remoteValue, nonce);
                         String deviceId = "peer-" + remoteValue.substring(0, 16);
+                        String peerId = remoteSync.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
                         new AlertDialog.Builder(this)
                             .setTitle(en ? "Compare this code" : "核对确认码")
                             .setMessage((en ? "Code: " : "确认码：") + code + "\n"
@@ -764,7 +876,7 @@ public final class MainActivity extends Activity {
                             .setNegativeButton(en ? "Cancel" : "取消", null)
                             .setPositiveButton(en ? "Pair" : "确认配对", (inner, ignored) -> {
                                 try {
-                                    SyncPairing.confirm(store, local, remoteValue, deviceId, "", code, code);
+                                    SyncPairing.confirm(store, local, remoteValue, deviceId, peerId, code, code);
                                     showMessage(en ? "Device paired" : "配对完成");
                                 } catch (Exception error) {
                                     showError(error);
@@ -826,6 +938,46 @@ public final class MainActivity extends Activity {
         addActionButton(pairingRow, en ? "Pair device" : "配对设备", view -> showPairingDialog());
         addActionButton(pairingRow, en ? "Manage" : "管理设备", view -> showPairingList());
         root.addView(pairingRow);
+
+        LinearLayout syncRow = new LinearLayout(this);
+        syncRow.setOrientation(LinearLayout.VERTICAL);
+        TextView syncState = new TextView(this);
+        int pairedNow = store.activePairings().size();
+        String mySyncId = localSyncId();
+        syncState.setText((en ? "Sync: " : "同步：") + (SyncTransport.available()
+            ? (en ? pairedNow + " paired device(s)" : pairedNow + " 台已配对设备")
+            : (en ? "runtime unavailable in this build" : "此构建不包含同步运行库"))
+            + (mySyncId.isEmpty() ? "" : (en ? " · this device " : " · 本机 ") + mySyncId.substring(0, Math.min(8, mySyncId.length()))));
+        syncState.setTextSize(11);
+        syncState.setTextColor(0xFF64748B);
+        syncState.setPadding(0, dp(6), 0, dp(2));
+        syncRow.addView(syncState);
+        LinearLayout syncButtons = new LinearLayout(this);
+        syncButtons.setOrientation(LinearLayout.HORIZONTAL);
+        addActionButton(syncButtons, en ? "Wait for peer" : "等待对端", view -> startSyncServe());
+        addActionButton(syncButtons, en ? "Sync now" : "同步现在", view -> startSyncDial());
+        syncRow.addView(syncButtons);
+        android.widget.CheckBox autoSync = new android.widget.CheckBox(this);
+        autoSync.setText(en ? "Automatic sync while the app is open" : "应用打开时自动同步");
+        autoSync.setTextSize(11);
+        autoSync.setTextColor(0xFF64748B);
+        autoSync.setChecked(store.syncAutoEnabled());
+        autoSync.setOnCheckedChangeListener((button, checked) -> {
+            if (checked) {
+                new AlertDialog.Builder(this)
+                    .setTitle(en ? "Enable automatic sync?" : "启用自动同步？")
+                    .setMessage(en ? "Only while the app is open, and only with paired devices. No background service is started."
+                                   : "仅在应用打开时、且只对已配对设备尝试；不会启动后台常驻服务。")
+                    .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> button.setChecked(false))
+                    .setPositiveButton(en ? "Enable" : "启用", (dialog, which) -> store.setSyncAutoEnabled(true))
+                    .setOnCancelListener(dialog -> button.setChecked(false))
+                    .show();
+            } else {
+                store.setSyncAutoEnabled(false);
+            }
+        });
+        syncRow.addView(autoSync);
+        root.addView(syncRow);
 
         activityStatus = new TextView(this);
         activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");
