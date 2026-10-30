@@ -14,7 +14,23 @@ public final class ScopedInteractiveProbe extends Activity {
         new Thread(() -> {
             try (AgentStore store = new AgentStore(this)) {
                 CapabilityBroker broker = new CapabilityBroker(this, store);
-                if ("SEED".equals(getIntent().getAction())) {
+                if ("SEED_UI".equals(getIntent().getAction())) {
+                    if (!broker.canEnableTraceform()) throw new IllegalStateException("Synthetic service unavailable");
+                    AgentStore.Task task = store.createTask("SYNTHETIC interactive Traceform approval");
+                    getSharedPreferences("interactive_probe", 0).edit().putString("task", task.id).commit();
+                    getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+                    startActivity(new Intent(this, MainActivity.class).putExtra("focusTaskId", task.id));
+                    Log.i("ScopedInteractive", "PASS task UI seeded");
+                } else if ("VERIFY_UI".equals(getIntent().getAction())) {
+                    String id = getSharedPreferences("interactive_probe", 0).getString("task", "");
+                    if (broker.remainingMillis(id, CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE) != 0)
+                        throw new IllegalStateException("UI did not revoke grant");
+                    try {
+                        broker.invoke(id, CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+                        throw new IllegalStateException("Revoked read unexpectedly succeeded");
+                    } catch (SecurityException expected) { }
+                    Log.i("ScopedInteractive", "PASS UI revoked grant denied");
+                } else if ("SEED".equals(getIntent().getAction())) {
                     if (!broker.canEnableTraceform()) throw new IllegalStateException("Synthetic service unavailable");
                     broker.setTraceformEnabled(true);
                     AgentStore.Task task = store.createTask("SYNTHETIC interactive Traceform approval");

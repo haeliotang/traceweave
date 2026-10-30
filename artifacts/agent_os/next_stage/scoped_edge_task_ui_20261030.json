@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated applications with six synthetic trajectory rows",
+  "provider_enabled_via_settings": true,
+  "task_grant_via_ui": true,
+  "synthetic_summary_shown_in_ui": true,
+  "summary_dismissed_without_saving": true,
+  "task_grant_revoked_via_ui": true,
+  "post_revoke_read_denied_by_test_code": true,
+  "english_enable_disable_dialogs_verified_after_fix": true,
+  "isolated_apps_removed": true,
+  "ui_flow_main_activity_sha256_before_localization_fix": "173a0f66ea78d568db3de5865fa1b760ee6a05e1b596ba5942de4fea289fd20d",
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "d765c0b882beda4290d945d398830a407063877308c317a9f5b4892f9c775b25",
+    "agent_os/tests/android/ScopedInteractiveProbe.java": "5f89ed73a32e457a563f5239178314bc1d1368030ed53aec67bec771504e8dc7",
+    "agent_os/tests/android/manifest-scoped-interactive.xml": "7123e1cd3bc73206fbb847cc480563818d4e56fe42d4b09e0f8e6fd01462b29b",
+    "agent_os/tests/android/scoped_provider_test_identity.patch": "7706328e3e60fb836fb0cd100eb1ee75dc11894ab3113715798f02508ce39c18"
+  },
+  "limitations": [
+    "Provider source changes the target package and permission to isolated Edge",
+    "Full grant/read/revoke workflow used the build before the final enable/disable localization fix; the fixed build was separately checked for enable and disable dialogs",
+    "No actual production history, user memory persistence check, live network, or independent security audit"
+  ]
+}

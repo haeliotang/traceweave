@@ -1757,12 +1757,13 @@ public final class MainActivity extends Activity {
     }
 
     private void toggleTraceformProvider() {
+        boolean en = isEnglish();
         if (capabilityBroker.isTraceformEnabled()) {
             new AlertDialog.Builder(this)
-                .setTitle("停用 Traceform Provider？")
-                .setMessage("停用后会撤销当前进程中的 Traceform 任务授权。已保存的 Traceform 来源记忆仍由你管理。")
-                .setNegativeButton("继续启用", null)
-                .setPositiveButton("停用", (dialog, which) -> {
+                .setTitle(en ? "Disable Traceform Provider?" : "停用 Traceform Provider？")
+                .setMessage(en ? "Disabling revokes Traceform task grants in this process. You remain in control of saved Traceform-sourced memories." : "停用后会撤销当前进程中的 Traceform 任务授权。已保存的 Traceform 来源记忆仍由你管理。")
+                .setNegativeButton(en ? "Keep enabled" : "继续启用", null)
+                .setPositiveButton(en ? "Disable" : "停用", (dialog, which) -> {
                     try {
                         capabilityBroker.setTraceformEnabled(false);
                         updateTraceformProviderControls();
@@ -1775,14 +1776,14 @@ public final class MainActivity extends Activity {
             return;
         }
         if (!capabilityBroker.canEnableTraceform()) {
-            showMessage("Traceform 可信摘要服务未就绪或未获授权；请检查 Edge 版本及签名");
+            showMessage(en ? "Trusted Traceform summary service is unavailable or unauthorized; check the Edge version and signer." : "Traceform 可信摘要服务未就绪或未获授权；请检查 Edge 版本及签名");
             return;
         }
         new AlertDialog.Builder(this)
-            .setTitle("启用可选 Traceform Provider？")
-            .setMessage("启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；Edge 服务会只读查询自己的历史库，Agent OS 不直接打开该文件，不启动传感器采集或访问网络。保存结果为记忆还需再次确认。")
-            .setNegativeButton("取消", null)
-            .setPositiveButton("启用", (dialog, which) -> {
+            .setTitle(en ? "Enable optional Traceform Provider?" : "启用可选 Traceform Provider？")
+            .setMessage(en ? "Enabling adds Traceform to task capabilities. Each read still requires separate authorization for that task. Edge reads its own history; Agent OS does not open the file, start sensor collection, or access the network. Saving a result as memory requires another confirmation." : "启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；Edge 服务会只读查询自己的历史库，Agent OS 不直接打开该文件，不启动传感器采集或访问网络。保存结果为记忆还需再次确认。")
+            .setNegativeButton(en ? "Cancel" : "取消", null)
+            .setPositiveButton(en ? "Enable" : "启用", (dialog, which) -> {
                 try {
                     capabilityBroker.setTraceformEnabled(true);
                     updateTraceformProviderControls();
@@ -1903,8 +1904,9 @@ public final class MainActivity extends Activity {
 
     private void revokeCapability(AgentStore.Task task, String label, String capability, String scope) {
         try {
-            showMessage(capabilityBroker.revoke(task.id, capability, scope)
-                ? label + "授权已撤销" : "当前没有有效的" + label + "授权");
+            boolean revoked = capabilityBroker.revoke(task.id, capability, scope);
+            showMessage(isEnglish() ? (revoked ? label + " grant revoked" : "No active " + label + " grant")
+                : (revoked ? label + "授权已撤销" : "当前没有有效的" + label + "授权"));
         } catch (Exception error) {
             showError(error);
         }
