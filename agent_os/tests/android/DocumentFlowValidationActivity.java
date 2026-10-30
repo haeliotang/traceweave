@@ -47,6 +47,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("MERGE_TOMBSTONE".equals(getIntent().getAction())) mergeTombstone(store);
                 else if ("MERGE_REPLAY_LIMIT".equals(getIntent().getAction())) mergeReplayLimit(store);
                 else if ("MERGE_RESOLVE".equals(getIntent().getAction())) mergeResolve(store);
+                else if ("SYNC_NATIVE_LOOPBACK".equals(getIntent().getAction())) syncNativeLoopback(store);
+                else if ("SYNC_BINDING_P256".equals(getIntent().getAction())) syncBindingP256(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -600,6 +602,33 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private void syncNativeLoopback(AgentStore store) throws Exception {
+        String result = SyncProbe.nativeLoopback(47841);
+        check(result != null && result.startsWith("PASS"), "native loopback session passed: " + result);
+    }
+
+    private void syncBindingP256(AgentStore store) throws Exception {
+        DeviceIdentity.create();
+        byte[] publicKey = DeviceIdentity.publicKey();
+        byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(publicKey);
+        byte[] deviceId = java.util.Arrays.copyOf(digest, 16);
+        byte[] peerId = new byte[38];
+        new java.util.Random(7).nextBytes(peerId);
+        byte[] nonce = new byte[32];
+        new java.util.Random(9).nextBytes(nonce);
+        byte[] transcript = SyncProbe.nativeTranscript(deviceId, peerId, nonce);
+        check(transcript != null && transcript.length > 0, "native binding transcript generated");
+        byte[] signature = DeviceIdentity.sign(transcript);
+        check(SyncProbe.nativeVerifyP256(transcript, signature, publicKey), "keystore P-256 signature verifies natively");
+        byte[] tampered = transcript.clone();
+        tampered[0] ^= 1;
+        check(!SyncProbe.nativeVerifyP256(tampered, signature, publicKey), "tampered transcript is rejected");
+        byte[] otherPeer = peerId.clone();
+        otherPeer[0] ^= 1;
+        check(!java.util.Arrays.equals(transcript, SyncProbe.nativeTranscript(deviceId, otherPeer, nonce)),
+            "different peer id produces a different transcript");
     }
 
     private void mergeCausal(AgentStore store) throws Exception {

@@ -73,7 +73,7 @@ final class DeviceIdentity {
         return sign(transportBindingMessage(sender, receiver, challenge));
     }
 
-    private static byte[] sign(byte[] message) throws Exception {
+    static byte[] sign(byte[] message) throws Exception {
         Signature signature = Signature.getInstance("SHA256withECDSA");
         signature.initSign((PrivateKey) keys(false).getKey(ALIAS, null));
         signature.update(message);

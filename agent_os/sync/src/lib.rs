@@ -7,6 +7,7 @@
 pub mod binding;
 pub mod frame;
 pub mod identity;
+pub mod jni_bridge;
 pub mod transport;
 
 /// Protocol identifier used by the request-response behaviour.

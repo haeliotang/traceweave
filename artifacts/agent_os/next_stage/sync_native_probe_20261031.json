@@ -1,0 +1,40 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-30T19:08:30.777611+00:00",
+  "cases": [
+    {
+      "case": "SYNC_NATIVE_LOOPBACK",
+      "pid": 8525,
+      "passed": true,
+      "result": "10-31 00:53:28.654  8525  8601 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NATIVE_LOOPBACK"
+    },
+    {
+      "case": "SYNC_BINDING_P256",
+      "pid": 8669,
+      "passed": true,
+      "result": "10-31 00:53:30.790  8669  8716 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=SYNC_BINDING_P256"
+    }
+  ],
+  "scope": "isolated validation package with the sync crate cross-compiled for Android arm64; synthetic identities only",
+  "device": "Pixel 6a",
+  "library": {
+    "path": "agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so",
+    "sha256": "c4a383ab113b2d728ec6b56c2fa5eaaa433c189b3a3a7d5c1ca0c861069fd6e6",
+    "bytes": 3851688,
+    "toolchain": "rustc 1.99.1 (rustup stable) with NDK 26.3.11579264 clang for aarch64-linux-android29"
+  },
+  "apk_sha256": "686adf3822a21e86338de67d8f454e4cc9471996b6dac8d86540f1bb58d7f901",
+  "checks": {
+    "native_loopback_transport_on_device": true,
+    "keystore_p256_signature_verified_in_rust": true,
+    "tampered_transcript_rejected": true,
+    "different_peer_id_changes_transcript": true
+  },
+  "limitations": [
+    "Transport identities are synthetic seeds; pairing and persistence are not implemented",
+    "Loopback only on one device; no second physical device",
+    "The library adds about 3.85 MB to the validation APK; release packaging of this library is not decided",
+    "No pairing UI, no confirmation code, no revocation"
+  ]
+}
