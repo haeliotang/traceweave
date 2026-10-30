@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated debug package; pairing records only, no live transport session",
+  "checks": {
+    "revoked_pairing_inactive": true,
+    "revoked_device_leaves_active_allow_list": true,
+    "revocation_keeps_record_for_audit": true,
+    "unknown_device_revocation_rejected": true,
+    "revoked_binding_cannot_be_reused": true,
+    "changed_fingerprint_rejected": true,
+    "rotation_leaves_only_new_device_active": true,
+    "old_device_stays_revoked_after_rotation": true,
+    "settings_list_revocation_verified": true
+  },
+  "cases": [
+    {
+      "case": "PAIR_REVOKE",
+      "pid": 10194,
+      "passed": true,
+      "result": "10-31 01:10:09.310 10194 10234 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=PAIR_REVOKE"
+    },
+    {
+      "case": "PAIR_REENTRY",
+      "pid": 10258,
+      "passed": true,
+      "result": "10-31 01:10:10.496 10258 10287 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=PAIR_REENTRY"
+    },
+    {
+      "case": "PAIR_ROTATE",
+      "pid": 10308,
+      "passed": true,
+      "result": "10-31 01:10:11.951 10308 10337 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=PAIR_ROTATE"
+    },
+    {
+      "case": "PAIR_UI_REVOKED",
+      "pid": 10659,
+      "passed": true,
+      "result": "10-31 01:11:26.581 10659 10689 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=PAIR_UI_REVOKED"
+    }
+  ],
+  "limitations": [
+    "No live transport connection was open; immediate disconnect on revoke is enforced only once C6 feeds the allow-list into the transport",
+    "Receipts are not implemented in the store yet, so \"old receipts expire after rotation\" is not covered",
+    "Synthetic peer fingerprints only"
+  ]
+}

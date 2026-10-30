@@ -39,6 +39,19 @@ final class SyncPairing {
         return String.format(java.util.Locale.ROOT, "%06d", value);
     }
 
+    /** A transport session is allowed only while the pairing record stays active. */
+    static boolean isActive(AgentStore store, String deviceId, String fingerprint) {
+        AgentStore.Pairing pairing = store.pairing(deviceId);
+        return pairing != null && STATUS_ACTIVE.equals(pairing.status) && pairing.fingerprint.equals(fingerprint);
+    }
+
+    /** Revoking keeps the record (and its fingerprint) but removes transport access. */
+    static void revoke(AgentStore store, String deviceId) {
+        AgentStore.Pairing pairing = store.pairing(deviceId);
+        if (pairing == null) throw new IllegalArgumentException("Unknown paired device");
+        store.setPairingStatus(deviceId, STATUS_REVOKED);
+    }
+
     /** Pair only when both sides derived the same code and the fingerprints differ. */
     static void confirm(AgentStore store, String localFingerprint, String remoteFingerprint, String remoteDeviceId,
                         String remotePeerId, String localCode, String remoteCode) throws Exception {

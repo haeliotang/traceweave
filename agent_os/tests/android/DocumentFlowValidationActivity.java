@@ -53,6 +53,10 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("PAIR_CREATE".equals(getIntent().getAction())) pairCreate(store);
                 else if ("PAIR_PERSIST".equals(getIntent().getAction())) pairPersist(store);
                 else if ("PAIR_UI_VERIFY".equals(getIntent().getAction())) pairUiVerify(store);
+                else if ("PAIR_REVOKE".equals(getIntent().getAction())) pairRevoke(store);
+                else if ("PAIR_REENTRY".equals(getIntent().getAction())) pairReentry(store);
+                else if ("PAIR_ROTATE".equals(getIntent().getAction())) pairRotate(store);
+                else if ("PAIR_UI_REVOKED".equals(getIntent().getAction())) pairUiRevoked(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -606,6 +610,55 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private void pairUiRevoked(AgentStore store) throws Exception {
+        check(store.activePairings().isEmpty(), "revoking from the settings list leaves no active device");
+        AgentStore.Pairing rotated = store.pairing("rotate-2");
+        check(rotated != null && SyncPairing.STATUS_REVOKED.equals(rotated.status), "revoked device keeps a revoked record");
+    }
+
+    private void pairRevoke(AgentStore store) throws Exception {
+        store.getWritableDatabase().delete("pairings", null, null);
+        DeviceIdentity.create();
+        String local = DeviceIdentity.fingerprint();
+        String remote = shortHash("revoke-remote");
+        byte[] nonce = new byte[32];
+        new java.util.Random(31).nextBytes(nonce);
+        String code = SyncPairing.code(local, remote, nonce);
+        SyncPairing.confirm(store, local, remote, "revoke-1", "peer-1", code, code);
+        check(SyncPairing.isActive(store, "revoke-1", remote), "fresh pairing is active");
+        SyncPairing.revoke(store, "revoke-1");
+        check(!SyncPairing.isActive(store, "revoke-1", remote), "revoked pairing is inactive");
+        check(store.activePairings().isEmpty(), "revoked device leaves the active allow-list");
+        check(store.pairing("revoke-1") != null, "revocation keeps the record for audit");
+    }
+
+    private void pairReentry(AgentStore store) throws Exception {
+        boolean rejected = false;
+        try {
+            SyncPairing.revoke(store, "unknown-device");
+        } catch (IllegalArgumentException error) {
+            rejected = true;
+        }
+        check(rejected, "revoking an unknown device is rejected");
+        boolean inactive = !SyncPairing.isActive(store, "revoke-1", shortHash("revoke-remote"));
+        check(inactive, "old device cannot reuse its revoked binding");
+        check(!SyncPairing.isActive(store, "revoke-1", shortHash("other-fingerprint")),
+            "a changed fingerprint is not accepted for the revoked device");
+    }
+
+    private void pairRotate(AgentStore store) throws Exception {
+        DeviceIdentity.create();
+        String local = DeviceIdentity.fingerprint();
+        String fresh = shortHash("rotated-remote");
+        byte[] nonce = new byte[32];
+        new java.util.Random(37).nextBytes(nonce);
+        String code = SyncPairing.code(local, fresh, nonce);
+        SyncPairing.confirm(store, local, fresh, "rotate-2", "peer-2", code, code);
+        java.util.List<AgentStore.Pairing> active = store.activePairings();
+        check(active.size() == 1 && "rotate-2".equals(active.get(0).deviceId), "only the rotated device stays active");
+        check(SyncPairing.STATUS_REVOKED.equals(store.pairing("revoke-1").status), "old device stays revoked after rotation");
     }
 
     private void pairUiVerify(AgentStore store) throws Exception {

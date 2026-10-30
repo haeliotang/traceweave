@@ -689,6 +689,44 @@ public final class MainActivity extends Activity {
         refreshMemories();
     }
 
+    private void showPairingList() {
+        final boolean en = isEnglish();
+        try {
+            final java.util.List<AgentStore.Pairing> active = store.activePairings();
+            if (active.isEmpty()) {
+                showMessage(en ? "No paired devices" : "没有已配对设备");
+                return;
+            }
+            final String[] labels = new String[active.size()];
+            for (int index = 0; index < active.size(); index++) {
+                AgentStore.Pairing pairing = active.get(index);
+                labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…";
+            }
+            new AlertDialog.Builder(this)
+                .setTitle(en ? "Paired devices" : "已配对设备")
+                .setItems(labels, (dialog, which) -> {
+                    final AgentStore.Pairing pairing = active.get(which);
+                    new AlertDialog.Builder(this)
+                        .setTitle(en ? "Revoke pairing" : "撤销配对")
+                        .setMessage(en ? "Revoke access for " + pairing.deviceId + "? It must pair again."
+                                       : "撤销 " + pairing.deviceId + " 的访问？它必须重新配对。")
+                        .setNegativeButton(en ? "Cancel" : "取消", null)
+                        .setPositiveButton(en ? "Revoke" : "撤销", (inner, ignored) -> {
+                            try {
+                                SyncPairing.revoke(store, pairing.deviceId);
+                                showMessage(en ? "Pairing revoked" : "配对已撤销");
+                            } catch (Exception error) {
+                                showError(error);
+                            }
+                        }).show();
+                })
+                .setNegativeButton(en ? "Close" : "关闭", null)
+                .show();
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
     private void showPairingDialog() {
         boolean en = isEnglish();
         try {
@@ -786,6 +824,7 @@ public final class MainActivity extends Activity {
         pairingState.setPadding(0, dp(6), dp(8), dp(6));
         pairingRow.addView(pairingState);
         addActionButton(pairingRow, en ? "Pair device" : "配对设备", view -> showPairingDialog());
+        addActionButton(pairingRow, en ? "Manage" : "管理设备", view -> showPairingList());
         root.addView(pairingRow);
 
         activityStatus = new TextView(this);

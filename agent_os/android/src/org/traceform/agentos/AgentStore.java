@@ -1254,6 +1254,29 @@ final class AgentStore extends SQLiteOpenHelper {
         getWritableDatabase().delete("pairings", "device_id=?", new String[]{deviceId});
     }
 
+    void setPairingStatus(String deviceId, String status) {
+        if (status == null || !status.matches("[a-z_]{1,32}")) throw new IllegalArgumentException("Invalid pairing status");
+        ContentValues values = new ContentValues();
+        values.put("status", status);
+        getWritableDatabase().update("pairings", values, "device_id=?", new String[]{deviceId});
+    }
+
+    Pairing pairing(String deviceId) {
+        try (Cursor cursor = getReadableDatabase().query("pairings",
+                new String[]{"device_id", "fingerprint", "peer_id", "status", "paired_at"},
+                "device_id=?", new String[]{deviceId}, null, null, null)) {
+            if (!cursor.moveToFirst()) return null;
+            return new Pairing(cursor.getString(0), cursor.getString(1), cursor.getString(2),
+                cursor.getString(3), cursor.getLong(4));
+        }
+    }
+
+    List<Pairing> activePairings() {
+        ArrayList<Pairing> active = new ArrayList<>();
+        for (Pairing pairing : listPairings()) if (SyncPairing.STATUS_ACTIVE.equals(pairing.status)) active.add(pairing);
+        return active;
+    }
+
     /** Versions known for one memory id, as persisted by merge or resolve. */
     List<MemoryMerge.Version> listMemoryVersions(String memoryId) {
         ArrayList<MemoryMerge.Version> versions = new ArrayList<>();
