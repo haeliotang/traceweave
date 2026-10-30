@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "model": "Qwen2.5-1.5B-Instruct Q4_0 (sha256 dcd819ff…)",
+  "scope": "isolated package, synthetic prompts, single model, one run per phase",
+  "long_context": {
+    "sentences_60": {
+      "chars": 1874,
+      "elapsed_ms": 18118,
+      "output": "DONE",
+      "exact_done": true
+    },
+    "sentences_120": {
+      "chars": 3754,
+      "error": "Local model prompt exceeds the context limit"
+    },
+    "sentences_180": {
+      "chars": 5674,
+      "error": "Local model input exceeds the limit"
+    },
+    "sentences_300": {
+      "chars": 9514,
+      "error": "Local model input exceeds the limit"
+    },
+    "note": "the 600 s timeout seen in the first attempt was not reproduced with the current build"
+  },
+  "multi_turn": {
+    "elapsed_ms": 5382,
+    "first": "Sure, I'll name one color. Red.",
+    "second": "DONE"
+  },
+  "concurrent": {
+    "both_finished": true,
+    "first": "DONE.",
+    "first_ms": 2231,
+    "second": "<error: Another local model request is running>",
+    "second_ms": 9
+  },
+  "cancel": {
+    "returned_after_cancel": true,
+    "elapsed_ms": 335,
+    "output_chars": 53,
+    "note": "cancel returned partial output instead of a full completion"
+  },
+  "phases_raw": {
+    "long_context": {
+      "phase": "long_context",
+      "error": "timeout"
+    },
+    "boundary": {
+      "phase": "boundary",
+      "prompt_chars": 9514,
+      "accepted": false,
+      "error": "Local model input exceeds the limit"
+    },
+    "multi_turn": {
+      "phase": "multi_turn",
+      "elapsed_ms": 5382,
+      "first": "Sure, I'll name one color. Red.",
+      "second": "DONE"
+    },
+    "concurrent": {
+      "phase": "concurrent",
+      "both_finished": true,
+      "first_output": "DONE.",
+      "second_output": "<error: Another local model request is running>",
+      "first_ms": 2231,
+      "second_ms": 9
+    },
+    "cancel": {
+      "phase": "cancel",
+      "returned_after_cancel": true,
+      "elapsed_ms": 335,
+      "output_chars": 53,
+      "output": "<error: Local model prompt exceeds the context limit>"
+    }
+  },
+  "limitations": [
+    "One model and one run per phase; no repetition or controlled cooling",
+    "Long prompts beyond roughly 500 tokens are refused, so this does not measure retrieval quality at long context",
+    "Concurrency is application-level serialization, not parallel inference",
+    "The cancel result does not show how quickly the native inference thread stops, only when the caller returned",
+    "No memory sampling in this run"
+  ]
+}

@@ -100,6 +100,120 @@ public final class LocalModelQualityProbe extends Activity {
         return false;
     }
 
+    private void writeStress3(String phase, JSONObject value) {
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "d3-" + phase + ".json"))) {
+            output.write(value.toString().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String longPrompt(int sentences) {
+        StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < sentences; index++) builder.append("Synthetic context sentence ").append(index).append(". ");
+        return builder.append("Reply with exactly DONE.").toString();
+    }
+
+    private void runStress3(File model, String phase) throws Exception {
+        String path = model.getPath();
+        JSONObject report = new JSONObject().put("phase", phase);
+        if ("long_context".equals(phase)) {
+            String prompt = longPrompt(getIntent().getIntExtra("sentences", 180));
+            report.put("prompt_chars", prompt.length());
+            long started = SystemClock.elapsedRealtime();
+            try {
+                LocalModelProbe.prepare();
+                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 32),
+                    StandardCharsets.UTF_8);
+                report.put("elapsed_ms", SystemClock.elapsedRealtime() - started)
+                    .put("output_chars", text.length()).put("exact_done", "DONE".equals(text.trim()))
+                    .put("output", text.length() > 120 ? text.substring(0, 120) : text);
+            } catch (Exception error) {
+                report.put("error", String.valueOf(error.getMessage())).put("prompt_chars", prompt.length());
+            }
+        } else if ("boundary".equals(phase)) {
+            String prompt = longPrompt(300);
+            report.put("prompt_chars", prompt.length());
+            try {
+                LocalModelProbe.prepare();
+                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 16),
+                    StandardCharsets.UTF_8);
+                report.put("accepted", true).put("output_chars", text.length());
+            } catch (Exception error) {
+                report.put("accepted", false).put("error", String.valueOf(error.getMessage()));
+            }
+        } else if ("multi_turn".equals(phase)) {
+            long started = SystemClock.elapsedRealtime();
+            try {
+                LocalModelProbe.prepare();
+                String first = new String(LocalModelProbe.generate(path,
+                    "Name one color and nothing else.".getBytes(StandardCharsets.UTF_8), 16), StandardCharsets.UTF_8).trim();
+                LocalModelProbe.prepare();
+                String second = new String(LocalModelProbe.generate(path,
+                    ("You said: " + first + ". Reply with exactly DONE.").getBytes(StandardCharsets.UTF_8), 16),
+                    StandardCharsets.UTF_8).trim();
+                report.put("elapsed_ms", SystemClock.elapsedRealtime() - started)
+                    .put("first", first.length() > 60 ? first.substring(0, 60) : first)
+                    .put("second", second.length() > 60 ? second.substring(0, 60) : second);
+            } catch (Exception error) {
+                report.put("error", String.valueOf(error.getMessage()));
+            }
+        } else if ("concurrent".equals(phase)) {
+            final String[] results = new String[2];
+            final long[] elapsed = new long[2];
+            Thread[] workers = new Thread[2];
+            for (int index = 0; index < 2; index++) {
+                final int slot = index;
+                workers[index] = new Thread(() -> {
+                    long begin = SystemClock.elapsedRealtime();
+                    try {
+                        LocalModelProbe.prepare();
+                        byte[] raw = LocalModelProbe.generate(path,
+                            ("Reply with exactly DONE. Request " + slot).getBytes(StandardCharsets.UTF_8), 16);
+                        results[slot] = new String(raw, StandardCharsets.UTF_8).trim();
+                    } catch (Exception error) {
+                        results[slot] = "<error: " + error.getMessage() + ">";
+                    }
+                    elapsed[slot] = SystemClock.elapsedRealtime() - begin;
+                }, "d3-concurrent-" + index);
+            }
+            for (Thread worker : workers) worker.start();
+            for (Thread worker : workers) worker.join(60000);
+            boolean finished = true;
+            for (Thread worker : workers) if (worker.isAlive()) finished = false;
+            report.put("both_finished", finished)
+                .put("first_output", results[0] == null ? "" : results[0])
+                .put("second_output", results[1] == null ? "" : results[1])
+                .put("first_ms", elapsed[0]).put("second_ms", elapsed[1]);
+        } else if ("cancel".equals(phase)) {
+            final String[] cancelled = new String[1];
+            final long[] cancelElapsed = new long[1];
+            Thread worker = new Thread(() -> {
+                long begin = SystemClock.elapsedRealtime();
+                try {
+                    LocalModelProbe.prepare();
+                    byte[] raw = LocalModelProbe.generate(path,
+                        ("Write a long synthetic paragraph about tents. " + longPrompt(120)).getBytes(StandardCharsets.UTF_8), 96);
+                    cancelled[0] = new String(raw, StandardCharsets.UTF_8);
+                } catch (Exception error) {
+                    cancelled[0] = "<error: " + error.getMessage() + ">";
+                }
+                cancelElapsed[0] = SystemClock.elapsedRealtime() - begin;
+            }, "d3-cancel");
+            worker.start();
+            Thread.sleep(500);
+            LocalModelProbe.cancel();
+            worker.join(30000);
+            report.put("returned_after_cancel", !worker.isAlive())
+                .put("elapsed_ms", cancelElapsed[0])
+                .put("output_chars", cancelled[0] == null ? -1 : cancelled[0].length())
+                .put("output", cancelled[0] == null ? "" : (cancelled[0].length() > 80 ? cancelled[0].substring(0, 80) : cancelled[0]));
+        } else {
+            throw new IllegalArgumentException("unknown stress phase");
+        }
+        writeStress3(phase, report);
+        Log.i("AgentOsModelQuality", "D3_DONE " + phase);
+    }
+
     private void runQuality50(File model) throws Exception {
         JSONArray results = new JSONArray();
         java.util.LinkedHashMap<String, int[]> byCategory = new java.util.LinkedHashMap<>();
@@ -211,6 +325,10 @@ public final class LocalModelQualityProbe extends Activity {
                 for (byte b : digest.digest()) hash.append(String.format(Locale.ROOT, "%02x", b & 255));
                 String expected = "qwen15".equals(getIntent().getStringExtra("model")) ? LARGE_SHA : SMALL_SHA;
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
+                if ("STRESS3".equals(getIntent().getAction())) {
+                    runStress3(model, getIntent().getStringExtra("phase"));
+                    return;
+                }
                 if ("QUALITY50".equals(getIntent().getAction())) {
                     runQuality50(model);
                     return;
