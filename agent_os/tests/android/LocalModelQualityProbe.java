@@ -40,27 +40,46 @@ public final class LocalModelQualityProbe extends Activity {
         JSONArray results = new JSONArray();
         JSONObject before = telemetry();
         String stopReason = "completed";
-        for (int round = 0; round < 5; round++) {
-            for (String[] item : CASES) {
-                JSONObject current = telemetry();
-                if (current.optInt("thermal_status", -1) >= android.os.PowerManager.THERMAL_STATUS_SEVERE
-                        || current.optInt("battery_temperature_tenths_c", -1) >= 420) {
-                    stopReason = "thermal_guard";
-                    break;
-                }
-                LocalModelProbe.prepare();
-                long start = SystemClock.elapsedRealtime();
-                byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96);
-                StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw));
-                results.put(new JSONObject().put("round", round + 1).put("case", item[0])
-                    .put("elapsed_ms", SystemClock.elapsedRealtime() - start).put("output_bytes", raw.length)
-                    .put("after", telemetry()));
+        java.util.concurrent.atomic.AtomicBoolean sampling = new java.util.concurrent.atomic.AtomicBoolean(true);
+        java.util.concurrent.atomic.AtomicLong peakPss = new java.util.concurrent.atomic.AtomicLong();
+        java.util.concurrent.atomic.AtomicInteger samples = new java.util.concurrent.atomic.AtomicInteger();
+        Thread sampler = new Thread(() -> {
+            while (sampling.get()) {
+                long pss = android.os.Debug.getPss();
+                if (pss > 0) { peakPss.accumulateAndGet(pss, Math::max); samples.incrementAndGet(); }
+                try { Thread.sleep(500); } catch (InterruptedException ignored) { break; }
             }
-            if (!"completed".equals(stopReason)) break;
+        }, "synthetic-model-pss-sampler");
+        sampler.start();
+        try {
+            for (int round = 0; round < 5; round++) {
+                for (String[] item : CASES) {
+                    JSONObject current = telemetry();
+                    if (current.optInt("thermal_status", -1) >= android.os.PowerManager.THERMAL_STATUS_SEVERE
+                            || current.optInt("battery_temperature_tenths_c", -1) >= 420) {
+                        stopReason = "thermal_guard";
+                        break;
+                    }
+                    LocalModelProbe.prepare();
+                    long start = SystemClock.elapsedRealtime();
+                    byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96);
+                    StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                        .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw));
+                    results.put(new JSONObject().put("round", round + 1).put("case", item[0])
+                        .put("elapsed_ms", SystemClock.elapsedRealtime() - start).put("output_bytes", raw.length)
+                        .put("after", telemetry()));
+                }
+                if (!"completed".equals(stopReason)) break;
+            }
+        } finally {
+            sampling.set(false);
+            sampler.interrupt();
+            sampler.join();
         }
         JSONObject result = new JSONObject().put("before", before).put("results", results)
-            .put("stop_reason", stopReason).put("after", telemetry());
+            .put("stop_reason", stopReason).put("after", telemetry())
+            .put("sampled_peak_pss_kib", peakPss.get()).put("pss_sample_count", samples.get())
+            .put("pss_sampling_interval_ms", 500);
         try (java.io.FileOutputStream output = openFileOutput("synthetic-stress-result.json", 0)) {
             output.write(result.toString().getBytes(StandardCharsets.UTF_8));
         }
