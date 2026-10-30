@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "two isolated installs (distinct UIDs), loopback transport, synthetic memories, fixed test seeds",
+  "packages": {
+    "node_a": "org.traceform.agentos.actionsvalidation (uid 10525)",
+    "node_b": "org.traceform.agentos.documentsvalidation (uid 10526)"
+  },
+  "checks": {
+    "node_a_served_exchange": true,
+    "node_b_exchanged_and_merged": true,
+    "both_nodes_converged_to_two_memories": true,
+    "local_tombstone_applied_on_node_a": true,
+    "deletion_propagated_to_node_b": true,
+    "deleted_memory_did_not_reappear": true,
+    "peer_memory_survived_deletion_exchange": true
+  },
+  "cases": [
+    {
+      "case": "SYNC_NODE_SERVE",
+      "pid": 12542,
+      "passed": true,
+      "result": "10-31 01:42:03.653 12542 12572 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+    },
+    {
+      "case": "SYNC_NODE_EXCHANGE",
+      "pid": 12606,
+      "passed": true,
+      "result": "10-31 01:42:03.686 12606 12639 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+    },
+    {
+      "case": "SYNC_VERIFY_MERGED",
+      "pid": 12729,
+      "passed": true,
+      "result": "10-31 01:42:10.358 12729 12759 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_VERIFY_MERGED"
+    },
+    {
+      "case": "SYNC_VERIFY_MERGED",
+      "pid": 12680,
+      "passed": true,
+      "result": "10-31 01:42:08.943 12680 12709 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_VERIFY_MERGED"
+    },
+    {
+      "case": "SYNC_DELETE_OWN",
+      "pid": 12781,
+      "passed": true,
+      "result": "10-31 01:42:15.398 12781 12810 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_DELETE_OWN"
+    },
+    {
+      "case": "SYNC_NODE_SERVE",
+      "pid": 13063,
+      "passed": true,
+      "result": "10-31 01:42:52.693 13063 13094 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_NODE_SERVE"
+    },
+    {
+      "case": "SYNC_NODE_EXCHANGE",
+      "pid": 13128,
+      "passed": true,
+      "result": "10-31 01:42:52.717 13128 13160 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_NODE_EXCHANGE"
+    },
+    {
+      "case": "SYNC_VERIFY_AFTER_DELETE",
+      "pid": 13249,
+      "passed": true,
+      "result": "10-31 01:42:59.064 13249 13278 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
+    },
+    {
+      "case": "SYNC_VERIFY_AFTER_DELETE",
+      "pid": 13199,
+      "passed": true,
+      "result": "10-31 01:42:57.628 13199 13229 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=SYNC_VERIFY_AFTER_DELETE"
+    }
+  ],
+  "limitations": [
+    "Fixed synthetic seeds identify the two nodes; pairing-driven transport is not wired yet",
+    "Conflict choice by the user and network retry are not exercised in this run",
+    "No receipts or manifest diff; whole record sets are exchanged per session",
+    "Loopback on one device only; no wireless path"
+  ]
+}

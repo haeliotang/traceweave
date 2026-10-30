@@ -63,6 +63,11 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_RECORD_DELETE".equals(getIntent().getAction())) syncRecordDelete(store);
                 else if ("SYNC_RECORD_CONCURRENT".equals(getIntent().getAction())) syncRecordConcurrent(store);
                 else if ("SYNC_RECORD_ROUNDTRIP".equals(getIntent().getAction())) syncRecordRoundtrip(store);
+                else if ("SYNC_NODE_SERVE".equals(getIntent().getAction())) syncNodeServe(store);
+                else if ("SYNC_NODE_EXCHANGE".equals(getIntent().getAction())) syncNodeExchange(store);
+                else if ("SYNC_VERIFY_MERGED".equals(getIntent().getAction())) syncVerifyMerged(store);
+                else if ("SYNC_DELETE_OWN".equals(getIntent().getAction())) syncDeleteOwn(store);
+                else if ("SYNC_VERIFY_AFTER_DELETE".equals(getIntent().getAction())) syncVerifyAfterDelete(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -616,6 +621,72 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private static final String SYNC_SEED_A = "6f1d2c3b4a5968778695a4b3c2d1e0f00112233445566778899aabbccddeeff0";
+    private static final String SYNC_SEED_B = "0f1e2d3c4b5a69788796a5b4c3d2e1f000112233445566778899aabbccddeeff";
+    private static final String SYNC_NODE_A_MEMORY = "SYNTHETIC sync node A memory";
+    private static final String SYNC_NODE_B_MEMORY = "SYNTHETIC sync node B memory";
+
+    private void seedSyncNode(AgentStore store, String marker, String actor) throws Exception {
+        if (getSharedPreferences("document_validation", 0).getBoolean("sync_seeded_" + actor, false)) return;
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, marker);
+        store.mergeMemoryVersions(memory.id,
+            java.util.Collections.singletonList(mergeVersion(actor, 1, shortHash(marker), false)));
+        getSharedPreferences("document_validation", 0).edit().putBoolean("sync_seeded_" + actor, true).commit();
+    }
+
+    private void syncDeleteOwn(AgentStore store) throws Exception {
+        String target = null;
+        for (AgentStore.Memory memory : store.listMemories())
+            if (SYNC_NODE_A_MEMORY.equals(memory.content)) target = memory.id;
+        check(target != null, "node A memory exists before deletion");
+        store.mergeSyncRecords(java.util.Collections.singletonList(
+            new AgentStore.SyncRecord(target, AgentStore.MEMORY_FACT, null, AgentStore.MEMORY_SOURCE_USER, "", 0,
+                new java.util.TreeMap<>(java.util.Collections.singletonMap("node-a", 2L)), null, true)));
+        boolean gone = true;
+        for (AgentStore.Memory memory : store.listMemories()) if (target.equals(memory.id)) gone = false;
+        check(gone, "local tombstone removed the memory before the exchange");
+    }
+
+    private void syncVerifyAfterDelete(AgentStore store) throws Exception {
+        boolean deleted = true;
+        boolean survivor = false;
+        for (AgentStore.Memory memory : store.listMemories()) {
+            if (SYNC_NODE_A_MEMORY.equals(memory.content)) deleted = false;
+            if (SYNC_NODE_B_MEMORY.equals(memory.content)) survivor = true;
+        }
+        check(deleted, "deleted memory did not reappear on either node");
+        check(survivor, "the peer memory survived the deletion exchange");
+    }
+
+    private void syncNodeServe(AgentStore store) throws Exception {
+        seedSyncNode(store, SYNC_NODE_A_MEMORY, "node-a");
+        String peerB = SyncProbe.nativePeerId(SYNC_SEED_B);
+        String publicB = SyncProbe.nativePublicKey(SYNC_SEED_B);
+        String result = SyncProbe.nativeServeOnce(SYNC_SEED_A, 47911, peerB, publicB,
+            request -> SyncExchange.handle(store, request));
+        check(result != null && result.startsWith("OK"), "sync node A served one exchange: " + result);
+    }
+
+    private void syncNodeExchange(AgentStore store) throws Exception {
+        seedSyncNode(store, SYNC_NODE_B_MEMORY, "node-b");
+        String peerA = SyncProbe.nativePeerId(SYNC_SEED_A);
+        byte[] request = SyncExchange.encode(store.exportSyncRecords());
+        byte[] response = SyncProbe.nativeDialOnce(SYNC_SEED_B, 47911, peerA, request);
+        check(response != null && response.length > 0, "peer returned its records");
+        SyncExchange.mergeResponse(store, response);
+        check(store.listMemories().size() >= 1, "the exchange left at least the peer memory");
+    }
+
+    private void syncVerifyMerged(AgentStore store) throws Exception {
+        boolean a = false;
+        boolean b = false;
+        for (AgentStore.Memory memory : store.listMemories()) {
+            if (SYNC_NODE_A_MEMORY.equals(memory.content)) a = true;
+            if (SYNC_NODE_B_MEMORY.equals(memory.content)) b = true;
+        }
+        check(a && b, "node converged to both synthetic memories");
     }
 
     private static AgentStore.SyncRecord syncRecord(String id, String content, String actor, long counter, boolean tombstone) throws Exception {
