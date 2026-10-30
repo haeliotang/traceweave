@@ -199,7 +199,7 @@
 
 **结果（2026-10-30）**：新增 [agent_os/sync](../agent_os/sync) crate（libp2p 0.57.1 + Noise + yamux），含帧上限 1 MiB、会话 8 MiB / 10,000 帧预算、域分隔且长度前缀的绑定转录、允许列表与 Ed25519 宿主验签器。10 项宿主单测通过；两个本地进程经 127.0.0.1 完成绑定与回显（server PASS frames=1、client PASS frames=3），未配对身份的连接被拒绝。crate 未接入 Android 应用，界面无同步入口。见 [sync_transport_c2_20261030](artifacts/agent_os/next_stage/sync_transport_c2_20261030.json)。Android Keystore 验签与配对 UI 属于 C3。
 
-**已知缺陷（2026-10-31）**：隔离包启动时 Android 报“不符合 16 KB 对齐要求”，`libtraceform_sync.so` 的 LOAD 段未按 16 KB 对齐。这会影响 Android 15+ 的 16 KB 页设备；构建时需要加 `-Wl,-z,max-page-size=16384`（或等价链接参数）并重新验证。
+**已修复缺陷（2026-10-31）**：隔离包启动时 Android 报“不符合 16 KB 对齐要求”，`libtraceform_sync.so` 的 LOAD 段原为 4 KB 对齐。已在 `agent_os/sync/.cargo/config.toml` 加 `-Wl,-z,max-page-size=16384`，重建后四个 LOAD 段 Align 均为 `0x4000`；构建方式见 [sync_android_build.md](sync_android_build.md)。设备上的系统警告待下次安装时复测。
 
 ### C3 配对 UI 与双身份
 
