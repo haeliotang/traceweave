@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Test an old synthetic archive between isolated debug packages, never production."""
 import argparse
+from datetime import datetime, timezone
+import hashlib
+import json
 from pathlib import Path
 import shlex
 import subprocess
@@ -20,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('adb', 'serial', 'source-apk', 'target-apk', 'build-tools'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--output', type=Path, help='Optional receipt path for the synthetic migration result')
     args = parser.parse_args()
     identities = []
     for apk, package in ((args.source_apk, SOURCE), (args.target_apk, TARGET)):
@@ -57,6 +61,7 @@ def main():
                       '--adb', args.adb, '--serial', args.serial]
             subprocess.run(common + ['--case', 'EXPORT_MIGRATION', '--output', str(Path(directory) / 'export.json')],
                            cwd=ROOT, check=True)
+            export_receipt = json.loads((Path(directory) / 'export.json').read_text())
             source_prefs = run('exec-out', 'run-as', SOURCE, 'cat', 'shared_prefs/agent_os_cloud_model_prefs.xml',
                                capture_output=True).stdout
             if b'synthetic-source-credential' not in source_prefs:
@@ -65,11 +70,34 @@ def main():
                             '--adb', args.adb, '--serial', args.serial], cwd=ROOT, check=True)
             subprocess.run(common + ['--package', TARGET, '--case', 'IMPORT_MIGRATION_WITH_CLOUD_FIXTURE',
                                      '--output', str(Path(directory) / 'import.json')], cwd=ROOT, check=True)
+            import_receipt = json.loads((Path(directory) / 'import.json').read_text())
         print('PASS legacy synthetic archive migrated without overwriting target cloud configuration')
     finally:
         for package in reversed(installed):
             run('uninstall', package, stdout=subprocess.DEVNULL)
         print('Isolated applications and synthetic archives removed')
+    if args.output:
+        receipt = {
+            'recorded_at': datetime.now(timezone.utc).isoformat(),
+            'scope': 'synthetic encrypted archive from an older isolated source package into an isolated target package',
+            'real_data_used': False,
+            'source_apk_sha256': hashlib.sha256(Path(args.source_apk).read_bytes()).hexdigest(),
+            'target_apk_sha256': hashlib.sha256(Path(args.target_apk).read_bytes()).hexdigest(),
+            'source': {key: identities[0].get(key) for key in ('package', 'version_code', 'signer_sha256')},
+            'target': {key: identities[1].get(key) for key in ('package', 'version_code', 'signer_sha256')},
+            'distinct_validation_uids': True,
+            'source_cloud_credential_present_at_export': True,
+            'export_case': export_receipt['cases'][0],
+            'import_case': import_receipt['cases'][0],
+            'isolated_packages_removed': True,
+            'limitations': [
+                'Synthetic data only; the production database was never opened',
+                'The older package cannot read the current schema, so only the old-to-new direction is covered',
+                'Process termination, power loss and a second physical device are not covered',
+            ],
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + '\n')
 
 
 if __name__ == '__main__':

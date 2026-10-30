@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-10-30T16:49:33.730139+00:00",
+  "scope": "synthetic encrypted archive from an older isolated source package into an isolated target package",
+  "real_data_used": false,
+  "source_apk_sha256": "369c64accbdf0af91e9c662281f559041eafb761bc222f6e516d39f3e4713e64",
+  "target_apk_sha256": "69cf240e48b707032c70df771f5d7e2443c84c620e256c7697aec88ca0897a72",
+  "source": {
+    "package": "org.traceform.agentos.actionsvalidation",
+    "version_code": 2,
+    "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db"
+  },
+  "target": {
+    "package": "org.traceform.agentos.documentsvalidation",
+    "version_code": 2,
+    "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db"
+  },
+  "distinct_validation_uids": true,
+  "source_cloud_credential_present_at_export": true,
+  "export_case": {
+    "case": "EXPORT_MIGRATION",
+    "pid": 13529,
+    "passed": true,
+    "result": "10-30 22:34:13.685 13529 13579 I AgentOsDocumentsValidation: PASS document_flow checks=12 mode=EXPORT_MIGRATION"
+  },
+  "import_case": {
+    "case": "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE",
+    "pid": 13683,
+    "passed": true,
+    "result": "10-30 22:34:32.267 13683 13711 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=IMPORT_MIGRATION_WITH_CLOUD_FIXTURE"
+  },
+  "isolated_packages_removed": true,
+  "limitations": [
+    "Synthetic data only; the production database was never opened",
+    "The older package cannot read the current schema, so only the old-to-new direction is covered",
+    "Process termination, power loss and a second physical device are not covered"
+  ]
+}
