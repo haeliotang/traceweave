@@ -38,9 +38,9 @@
 - 同时修掉类型下拉框被截断（"Prefe.." → "Preference"）。
 - 模型页（完成）：状态 / 导入 / 操作三块，状态一行、按钮 40dp，白底并避开状态栏；截图 [中文](../artifacts/agent_os/next_stage/ui/model_page_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/model_page_en.png)。
 
-### 阶段 5：验收（1 轮）
-- 中英各截一组图，记录行高、密度与可读性；跑核心设备用例确认行为未变。
-- 更新本文件状态与截图索引。
+### 阶段 5：验收（进行中 2026-10-31）
+- 设备回归（2026-10-31）：`OPEN_WORKFLOW_UI`、`WORKFLOW_GUARD_V4`、`TASK_CENTER`、`PAIR_CREATE`、`PAIR_UI_VERIFY` 通过；其中配对是在重构后的设置页通过真实对话框完成的。`VERIFY_WORKFLOW_UI`、`SEED_CENTER_UI` 因缺少“界面创建的工作流模板”夹具而无法运行（不是回归）。见 [ui_regression_20261031](../artifacts/agent_os/next_stage/ui_regression_20261031.json)。
+- 待办：补一次交互式夹具（模板 + 两次运行）后可跑完整 UI 流程用例；深色模式与多字号仍未验证。
 
 ## 验收标准
 

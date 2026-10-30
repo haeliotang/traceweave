@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "package": "org.traceform.agentos.actionsvalidation",
+  "scope": "UI-focused device regression after the compact-layout refactor",
+  "passed": {
+    "OPEN_WORKFLOW_UI": "checks=1",
+    "WORKFLOW_GUARD_V4": "checks=6",
+    "TASK_CENTER": "checks=10",
+    "PAIR_CREATE": "checks=6",
+    "PAIR_UI_VERIFY": "checks=3 after pairing through the real settings dialog"
+  },
+  "blocked_by_fixture": {
+    "VERIFY_WORKFLOW_UI": "needs two completed runs of an interactively created workflow template (trip A / trip B)",
+    "SEED_CENTER_UI": "same UI-created template fixture"
+  },
+  "notes": [
+    "The settings pairing dialog was exercised end to end after the refactor: enter fingerprint, show code, pair, verify",
+    "WorkflowActivity itself was not modified by this refactor and opens successfully",
+    "The fixture cases are not regressions; they require an interactive template that does not exist in a fresh install",
+    "Host suite: 27 tests pass"
+  ],
+  "limitations": [
+    "Only a subset of the 100+ device cases was rerun",
+    "No screenshot-based pixel comparison; visual checks are the saved zh/en screenshots",
+    "Memory list and model page have no device cases of their own"
+  ]
+}
