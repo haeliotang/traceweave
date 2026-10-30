@@ -35,6 +35,8 @@ final class DocumentAction {
 
     static JSONObject draft(String content, JSONArray sources) throws Exception {
         validateContent(content);
+        if (sources == null || sources.toString().length() > 12000)
+            throw new IllegalArgumentException("Document sources exceed size limit");
         return new JSONObject().put("draftId", UUID.randomUUID().toString()).put("status", "prepared")
             .put("fileName", "agent-os-" + System.currentTimeMillis() + ".md")
             .put("content", content).put("sha256", sha256(content.getBytes(StandardCharsets.UTF_8)))
