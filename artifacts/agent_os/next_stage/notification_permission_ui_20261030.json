@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app, synthetic notification and no personal content",
+  "system_permission_dialog_shown": true,
+  "granted_path": {
+    "permission_granted": true,
+    "channel_available": true,
+    "notification_posted": true,
+    "visible_in_active_notification_list": true
+  },
+  "denied_path": {
+    "permission_denied": true,
+    "capability_reports_unavailable": true,
+    "posting_refused": true,
+    "task_store_still_readable": true
+  },
+  "production_app_requests_post_notifications": false,
+  "finding": "The production MainActivity requests only RECORD_AUDIO; no code path requests POST_NOTIFICATIONS, so on Android 13+ the notification capability stays unavailable until the user grants it in system settings",
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/LocalNotificationProvider.java": "463bd5e66125351da8b05126c54bb196247da661361ddec907db35b2f1177a1a",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "613403963b4fde73bd35d9cd97b37936cea27d9ea5faef2fe65343a02bc91b4f",
+    "agent_os/scripts/validate_actions_android.py": "537d30b36d9218040855814ace688bb437660c4faf2ed10c679f3ed799f95507"
+  },
+  "limitations": [
+    "The permission request was issued by the isolated validation activity, not by the production flow",
+    "The notification carried synthetic text only",
+    "Notification delivery was checked in the active list; it was not confirmed visually in the shade"
+  ]
+}

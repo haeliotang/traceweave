@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app, English interface, synthetic records, real system save picker",
+  "system_save_picker_used": true,
+  "passphrase_entered_twice": true,
+  "saved_file": "agent-os-memory-20261030.taos",
+  "saved_bytes": 775,
+  "saved_to": "Downloads",
+  "harness_copied_file_back_for_verification": true,
+  "archive_decrypted_with_passphrase": true,
+  "exported_records_present": [
+    "SYNTHETIC export UI memory",
+    "SYNTHETIC export UI task"
+  ],
+  "isolated_app_and_synthetic_file_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af73c02813915b7850dd2b18c4def158731f76ed3b3c94eadc5cb24fb90b027b",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "613403963b4fde73bd35d9cd97b37936cea27d9ea5faef2fe65343a02bc91b4f",
+    "agent_os/scripts/validate_actions_android.py": "537d30b36d9218040855814ace688bb437660c4faf2ed10c679f3ed799f95507"
+  },
+  "limitations": [
+    "Synthetic data only; the production database was never exported",
+    "The test harness moved the saved file back into the isolated app for verification; the app itself did not re-read the picked URI",
+    "Cancelled save and wrong-passphrase paths were not exercised in this run"
+  ]
+}

@@ -13,6 +13,12 @@ public final class DocumentFlowValidationActivity extends Activity {
         super.onCreate(state);
         TextView output = new TextView(this);
         setContentView(output);
+        if ("REQUEST_NOTIFICATION_UI".equals(getIntent().getAction())
+            && android.os.Build.VERSION.SDK_INT >= 33
+            && checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 7001);
+        }
         new Thread(() -> {
             String result;
             try (AgentStore store = new AgentStore(this)) {
@@ -31,6 +37,13 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("ARCHIVE_DELETE_STALE".equals(getIntent().getAction())) archiveDeleteStale(store);
                 else if ("SEED_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) seedArchiveDeleteUi(store);
                 else if ("VERIFY_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) verifyArchiveDeleteUi(store);
+                else if ("SEED_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) seedArchiveDeleteMultiUi(store);
+                else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
+                else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
+                else if ("VERIFY_EXPORT_UI".equals(getIntent().getAction())) verifyExportUi(store);
+                else if ("REQUEST_NOTIFICATION_UI".equals(getIntent().getAction())) check(true, "synthetic notification permission request issued");
+                else if ("VERIFY_NOTIFICATION_UI".equals(getIntent().getAction())) verifyNotificationUi(store);
+                else if ("VERIFY_NOTIFICATION_DENIED".equals(getIntent().getAction())) verifyNotificationDenied(store);
                 else if ("SEED_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) seedArchiveReviewUi(store);
                 else if ("VERIFY_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) verifyArchiveReviewUi(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
@@ -559,6 +572,95 @@ public final class DocumentFlowValidationActivity extends Activity {
     private void verifyArchiveDeleteUi(AgentStore store) throws Exception {
         String task = getSharedPreferences("document_validation", 0).getString("delete_ui_task", "");
         check(store.getTask(task) == null && store.listMemories().isEmpty(), "reviewed deletion removed only synthetic targets");
+    }
+
+    private void seedArchiveDeleteMultiUi(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        StringBuilder ids = new StringBuilder();
+        long now = System.currentTimeMillis();
+        for (int index = 0; index < 3; index++) {
+            AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC deletion batch memory " + index);
+            AgentStore.Task task = store.createTask("SYNTHETIC deletion batch task " + index);
+            data.tombstones.add(new AgentStore.Tombstone("memory", memory.id, now));
+            data.tombstones.add(new AgentStore.Tombstone("task", task.id, now));
+            ids.append(memory.id).append(',').append(task.id).append(';');
+        }
+        try (java.io.OutputStream output = openFileOutput("synthetic-delete-multi.taos", 0)) {
+            output.write(MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray()));
+        }
+        getSharedPreferences("document_validation", 0).edit().putString("delete_multi_ids", ids.toString()).commit();
+        check(true, "synthetic multi-deletion archive prepared");
+    }
+
+    private void verifyArchiveDeleteMultiUi(AgentStore store) throws Exception {
+        String ids = getSharedPreferences("document_validation", 0).getString("delete_multi_ids", "");
+        check(!ids.isEmpty(), "multi-deletion fixture identifiers recorded");
+        java.util.Set<String> memories = new java.util.HashSet<>();
+        for (AgentStore.Memory memory : store.listMemories()) memories.add(memory.id);
+        java.util.Set<String> tasks = new java.util.HashSet<>();
+        for (AgentStore.Task task : store.listTasks()) tasks.add(task.id);
+        int removed = 0;
+        for (String pair : ids.split(";")) {
+            String[] parts = pair.split(",");
+            if (parts.length != 2) continue;
+            if (!memories.contains(parts[0]) && !tasks.contains(parts[1])) removed++;
+        }
+        check(removed == 3, "all three reviewed deletion targets removed");
+        check(memories.isEmpty() && tasks.isEmpty(), "no unrelated memory or task was removed");
+    }
+
+    private void seedExportUi(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC export UI memory");
+        store.createTask("SYNTHETIC export UI task");
+        check(true, "synthetic export fixture prepared");
+    }
+
+    private void verifyExportUi(AgentStore store) throws Exception {
+        java.io.File exported = new java.io.File(getFilesDir(), "exported.taos");
+        check(exported.length() > 0, "exported archive was copied back for verification");
+        MemoryArchive.Data data = MemoryArchive.decrypt(new java.io.ByteArrayInputStream(read(exported)),
+            ARCHIVE_PASSWORD.toCharArray());
+        boolean memoryFound = false;
+        for (AgentStore.Memory memory : data.memories) if ("SYNTHETIC export UI memory".equals(memory.content)) memoryFound = true;
+        boolean taskFound = false;
+        for (AgentStore.Task task : data.tasks) if ("SYNTHETIC export UI task".equals(task.title)) taskFound = true;
+        check(memoryFound && taskFound, "exported archive contains the selected synthetic records");
+    }
+
+    private void verifyNotificationDenied(AgentStore store) throws Exception {
+        check(checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+            != android.content.pm.PackageManager.PERMISSION_GRANTED, "notification permission is denied");
+        LocalNotificationProvider provider = new LocalNotificationProvider(this);
+        check(!provider.isAvailable("synthetic-notification-task", LocalNotificationProvider.SCOPE),
+            "notification capability reports unavailable after denial");
+        boolean rejected = false;
+        try {
+            provider.read("synthetic-notification-task", LocalNotificationProvider.SCOPE);
+        } catch (RuntimeException error) {
+            rejected = true;
+        }
+        check(rejected, "posting a notification is refused instead of silently succeeding");
+        check(store.listTasks() != null, "task store remains readable after the denied notification");
+    }
+
+    private void verifyNotificationUi(AgentStore store) throws Exception {
+        check(checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+            == android.content.pm.PackageManager.PERMISSION_GRANTED, "notification permission granted by the user");
+        LocalNotificationProvider provider = new LocalNotificationProvider(this);
+        check(provider.isAvailable("synthetic-notification-task", LocalNotificationProvider.SCOPE),
+            "notification channel is available after the grant");
+        String posted = provider.read("synthetic-notification-task", LocalNotificationProvider.SCOPE);
+        check(new org.json.JSONObject(posted).getBoolean("posted"), "synthetic notification accepted by the system");
+        android.app.NotificationManager manager =
+            (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        int matches = 0;
+        for (android.service.notification.StatusBarNotification notification : manager.getActiveNotifications())
+            if (notification.getId() == ("synthetic-notification-task".hashCode() & Integer.MAX_VALUE)) matches++;
+        check(matches == 1, "synthetic notification is visible in the active notification list");
     }
 
     private void archiveDeleteStale(AgentStore store) throws Exception {

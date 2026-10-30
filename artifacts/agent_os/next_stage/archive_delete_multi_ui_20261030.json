@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app, English interface, synthetic archive with six deletion markers",
+  "fixture": {
+    "local_memories": 3,
+    "local_tasks": 3,
+    "deletion_markers": 6
+  },
+  "system_picker_selected_fixture": true,
+  "confirmation_page_counts": {
+    "local_memories": 3,
+    "local_tasks": 3
+  },
+  "confirmation_page_text_observed": true,
+  "confirmed_import_removed_all_six_targets": true,
+  "unrelated_records_preserved": true,
+  "isolated_app_and_synthetic_archive_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af73c02813915b7850dd2b18c4def158731f76ed3b3c94eadc5cb24fb90b027b",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "ff6f9410a5226bef5ab167d7ecdfb52b924e61e4f62a5a40e7f81191210b321a",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "613403963b4fde73bd35d9cd97b37936cea27d9ea5faef2fe65343a02bc91b4f"
+  },
+  "limitations": [
+    "Synthetic data only; no production archive or user memory was imported",
+    "Counts larger than six were not exercised",
+    "Only the English interface was checked in this run"
+  ]
+}
