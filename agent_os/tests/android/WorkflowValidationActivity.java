@@ -36,8 +36,14 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("CLOUD_PLAN_GUARD".equals(getIntent().getAction())) cloudPlanGuard();
                 else if ("LOCAL_ENGINE_LABELS".equals(getIntent().getAction())) localEngineLabels();
                 else if ("LOCAL_MODEL_DRAFT_BOUNDARY".equals(getIntent().getAction())) localModelDraftBoundary(store);
-                else if ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction())) {
+                else if ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_FAILURE_UI".equals(getIntent().getAction())) {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+                    if ("SEED_LOCAL_MODEL_FAILURE_UI".equals(getIntent().getAction())) {
+                        java.io.File model = LocalModelActivity.modelFile(this);
+                        if (!model.getParentFile().isDirectory() && !model.getParentFile().mkdirs()) throw new java.io.IOException("Cannot create synthetic model directory");
+                        try (java.io.FileOutputStream out = new java.io.FileOutputStream(model)) { out.write("SYNTHETIC invalid model".getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
+                        store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC selected model context");
+                    }
                     if ("SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction())) {
                         java.util.concurrent.CountDownLatch acquired = new java.util.concurrent.CountDownLatch(1);
                         new Thread(() -> {
@@ -103,7 +109,7 @@ public final class WorkflowValidationActivity extends Activity {
                     startActivity(new android.content.Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID,
                         getSharedPreferences("workflow_validation", 0).getString("retryUiParent", ""))); finish();
                 }
-                if (message.startsWith("PASS") && ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction()))) {
+                if (message.startsWith("PASS") && ("SEED_LOCAL_MODEL_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_WAIT_UI".equals(getIntent().getAction()) || "SEED_LOCAL_MODEL_FAILURE_UI".equals(getIntent().getAction()))) {
                     startActivity(new android.content.Intent(this, TaskReviewActivity.class)
                         .putExtra(TaskReviewActivity.EXTRA_DOCUMENT, true)
                         .putExtra(TaskReviewActivity.EXTRA_GOAL, "SYNTHETIC local model checklist")); finish();

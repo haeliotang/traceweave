@@ -32,6 +32,7 @@ CASES = {
     "LOCAL_ENGINE_LABELS": ("WorkflowValidationActivity", "LOCAL_ENGINE_LABELS", "AgentOsWorkflowValidation"),
     "LOCAL_MODEL_DRAFT_BOUNDARY": ("WorkflowValidationActivity", "LOCAL_MODEL_DRAFT_BOUNDARY", "AgentOsWorkflowValidation"),
     "SEED_LOCAL_MODEL_UI": ("WorkflowValidationActivity", "SEED_LOCAL_MODEL_UI", "AgentOsWorkflowValidation"),
+    "SEED_LOCAL_MODEL_FAILURE_UI": ("WorkflowValidationActivity", "SEED_LOCAL_MODEL_FAILURE_UI", "AgentOsWorkflowValidation"),
     "SEED_LOCAL_MODEL_WAIT_UI": ("WorkflowValidationActivity", "SEED_LOCAL_MODEL_WAIT_UI", "AgentOsWorkflowValidation"),
     "VERIFY_LOCAL_MODEL_UI": ("WorkflowValidationActivity", "VERIFY_LOCAL_MODEL_UI", "AgentOsWorkflowValidation"),
     "VERIFY_LOCAL_MODEL_CANCEL_UI": ("WorkflowValidationActivity", "VERIFY_LOCAL_MODEL_CANCEL_UI", "AgentOsWorkflowValidation"),

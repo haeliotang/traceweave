@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app with invalid synthetic model and synthetic memory",
+  "before_fix": "failure page offered local template and back but no context retry",
+  "after_fix_context_retry_visible": true,
+  "selected_memory_and_goal_preserved": true,
+  "local_template_fallback_shows_selected_memory": true,
+  "no_cloud_request_or_file_save": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/TaskReviewActivity.java": "fe34cbf28dddf164565d888ac279192df870037e1b20bde60ef86a195259b011",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "196dd3c582807a6f7e83dbe58f33ea6014a796dedbfadd0a1aefbbaf72eb7486",
+    "agent_os/scripts/validate_actions_android.py": "87d58f6c805d0e3773b027dddaaa0a8489a859f73ab2307060c1390f96d7d43e"
+  },
+  "limitations": [
+    "Manual UI validation only; no real model inference or actual file write",
+    "No production app update, configuration rotation or process-restart recovery tested"
+  ]
+}

@@ -204,6 +204,15 @@ public final class TaskReviewActivity extends Activity {
                         LinearLayout fallback = page(en ? "On-device draft unavailable" : "端侧文稿未生成");
                         text(fallback, en ? "Check the model and selected context, then try again or use the local template."
                             : "请检查模型和所选上下文，然后重试或使用本地模板。");
+                        button(fallback, en ? "Review context and retry" : "返回检查上下文并重试", () -> {
+                            try {
+                                Bundle state = new Bundle();
+                                state.putString("goal", goal.getText().toString());
+                                state.putStringArrayList("selected", memorySelection.selectedIds());
+                                state.putInt("outputLimit", outputLimit.getSelectedItemPosition());
+                                selection(state);
+                            } catch (Exception error) { fail(error); }
+                        });
                         button(fallback, en ? "Use local template" : "使用本地模板", this::planLocally);
                         button(fallback, en ? "Back" : "返回", this::finish);
                     }
