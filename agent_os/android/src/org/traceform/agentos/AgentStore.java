@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -187,6 +187,7 @@ final class AgentStore extends SQLiteOpenHelper {
         createTaskTables(database);
         createMemoryTables(database);
         createMemoryVersionTable(database);
+        createPairingTable(database);
     }
 
     private static void createTaskTables(SQLiteDatabase database) {
@@ -221,6 +222,15 @@ final class AgentStore extends SQLiteOpenHelper {
             + "PRIMARY KEY (entity_type, entity_id))");
     }
 
+    private static void createPairingTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE pairings ("
+            + "device_id TEXT PRIMARY KEY NOT NULL, "
+            + "fingerprint TEXT NOT NULL, "
+            + "peer_id TEXT NOT NULL, "
+            + "status TEXT NOT NULL, "
+            + "paired_at INTEGER NOT NULL)");
+    }
+
     private static void createMemoryVersionTable(SQLiteDatabase database) {
         database.execSQL("CREATE TABLE memory_versions ("
             + "memory_id TEXT NOT NULL, "
@@ -252,6 +262,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 6) {
                 createMemoryVersionTable(database);
                 version = 7;
+            } else if (version == 7) {
+                createPairingTable(database);
+                version = 8;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -1192,6 +1205,53 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally {
             database.endTransaction();
         }
+    }
+
+    static final class Pairing {
+        final String deviceId;
+        final String fingerprint;
+        final String peerId;
+        final String status;
+        final long pairedAt;
+
+        Pairing(String deviceId, String fingerprint, String peerId, String status, long pairedAt) {
+            this.deviceId = deviceId;
+            this.fingerprint = fingerprint;
+            this.peerId = peerId;
+            this.status = status;
+            this.pairedAt = pairedAt;
+        }
+    }
+
+    void savePairing(String deviceId, String fingerprint, String peerId, String status) throws Exception {
+        if (deviceId == null || deviceId.isEmpty() || deviceId.length() > 64
+                || fingerprint == null || !fingerprint.matches("[0-9a-f]{64}")
+                || peerId == null || peerId.length() > 128
+                || status == null || !status.matches("[a-z_]{1,32}"))
+            throw new IllegalArgumentException("Invalid pairing record");
+        ContentValues values = new ContentValues();
+        values.put("device_id", deviceId);
+        values.put("fingerprint", fingerprint);
+        values.put("peer_id", peerId);
+        values.put("status", status);
+        values.put("paired_at", System.currentTimeMillis());
+        getWritableDatabase().insertWithOnConflict("pairings", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    List<Pairing> listPairings() {
+        ArrayList<Pairing> pairings = new ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("pairings",
+                new String[]{"device_id", "fingerprint", "peer_id", "status", "paired_at"},
+                null, null, null, null, "paired_at")) {
+            while (cursor.moveToNext())
+                pairings.add(new Pairing(cursor.getString(0), cursor.getString(1), cursor.getString(2),
+                    cursor.getString(3), cursor.getLong(4)));
+        }
+        return pairings;
+    }
+
+    void deletePairing(String deviceId) {
+        getWritableDatabase().delete("pairings", "device_id=?", new String[]{deviceId});
     }
 
     /** Versions known for one memory id, as persisted by merge or resolve. */

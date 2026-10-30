@@ -689,6 +689,58 @@ public final class MainActivity extends Activity {
         refreshMemories();
     }
 
+    private void showPairingDialog() {
+        boolean en = isEnglish();
+        try {
+            DeviceIdentity.create();
+            String local = DeviceIdentity.fingerprint();
+            EditText remote = new EditText(this);
+            remote.setHint(en ? "Remote fingerprint (64 hex characters)" : "对端指纹（64 位十六进制）");
+            TextView localView = new TextView(this);
+            localView.setText((en ? "This device: " : "本机：") + local);
+            localView.setTextSize(11);
+            LinearLayout holder = new LinearLayout(this);
+            holder.setOrientation(LinearLayout.VERTICAL);
+            holder.setPadding(dp(24), dp(8), dp(24), 0);
+            holder.addView(localView);
+            holder.addView(remote);
+            new AlertDialog.Builder(this)
+                .setTitle(en ? "Pair a device" : "配对新设备")
+                .setView(holder)
+                .setNegativeButton(en ? "Cancel" : "取消", null)
+                .setPositiveButton(en ? "Show code" : "生成确认码", (dialog, which) -> {
+                    String remoteValue = remote.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+                    if (!SyncPairing.validFingerprint(remoteValue) || remoteValue.equals(local)) {
+                        showMessage(en ? "Enter the other device's fingerprint" : "请输入对端设备的指纹");
+                        return;
+                    }
+                    try {
+                        byte[] nonce = java.security.MessageDigest.getInstance("SHA-256")
+                            .digest((local + remoteValue).getBytes("UTF-8"));
+                        String code = SyncPairing.code(local, remoteValue, nonce);
+                        String deviceId = "peer-" + remoteValue.substring(0, 16);
+                        new AlertDialog.Builder(this)
+                            .setTitle(en ? "Compare this code" : "核对确认码")
+                            .setMessage((en ? "Code: " : "确认码：") + code + "\n"
+                                + (en ? "Both devices must show the same code." : "两台设备必须显示相同确认码。"))
+                            .setNegativeButton(en ? "Cancel" : "取消", null)
+                            .setPositiveButton(en ? "Pair" : "确认配对", (inner, ignored) -> {
+                                try {
+                                    SyncPairing.confirm(store, local, remoteValue, deviceId, "", code, code);
+                                    showMessage(en ? "Device paired" : "配对完成");
+                                } catch (Exception error) {
+                                    showError(error);
+                                }
+                            }).show();
+                    } catch (Exception error) {
+                        showError(error);
+                    }
+                }).show();
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
     private void showSettingsDialog() {
         boolean en = isEnglish();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -723,6 +775,18 @@ public final class MainActivity extends Activity {
                 view -> maybeRequestNotificationPermission(true));
         }
         root.addView(notificationRow);
+
+        LinearLayout pairingRow = new LinearLayout(this);
+        pairingRow.setOrientation(LinearLayout.HORIZONTAL);
+        TextView pairingState = new TextView(this);
+        int paired = store.listPairings().size();
+        pairingState.setText(en ? "Paired devices: " + paired : "已配对设备：" + paired);
+        pairingState.setTextSize(11);
+        pairingState.setTextColor(0xFF64748B);
+        pairingState.setPadding(0, dp(6), dp(8), dp(6));
+        pairingRow.addView(pairingState);
+        addActionButton(pairingRow, en ? "Pair device" : "配对设备", view -> showPairingDialog());
+        root.addView(pairingRow);
 
         activityStatus = new TextView(this);
         activityStatus.setText(en ? "Local data is exported only on demand. Merging supported on import." : "本机数据仅在你选择时导出。导入时支持同 ID 记忆冲突合并；删除墓碑优先。");

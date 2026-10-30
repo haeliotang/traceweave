@@ -49,6 +49,10 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("MERGE_RESOLVE".equals(getIntent().getAction())) mergeResolve(store);
                 else if ("SYNC_NATIVE_LOOPBACK".equals(getIntent().getAction())) syncNativeLoopback(store);
                 else if ("SYNC_BINDING_P256".equals(getIntent().getAction())) syncBindingP256(store);
+                else if ("PAIR_OFFER".equals(getIntent().getAction())) pairOffer(store);
+                else if ("PAIR_CREATE".equals(getIntent().getAction())) pairCreate(store);
+                else if ("PAIR_PERSIST".equals(getIntent().getAction())) pairPersist(store);
+                else if ("PAIR_UI_VERIFY".equals(getIntent().getAction())) pairUiVerify(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -602,6 +606,69 @@ public final class DocumentFlowValidationActivity extends Activity {
         StringBuilder builder = new StringBuilder();
         for (byte item : hashed) builder.append(String.format("%02x", item));
         return builder.toString();
+    }
+
+    private void pairUiVerify(AgentStore store) throws Exception {
+        String expected = shortHash("ui-remote-device");
+        boolean found = false;
+        for (AgentStore.Pairing pairing : store.listPairings())
+            if (expected.equals(pairing.fingerprint) && SyncPairing.STATUS_ACTIVE.equals(pairing.status)) found = true;
+        check(found, "device paired through the settings dialog");
+    }
+
+    private void pairOffer(AgentStore store) throws Exception {
+        DeviceIdentity.create();
+        String local = DeviceIdentity.fingerprint();
+        String remote = shortHash("remote-device");
+        byte[] nonce = new byte[32];
+        new java.util.Random(11).nextBytes(nonce);
+        String code = SyncPairing.code(local, remote, nonce);
+        check(code.matches("[0-9]{6}"), "pairing code has six digits");
+        check(code.equals(SyncPairing.code(local, remote, nonce)), "pairing code is deterministic for the same inputs");
+        check(!code.equals(SyncPairing.code(local, shortHash("other-remote"), nonce)), "a different peer changes the code");
+        java.util.Random random = new java.util.Random(21);
+        for (int index = 0; index < 64; index++) {
+            byte[] sample = new byte[32];
+            random.nextBytes(sample);
+            check(SyncPairing.code(local, remote, sample).matches("[0-9]{6}"), "pairing code is always six digits");
+        }
+    }
+
+    private void pairCreate(AgentStore store) throws Exception {
+        store.getWritableDatabase().delete("pairings", null, null);
+        DeviceIdentity.create();
+        String local = DeviceIdentity.fingerprint();
+        String remote = shortHash("remote-device");
+        byte[] nonce = new byte[32];
+        new java.util.Random(13).nextBytes(nonce);
+        String code = SyncPairing.code(local, remote, nonce);
+        SyncPairing.confirm(store, local, remote, "remote-1", "peer-1", code, code);
+        java.util.List<AgentStore.Pairing> pairings = store.listPairings();
+        check(pairings.size() == 1 && remote.equals(pairings.get(0).fingerprint)
+            && SyncPairing.STATUS_ACTIVE.equals(pairings.get(0).status), "pairing record stored");
+        String wrong = "000000".equals(code) ? "000001" : "000000";
+        boolean rejected = false;
+        try {
+            SyncPairing.confirm(store, local, remote, "remote-2", "peer-2", code, wrong);
+        } catch (IllegalStateException error) {
+            rejected = true;
+        }
+        check(rejected, "mismatched pairing codes are rejected");
+        rejected = false;
+        try {
+            SyncPairing.confirm(store, local, local, "remote-3", "peer-3", code, code);
+        } catch (IllegalStateException error) {
+            rejected = true;
+        }
+        check(rejected, "self pairing is rejected");
+        check(store.listPairings().size() == 1, "rejected pairings do not add records");
+    }
+
+    private void pairPersist(AgentStore store) throws Exception {
+        boolean found = false;
+        for (AgentStore.Pairing pairing : store.listPairings())
+            if ("remote-1".equals(pairing.deviceId) && SyncPairing.STATUS_ACTIVE.equals(pairing.status)) found = true;
+        check(found, "pairing survives a process restart");
     }
 
     private void syncNativeLoopback(AgentStore store) throws Exception {

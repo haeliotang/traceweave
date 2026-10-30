@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated debug package, synthetic peer fingerprint, database schema 8",
+  "pairing_code": {
+    "digits": 6,
+    "deterministic_for_same_inputs": true,
+    "changes_with_peer": true,
+    "always_six_digits_over_64_samples": true,
+    "ui_example": "039158"
+  },
+  "store_and_restart": {
+    "record_stored": true,
+    "mismatched_code_rejected": true,
+    "self_pairing_rejected": true,
+    "rejected_pairings_add_no_record": true,
+    "survives_process_restart": true
+  },
+  "ui_flow": {
+    "paired_through_settings_dialog": true,
+    "local_fingerprint_shown": true,
+    "remote_fingerprint_entered": "cdb50dc3d1091af2d3ba99581b89df316c6c4c5176f3767f0f524bf2e1486a60",
+    "confirmation_code_shown": "039158",
+    "pairing_persisted": true
+  },
+  "cases": [
+    {
+      "case": "PAIR_OFFER",
+      "pid": 9665,
+      "passed": true,
+      "result": "10-31 01:01:58.361  9665  9695 I AgentOsDocumentsValidation: PASS document_flow checks=69 mode=PAIR_OFFER"
+    },
+    {
+      "case": "PAIR_CREATE",
+      "pid": 9717,
+      "passed": true,
+      "result": "10-31 01:01:59.656  9717  9746 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=PAIR_CREATE"
+    },
+    {
+      "case": "PAIR_UI_VERIFY",
+      "pid": 9911,
+      "passed": true,
+      "result": "10-31 01:02:38.628  9911  9941 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=PAIR_UI_VERIFY"
+    }
+  ],
+  "limitations": [
+    "The peer fingerprint is synthetic; two real installs are not paired over the transport yet",
+    "The confirmation nonce is derived from both fingerprints, so the code is a comparison aid, not a shared secret",
+    "No revocation or rotation UI yet (C4)",
+    "Pairing records are not yet consumed by the transport allow-list (C6)"
+  ]
+}
