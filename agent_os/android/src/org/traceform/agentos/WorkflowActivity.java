@@ -97,6 +97,7 @@ public final class WorkflowActivity extends Activity {
                 button(root, en ? "Review a new run" : "审核新的一次运行", () -> {
                     try {
                         AgentStore.Task run = WorkflowTemplate.createRun(store, memory.id, input.getText().toString());
+                        input.setText("");
                         startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_TASK_ID, run.id));
                     } catch (Exception error) { fail(error); }
                 });

@@ -44,7 +44,9 @@
 - 截图索引：[ui_screenshots.md](ui_screenshots.md)。
 - 夹具补齐（同日）：用真实界面创建 `SYNTHETIC reusable checklist` 模板，跑 trip A（选一条用户记忆）与 trip B（不选记忆）并各自保存核验，`VERIFY_WORKFLOW_UI` 7 项通过；在任务中心用行菜单取消恢复的草稿，`VERIFY_CENTER_UI` 2 项通过。
 - 发现：`RUN_SUITE` 要求通知权限处于**未授予**状态（授予时“拒绝即失败”的断言会失败）；撤销权限后 48 项恢复通过。
-- 待办：`VERIFY_UI` 仍需在 MemoryReviewActivity 里交互接受/拒绝候选记忆；深色模式与多字号仍未验证。
+- 候选记忆夹具：通过卡片上的“审核候选记忆（1）”分别接受与拒绝，任务状态写入 `accepted`/`dismissed`；`VERIFY_UI` 仍缺“真实日历交接 + 界面取消”两步，失败点是 `UI preview cancellation persisted`。
+- 体验修复：工作流运行输入框在创建运行后未清空，导致下一次输入被拼接（`Prepare trip Atrip B`）；现已清空，已验证回到面板显示提示文案。
+- 待办：深色模式与多字号仍未验证。
 
 ## 验收标准
 
