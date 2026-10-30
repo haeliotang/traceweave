@@ -18,7 +18,7 @@
     "OPEN_CENTER_UI": "checks=1"
   },
   "blocked_by_fixture": {
-    "VERIFY_UI": "memory suggestions were accepted/rejected through the UI, but the case also needs a real calendar handoff (OUTCOME_UNKNOWN) and a UI cancel of \"SYNTHETIC cancel before handoff\"; it fails at \"UI preview cancellation persisted\""
+    "VERIFY_UI": "memory suggestions were accepted/rejected through the UI (state persisted), but the case also needs a real calendar handoff task and a UI-cancelled calendar draft; creating a calendar draft requires picking start and end date/times through the system pickers, which was not completed in this session"
   },
   "notes": [
     "The settings pairing dialog was exercised end to end after the refactor: enter fingerprint, show code, pair, verify",
@@ -41,5 +41,9 @@
   ],
   "fixed_during_verification": {
     "workflow_run_input": "the run input kept its previous text; it is now cleared when a run is created (verified: hint returns after starting a run)"
+  },
+  "calendar_fixture_attempt": {
+    "started": "ExternalActionActivity opened, title entered, \"生成日程草稿并预览\" pressed",
+    "blocked_at": "start and end date/time pickers were still unset, so no preview/handoff was produced"
   }
 }
