@@ -559,7 +559,7 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     void prepareExternalDraft(String taskId, int stepIndex, String draft) throws Exception {
-        if (draft == null || draft.length() > 12000) throw new IllegalArgumentException("Invalid action draft");
+        if (draft == null || draft.length() > 128000) throw new IllegalArgumentException("Invalid action draft");
         new JSONObject(draft).getString("draftId");
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
@@ -567,6 +567,8 @@ final class AgentStore extends SQLiteOpenHelper {
             requireActiveStep(database, taskId, stepIndex);
             Task task = getTask(taskId);
             ExecutionPlan.Step step = task.plan.steps.get(stepIndex);
+            if (!DocumentAction.CAPABILITY.equals(step.capability) && !LocalShareProvider.CAPABILITY.equals(step.capability)
+                    && draft.length() > 12000) throw new IllegalArgumentException("Invalid action draft");
             if (!step.isExternalAction() || ExecutionPlan.STEP_DRAFT_READY.equals(step.status)
                     || ExecutionPlan.STEP_HANDED_OFF.equals(step.status) || ExecutionPlan.STEP_UNKNOWN.equals(step.status))
                 throw new IllegalStateException("External draft already prepared or dispatched");
@@ -597,7 +599,9 @@ final class AgentStore extends SQLiteOpenHelper {
                     .put("sha256", DocumentAction.sha256(draft.getString("content").getBytes(StandardCharsets.UTF_8)));
                 draft.remove("uri");
             }
-            if (draft.toString().length() > 12000) throw new IllegalArgumentException("Action draft is too large");
+            int draftLimit = DocumentAction.CAPABILITY.equals(step.capability) || LocalShareProvider.CAPABILITY.equals(step.capability)
+                ? 128000 : 12000;
+            if (draft.toString().length() > draftLimit) throw new IllegalArgumentException("Action draft is too large");
             persistPlan(database, task, task.plan.withStepUpdated(stepIndex,
                 step.withStatusAndObservation(ExecutionPlan.STEP_HANDED_OFF, draft.toString(), System.currentTimeMillis()), stepIndex),
                 WAITING_FOR_USER, "action_handed_off:step_" + (stepIndex + 1) + ":attempt_" + attempt);

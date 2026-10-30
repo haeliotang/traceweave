@@ -24,6 +24,8 @@
 
 进一步从隔离应用界面创建合成分享模板，选择本地规划，通过系统文件选择器保存文稿；应用读回核验与独立文件摘要一致，分享预览和系统分享选择器显示合成内容。未选择接收应用或发送，测试文件和隔离应用已清理，见[端到端记录](../artifacts/agent_os/next_stage/workflow_share_e2e_20261030.json)。
 
+隔离真机复现了合法长文稿含大量引号时，编码膨胀导致草稿被拒；候选修复分别提高文稿和分享动作的编码长度上限，保留其他动作原有上限。合成测试通过保存、读回、分享草稿、档案恢复及超大编码拒绝，日历与分享回归通过，见[边界测试记录](../artifacts/agent_os/next_stage/workflow_escaped_draft_20261030.json)。此修复尚未更新到正式应用。
+
 ## 本地模型评估
 
 独立实验使用 [llama.cpp](https://github.com/ggml-org/llama.cpp) 固定提交 `d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3`，模型为 [Qwen2.5-0.5B-Instruct-GGUF Q4_0](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/blob/main/qwen2.5-0.5b-instruct-q4_0.gguf)，下载文件 SHA-256 与发布页一致。模型和工具临时放在设备 shell 专用测试目录，执行合成提示词，没有连接云端或使用个人记忆。该实验不是应用集成或生产部署。

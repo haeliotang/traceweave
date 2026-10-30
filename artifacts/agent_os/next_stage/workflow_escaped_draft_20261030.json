@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated synthetic document and share action",
+  "before_fix": "valid 7000-character escaped document rejected as Invalid action draft",
+  "after_fix_checks": 4,
+  "valid_document_saved_read_back_and_shared_as_draft": true,
+  "oversized_encoded_draft_rejected": true,
+  "synthetic_archive_round_trip": true,
+  "calendar_and_share_regression_passed": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "c9d431483d5db41bc75e5d0ad3d42743c72718ae53cd6af3418c569f1f275843",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "2c374a75627c219892b610162f7c0c68d497551df30a968375d426a86b89adb3",
+    "agent_os/scripts/validate_actions_android.py": "b78d05bfb44bdfb768e422ec2866765d12fe551c5398b14a90fe13e10c2c26a9",
+    "agent_os/scripts/acceptance_android.py": "5735425f4a709e0067b8af86af67f0328c1e4d0eeb404fa48062c48e545cc2c4"
+  },
+  "limitations": [
+    "No production update or system picker or actual sending in this test",
+    "Calendar and share regressions used the preceding validation build before the final test-only assertion"
+  ]
+}

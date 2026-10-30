@@ -25,6 +25,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
+                else if ("SHARE_ESCAPED_CONTENT".equals(getIntent().getAction())) shareEscapedContent(store);
                 else if ("VERIFY_SHARE_RESTART".equals(getIntent().getAction())) verifyShareRestart(store);
                 else if ("EXPORT_SHARE_MIGRATION".equals(getIntent().getAction())) exportShareMigration(store);
                 else if ("IMPORT_SHARE_MIGRATION".equals(getIntent().getAction())) importShareMigration(store);
@@ -368,6 +369,30 @@ public final class WorkflowValidationActivity extends Activity {
             check("on_device_model".equals(draft.getString("draftOrigin")) && draft.optString("attemptId").isEmpty(),
                 "model origin is shown and no file action was dispatched");
         }
+    }
+
+    private void shareEscapedContent(AgentStore store) throws Exception {
+        reset(store);
+        String text = new String(new char[7000]).replace('\0', '"');
+        AgentStore.Task parent = store.createDocumentTask("SYNTHETIC escaped document", text, new JSONArray());
+        JSONObject draft = new JSONObject(parent.plan.steps.get(0).observation);
+        String attempt = store.claimExternalAction(parent.id, 0, draft.getString("draftId"), draft);
+        Uri uri = Uri.parse("content://" + getPackageName() + ".documents.fixture/escaped_share");
+        store.bindDocumentTarget(parent.id, attempt, uri.toString());
+        DocumentAction.writeOnce(getContentResolver(), store, parent.id);
+        String verified = DocumentAction.readVerifiedContent(getContentResolver(), store.getTask(parent.id));
+        check(text.equals(verified), "valid escaped content saves and reads back");
+        AgentStore.Task child = store.createShareFollowup(parent.id, verified, uri.toString());
+        JSONObject share = new JSONObject(child.plan.steps.get(0).observation);
+        JSONObject oversized = new JSONObject(share.toString()).put("extra", new String(new char[128001]).replace('\0', 'x'));
+        rejects(() -> store.claimExternalAction(child.id, 0, oversized.getString("draftId"), oversized), "oversized encoded share remains rejected");
+        String handoff = store.claimExternalAction(child.id, 0, share.getString("draftId"), share);
+        store.recordExternalOutcome(child.id, 0, handoff, false, "synthetic");
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "escaped share content can be confirmed without duplicate handoff");
+        byte[] archive = store.exportArchive("synthetic-escaped-share".toCharArray());
+        reset(store);
+        store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-escaped-share".toCharArray());
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "escaped share task survives archive restore");
     }
 
     private void documentShareChain(AgentStore store) throws Exception {
