@@ -2,6 +2,11 @@
 
 用于本机候选发布的最小检查单。每一步都必须留下可核对的输出；任何一步失败即停止，不进入下一步。
 
+## 0. 签名身份
+
+- 当前决定：沿用现有证书侧载，发布说明必须标注“开发密钥侧载”（见[生产签名决策](production_signing_decision.md)）。
+- 进入商店或对外分发前必须重新决策并切换到新包名 + 新密钥路线。
+
 ## 1. 输入
 
 - [ ] 设备已解锁并唤醒：`adb shell dumpsys window policy` 显示 `showing=false`、`interactiveState=INTERACTIVE_STATE_AWAKE`
