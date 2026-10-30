@@ -1,6 +1,6 @@
 # UI/UX 重构计划（紧凑布局 + 中英双语）
 
-状态：**进行中（阶段 0–4 完成 2026-10-31）**。目标是在 F4 完成后，对正式应用做一次系统性 UI/UX 重构：信息密度更高、层级更清楚、中英双语一致，且不改变任何数据或授权语义。
+状态：**完成（阶段 0–5，2026-10-31；深色模式与大字号未验证）**。目标是在 F4 完成后，对正式应用做一次系统性 UI/UX 重构：信息密度更高、层级更清楚、中英双语一致，且不改变任何数据或授权语义。
 
 ## 原则
 
@@ -38,7 +38,7 @@
 - 同时修掉类型下拉框被截断（"Prefe.." → "Preference"）。
 - 模型页（完成）：状态 / 导入 / 操作三块，状态一行、按钮 40dp，白底并避开状态栏；截图 [中文](../artifacts/agent_os/next_stage/ui/model_page_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/model_page_en.png)。
 
-### 阶段 5：验收（进行中 2026-10-31）
+### 阶段 5：验收（完成 2026-10-31）
 - 设备回归（2026-10-31）：`OPEN_WORKFLOW_UI`、`WORKFLOW_GUARD_V4`、`TASK_CENTER`、`PAIR_CREATE`、`PAIR_UI_VERIFY` 通过；其中配对是在重构后的设置页通过真实对话框完成的。`VERIFY_WORKFLOW_UI`、`SEED_CENTER_UI` 因缺少“界面创建的工作流模板”夹具而无法运行（不是回归）。见 [ui_regression_20261031](../artifacts/agent_os/next_stage/ui_regression_20261031.json)。
 - 补充回归（同日）：`RUN_SUITE` 48 项、`RUN_DOCUMENTS` 20 项、`VERIFY_DOCUMENT_RESTART` 8 项全部通过；`VERIFY_UI` 同样依赖交互式夹具（接受/拒绝候选记忆）而无法在全新安装上运行。
 - 截图索引：[ui_screenshots.md](ui_screenshots.md)。
@@ -46,8 +46,8 @@
 - 发现：`RUN_SUITE` 要求通知权限处于**未授予**状态（授予时“拒绝即失败”的断言会失败）；撤销权限后 48 项恢复通过。
 - 候选记忆夹具：通过卡片上的“审核候选记忆（1）”分别接受与拒绝，任务状态写入 `accepted`/`dismissed`；`VERIFY_UI` 仍缺“真实日历交接 + 界面取消”两步，失败点是 `UI preview cancellation persisted`。
 - 体验修复：工作流运行输入框在创建运行后未清空，导致下一次输入被拼接（`Prepare trip Atrip B`）；现已清空，已验证回到面板显示提示文案。
-- 日历夹具：日历草稿需要先在两个系统选择器里设定开始/结束时间才能生成预览，本轮未完成，因此 `VERIFY_UI` 仍标记为夹具受阻（候选记忆部分已走通）。
-- 待办：深色模式与多字号仍未验证。
+- 日历夹具（完成）：用系统选择器设定开始/结束时间 → 生成草稿 → 系统选择器选 Etar（仅此一次）→ 放弃编辑返回 → Agent OS 标记“结果未知”且不重放；另一条草稿从任务卡取消。`VERIFY_UI` **17 项通过**。
+- 仍未验证：深色模式、大字号、横屏。
 
 ## 验收标准
 

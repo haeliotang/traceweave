@@ -15,18 +15,18 @@
     "VERIFY_WORKFLOW_UI": "checks=7 after creating the SYNTHETIC reusable checklist template and two verified runs through the UI",
     "VERIFY_CENTER_UI": "checks=2 after cancelling the restored draft from the task center menu",
     "SEED_CENTER_UI": "checks=0 (fixture seeded)",
-    "OPEN_CENTER_UI": "checks=1"
+    "OPEN_CENTER_UI": "checks=1",
+    "VERIFY_UI": "checks=17 after accepting/rejecting suggestions in the UI, completing a real calendar handoff (Etar via the system resolver) and cancelling the other draft"
   },
-  "blocked_by_fixture": {
-    "VERIFY_UI": "memory suggestions were accepted/rejected through the UI (state persisted), but the case also needs a real calendar handoff task and a UI-cancelled calendar draft; creating a calendar draft requires picking start and end date/times through the system pickers, which was not completed in this session"
-  },
+  "blocked_by_fixture": {},
   "notes": [
     "The settings pairing dialog was exercised end to end after the refactor: enter fingerprint, show code, pair, verify",
     "WorkflowActivity itself was not modified by this refactor and opens successfully",
     "The fixture cases are not regressions; they require an interactive template that does not exist in a fresh install",
     "Host suite: 27 tests pass",
     "RUN_SUITE resets the isolated DB, so the later document cases start from a clean store",
-    "RUN_SUITE requires notifications to be denied; with the permission granted the \"denial fails closed\" assertion fails, which is environment state rather than a regression"
+    "RUN_SUITE requires notifications to be denied; with the permission granted the \"denial fails closed\" assertion fails, which is environment state rather than a regression",
+    "VERIFY_UI now passes end to end on the refactored UI"
   ],
   "limitations": [
     "Only a subset of the 100+ device cases was rerun",
@@ -43,7 +43,15 @@
     "workflow_run_input": "the run input kept its previous text; it is now cleared when a run is created (verified: hint returns after starting a run)"
   },
   "calendar_fixture_attempt": {
-    "started": "ExternalActionActivity opened, title entered, \"生成日程草稿并预览\" pressed",
-    "blocked_at": "start and end date/time pickers were still unset, so no preview/handoff was produced"
+    "result": "completed",
+    "steps": [
+      "set start and end date/time through the system pickers",
+      "entered the task title",
+      "generated the draft preview",
+      "opened the calendar through the system resolver (Etar, just once)",
+      "discarded the edit and returned to Agent OS",
+      "cancelled the second draft from its task card"
+    ],
+    "observed": "Agent OS marked the handoff as outcome unknown and did not replay it"
   }
 }
