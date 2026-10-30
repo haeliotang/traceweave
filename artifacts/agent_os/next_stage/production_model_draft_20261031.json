@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "app": "org.traceform.agentos 0.6.14 (production, on-device model imported)",
+  "goal": "SyntheticCampingChecklistUnder80WordsNoPersonalData",
+  "generation": {
+    "completed": true,
+    "screen": "On-device model proposal · review before saving",
+    "saved_file": "agent-os-1793394605087.md",
+    "saved_bytes": 464,
+    "first_line": "# Synthetic Camping Checklist",
+    "verified_by_readback": true,
+    "sha256": "6d0c6772336d1fc8f906ab54bf6d951e1196c06f66efa050db0cefc30ccae63e",
+    "verified_at": "2026-10-31 02:55:37"
+  },
+  "observations": [
+    "Output repeated several items (whistle, flashlight, knife) and exceeded the 80-word instruction",
+    "The review screen required an explicit file picker before writing; nothing was written automatically",
+    "After saving, the app reported Content verified by readback with a SHA-256 and timestamp"
+  ],
+  "cleanup": {
+    "saved_file_removed": true
+  },
+  "limitations": [
+    "Single synthetic goal, one run; quality is not scored here (see D2)",
+    "Memory selection stayed empty, so no personal memories were used",
+    "The saved file was deleted after verification; no artifact holds its content beyond this record"
+  ]
+}
