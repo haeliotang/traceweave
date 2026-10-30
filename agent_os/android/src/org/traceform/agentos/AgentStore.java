@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -49,6 +49,7 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String MEMORY_FACT = "fact";
     static final String MEMORY_WORKFLOW = "workflow";
     static final String MEMORY_SOURCE_USER = "user";
+    static final String LOCAL_ACTOR = "local-device";
     static final String MEMORY_SOURCE_TRACEFORM = "traceform";
     static final String MEMORY_SOURCE_CONSOLIDATION = "agent_consolidation";
 
@@ -185,6 +186,7 @@ final class AgentStore extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase database) {
         createTaskTables(database);
         createMemoryTables(database);
+        createMemoryVersionTable(database);
     }
 
     private static void createTaskTables(SQLiteDatabase database) {
@@ -219,6 +221,15 @@ final class AgentStore extends SQLiteOpenHelper {
             + "PRIMARY KEY (entity_type, entity_id))");
     }
 
+    private static void createMemoryVersionTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE memory_versions ("
+            + "memory_id TEXT NOT NULL, "
+            + "clock TEXT NOT NULL, "
+            + "content_hash TEXT, "
+            + "tombstone INTEGER NOT NULL, "
+            + "PRIMARY KEY (memory_id, clock))");
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         int version = oldVersion;
@@ -238,6 +249,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 5) {
                 // Gate older code from reopening task-context and document-receipt semantics.
                 version = 6;
+            } else if (version == 6) {
+                createMemoryVersionTable(database);
+                version = 7;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -1178,6 +1192,156 @@ final class AgentStore extends SQLiteOpenHelper {
         } finally {
             database.endTransaction();
         }
+    }
+
+    /** Versions known for one memory id, as persisted by merge or resolve. */
+    List<MemoryMerge.Version> listMemoryVersions(String memoryId) {
+        ArrayList<MemoryMerge.Version> versions = new ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("memory_versions",
+                new String[]{"clock", "content_hash", "tombstone"}, "memory_id=?", new String[]{memoryId},
+                null, null, "clock")) {
+            while (cursor.moveToNext()) {
+                versions.add(new MemoryMerge.Version(decodeClock(cursor.getString(0)),
+                    cursor.isNull(1) ? null : cursor.getString(1), cursor.getInt(2) == 1));
+            }
+        }
+        return versions;
+    }
+
+    /**
+     * Merge remote versions for one memory inside a transaction.
+     * A single surviving tombstone deletes the memory row and keeps the deletion marker.
+     */
+    List<MemoryMerge.Version> mergeMemoryVersions(String memoryId, List<MemoryMerge.Version> incoming) throws Exception {
+        if (memoryId == null || memoryId.isEmpty() || memoryId.length() > 64)
+            throw new IllegalArgumentException("Invalid memory identifier");
+        if (incoming == null) throw new IllegalArgumentException("Missing incoming versions");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            List<MemoryMerge.Version> merged = MemoryMerge.merge(listMemoryVersions(memoryId), incoming);
+            replaceMemoryVersions(database, memoryId, merged);
+            if (merged.size() == 1 && merged.get(0).tombstone) {
+                database.delete("memories", "id=?", new String[]{memoryId});
+                ContentValues marker = new ContentValues();
+                marker.put("entity_type", "memory");
+                marker.put("entity_id", memoryId);
+                marker.put("deleted_at", System.currentTimeMillis());
+                database.insertWithOnConflict("tombstones", null, marker, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+            database.setTransactionSuccessful();
+            return merged;
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    /**
+     * Apply a version the user picked from an earlier review. The reviewed candidate
+     * set is re-read inside the transaction and must be unchanged.
+     */
+    void resolveMemoryVersion(String memoryId, List<MemoryMerge.Version> reviewed, MemoryMerge.Version chosen,
+                              String kind, String content, String source, String reference, long expiresAt) throws Exception {
+        if (reviewed == null || chosen == null) throw new IllegalArgumentException("Choose a reviewed version");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            List<MemoryMerge.Version> current = listMemoryVersions(memoryId);
+            if (!sameVersions(current, reviewed))
+                throw new IllegalStateException("Reviewed versions changed; review again");
+            if (!containsVersion(reviewed, chosen)) throw new IllegalArgumentException("Chosen version was not reviewed");
+            java.util.TreeMap<String, Long> resolved = MemoryMerge.resolvedClock(reviewed, LOCAL_ACTOR);
+            if (chosen.tombstone) {
+                database.delete("memories", "id=?", new String[]{memoryId});
+                ContentValues marker = new ContentValues();
+                marker.put("entity_type", "memory");
+                marker.put("entity_id", memoryId);
+                marker.put("deleted_at", System.currentTimeMillis());
+                database.insertWithOnConflict("tombstones", null, marker, SQLiteDatabase.CONFLICT_REPLACE);
+                replaceMemoryVersions(database, memoryId,
+                    java.util.Collections.singletonList(new MemoryMerge.Version(resolved, null, true)));
+            } else {
+                String normalized = validateMemory(kind, content);
+                String hash = sha256Hex(normalized);
+                if (!hash.equals(chosen.contentHash))
+                    throw new IllegalArgumentException("Content does not match the reviewed version");
+                String trimmedReference = reference == null ? "" : reference.trim();
+                byte[] sealed = seal(memoryAad(memoryId), memoryPayload(normalized, source, trimmedReference, expiresAt));
+                boolean exists;
+                try (Cursor cursor = database.query("memories", new String[]{"id"}, "id=?", new String[]{memoryId}, null, null, null)) {
+                    exists = cursor.moveToFirst();
+                }
+                ContentValues values = new ContentValues();
+                values.put("kind", kind);
+                values.put("updated_at", System.currentTimeMillis());
+                values.put("sealed_payload", sealed);
+                if (exists) {
+                    database.update("memories", values, "id=?", new String[]{memoryId});
+                } else {
+                    values.put("id", memoryId);
+                    values.put("created_at", System.currentTimeMillis());
+                    database.insertOrThrow("memories", null, values);
+                }
+                database.delete("tombstones", "entity_type=? AND entity_id=?", new String[]{"memory", memoryId});
+                replaceMemoryVersions(database, memoryId,
+                    java.util.Collections.singletonList(new MemoryMerge.Version(resolved, hash, false)));
+            }
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    private static void replaceMemoryVersions(SQLiteDatabase database, String memoryId, List<MemoryMerge.Version> versions) {
+        database.delete("memory_versions", "memory_id=?", new String[]{memoryId});
+        for (MemoryMerge.Version version : versions) {
+            ContentValues values = new ContentValues();
+            values.put("memory_id", memoryId);
+            values.put("clock", encodeClock(version.clock));
+            if (version.contentHash == null) values.putNull("content_hash");
+            else values.put("content_hash", version.contentHash);
+            values.put("tombstone", version.tombstone ? 1 : 0);
+            database.insertOrThrow("memory_versions", null, values);
+        }
+    }
+
+    private static boolean sameVersions(List<MemoryMerge.Version> left, List<MemoryMerge.Version> right) {
+        if (left.size() != right.size()) return false;
+        for (MemoryMerge.Version version : left) if (!containsVersion(right, version)) return false;
+        return true;
+    }
+
+    private static boolean containsVersion(List<MemoryMerge.Version> versions, MemoryMerge.Version wanted) {
+        for (MemoryMerge.Version version : versions) if (version.sameAs(wanted)) return true;
+        return false;
+    }
+
+    private static String encodeClock(Map<String, Long> clock) {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Long> entry : new java.util.TreeMap<>(clock).entrySet()) {
+            if (builder.length() > 0) builder.append('|');
+            builder.append(entry.getKey()).append(':').append(entry.getValue());
+        }
+        return builder.toString();
+    }
+
+    private static java.util.TreeMap<String, Long> decodeClock(String value) {
+        java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+        if (value == null || value.isEmpty()) return clock;
+        for (String part : value.split("\\|")) {
+            int index = part.lastIndexOf(':');
+            if (index <= 0) throw new IllegalStateException("Corrupt memory clock");
+            clock.put(part.substring(0, index), Long.parseLong(part.substring(index + 1)));
+        }
+        return clock;
+    }
+
+    private static String sha256Hex(String content) throws Exception {
+        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+        byte[] hashed = digest.digest(content.getBytes(StandardCharsets.UTF_8));
+        StringBuilder builder = new StringBuilder();
+        for (byte item : hashed) builder.append(String.format("%02x", item));
+        return builder.toString();
     }
 
     Memory createMemory(String kind, String content) throws Exception {

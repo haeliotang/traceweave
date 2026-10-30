@@ -42,6 +42,11 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("VERIFY_ARCHIVE_DELETE_UI_STALE".equals(getIntent().getAction())) verifyArchiveDeleteUiStale(store);
                 else if ("VERIFY_ARCHIVE_DELETE_UI_RETRY".equals(getIntent().getAction())) verifyArchiveDeleteUiRetry(store);
                 else if ("SEED_REBOOT_STATE".equals(getIntent().getAction())) seedRebootState(store);
+                else if ("MERGE_CAUSAL".equals(getIntent().getAction())) mergeCausal(store);
+                else if ("MERGE_CONCURRENT".equals(getIntent().getAction())) mergeConcurrent(store);
+                else if ("MERGE_TOMBSTONE".equals(getIntent().getAction())) mergeTombstone(store);
+                else if ("MERGE_REPLAY_LIMIT".equals(getIntent().getAction())) mergeReplayLimit(store);
+                else if ("MERGE_RESOLVE".equals(getIntent().getAction())) mergeResolve(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -577,6 +582,104 @@ public final class DocumentFlowValidationActivity extends Activity {
     private void verifyArchiveDeleteUi(AgentStore store) throws Exception {
         String task = getSharedPreferences("document_validation", 0).getString("delete_ui_task", "");
         check(store.getTask(task) == null && store.listMemories().isEmpty(), "reviewed deletion removed only synthetic targets");
+    }
+
+    private static MemoryMerge.Version mergeVersion(String actor, long counter, String hash, boolean tombstone) {
+        java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+        clock.put(actor, counter);
+        return new MemoryMerge.Version(clock, hash, tombstone);
+    }
+
+    private static MemoryMerge.Version mergeVersion(java.util.Map<String, Long> clock, String hash, boolean tombstone) {
+        return new MemoryMerge.Version(clock, hash, tombstone);
+    }
+
+    private static String shortHash(String value) throws Exception {
+        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+        byte[] hashed = digest.digest(value.getBytes("UTF-8"));
+        StringBuilder builder = new StringBuilder();
+        for (byte item : hashed) builder.append(String.format("%02x", item));
+        return builder.toString();
+    }
+
+    private void mergeCausal(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC merge base");
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("one"), false)));
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-a", 2, shortHash("two"), false)));
+        java.util.List<MemoryMerge.Version> versions = store.listMemoryVersions(memory.id);
+        check(versions.size() == 1 && versions.get(0).clock.get("device-a") == 2L, "older causal version is excluded");
+        check(store.getTask(memory.id) == null && store.listMemories().size() == 1, "memory row is unchanged by a causal merge");
+    }
+
+    private void mergeConcurrent(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC concurrent base");
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("a"), false)));
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-b", 1, shortHash("b"), false)));
+        java.util.List<MemoryMerge.Version> versions = store.listMemoryVersions(memory.id);
+        check(versions.size() == 2, "concurrent edits stay as two candidates");
+        check(store.listMemories().size() == 1, "concurrent candidates leave the chosen memory untouched");
+        check(store.listMemories().get(0).content.equals("SYNTHETIC concurrent base"), "unresolved merge does not overwrite content");
+    }
+
+    private void mergeTombstone(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC doomed");
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("a"), false)));
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-b", 1, shortHash("b"), true)));
+        check(store.listMemories().isEmpty(), "tombstone removes the memory even against a concurrent edit");
+        java.util.List<MemoryMerge.Version> versions = store.listMemoryVersions(memory.id);
+        check(versions.size() == 1 && versions.get(0).tombstone, "only the tombstone version remains");
+        try (android.database.Cursor cursor = store.getReadableDatabase().query("tombstones",
+                new String[]{"entity_id"}, "entity_type=? AND entity_id=?", new String[]{"memory", memory.id}, null, null, null)) {
+            check(cursor.getCount() == 1, "deletion marker is persisted");
+        }
+    }
+
+    private void mergeReplayLimit(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC replay");
+        MemoryMerge.Version version = mergeVersion("device-a", 3, shortHash("x"), false);
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(version));
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(version));
+        check(store.listMemoryVersions(memory.id).size() == 1, "replayed version is deduplicated");
+        java.util.TreeMap<String, Long> wide = new java.util.TreeMap<>();
+        for (int index = 0; index < 33; index++) wide.put("device-" + index, 1L);
+        boolean rejected = false;
+        try {
+            store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion(wide, shortHash("wide"), false)));
+        } catch (IllegalArgumentException error) {
+            rejected = true;
+        }
+        check(rejected, "merge with more than 32 devices is rejected");
+        check(store.listMemoryVersions(memory.id).size() == 1, "rejected merge leaves stored versions unchanged");
+    }
+
+    private void mergeResolve(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC resolve base");
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-a", 1, shortHash("SYNTHETIC resolve base"), false)));
+        store.mergeMemoryVersions(memory.id, java.util.Collections.singletonList(mergeVersion("device-b", 1, shortHash("SYNTHETIC resolved content"), false)));
+        java.util.List<MemoryMerge.Version> reviewed = store.listMemoryVersions(memory.id);
+        check(reviewed.size() == 2, "two candidates are available for review");
+        MemoryMerge.Version chosen = null;
+        for (MemoryMerge.Version version : reviewed) if (shortHash("SYNTHETIC resolved content").equals(version.contentHash)) chosen = version;
+        boolean staleRejected = false;
+        try {
+            store.resolveMemoryVersion(memory.id, java.util.Collections.singletonList(reviewed.get(0)), chosen,
+                AgentStore.MEMORY_FACT, "SYNTHETIC resolved content", AgentStore.MEMORY_SOURCE_USER, "", 0);
+        } catch (IllegalStateException error) {
+            staleRejected = true;
+        }
+        check(staleRejected, "resolution rejects a changed candidate set");
+        store.resolveMemoryVersion(memory.id, reviewed, chosen,
+            AgentStore.MEMORY_FACT, "SYNTHETIC resolved content", AgentStore.MEMORY_SOURCE_USER, "", 0);
+        check(store.listMemories().size() == 1 && "SYNTHETIC resolved content".equals(store.listMemories().get(0).content),
+            "resolution applies the chosen content");
+        java.util.List<MemoryMerge.Version> after = store.listMemoryVersions(memory.id);
+        check(after.size() == 1 && after.get(0).clock.containsKey(AgentStore.LOCAL_ACTOR),
+            "resolution merges clocks and ticks the local device");
     }
 
     private void seedRebootState(AgentStore store) throws Exception {

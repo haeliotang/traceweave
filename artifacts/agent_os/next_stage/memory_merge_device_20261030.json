@@ -1,0 +1,58 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-30T19:00:04.936684+00:00",
+  "cases": [
+    {
+      "case": "MERGE_CAUSAL",
+      "pid": 8115,
+      "passed": true,
+      "result": "10-31 00:44:59.793  8115  8148 I AgentOsDocumentsValidation: PASS document_flow checks=4 mode=MERGE_CAUSAL"
+    },
+    {
+      "case": "MERGE_CONCURRENT",
+      "pid": 8174,
+      "passed": true,
+      "result": "10-31 00:45:01.063  8174  8202 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=MERGE_CONCURRENT"
+    },
+    {
+      "case": "MERGE_TOMBSTONE",
+      "pid": 8226,
+      "passed": true,
+      "result": "10-31 00:45:02.346  8226  8254 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=MERGE_TOMBSTONE"
+    },
+    {
+      "case": "MERGE_REPLAY_LIMIT",
+      "pid": 8278,
+      "passed": true,
+      "result": "10-31 00:45:03.606  8278  8306 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=MERGE_REPLAY_LIMIT"
+    },
+    {
+      "case": "MERGE_RESOLVE",
+      "pid": 8329,
+      "passed": true,
+      "result": "10-31 00:45:04.909  8329  8357 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=MERGE_RESOLVE"
+    }
+  ],
+  "scope": "isolated debug package, synthetic memories only; schema 7 migration ran on an existing version-6 database",
+  "device": "Pixel 6a",
+  "checks": {
+    "causal_order_excludes_older": true,
+    "concurrent_edits_kept_as_candidates": true,
+    "tombstone_deletes_and_persists_marker": true,
+    "replay_deduplicated": true,
+    "more_than_32_devices_rejected": true,
+    "resolution_rejects_changed_candidate_set": true,
+    "resolution_applies_chosen_content_and_ticks_local": true
+  },
+  "limitations": [
+    "Synthetic memories only; no production database was migrated",
+    "The merge is exercised directly through the store API; it is not yet driven by the sync transport",
+    "Candidate review UI is not part of this milestone"
+  ],
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "33e6ebf174907588194d3308003cb9f104da9bff9d13456f8ee84328a0cd1020",
+    "agent_os/android/src/org/traceform/agentos/MemoryMerge.java": "60fdf30f71b92c428ed3e677373c9991556ba09bc473bc3da6fed0e3754e7ba4",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "e295a1d20c8739a512f693dfd6996bb28256aa39acc3b2dd804f49227236d46d"
+  }
+}
