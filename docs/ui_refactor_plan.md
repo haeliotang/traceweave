@@ -42,7 +42,9 @@
 - 设备回归（2026-10-31）：`OPEN_WORKFLOW_UI`、`WORKFLOW_GUARD_V4`、`TASK_CENTER`、`PAIR_CREATE`、`PAIR_UI_VERIFY` 通过；其中配对是在重构后的设置页通过真实对话框完成的。`VERIFY_WORKFLOW_UI`、`SEED_CENTER_UI` 因缺少“界面创建的工作流模板”夹具而无法运行（不是回归）。见 [ui_regression_20261031](../artifacts/agent_os/next_stage/ui_regression_20261031.json)。
 - 补充回归（同日）：`RUN_SUITE` 48 项、`RUN_DOCUMENTS` 20 项、`VERIFY_DOCUMENT_RESTART` 8 项全部通过；`VERIFY_UI` 同样依赖交互式夹具（接受/拒绝候选记忆）而无法在全新安装上运行。
 - 截图索引：[ui_screenshots.md](ui_screenshots.md)。
-- 待办：交互式夹具（工作流模板 + 两次运行；候选记忆接受/拒绝）后可补跑剩余 UI 流程用例；深色模式与多字号仍未验证。
+- 夹具补齐（同日）：用真实界面创建 `SYNTHETIC reusable checklist` 模板，跑 trip A（选一条用户记忆）与 trip B（不选记忆）并各自保存核验，`VERIFY_WORKFLOW_UI` 7 项通过；在任务中心用行菜单取消恢复的草稿，`VERIFY_CENTER_UI` 2 项通过。
+- 发现：`RUN_SUITE` 要求通知权限处于**未授予**状态（授予时“拒绝即失败”的断言会失败）；撤销权限后 48 项恢复通过。
+- 待办：`VERIFY_UI` 仍需在 MemoryReviewActivity 里交互接受/拒绝候选记忆；深色模式与多字号仍未验证。
 
 ## 验收标准
 

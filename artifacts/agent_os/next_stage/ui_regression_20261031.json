@@ -11,23 +11,32 @@
     "PAIR_UI_VERIFY": "checks=3 after pairing through the real settings dialog",
     "RUN_SUITE": "checks=48 (action flows reset and rerun on the refactored code)",
     "RUN_DOCUMENTS": "checks=20",
-    "VERIFY_DOCUMENT_RESTART": "checks=8"
+    "VERIFY_DOCUMENT_RESTART": "checks=8",
+    "VERIFY_WORKFLOW_UI": "checks=7 after creating the SYNTHETIC reusable checklist template and two verified runs through the UI",
+    "VERIFY_CENTER_UI": "checks=2 after cancelling the restored draft from the task center menu",
+    "SEED_CENTER_UI": "checks=0 (fixture seeded)",
+    "OPEN_CENTER_UI": "checks=1"
   },
   "blocked_by_fixture": {
-    "VERIFY_WORKFLOW_UI": "needs two completed runs of an interactively created workflow template (trip A / trip B)",
-    "SEED_CENTER_UI": "same UI-created template fixture",
-    "VERIFY_UI": "needs two tasks created interactively with accept/reject of memory suggestions"
+    "VERIFY_UI": "needs tasks whose memory suggestions are accepted/rejected through MemoryReviewActivity"
   },
   "notes": [
     "The settings pairing dialog was exercised end to end after the refactor: enter fingerprint, show code, pair, verify",
     "WorkflowActivity itself was not modified by this refactor and opens successfully",
     "The fixture cases are not regressions; they require an interactive template that does not exist in a fresh install",
     "Host suite: 27 tests pass",
-    "RUN_SUITE resets the isolated DB, so the later document cases start from a clean store"
+    "RUN_SUITE resets the isolated DB, so the later document cases start from a clean store",
+    "RUN_SUITE requires notifications to be denied; with the permission granted the \"denial fails closed\" assertion fails, which is environment state rather than a regression"
   ],
   "limitations": [
     "Only a subset of the 100+ device cases was rerun",
     "No screenshot-based pixel comparison; visual checks are the saved zh/en screenshots",
     "Memory list and model page have no device cases of their own"
+  ],
+  "fixture_steps": [
+    "Workflows -> created \"SYNTHETIC reusable checklist\" with goal \"Prepare {{input}}\"",
+    "Run trip A with one manually selected user memory, saved and verified",
+    "Run trip B with no memory selected, saved and verified",
+    "Task center -> cancelled the restored draft through the row menu"
   ]
 }
