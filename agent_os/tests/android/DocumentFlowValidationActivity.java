@@ -68,6 +68,11 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_VERIFY_MERGED".equals(getIntent().getAction())) syncVerifyMerged(store);
                 else if ("SYNC_DELETE_OWN".equals(getIntent().getAction())) syncDeleteOwn(store);
                 else if ("SYNC_VERIFY_AFTER_DELETE".equals(getIntent().getAction())) syncVerifyAfterDelete(store);
+                else if ("SYNC_EDIT_A".equals(getIntent().getAction())) syncEdit(store, "node-a", "SYNTHETIC sync A edit");
+                else if ("SYNC_EDIT_B".equals(getIntent().getAction())) syncEdit(store, "node-b", "SYNTHETIC sync B edit");
+                else if ("SYNC_VERIFY_CONFLICT".equals(getIntent().getAction())) syncVerifyConflict(store);
+                else if ("SYNC_RESOLVE_B_EDIT".equals(getIntent().getAction())) syncResolveBEdit(store);
+                else if ("SYNC_VERIFY_RESOLVED".equals(getIntent().getAction())) syncVerifyResolved(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -634,6 +639,57 @@ public final class DocumentFlowValidationActivity extends Activity {
         store.mergeMemoryVersions(memory.id,
             java.util.Collections.singletonList(mergeVersion(actor, 1, shortHash(marker), false)));
         getSharedPreferences("document_validation", 0).edit().putBoolean("sync_seeded_" + actor, true).commit();
+    }
+
+    private AgentStore.Memory sharedMemory(AgentStore store) throws Exception {
+        for (AgentStore.Memory memory : store.listMemories()) {
+            String content = memory.content;
+            if (SYNC_NODE_A_MEMORY.equals(content) || "SYNTHETIC sync A edit".equals(content)
+                    || "SYNTHETIC sync B edit".equals(content)) return memory;
+        }
+        return null;
+    }
+
+    private void syncEdit(AgentStore store, String actor, String content) throws Exception {
+        AgentStore.Memory memory = sharedMemory(store);
+        check(memory != null, "shared memory is present before editing");
+        store.mergeSyncRecords(java.util.Collections.singletonList(
+            new AgentStore.SyncRecord(memory.id, AgentStore.MEMORY_FACT, content, AgentStore.MEMORY_SOURCE_USER, "", 0,
+                new java.util.TreeMap<>(java.util.Collections.singletonMap(actor, 2L)), shortHash(content), false)));
+        boolean recorded = false;
+        for (MemoryMerge.Version version : store.listMemoryVersions(memory.id))
+            if (shortHash(content).equals(version.contentHash)) recorded = true;
+        check(recorded, "local edit is recorded as a version");
+    }
+
+    private void syncVerifyConflict(AgentStore store) throws Exception {
+        AgentStore.Memory memory = sharedMemory(store);
+        check(memory != null, "shared memory is still present during the conflict");
+        java.util.List<MemoryMerge.Version> versions = store.listMemoryVersions(memory.id);
+        check(versions.size() == 2, "both concurrent edits are retained as candidates");
+        boolean edited = "SYNTHETIC sync A edit".equals(memory.content) || SYNC_NODE_A_MEMORY.equals(memory.content);
+        check(edited, "unresolved conflict does not adopt the peer edit automatically");
+    }
+
+    private void syncResolveBEdit(AgentStore store) throws Exception {
+        AgentStore.Memory memory = sharedMemory(store);
+        check(memory != null, "shared memory is present before resolution");
+        java.util.List<MemoryMerge.Version> reviewed = store.listMemoryVersions(memory.id);
+        String targetHash = shortHash("SYNTHETIC sync B edit");
+        MemoryMerge.Version chosen = null;
+        for (MemoryMerge.Version version : reviewed) if (targetHash.equals(version.contentHash)) chosen = version;
+        check(chosen != null && reviewed.size() == 2, "the peer edit is one of the reviewed candidates");
+        store.resolveMemoryVersion(memory.id, reviewed, chosen, AgentStore.MEMORY_FACT,
+            "SYNTHETIC sync B edit", AgentStore.MEMORY_SOURCE_USER, "", 0);
+        check(store.listMemoryVersions(memory.id).size() == 1, "resolution leaves a single version");
+    }
+
+    private void syncVerifyResolved(AgentStore store) throws Exception {
+        AgentStore.Memory resolved = null;
+        for (AgentStore.Memory memory : store.listMemories())
+            if ("SYNTHETIC sync B edit".equals(memory.content)) resolved = memory;
+        check(resolved != null, "both nodes converged to the chosen edit");
+        check(store.listMemoryVersions(resolved.id).size() == 1, "chosen version is the only candidate");
     }
 
     private void syncDeleteOwn(AgentStore store) throws Exception {

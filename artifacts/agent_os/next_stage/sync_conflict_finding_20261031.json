@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "two isolated installs; concurrent edits on the same memory id",
+  "experiment": {
+    "first_exchange_converged": true,
+    "node_a_edited_shared_memory": "clock {node-a:2}",
+    "node_b_edited_shared_memory": "clock {node-b:2}",
+    "second_exchange_run": true
+  },
+  "observed": {
+    "node_b_kept_two_candidates": true,
+    "node_a_kept_one_candidate": true,
+    "conflict_did_not_propagate_to_node_a": true
+  },
+  "root_cause": "exportSyncRecords exports only the version matching the currently chosen memory content; queued candidates keep only a hash in memory_versions, not their content, so a peer never receives the other edit",
+  "fix_planned": "schema 9 with memory_candidates storing sealed candidate content; export all versions with content; resolve uses the stored candidate payload",
+  "limitations": [
+    "Only synthetic memories were used",
+    "No resolution step was reached because the candidate never reached node A",
+    "Fixed test seeds; pairing-driven transport still not wired"
+  ]
+}
