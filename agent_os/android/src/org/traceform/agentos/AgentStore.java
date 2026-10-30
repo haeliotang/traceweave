@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -188,6 +188,7 @@ final class AgentStore extends SQLiteOpenHelper {
         createMemoryTables(database);
         createMemoryVersionTable(database);
         createPairingTable(database);
+        createMemoryCandidateTable(database);
     }
 
     private static void createTaskTables(SQLiteDatabase database) {
@@ -220,6 +221,15 @@ final class AgentStore extends SQLiteOpenHelper {
             + "entity_id TEXT NOT NULL, "
             + "deleted_at INTEGER NOT NULL, "
             + "PRIMARY KEY (entity_type, entity_id))");
+    }
+
+    private static void createMemoryCandidateTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE memory_candidates ("
+            + "memory_id TEXT NOT NULL, "
+            + "clock TEXT NOT NULL, "
+            + "content_hash TEXT NOT NULL, "
+            + "sealed_payload BLOB NOT NULL, "
+            + "PRIMARY KEY (memory_id, clock))");
     }
 
     private static void createPairingTable(SQLiteDatabase database) {
@@ -265,6 +275,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 7) {
                 createPairingTable(database);
                 version = 8;
+            } else if (version == 8) {
+                createMemoryCandidateTable(database);
+                version = 9;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -1302,6 +1315,29 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    private void saveCandidate(SQLiteDatabase database, String memoryId, MemoryMerge.Version version,
+                               String content, String source, String reference, long expiresAt) throws Exception {
+        ContentValues values = new ContentValues();
+        values.put("memory_id", memoryId);
+        values.put("clock", encodeClock(version.clock));
+        values.put("content_hash", version.contentHash);
+        values.put("sealed_payload", seal(memoryAad(memoryId),
+            memoryPayload(content, source, reference, expiresAt)));
+        database.insertWithOnConflict("memory_candidates", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    private org.json.JSONObject candidatePayload(String memoryId, MemoryMerge.Version version) throws Exception {
+        try (Cursor cursor = getReadableDatabase().query("memory_candidates", new String[]{"sealed_payload"},
+                "memory_id=? AND clock=?", new String[]{memoryId, encodeClock(version.clock)}, null, null, null)) {
+            if (!cursor.moveToFirst()) return null;
+            return new org.json.JSONObject(new String(unseal(memoryAad(memoryId), cursor.getBlob(0)), StandardCharsets.UTF_8));
+        }
+    }
+
+    private void deleteCandidates(SQLiteDatabase database, String memoryId) {
+        database.delete("memory_candidates", "memory_id=?", new String[]{memoryId});
+    }
+
     /** Memories that already carry a version, plus memory tombstones. Legacy unversioned rows are skipped. */
     List<SyncRecord> exportSyncRecords() throws Exception {
         ArrayList<SyncRecord> records = new ArrayList<>();
@@ -1327,6 +1363,21 @@ final class AgentStore extends SQLiteOpenHelper {
                 java.util.TreeMap<String, Long> clock = versionClock(id, hash);
                 if (clock == null) continue;
                 records.add(new SyncRecord(id, cursor.getString(1), content, source, reference, expiresAt, clock, hash, false));
+            }
+        }
+        try (Cursor cursor = getReadableDatabase().query("memory_candidates",
+                new String[]{"memory_id", "clock", "content_hash", "sealed_payload"}, null, null, null, null, null)) {
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                java.util.TreeMap<String, Long> clock = decodeClock(cursor.getString(1));
+                try {
+                    org.json.JSONObject payload = new org.json.JSONObject(
+                        new String(unseal(memoryAad(id), cursor.getBlob(3)), StandardCharsets.UTF_8));
+                    records.add(new SyncRecord(id, MEMORY_FACT, payload.getString("content"),
+                        payload.optString("source", MEMORY_SOURCE_USER), payload.optString("sourceReference", ""),
+                        payload.optLong("expiresAt", 0), clock, cursor.getString(2), false));
+                } catch (Exception ignored) {
+                }
             }
         }
         try (Cursor cursor = getReadableDatabase().query("tombstones", new String[]{"entity_id"},
@@ -1370,6 +1421,12 @@ final class AgentStore extends SQLiteOpenHelper {
                 List<MemoryMerge.Version> merged = MemoryMerge.merge(listMemoryVersions(record.id),
                     java.util.Collections.singletonList(version));
                 replaceMemoryVersions(database, record.id, merged);
+                if (!record.tombstone && merged.size() > 1) {
+                    boolean survives = false;
+                    for (MemoryMerge.Version item : merged) if (item.sameAs(version)) survives = true;
+                    if (survives) saveCandidate(database, record.id, version, record.content, record.source,
+                        record.reference, record.expiresAt);
+                }
                 if (merged.size() == 1 && merged.get(0).tombstone) {
                     database.delete("memories", "id=?", new String[]{record.id});
                     ContentValues marker = new ContentValues();
@@ -1377,6 +1434,7 @@ final class AgentStore extends SQLiteOpenHelper {
                     marker.put("entity_id", record.id);
                     marker.put("deleted_at", System.currentTimeMillis());
                     database.insertWithOnConflict("tombstones", null, marker, SQLiteDatabase.CONFLICT_REPLACE);
+                    deleteCandidates(database, record.id);
                     applied++;
                 } else if (!record.tombstone && merged.size() == 1
                         && record.contentHash.equals(merged.get(0).contentHash)) {
@@ -1395,6 +1453,7 @@ final class AgentStore extends SQLiteOpenHelper {
                         database.insertOrThrow("memories", null, values);
                     }
                     database.delete("tombstones", "entity_type=? AND entity_id=?", new String[]{"memory", record.id});
+                    deleteCandidates(database, record.id);
                     applied++;
                 }
             }
@@ -1451,6 +1510,15 @@ final class AgentStore extends SQLiteOpenHelper {
      * Apply a version the user picked from an earlier review. The reviewed candidate
      * set is re-read inside the transaction and must be unchanged.
      */
+    void resolveMemoryVersion(String memoryId, List<MemoryMerge.Version> reviewed, MemoryMerge.Version chosen)
+            throws Exception {
+        org.json.JSONObject payload = candidatePayload(memoryId, chosen);
+        if (payload == null) throw new IllegalArgumentException("Reviewed candidate content is missing");
+        resolveMemoryVersion(memoryId, reviewed, chosen, MEMORY_FACT, payload.getString("content"),
+            payload.optString("source", MEMORY_SOURCE_USER), payload.optString("sourceReference", ""),
+            payload.optLong("expiresAt", 0));
+    }
+
     void resolveMemoryVersion(String memoryId, List<MemoryMerge.Version> reviewed, MemoryMerge.Version chosen,
                               String kind, String content, String source, String reference, long expiresAt) throws Exception {
         if (reviewed == null || chosen == null) throw new IllegalArgumentException("Choose a reviewed version");
@@ -1496,6 +1564,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 database.delete("tombstones", "entity_type=? AND entity_id=?", new String[]{"memory", memoryId});
                 replaceMemoryVersions(database, memoryId,
                     java.util.Collections.singletonList(new MemoryMerge.Version(resolved, hash, false)));
+                deleteCandidates(database, memoryId);
             }
             database.setTransactionSuccessful();
         } finally {

@@ -73,6 +73,7 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_VERIFY_CONFLICT".equals(getIntent().getAction())) syncVerifyConflict(store);
                 else if ("SYNC_RESOLVE_B_EDIT".equals(getIntent().getAction())) syncResolveBEdit(store);
                 else if ("SYNC_VERIFY_RESOLVED".equals(getIntent().getAction())) syncVerifyResolved(store);
+                else if ("SYNC_DIAL_UNREACHABLE".equals(getIntent().getAction())) syncDialUnreachable(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -650,6 +651,13 @@ public final class DocumentFlowValidationActivity extends Activity {
         return null;
     }
 
+    private void syncDialUnreachable(AgentStore store) throws Exception {
+        String peerA = SyncProbe.nativePeerId(SYNC_SEED_A);
+        byte[] request = SyncExchange.encode(store.exportSyncRecords());
+        byte[] response = SyncProbe.nativeDialOnce(SYNC_SEED_B, 47912, peerA, request);
+        check(response == null, "dialling without a listener fails instead of hanging or succeeding");
+    }
+
     private void syncEdit(AgentStore store, String actor, String content) throws Exception {
         AgentStore.Memory memory = sharedMemory(store);
         check(memory != null, "shared memory is present before editing");
@@ -679,8 +687,7 @@ public final class DocumentFlowValidationActivity extends Activity {
         MemoryMerge.Version chosen = null;
         for (MemoryMerge.Version version : reviewed) if (targetHash.equals(version.contentHash)) chosen = version;
         check(chosen != null && reviewed.size() == 2, "the peer edit is one of the reviewed candidates");
-        store.resolveMemoryVersion(memory.id, reviewed, chosen, AgentStore.MEMORY_FACT,
-            "SYNTHETIC sync B edit", AgentStore.MEMORY_SOURCE_USER, "", 0);
+        store.resolveMemoryVersion(memory.id, reviewed, chosen);
         check(store.listMemoryVersions(memory.id).size() == 1, "resolution leaves a single version");
     }
 
@@ -693,10 +700,9 @@ public final class DocumentFlowValidationActivity extends Activity {
     }
 
     private void syncDeleteOwn(AgentStore store) throws Exception {
-        String target = null;
-        for (AgentStore.Memory memory : store.listMemories())
-            if (SYNC_NODE_A_MEMORY.equals(memory.content)) target = memory.id;
-        check(target != null, "node A memory exists before deletion");
+        AgentStore.Memory shared = sharedMemory(store);
+        check(shared != null, "shared memory exists before deletion");
+        String target = shared.id;
         store.mergeSyncRecords(java.util.Collections.singletonList(
             new AgentStore.SyncRecord(target, AgentStore.MEMORY_FACT, null, AgentStore.MEMORY_SOURCE_USER, "", 0,
                 new java.util.TreeMap<>(java.util.Collections.singletonMap("node-a", 2L)), null, true)));
@@ -709,8 +715,10 @@ public final class DocumentFlowValidationActivity extends Activity {
         boolean deleted = true;
         boolean survivor = false;
         for (AgentStore.Memory memory : store.listMemories()) {
-            if (SYNC_NODE_A_MEMORY.equals(memory.content)) deleted = false;
-            if (SYNC_NODE_B_MEMORY.equals(memory.content)) survivor = true;
+            String content = memory.content;
+            if (SYNC_NODE_A_MEMORY.equals(content) || "SYNTHETIC sync A edit".equals(content)
+                    || "SYNTHETIC sync B edit".equals(content)) deleted = false;
+            if (SYNC_NODE_B_MEMORY.equals(content)) survivor = true;
         }
         check(deleted, "deleted memory did not reappear on either node");
         check(survivor, "the peer memory survived the deletion exchange");
