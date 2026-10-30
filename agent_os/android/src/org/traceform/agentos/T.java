@@ -40,6 +40,18 @@ final class T {
         add("settings.section_data", "Data & archive", "数据与存档");
         add("settings.section_sync", "Sync", "同步");
         add("settings.section_services", "Services & extensions", "服务与扩展");
+        add("taskcenter.open", "Open", "打开");
+        add("taskcenter.actions", "Actions", "更多操作");
+        add("taskcenter.pause", "Pause", "暂停");
+        add("taskcenter.resume", "Resume", "恢复执行");
+        add("taskcenter.cancel", "Cancel task", "取消任务");
+        add("taskcenter.refresh", "Refresh", "刷新");
+        add("taskcenter.back", "Back", "返回");
+        add("taskcenter.all", "All tasks", "全部任务");
+        add("taskcenter.empty", "No tasks in this group", "此分组暂无任务");
+        add("taskcenter.heading", "Task center", "任务中心");
+        add("taskcenter.note", "Cloud approvals expire with the process; recovery never repeats a file write.",
+            "云请求授权不跨进程保留；恢复只核验，不重复写入。");
         add("settings.note_export", "Local data is exported only on demand. Import merges by ID; tombstones win.",
             "本机数据仅在你选择时导出。导入时按 ID 合并，删除墓碑优先。");
     }

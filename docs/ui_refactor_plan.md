@@ -26,8 +26,9 @@
 - 设置页改为分区列表（完成）：数据与存档 / 同步 / 服务与扩展；档案说明移入数据区，同步独立成区；中英截图 [中文](../artifacts/agent_os/next_stage/ui/settings_after_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/settings_after_en.png)。
 - 配对与同步入口并入"同步"分区。
 
-### 阶段 3：任务与工作流（2 轮）
-- 任务卡：标题、状态、一行摘要、主操作；展开后才是步骤与审计。
+### 阶段 3：任务与工作流（进行中，任务中心完成 2026-10-31）
+- 任务中心：每个任务一行（标题 + 状态 chip + 时间 + 打开 + ⋯ 菜单），空分组自动隐藏；中英截图 [中文](../artifacts/agent_os/next_stage/ui/task_center_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/task_center_en.png)。
+- 待办：主屏任务卡仍是长卡片（步骤、能力授权、按钮全部平铺），需要折叠为“标题 + 状态 + 一行摘要 + 主操作”，展开后再显示步骤。
 - 工作流创建：表单式布局，校验提示就近显示。
 - 文档任务：预览区限高 + 展开，操作按钮固定在底部。
 
