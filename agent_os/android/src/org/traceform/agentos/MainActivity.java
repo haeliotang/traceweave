@@ -1428,10 +1428,30 @@ public final class MainActivity extends Activity {
         metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(task.updatedAt)));
         metadata.setTextSize(11);
         metadata.setTextColor(0xFF94A3B8);
-        metadata.setPadding(0, dp(2), 0, dp(4));
+        metadata.setPadding(0, dp(2), 0, dp(2));
         card.addView(metadata);
 
         boolean en = isEnglish();
+        int planSteps = task.plan == null ? 0 : task.plan.totalSteps();
+        int planDone = 0;
+        if (task.plan != null) {
+            for (ExecutionPlan.Step step : task.plan.steps) {
+                if (ExecutionPlan.STEP_DONE.equals(step.status)
+                    && (!step.isExternalAction() || ExternalAction.hasVerifiedEffect(step))) planDone++;
+            }
+        }
+        TextView summary = new TextView(this);
+        String nextTitle = "";
+        if (task.plan != null && task.executionStep < task.plan.steps.size())
+            nextTitle = formatStepTitle(task.plan.steps.get(task.executionStep).title, en);
+        summary.setText(planSteps == 0
+            ? (en ? "Draft only · no plan yet" : "仅草稿 · 尚未生成计划")
+            : (en ? planDone + "/" + planSteps + " steps" : planDone + "/" + planSteps + " 步")
+              + (nextTitle.isEmpty() ? "" : (en ? " · next: " : " · 下一步：") + nextTitle));
+        summary.setTextSize(11);
+        summary.setTextColor(0xFF64748B);
+        summary.setPadding(0, 0, 0, dp(2));
+        card.addView(summary);
         boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
             || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
         addMemoryCandidateControls(card, task);
@@ -1455,8 +1475,8 @@ public final class MainActivity extends Activity {
             });
         }
 
-        if (isTerminal) {
-            detailContainer.setVisibility(View.GONE);
+        detailContainer.setVisibility(View.GONE);
+        {
 
             LinearLayout toggleRow = new LinearLayout(this);
             toggleRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -1468,7 +1488,8 @@ public final class MainActivity extends Activity {
             String statusText = AgentStore.COMPLETED.equals(task.status)
                     ? (en ? "Completed" : "已完成")
                     : AgentStore.OUTCOME_UNKNOWN.equals(task.status) ? (en ? "Outcome unknown" : "结果未知")
-                    : (en ? "Cancelled" : "已取消");
+                    : AgentStore.CANCELLED.equals(task.status) ? (en ? "Cancelled" : "已取消")
+                    : (en ? "Details" : "详情");
             toggleBtn.setText(statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
             toggleBtn.setTextSize(12);
             toggleBtn.setTextColor(0xFF0284C7);
@@ -1506,7 +1527,11 @@ public final class MainActivity extends Activity {
                 || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status))) {
             String label = AgentStore.QUEUED.equals(task.status) ? (en ? "Start" : "开始")
                 : AgentStore.FAILED.equals(task.status) ? (en ? "Retry" : "重试") : (en ? "Resume" : "继续");
-            addTaskButton(actions, label, task, AgentStore.ACTIVE);
+            LinearLayout primaryRow = new LinearLayout(this);
+            primaryRow.setOrientation(LinearLayout.HORIZONTAL);
+            primaryRow.setPadding(0, dp(2), 0, dp(2));
+            addTaskButton(primaryRow, label, task, AgentStore.ACTIVE);
+            card.addView(primaryRow);
         }
         if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, en ? "Pause" : "暂停", task, AgentStore.PAUSED);
         if (!isTerminal)

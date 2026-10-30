@@ -1,6 +1,6 @@
 # UI/UX 重构计划（紧凑布局 + 中英双语）
 
-状态：**进行中（阶段 0–2 完成 2026-10-31）**。目标是在 F4 完成后，对正式应用做一次系统性 UI/UX 重构：信息密度更高、层级更清楚、中英双语一致，且不改变任何数据或授权语义。
+状态：**进行中（阶段 0–3 完成 2026-10-31）**。目标是在 F4 完成后，对正式应用做一次系统性 UI/UX 重构：信息密度更高、层级更清楚、中英双语一致，且不改变任何数据或授权语义。
 
 ## 原则
 
@@ -26,9 +26,10 @@
 - 设置页改为分区列表（完成）：数据与存档 / 同步 / 服务与扩展；档案说明移入数据区，同步独立成区；中英截图 [中文](../artifacts/agent_os/next_stage/ui/settings_after_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/settings_after_en.png)。
 - 配对与同步入口并入"同步"分区。
 
-### 阶段 3：任务与工作流（进行中，任务中心完成 2026-10-31）
+### 阶段 3：任务与工作流（完成 2026-10-31）
 - 任务中心：每个任务一行（标题 + 状态 chip + 时间 + 打开 + ⋯ 菜单），空分组自动隐藏；中英截图 [中文](../artifacts/agent_os/next_stage/ui/task_center_zh.png)、[英文](../artifacts/agent_os/next_stage/ui/task_center_en.png)。
-- 待办：主屏任务卡仍是长卡片（步骤、能力授权、按钮全部平铺），需要折叠为“标题 + 状态 + 一行摘要 + 主操作”，展开后再显示步骤。
+- 主屏任务卡（完成）：标题 + 状态 chip + 时间 + 一行摘要（`0/2 步 · 下一步：…`）+ 主操作（开始/重试/继续）+ “详情（共 N 步）”折叠开关；步骤树、能力授权、取消/删除默认收起。截图：[折叠中文](../artifacts/agent_os/next_stage/ui/task_card_collapsed_zh.png)、[展开中文](../artifacts/agent_os/next_stage/ui/task_card_expanded_zh.png)、[折叠英文](../artifacts/agent_os/next_stage/ui/task_card_collapsed_en.png)。
+- 待办：工作流创建页表单化（阶段 4 之前）。
 - 工作流创建：表单式布局，校验提示就近显示。
 - 文档任务：预览区限高 + 展开，操作按钮固定在底部。
 
