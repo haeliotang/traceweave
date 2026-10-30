@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--baseline-minutes', type=float, default=5.0)
     parser.add_argument('--workload-minutes', type=float, default=10.0)
     parser.add_argument('--package', action='append', default=[])
+    parser.add_argument('--model', default='qwen15')
+    parser.add_argument('--workload-action', default='QUALITY50')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     adb = [args.adb, '-s', args.serial]
@@ -46,18 +48,34 @@ def main():
         match = re.search(r'Thermal Status: (\w+)', output)
         return match.group(1) if match else 'unknown'
 
+    def charge_counter():
+        match = re.search(r'Charge counter: (\d+)', shell('dumpsys', 'battery'))
+        return int(match.group(1)) if match else -1
+
     def sample():
         return {'battery_level': level(), 'battery_temperature_tenths_c': temperature(),
-                'thermal_status': thermal(), 'recorded_at': datetime.now(timezone.utc).isoformat()}
+                'charge_counter_uah': charge_counter(), 'thermal_status': thermal(),
+                'recorded_at': datetime.now(timezone.utc).isoformat()}
 
     shell('dumpsys', 'batterystats', '--reset')
     start = sample()
     time.sleep(args.baseline_minutes * 60)
     after_baseline = sample()
-    for package in args.package:
-        shell('am', 'start', '-W', '-n', package + '/org.traceform.agentos.LocalModelQualityProbe',
-              '-a', 'STRESS3', '--es', 'phase', 'multi_turn', '--es', 'model', 'qwen15')
-    time.sleep(args.workload_minutes * 60)
+    workload_started = time.time()
+    if args.package:
+        for package in args.package:
+            shell('am', 'force-stop', package)
+            shell('am', 'start', '-W', '-n', package + '/org.traceform.agentos.LocalModelQualityProbe',
+                  '-a', args.workload_action, '--es', 'model', args.model)
+            deadline = time.time() + args.workload_minutes * 60
+            while time.time() < deadline:
+                logs = shell('logcat', '-d', '-s', 'AgentOsModelQuality:I', '*:S')
+                if args.workload_action + '_DONE' in logs:
+                    break
+                time.sleep(10)
+    remaining = args.workload_minutes * 60 - (time.time() - workload_started)
+    if remaining > 0:
+        time.sleep(remaining)
     end = sample()
     stats = shell('dumpsys', 'batterystats', '--charged')
     uids = [line.strip() for line in stats.splitlines() if 'org.traceform' in line or 'Estimated power use' in line]
@@ -72,6 +90,8 @@ def main():
         'workload_drain_percent_per_hour': round((after_baseline['battery_level'] - end['battery_level'])
                                                  / max(args.workload_minutes, 1) * 60, 2),
         'temperature_delta_tenths_c': end['battery_temperature_tenths_c'] - start['battery_temperature_tenths_c'],
+        'baseline_charge_mah': round((start['charge_counter_uah'] - after_baseline['charge_counter_uah']) / 1000.0, 1),
+        'workload_charge_mah': round((after_baseline['charge_counter_uah'] - end['charge_counter_uah']) / 1000.0, 1),
         'batterystats_excerpt': uids[:40],
         'limitations': [
             'System battery statistics only; not an external power meter',
