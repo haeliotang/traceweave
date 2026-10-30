@@ -28,7 +28,7 @@ CASES = ('MODEL_CANCEL_RACE', 'MODEL_DOCUMENT', 'MODEL_DOCUMENT_FAILURES', 'MEMO
          'VERIFY_EXECUTOR_LIFECYCLE', 'VERIFY_MEMORY_PROVENANCE', 'VERIFY_MEMORY_CONSOLIDATION_AND_UI',
          'VERIFY_DATABASE_MIGRATION', 'WORKFLOW_RUNS', 'MEMORY_CHOICES', 'TASK_CENTER', 'WORKFLOW_GUARD',
          'VERIFY_SENSOR_OPT_IN', 'SENSOR_CONTEXT', 'SENSOR_WINDOW', 'MEMORY_LIFECYCLE',
-         'DOCUMENT_CALENDAR_CHAIN', 'VERIFY_CHAIN_RESTART', 'CLOUD_PLAN_GUARD', 'LOCAL_ENGINE_LABELS', 'LOCAL_MODEL_DRAFT_BOUNDARY',
+         'DOCUMENT_CALENDAR_CHAIN', 'VERIFY_CHAIN_RESTART', 'DOCUMENT_SHARE_CHAIN', 'VERIFY_SHARE_RESTART', 'CLOUD_PLAN_GUARD', 'LOCAL_ENGINE_LABELS', 'LOCAL_MODEL_DRAFT_BOUNDARY',
          'SCOPED_SUMMARY_CONTRACT', 'REVIEW_ARCHIVE_CONFLICTS')
 
 
@@ -156,6 +156,15 @@ def main():
         execute([sys.executable, 'agent_os/scripts/copy_document_validation_fixture.py', '--adb', args.adb, '--serial', args.serial])
         execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
                  '--package', TARGET, '--case', 'IMPORT_LIFECYCLE', '--output', out / 'lifecycle_import.json'])
+        execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                 '--case', 'EXPORT_SHARE_MIGRATION', '--output', out / 'share_migration_export.json'])
+        for name in ('share-migration.taos', 'share-migration-ids.json'):
+            payload = execute(adb + ['exec-out', 'run-as', SOURCE, 'cat', 'files/' + name], capture_output=True).stdout
+            command = shlex.join(['run-as', TARGET, 'sh', '-c', 'cat > files/' + name])
+            execute(adb + ['shell', command], input=payload)
+        execute([sys.executable, 'agent_os/scripts/validate_actions_android.py', '--adb', args.adb, '--serial', args.serial,
+                 '--package', TARGET, '--case', 'IMPORT_SHARE_MIGRATION', '--case', 'VERIFY_SHARE_RESTART',
+                 '--output', out / 'share_migration_import.json'])
         if legacy_fixture:
             for name, payload in legacy_fixture.items():
                 command = shlex.join(['run-as', TARGET, 'sh', '-c', 'cat > files/' + name])
@@ -170,7 +179,8 @@ def main():
                           require_model_runtime=bool(args.model_runtime))
     result = {'candidate_sha256': verification['apk_sha256'], 'automated_device_cases': len(CASES),
               'cross_install_synthetic_archive_restore': True, 'distinct_validation_uids': True,
-              'lifecycle_archive_restore': True, 'legacy_archive_restore_run': legacy_fixture is not None,
+              'lifecycle_archive_restore': True, 'share_workflow_archive_restore': True,
+              'legacy_archive_restore_run': legacy_fixture is not None,
               'validation_packages_removed': True,
               'manual_system_picker_ui_not_run': True, 'physical_power_trial_not_run': True,
               'model_runtime_included': verification['model_runtime_included'],

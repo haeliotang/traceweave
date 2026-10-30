@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated synthetic end-to-end share workflow",
+  "template_created_in_ui": true,
+  "run_started_in_ui": true,
+  "memory_selection_empty": true,
+  "local_planning": true,
+  "system_document_picker_used": true,
+  "file_readback_verified": true,
+  "independent_synthetic_file_sha256": "4fe48bf6ec5fb1c830cd73c0b4cdfa2a0fbcc377a7fcbeb9f0fe88102fb67b77",
+  "share_preview_and_system_chooser_shown": true,
+  "recipient_selected_or_content_sent": false,
+  "synthetic_file_and_isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/DocumentTaskActivity.java": "416d9d64964fa043fd13a273d584906138b9c709b7cea9409db30628b3423450",
+    "agent_os/android/src/org/traceform/agentos/DocumentAction.java": "58af3570d1ca21f047c67d5e8a6dcd85e7e356d1a0e6c152c7571cd34f63a5be",
+    "agent_os/android/src/org/traceform/agentos/WorkflowActivity.java": "feb9a59925a8c823c4a461971144c7aa46465a07abb48e93e467061dc0c9f2f3",
+    "agent_os/android/src/org/traceform/agentos/WorkflowTemplate.java": "47c3c2eb2a493153572bf3a9a30264c7b1f5b45fb11acd02bcd21a8f9e6a5735"
+  },
+  "limitations": [
+    "No actual recipient selected or external delivery verified",
+    "No real user data, device reboot, or production package used"
+  ]
+}
