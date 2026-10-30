@@ -29,6 +29,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("IMPORT_MIGRATION".equals(getIntent().getAction()) || "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction())) importMigration(store);
                 else if ("REVIEW_ARCHIVE_CONFLICTS".equals(getIntent().getAction())) reviewArchiveConflicts(store);
                 else if ("ARCHIVE_DELETE_STALE".equals(getIntent().getAction())) archiveDeleteStale(store);
+                else if ("SEED_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) seedArchiveDeleteUi(store);
+                else if ("VERIFY_ARCHIVE_DELETE_UI".equals(getIntent().getAction())) verifyArchiveDeleteUi(store);
                 else if ("SEED_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) seedArchiveReviewUi(store);
                 else if ("VERIFY_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) verifyArchiveReviewUi(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
@@ -537,6 +539,26 @@ public final class DocumentFlowValidationActivity extends Activity {
         for (AgentStore.Memory memory : store.listMemories()) values.put(memory.id, memory.content);
         check("SYNTHETIC UI archive first".equals(values.get(first)) && "SYNTHETIC UI local second".equals(values.get(second)),
             "UI imported the separately selected versions");
+    }
+
+    private void seedArchiveDeleteUi(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC deletion UI memory");
+        AgentStore.Task task = store.createTask("SYNTHETIC deletion UI task");
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.tombstones.add(new AgentStore.Tombstone("memory", memory.id, System.currentTimeMillis()));
+        data.tombstones.add(new AgentStore.Tombstone("task", task.id, System.currentTimeMillis()));
+        try (java.io.OutputStream output = openFileOutput("synthetic-delete-ui.taos", 0)) {
+            output.write(MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray()));
+        }
+        getSharedPreferences("document_validation", 0).edit().putString("delete_ui_task", task.id).commit();
+        check(true, "synthetic deletion review archive prepared");
+    }
+
+    private void verifyArchiveDeleteUi(AgentStore store) throws Exception {
+        String task = getSharedPreferences("document_validation", 0).getString("delete_ui_task", "");
+        check(store.getTask(task) == null && store.listMemories().isEmpty(), "reviewed deletion removed only synthetic targets");
     }
 
     private void archiveDeleteStale(AgentStore store) throws Exception {

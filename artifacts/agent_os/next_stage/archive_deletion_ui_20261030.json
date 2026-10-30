@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "English interface in isolated app with synthetic encrypted archive carrying one memory and one task deletion marker",
+  "system_picker_selected_fixture": true,
+  "confirmation_page_showed_deletion_counts": true,
+  "confirmation_counts": {
+    "local_memories": 1,
+    "local_tasks": 1
+  },
+  "confirmed_import_deleted_listed_targets": true,
+  "isolated_app_and_fixture_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af73c02813915b7850dd2b18c4def158731f76ed3b3c94eadc5cb24fb90b027b",
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "ff6f9410a5226bef5ab167d7ecdfb52b924e61e4f62a5a40e7f81191210b321a",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "da356600c20060fb6ff7ce6b69fd193da1f4caa67b58ea5374b0d503a8b4ccb9",
+    "agent_os/scripts/validate_actions_android.py": "cd6f5ba02372ee906023b31aaf3c0098dd2c55f8a7ef5d663e4260f5988ab90a"
+  },
+  "limitations": [
+    "Synthetic data only; no production archive or user memory accessed",
+    "The fixture holds one memory and one task, so counts greater than one are not exercised on screen",
+    "No automatic synchronization, second device or physical power trial"
+  ]
+}
