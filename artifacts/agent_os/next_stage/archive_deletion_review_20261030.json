@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app with synthetic encrypted archive",
+  "before_fix": "changed deletion target was deleted after stale review",
+  "after_fix_checks": 11,
+  "stale_memory_change_rejected": true,
+  "stale_task_audit_change_rejected": true,
+  "newly_appeared_deletion_target_rejected": true,
+  "fresh_review_allows_deletion": true,
+  "deletion_counts_checked": true,
+  "archive_conflict_and_share_regressions_passed": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/AgentStore.java": "ff6f9410a5226bef5ab167d7ecdfb52b924e61e4f62a5a40e7f81191210b321a",
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "af73c02813915b7850dd2b18c4def158731f76ed3b3c94eadc5cb24fb90b027b",
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "263b22580a62afb9db7590cfea0664d106ec4bd10725580933bfbb9fab92f0e5",
+    "agent_os/scripts/validate_actions_android.py": "6b5b2107126b05ff143c72ea15f2ed33652419b5225e9f2846195fda13afea8a",
+    "agent_os/scripts/acceptance_android.py": "8f2a80ae5bb579a7981f229564f7015f307b46cf1a80bedbdefccdcac9be5a2f"
+  },
+  "limitations": [
+    "Confirmation dialog count presentation not exercised through system picker in this test",
+    "No production installation, automatic sync, or real data used",
+    "Conflict and share regressions ran on the preceding test build before the added test-only case"
+  ]
+}

@@ -28,6 +28,7 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("EXPORT_MIGRATION".equals(getIntent().getAction())) exportMigration(store);
                 else if ("IMPORT_MIGRATION".equals(getIntent().getAction()) || "IMPORT_MIGRATION_WITH_CLOUD_FIXTURE".equals(getIntent().getAction())) importMigration(store);
                 else if ("REVIEW_ARCHIVE_CONFLICTS".equals(getIntent().getAction())) reviewArchiveConflicts(store);
+                else if ("ARCHIVE_DELETE_STALE".equals(getIntent().getAction())) archiveDeleteStale(store);
                 else if ("SEED_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) seedArchiveReviewUi(store);
                 else if ("VERIFY_ARCHIVE_REVIEW_UI".equals(getIntent().getAction())) verifyArchiveReviewUi(store);
                 else if ("VERIFY_DOCUMENT_UI".equals(getIntent().getAction())) verifyDocumentUi(store);
@@ -536,6 +537,41 @@ public final class DocumentFlowValidationActivity extends Activity {
         for (AgentStore.Memory memory : store.listMemories()) values.put(memory.id, memory.content);
         check("SYNTHETIC UI archive first".equals(values.get(first)) && "SYNTHETIC UI local second".equals(values.get(second)),
             "UI imported the separately selected versions");
+    }
+
+    private void archiveDeleteStale(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Memory memory = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC original");
+        AgentStore.Task task = store.createTask("SYNTHETIC deletion target");
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.tombstones.add(new AgentStore.Tombstone("memory", memory.id, System.currentTimeMillis()));
+        data.tombstones.add(new AgentStore.Tombstone("task", task.id, System.currentTimeMillis()));
+        byte[] archive = MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray());
+        AgentStore.ArchiveReview review = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        check(review.localMemoryDeletions == 1 && review.localTaskDeletions == 1, "preview counts local deletion targets");
+        store.reviseMemory(memory, "SYNTHETIC edited after preview", 0);
+        rejects(() -> store.importReviewedArchive(review, java.util.Collections.emptyMap()), "changed deletion target must invalidate archive review");
+        check(store.listMemories().size() == 1 && "SYNTHETIC edited after preview".equals(store.listMemories().get(0).content),
+            "stale deletion leaves the edited memory intact");
+        AgentStore.ArchiveReview taskReview = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        store.appendTaskEvent(task.id, "SYNTHETIC audit after preview");
+        rejects(() -> store.importReviewedArchive(taskReview, java.util.Collections.emptyMap()), "changed task audit invalidates deletion review");
+        check(store.getTask(task.id) != null && store.listMemories().size() == 1, "stale task review rolls back all deletions");
+        AgentStore.ArchiveReview fresh = store.reviewArchive(new java.io.ByteArrayInputStream(archive), ARCHIVE_PASSWORD.toCharArray());
+        store.importReviewedArchive(fresh, java.util.Collections.emptyMap());
+        check(store.getTask(task.id) == null && store.listMemories().isEmpty(), "freshly reviewed deletion is applied");
+        clearFixture(store);
+        AgentStore.Memory future = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC concurrently imported");
+        byte[] oldData = store.exportArchive(ARCHIVE_PASSWORD.toCharArray());
+        MemoryArchive.Data deletion = new MemoryArchive.Data();
+        deletion.tombstones.add(new AgentStore.Tombstone("memory", future.id, System.currentTimeMillis()));
+        byte[] deletionArchive = MemoryArchive.encrypt(deletion, ARCHIVE_PASSWORD.toCharArray());
+        clearFixture(store);
+        AgentStore.ArchiveReview absent = store.reviewArchive(new java.io.ByteArrayInputStream(deletionArchive), ARCHIVE_PASSWORD.toCharArray());
+        check(absent.localMemoryDeletions == 0, "preview excludes absent deletion target");
+        store.importArchive(new java.io.ByteArrayInputStream(oldData), ARCHIVE_PASSWORD.toCharArray());
+        rejects(() -> store.importReviewedArchive(absent, java.util.Collections.emptyMap()), "new deletion target invalidates preview");
+        check(store.listMemories().size() == 1, "concurrently imported target is retained on stale review");
     }
 
     private void reviewArchiveConflicts(AgentStore store) throws Exception {

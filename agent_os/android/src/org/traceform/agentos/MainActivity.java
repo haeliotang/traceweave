@@ -2182,8 +2182,10 @@ public final class MainActivity extends Activity {
         if (index == ids.size()) {
             new AlertDialog.Builder(this)
                 .setTitle(en ? "Confirm archive import" : "确认导入档案")
-                .setMessage(en ? "Import the archive with the reviewed choices? Deletions take priority."
-                    : "按已审核的选择导入档案？删除标记仍然优先。")
+                .setMessage(en ? "Import the archive with the reviewed choices? Deletion markers take priority and will remove "
+                    + review.localMemoryDeletions + " local memories and " + review.localTaskDeletions + " local tasks."
+                    : "按已审核的选择导入档案？删除标记优先，将删除本机 " + review.localMemoryDeletions
+                        + " 条记忆和 " + review.localTaskDeletions + " 个任务。")
                 .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
                 .setPositiveButton(en ? "Import" : "导入", (dialog, which) -> importReviewedArchive(review, choices))
                 .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))

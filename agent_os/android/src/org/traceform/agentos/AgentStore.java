@@ -1401,9 +1401,16 @@ final class AgentStore extends SQLiteOpenHelper {
     static final class ArchiveReview {
         private final MemoryArchive.Data data;
         final Map<String, ArchiveConflict> conflicts;
-        private ArchiveReview(MemoryArchive.Data data, Map<String, ArchiveConflict> conflicts) {
+        private final Map<String, String> deletionSnapshots;
+        final int localMemoryDeletions;
+        final int localTaskDeletions;
+        private ArchiveReview(MemoryArchive.Data data, Map<String, ArchiveConflict> conflicts,
+                              Map<String, String> deletionSnapshots, int localMemoryDeletions, int localTaskDeletions) {
             this.data = data;
             this.conflicts = java.util.Collections.unmodifiableMap(conflicts);
+            this.deletionSnapshots = java.util.Collections.unmodifiableMap(deletionSnapshots);
+            this.localMemoryDeletions = localMemoryDeletions;
+            this.localTaskDeletions = localTaskDeletions;
         }
     }
 
@@ -1413,8 +1420,14 @@ final class AgentStore extends SQLiteOpenHelper {
         database.beginTransactionNonExclusive();
         try {
             Map<String, ArchiveConflict> conflicts = archiveConflicts(database, data);
+            Map<String, String> deletions = deletionSnapshots(database, data);
+            int memories = 0, tasks = 0;
+            for (Tombstone item : data.tombstones) {
+                if ("memory".equals(item.entityType) && exists(database, "memories", item.entityId)) memories++;
+                if ("task".equals(item.entityType) && exists(database, "tasks", item.entityId)) tasks++;
+            }
             database.setTransactionSuccessful();
-            return new ArchiveReview(data, conflicts);
+            return new ArchiveReview(data, conflicts, deletions, memories, tasks);
         } finally { database.endTransaction(); }
     }
 
@@ -1438,6 +1451,38 @@ final class AgentStore extends SQLiteOpenHelper {
         return conflicts;
     }
 
+    private Map<String, String> deletionSnapshots(SQLiteDatabase database, MemoryArchive.Data data) throws Exception {
+        Map<String, String> snapshots = new LinkedHashMap<>();
+        for (Tombstone item : data.tombstones) {
+            String table = "memory".equals(item.entityType) ? "memories" : "tasks";
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            hashRows(digest, database, table, "id=?", item.entityId, null);
+            if ("task".equals(item.entityType)) hashRows(digest, database, "audit", "task_id=?", item.entityId, "id ASC");
+            StringBuilder result = new StringBuilder();
+            for (byte value : digest.digest()) result.append(String.format(java.util.Locale.ROOT, "%02x", value & 255));
+            snapshots.put(item.entityType + ":" + item.entityId, result.toString());
+        }
+        return snapshots;
+    }
+
+    private static void hashRows(java.security.MessageDigest digest, SQLiteDatabase database, String table,
+                                 String selection, String id, String order) {
+        try (Cursor cursor = database.query(table, null, selection, new String[]{id}, null, null, order)) {
+            while (cursor.moveToNext()) {
+                digest.update((byte) 1);
+                for (int i = 0; i < cursor.getColumnCount(); i++) {
+                    int type = cursor.getType(i);
+                    byte[] value = type == Cursor.FIELD_TYPE_NULL ? new byte[0] : type == Cursor.FIELD_TYPE_BLOB
+                        ? cursor.getBlob(i) : cursor.getString(i).getBytes(StandardCharsets.UTF_8);
+                    digest.update((byte) type);
+                    digest.update(ByteBuffer.allocate(4).putInt(value.length).array());
+                    digest.update(value);
+                }
+            }
+        }
+        digest.update((byte) 0);
+    }
+
     private static boolean sameMemory(Memory a, Memory b) {
         return a.id.equals(b.id) && a.kind.equals(b.kind) && a.content.equals(b.content)
             && a.source.equals(b.source) && a.sourceReference.equals(b.sourceReference)
@@ -1457,6 +1502,8 @@ final class AgentStore extends SQLiteOpenHelper {
         database.beginTransaction();
         try {
             if (review != null) {
+                if (!review.deletionSnapshots.equals(deletionSnapshots(database, data)))
+                    throw new IllegalStateException("Records affected by archive deletions changed; review again");
                 Map<String, ArchiveConflict> current = archiveConflicts(database, data);
                 if (!current.keySet().equals(review.conflicts.keySet())) throw new IllegalStateException("Memory conflicts changed since review");
                 for (String id : current.keySet()) {
