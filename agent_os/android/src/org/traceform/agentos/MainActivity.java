@@ -414,7 +414,7 @@ public final class MainActivity extends Activity {
         LinearLayout gridRow1 = createGridRow(page);
         LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, en ? "Hardware" : "硬件常驻", 0xFF1565C0);
         TextView hwInfo = new TextView(this);
-        hwInfo.setText(en ? "Tensor G1 · Pixel 6a\nPrototype compute scheduler\nSynthetic profile, not a benchmark" : "Tensor G1 · Pixel 6a\n原型计算调度器\n模拟数据，不代表实机性能");
+        hwInfo.setText(en ? "Tensor G1 · Pixel 6a\nSynthetic profile" : "Tensor G1 · Pixel 6a\n模拟数据");
         hwInfo.setTextSize(10);
         hwInfo.setLineSpacing(dp(1), 1.0f);
         hwInfo.setTextColor(0xFF475569);
@@ -455,7 +455,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
         TextView daemonInfo = new TextView(this);
-        daemonInfo.setText(en ? "Standalone daemon disabled\nCross-app path: Binder" : "独立守护进程已停用\n跨应用通道：Binder");
+        daemonInfo.setText(T.s("status.daemon_off", en));
         daemonInfo.setTextSize(10);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
         daemonInfo.setTextColor(0xFF475569);
@@ -465,7 +465,7 @@ public final class MainActivity extends Activity {
         LinearLayout gridRow2 = createGridRow(page);
         LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "Encrypted Archive" : "加密归档", 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
-        syncInfo.setText(en ? "AES-GCM encrypted archive\nExport/import on demand\nNo automatic sync" : "AES-GCM 加密归档\n按需导出与导入\n当前不支持自动同步");
+        syncInfo.setText(T.s("status.archive_local", en));
         syncInfo.setTextSize(10);
         syncInfo.setLineSpacing(dp(1), 1.0f);
         syncInfo.setTextColor(0xFF475569);
@@ -486,14 +486,20 @@ public final class MainActivity extends Activity {
 
         LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, en ? "Sensors" : "环境感知", 0xFF0277BD);
         sensInfo = new TextView(this);
-        sensInfo.setText(en ? "Sensor monitoring off\nTap Enable sensors to start" : "传感器采集已关闭\n点击“启用感知”后开始");
+        sensInfo.setText(T.s("status.sensors_off", en));
         sensInfo.setTextSize(10);
         sensInfo.setLineSpacing(dp(1), 1.0f);
         sensInfo.setTextColor(0xFF475569);
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
-        addPageButton(sensCard, en ? "Review context observation" : "审核感知观察", view -> reviewSensorObservation());
+        Button reviewBtn = createCompactActionButton(en ? "Review" : "审核", 0xFF1E293B, 0xFFFFFFFF,
+            view -> reviewSensorObservation());
+        reviewBtn.setTextSize(10);
+        LinearLayout.LayoutParams reviewLp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(24));
+        reviewLp.setMargins(0, dp(3), 0, 0);
+        sensCard.addView(reviewBtn, reviewLp);
 
         sensCard.setOnClickListener(v -> {
             try {
@@ -544,8 +550,8 @@ public final class MainActivity extends Activity {
 
         // 4. Agent Task Management Section
         TextView taskHeading = new TextView(this);
-        taskHeading.setText(en ? "Agent Task Management" : "智能体任务管理");
-        taskHeading.setTextSize(16);
+        taskHeading.setText(T.s("task.section", en));
+        taskHeading.setTextSize(14);
         taskHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         taskHeading.setTextColor(0xFF0F172A);
         taskHeading.setPadding(0, dp(10), 0, dp(4));
@@ -554,7 +560,7 @@ public final class MainActivity extends Activity {
         LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, en ? "New Agent Task" : "新建智能体任务", 0xFF0284C7);
 
         taskInput = new EditText(this);
-        taskInput.setHint(en ? "Enter task goal, e.g. schedule team meeting or check weather..." : "输入任务目标，如：安排团队待办日程，或整理工作笔记");
+        taskInput.setHint(T.s("task.hint", en));
         taskInput.setTextSize(12);
         taskInput.setMinLines(1);
         taskInput.setMaxLines(2);
@@ -566,20 +572,26 @@ public final class MainActivity extends Activity {
         taskInput.setPadding(dp(8), dp(6), dp(8), dp(6));
         taskInputCard.addView(taskInput);
 
-        Button submitTaskBtn = createCompactActionButton(en ? "Submit & Plan Task" : "提交并规划任务", 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
+        Button submitTaskBtn = createCompactActionButton(T.s("task.submit", en), 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
         submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(submitTaskBtn);
         LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
         subLp.setMargins(0, dp(4), 0, 0);
         taskInputCard.addView(submitTaskBtn, subLp);
-        addPageButton(taskInputCard, en ? "New calendar task" : "新建日程任务",
+        int actionBg = 0xFF1E293B;
+        Button calendarBtn = createCompactActionButton(T.s("task.calendar", en), actionBg, 0xFFFFFFFF,
             view -> startActivity(new Intent(this, ExternalActionActivity.class)));
-        addPageButton(taskInputCard, en ? "New verified file task" : "新建可验证文件任务",
+        Button fileBtn = createCompactActionButton(T.s("task.file", en), actionBg, 0xFFFFFFFF,
             view -> startActivity(new Intent(this, DocumentTaskActivity.class)));
-        addPageButton(taskInputCard, en ? "Reusable workflows" : "可复用工作流",
+        Button workflowBtn = createCompactActionButton(T.s("task.workflow", en), actionBg, 0xFFFFFFFF,
             view -> startActivity(new Intent(this, WorkflowActivity.class)));
-        addPageButton(taskInputCard, en ? "Task center" : "任务中心",
+        Button centerBtn = createCompactActionButton(T.s("task.center", en), actionBg, 0xFFFFFFFF,
             view -> startActivity(new Intent(this, TaskCenterActivity.class)));
+        LinearLayout actionGrid = Ui.actionGrid(this, calendarBtn, fileBtn, workflowBtn, centerBtn);
+        LinearLayout.LayoutParams gridLp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        gridLp.setMargins(0, dp(2), 0, 0);
+        taskInputCard.addView(actionGrid, gridLp);
 
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
@@ -590,17 +602,17 @@ public final class MainActivity extends Activity {
         dockRow.setOrientation(LinearLayout.HORIZONTAL);
         dockRow.setPadding(0, dp(8), 0, 0);
 
-        Button btnMemDialog = createCompactActionButton(en ? "Memory Vault" : "加密记忆库", 0xFF7C3AED, 0xFFFFFFFF, v -> showMemoryDialog());
+        Button btnMemDialog = createCompactActionButton(T.s("nav.memory", en), 0xFF7C3AED, 0xFFFFFFFF, v -> showMemoryDialog());
         btnMemDialog.setTypeface(null, android.graphics.Typeface.BOLD);
         dockRow.addView(btnMemDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
 
-        Button btnSettingsDialog = createCompactActionButton(en ? "Settings" : "扩展与设置", 0xFF334155, 0xFFFFFFFF, v -> showSettingsDialog());
+        Button btnSettingsDialog = createCompactActionButton(T.s("nav.settings", en), 0xFF334155, 0xFFFFFFFF, v -> showSettingsDialog());
         btnSettingsDialog.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams setLp = new LinearLayout.LayoutParams(0, dp(36), 1.0f);
         setLp.setMargins(dp(6), 0, dp(6), 0);
         dockRow.addView(btnSettingsDialog, setLp);
 
-        Button btnConsoleDialog = createCompactActionButton(en ? "Console" : "控制台与工具", 0xFF00695C, 0xFFFFFFFF, v -> showConsoleDialog());
+        Button btnConsoleDialog = createCompactActionButton(T.s("nav.console", en), 0xFF00695C, 0xFFFFFFFF, v -> showConsoleDialog());
         btnConsoleDialog.setTypeface(null, android.graphics.Typeface.BOLD);
         dockRow.addView(btnConsoleDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
 
@@ -2771,7 +2783,7 @@ public final class MainActivity extends Activity {
         card.setBackground(bg);
         card.setPadding(dp(7), dp(8), dp(7), dp(8));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+                0, dp(96), 1.0f);
         lp.setMargins(dp(2), dp(2), dp(2), dp(2));
         card.setLayoutParams(lp);
 
