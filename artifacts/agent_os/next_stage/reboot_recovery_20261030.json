@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated app, synthetic document task and synthetic encrypted archive",
+  "reboot_method": "adb reboot, waited for sys.boot_completed=1, then wm dismiss-keyguard",
+  "pre_reboot_state": {
+    "task_status": "outcome_unknown",
+    "capability_grant_created": "demo.note.read",
+    "fixture_writes": 0,
+    "archive_written": "reboot-archive.taos"
+  },
+  "post_reboot_checks": {
+    "unknown_outcome_task_preserved": true,
+    "verification_still_unset": true,
+    "no_automatic_replay": true,
+    "archive_written_before_reboot_is_readable": true,
+    "capability_grant_not_inherited": true
+  },
+  "checks_passed": 7,
+  "source_sha256": {
+    "agent_os/tests/android/DocumentFlowValidationActivity.java": "66a8c830d3c6cf78f9830c287f3a4e96b19346656afc6aa3b29f98d28c464e98",
+    "agent_os/scripts/validate_actions_android.py": "855203d1af2cab956c429797a84e947fa950e087322db9eafd45f0141e3ed2ab"
+  },
+  "limitations": [
+    "Clean reboot only; power loss and filesystem corruption are not covered",
+    "Synthetic task and archive only; no production data was involved",
+    "The capability grant was in-memory, so not being inherited after reboot is expected by design rather than a new guarantee",
+    "A single device and single boot cycle were tested"
+  ]
+}

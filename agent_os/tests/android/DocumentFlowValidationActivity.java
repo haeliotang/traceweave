@@ -41,6 +41,8 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SEED_ARCHIVE_DELETE_UI_STALE".equals(getIntent().getAction())) seedArchiveDeleteUiStale(store);
                 else if ("VERIFY_ARCHIVE_DELETE_UI_STALE".equals(getIntent().getAction())) verifyArchiveDeleteUiStale(store);
                 else if ("VERIFY_ARCHIVE_DELETE_UI_RETRY".equals(getIntent().getAction())) verifyArchiveDeleteUiRetry(store);
+                else if ("SEED_REBOOT_STATE".equals(getIntent().getAction())) seedRebootState(store);
+                else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
                 else if ("VERIFY_EXPORT_UI".equals(getIntent().getAction())) verifyExportUi(store);
@@ -575,6 +577,55 @@ public final class DocumentFlowValidationActivity extends Activity {
     private void verifyArchiveDeleteUi(AgentStore store) throws Exception {
         String task = getSharedPreferences("document_validation", 0).getString("delete_ui_task", "");
         check(store.getTask(task) == null && store.listMemories().isEmpty(), "reviewed deletion removed only synthetic targets");
+    }
+
+    private void seedRebootState(AgentStore store) throws Exception {
+        clearFixture(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        AgentStore.Task task = draft(store);
+        String attempt = claim(store, task, target("reboot_unknown"));
+        store.documentOutcomeUnknown(task.id, attempt, attempt, "SYNTHETIC reboot fixture");
+        new CapabilityBroker(this, store).grant(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY,
+            CapabilityBroker.DEMO_NOTE_SCOPE);
+        MemoryArchive.Data data = new MemoryArchive.Data();
+        data.memories.add(new AgentStore.Memory(java.util.UUID.randomUUID().toString(), AgentStore.MEMORY_FACT,
+            "SYNTHETIC reboot archive", System.currentTimeMillis(), System.currentTimeMillis()));
+        try (java.io.OutputStream output = openFileOutput("reboot-archive.taos", 0)) {
+            output.write(MemoryArchive.encrypt(data, ARCHIVE_PASSWORD.toCharArray()));
+        }
+        getSharedPreferences("document_validation", 0).edit()
+            .putString("reboot_task", task.id)
+            .putInt("reboot_writes", getSharedPreferences("document_fixture", 0).getInt("writes", 0))
+            .commit();
+        check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(task.id).status),
+            "seeded document task is in unknown outcome");
+    }
+
+    private void verifyRebootState(AgentStore store) throws Exception {
+        String id = getSharedPreferences("document_validation", 0).getString("reboot_task", "");
+        AgentStore.Task task = store.getTask(id);
+        check(task != null && AgentStore.OUTCOME_UNKNOWN.equals(task.status),
+            "unknown-outcome task survived the reboot");
+        org.json.JSONObject value = new org.json.JSONObject(task.plan.steps.get(0).observation);
+        check("none".equals(value.optString("verification")), "unknown outcome keeps verification unset");
+        int writes = getSharedPreferences("document_fixture", 0).getInt("writes", 0);
+        check(writes == getSharedPreferences("document_validation", 0).getInt("reboot_writes", -1),
+            "no automatic replay after the reboot");
+        byte[] archive = read(new java.io.File(getFilesDir(), "reboot-archive.taos"));
+        MemoryArchive.Data data = MemoryArchive.decrypt(new java.io.ByteArrayInputStream(archive),
+            ARCHIVE_PASSWORD.toCharArray());
+        boolean found = false;
+        for (AgentStore.Memory memory : data.memories)
+            if ("SYNTHETIC reboot archive".equals(memory.content)) found = true;
+        check(found, "archive written before the reboot remains readable");
+        boolean denied = false;
+        try {
+            new CapabilityBroker(this, store).invoke(id, CapabilityBroker.DEMO_NOTE_CAPABILITY,
+                CapabilityBroker.DEMO_NOTE_SCOPE);
+        } catch (RuntimeException error) {
+            denied = true;
+        }
+        check(denied, "capability grant was not inherited after the reboot");
     }
 
     private void verifyArchiveDeleteUiRetry(AgentStore store) throws Exception {
