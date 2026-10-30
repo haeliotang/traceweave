@@ -19,8 +19,7 @@ async fn main() {
     if role == "server" {
         let identity = DeviceIdentity::from_seed(1);
         let expected = DeviceIdentity::from_seed(2).peer_id();
-        let public_key = DeviceIdentity::from_seed(2).public_key_bytes();
-        match serve(identity, expected, loopback(port), &Ed25519BindingVerifier, public_key, Duration::from_secs(20)).await {
+        match serve(identity, expected, loopback(port), &Ed25519BindingVerifier, Duration::from_secs(20)).await {
             Ok(summary) if summary.binding_verified && summary.frames >= 1 => {
                 println!("PASS server binding_verified=true frames={} bytes={}", summary.frames, summary.bytes);
             }

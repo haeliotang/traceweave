@@ -852,8 +852,7 @@ public final class DocumentFlowValidationActivity extends Activity {
     private void syncNodeServe(AgentStore store) throws Exception {
         seedSyncNode(store, SYNC_NODE_A_MEMORY, "node-a");
         String peerB = SyncProbe.nativePeerId(SYNC_SEED_B);
-        String publicB = SyncProbe.nativePublicKey(SYNC_SEED_B);
-        String result = SyncProbe.nativeServeOnce(SYNC_SEED_A, 47911, peerB, publicB, request -> {
+        String result = SyncProbe.nativeServeOnce(SYNC_SEED_A, 47911, peerB, request -> {
             boolean active;
             try {
                 active = SyncPairing.isActive(store, "node-b", shortHash("node-b-fingerprint"));
@@ -948,10 +947,9 @@ public final class DocumentFlowValidationActivity extends Activity {
         final String seedB = shortHash("sync-install-b");
         String peerA = SyncProbe.nativePeerId(seedA);
         String peerB = SyncProbe.nativePeerId(seedB);
-        String publicB = SyncProbe.nativePublicKey(seedB);
         check(peerA != null && peerB != null && !peerA.equals(peerB), "two distinct peers derived from seeds");
         final String[] serverResult = new String[1];
-        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47901, peerB, publicB,
+        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47901, peerB,
             request -> {
                 byte[] prefix = "ack:".getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 byte[] reply = new byte[prefix.length + request.length];
@@ -974,9 +972,8 @@ public final class DocumentFlowValidationActivity extends Activity {
         final String seedA = shortHash("sync-install-a");
         final String seedC = shortHash("sync-install-c");
         String peerC = SyncProbe.nativePeerId(seedC);
-        String publicC = SyncProbe.nativePublicKey(seedC);
         final String[] serverResult = new String[1];
-        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47902, peerC, publicC,
+        Thread server = new Thread(() -> serverResult[0] = SyncProbe.nativeServeOnce(seedA, 47902, peerC,
             request -> request), "sync-server-unpaired");
         server.start();
         Thread.sleep(900);

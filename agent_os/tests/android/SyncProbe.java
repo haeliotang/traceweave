@@ -22,8 +22,7 @@ final class SyncProbe {
 
     static native String nativePublicKey(String seedHex);
 
-    static native String nativeServeOnce(String seedHex, int port, String allowedCsv, String clientPublicKeyHex,
-                                         Handler handler);
+    static native String nativeServeOnce(String seedHex, int port, String allowedCsv, Handler handler);
 
     static native byte[] nativeDialOnce(String seedHex, int port, String expectedPeerHex, byte[] payload);
 }

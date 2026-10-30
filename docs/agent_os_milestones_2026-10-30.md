@@ -243,6 +243,8 @@
 
 **进展（2026-10-31，记录层）**：新增 `exportSyncRecords`/`mergeSyncRecords`：导出带版本的记忆与墓碑，合并时校验内容哈希、事务内应用较新内容、并发保留候选、墓碑删除并留标记。真机 4 项通过（较新记录应用、墓碑删除、并发不覆盖、导出→重建恢复），见 [sync_records_20261031](artifacts/agent_os/next_stage/sync_records_20261031.json)。未带版本的旧记忆在导出时跳过，直到分配时钟。
 
+**进展（2026-10-31，绑定密钥推导）**：绑定校验不再需要调用方传入对端公钥，改为从 PeerId 的 identity multihash 推导（`peer_public_key`），因此配对记录只需保存 PeerId。10 项宿主单测、两进程回环探针、真机的 `SYNC_HANDLER_EXCHANGE` 与 `SYNC_UNPAIRED_REJECTED` 均通过，见 [sync_peer_key_derivation_20261031](artifacts/agent_os/next_stage/sync_peer_key_derivation_20261031.json)。
+
 **进展（2026-10-31，会话层）**：传输支持多 peer 允许列表；JNI 增加 seed→PeerId/公钥、单次服务端会话（带 Java 回调）与单次客户端请求。隔离真机验证：两个种子派生不同 PeerId，服务端只允许对端、回调返回 `ack:hello`、客户端收到响应、未配对 peer 无响应。见 [sync_session_handler_20261031](artifacts/agent_os/next_stage/sync_session_handler_20261031.json)。记录交换、manifest 差异、回执与两套安装的真实同步尚未实现。
 
 ### D1 受控热与续航测量
@@ -367,6 +369,7 @@
 
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
+- 2026-10-31：同步绑定改为从 PeerId 推导公钥；宿主 + 真机用例通过，简化后续配对记录。
 - 2026-10-31：B3 完成——工作流分享到测试接收器，内容 274 字节一致；结果未知与不重放已记录。
 - 2026-10-31：F4 前置设计完成——[sync_ui_design.md](sync_ui_design.md)（种子持久化、配对公钥列、同步入口、开关条件与两安装测试计划）。
 - 2026-10-31：A2、D1 完成——拔线点测：基线 240 mAh/h、模型负载 588 mAh/h，温度 +2.6 °C；单次、无控温。

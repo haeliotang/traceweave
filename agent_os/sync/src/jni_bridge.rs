@@ -24,9 +24,8 @@ fn loopback_summary(port: u16) -> Result<String, String> {
         let client_identity = DeviceIdentity::from_seed(2);
         let server_peer = server_identity.peer_id();
         let client_peer = client_identity.peer_id();
-        let client_public = client_identity.public_key_bytes();
         let server = tokio::spawn(async move {
-            serve(server_identity, client_peer, loopback(port), &VERIFIER, client_public, Duration::from_secs(20)).await
+            serve(server_identity, client_peer, loopback(port), &VERIFIER, Duration::from_secs(20)).await
         });
         tokio::time::sleep(Duration::from_millis(500)).await;
         let client = dial(client_identity, loopback(port), server_peer, Duration::from_secs(20)).await;
@@ -199,7 +198,6 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
     seed: JString,
     port: jint,
     allowed_csv: JString,
-    client_public_key: JString,
     handler: JObject,
 ) -> jstring {
     let seed: String = match env.get_string(&seed) {
@@ -209,13 +207,6 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
     let allowed_csv: String = match env.get_string(&allowed_csv) {
         Ok(value) => value.into(),
         Err(_) => return std::ptr::null_mut(),
-    };
-    let client_public_key: String = match env.get_string(&client_public_key) {
-        Ok(value) => value.into(),
-        Err(_) => return std::ptr::null_mut(),
-    };
-    let Some(public_key) = from_hex(&client_public_key) else {
-        return std::ptr::null_mut();
     };
     let Some(seed) = seed_from_hex(&seed) else {
         return std::ptr::null_mut();
@@ -248,7 +239,6 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
         allowed,
         loopback(port as u16),
         &VERIFIER,
-        public_key,
         Box::new(JniHandler { vm, object }),
         Duration::from_secs(30),
     ));

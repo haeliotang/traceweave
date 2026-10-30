@@ -1,0 +1,27 @@
+{
+  "package": "org.traceform.agentos.actionsvalidation",
+  "synthetic_only": true,
+  "recorded_at": "2026-10-30T21:57:16.585746+00:00",
+  "cases": [
+    {
+      "case": "SYNC_HANDLER_EXCHANGE",
+      "pid": 1991,
+      "passed": true,
+      "result": "10-31 03:41:43.603  1991  2021 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=SYNC_HANDLER_EXCHANGE"
+    },
+    {
+      "case": "SYNC_UNPAIRED_REJECTED",
+      "pid": 2065,
+      "passed": true,
+      "result": "10-31 03:42:16.014  2065  2094 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=SYNC_UNPAIRED_REJECTED"
+    }
+  ],
+  "scope": "isolated package; binding verification now derives the peer key from the PeerId instead of a passed-in public key",
+  "checks": {
+    "host_unit_tests": "10 passed",
+    "two_process_probe": "server PASS frames=2, client PASS frames=3",
+    "device_handler_exchange": true,
+    "device_unpaired_rejected": true
+  },
+  "note": "this removes the need to store a separate transport public key in pairing records; the PeerId carries it"
+}

@@ -94,6 +94,17 @@ fn new_swarm(
         .build())
 }
 
+/// Derive the transport public key from a PeerId (identity multihash only).
+fn peer_public_key(peer: &PeerId) -> Option<Vec<u8>> {
+    let multihash = peer.as_ref();
+    if multihash.code() != 0x00 {
+        return None;
+    }
+    libp2p::identity::PublicKey::try_decode_protobuf(multihash.digest())
+        .ok()
+        .map(|key| key.encode_protobuf())
+}
+
 /// Handles application requests after the binding is verified.
 pub trait SessionHandler {
     fn handle(&mut self, request: Vec<u8>) -> Result<Vec<u8>, TransportError>;
@@ -113,11 +124,12 @@ pub async fn serve_with(
     allowed: Vec<PeerId>,
     listen: Multiaddr,
     verifier: &(dyn BindingVerifier + Send + Sync),
-    public_key: Vec<u8>,
     mut handler: Box<dyn SessionHandler + Send>,
     timeout: Duration,
 ) -> Result<SessionSummary, TransportError> {
     let expected_peer = *allowed.first().ok_or(TransportError::Protocol("empty peer allow-list"))?;
+    let public_key = peer_public_key(&expected_peer)
+        .ok_or(TransportError::Protocol("peer id does not carry an identity public key"))?;
     let mut swarm = new_swarm(&identity, &allowed)?;
     swarm.listen_on(listen).map_err(|error| TransportError::Connect(error.to_string()))?;
     let mut budget = SessionBudget::new();
@@ -164,10 +176,9 @@ pub async fn serve(
     expected_peer: PeerId,
     listen: Multiaddr,
     verifier: &(dyn BindingVerifier + Send + Sync),
-    public_key: Vec<u8>,
     timeout: Duration,
 ) -> Result<SessionSummary, TransportError> {
-    serve_with(identity, vec![expected_peer], listen, verifier, public_key,
+    serve_with(identity, vec![expected_peer], listen, verifier,
         Box::new(EchoHandler), timeout).await
 }
 
