@@ -30,27 +30,51 @@ public final class LocalModelActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         en = "en".equals(getSharedPreferences("agent_os_prefs", 0).getString("app_lang", "zh"));
-        LinearLayout root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(32, 48, 32, 32);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 40), Ui.dp(this, 12), Ui.dp(this, 12));
+        root.setBackgroundColor(0xFFFFFFFF);
         setContentView(root);
-        TextView title = new TextView(this); title.setText(en ? "On-device draft model" : "端侧文稿模型"); root.addView(title);
-        TextView explanation = new TextView(this);
-        explanation.setText(en ? "Choose Qwen2.5-1.5B-Instruct Q4_0 GGUF (about 1 GB). It remains on this device. Drafts require your review and separate file confirmation."
-            : "选择 Qwen2.5-1.5B-Instruct Q4_0 GGUF 模型文件（约 1 GB），文件保存在本机。生成的文稿需要你审核，并单独确认保存。");
+
+        TextView title = Ui.title(this, en ? "On-device draft model" : "端侧文稿模型");
+        title.setTextSize(15);
+        root.addView(title);
+        TextView explanation = Ui.meta(this, en
+            ? "Choose Qwen2.5-1.5B-Instruct Q4_0 GGUF (about 1 GB). It stays on this device; drafts still need review and a separate save confirmation."
+            : "选择 Qwen2.5-1.5B-Instruct Q4_0 GGUF（约 1 GB），文件保存在本机。草稿仍需你审核，并单独确认保存。");
+        explanation.setPadding(0, Ui.dp(this, 2), 0, 0);
         root.addView(explanation);
-        status = new TextView(this); root.addView(status);
+
+        root.addView(Ui.section(this, en ? "Status" : "状态"));
+        status = new TextView(this);
+        status.setTextSize(12);
+        status.setTextColor(Ui.COLOR_TEXT);
+        root.addView(status);
+
+        root.addView(Ui.section(this, en ? "Import" : "导入"));
         select = button(root, en ? "Choose model file" : "选择模型文件", () -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
             try { startActivityForResult(intent, SELECT_MODEL); }
             catch (Exception error) { status.setText(en ? "No file picker available" : "无法打开文件选择器"); }
         });
-        delete = button(root, en ? "Delete local model" : "删除本地模型", () -> new android.app.AlertDialog.Builder(this)
-            .setMessage(en ? "Delete the local model file?" : "删除本机模型文件？")
-            .setNegativeButton(en ? "Cancel" : "取消", null).setPositiveButton(en ? "Delete" : "删除", (dialog, which) -> remove()).show());
+        select.setAllCaps(false);
+        select.setTextSize(12);
         cancel = button(root, en ? "Cancel import" : "取消导入", () -> {
             if (cancelled != null) LocalModelFiles.cancelImport(cancelled);
             status.setText(en ? "Cancelling import…" : "正在取消导入…");
         });
-        button(root, en ? "Back" : "返回", this::finish);
+        cancel.setAllCaps(false);
+        cancel.setTextSize(12);
+
+        root.addView(Ui.section(this, en ? "Actions" : "操作"));
+        delete = button(root, en ? "Delete local model" : "删除本地模型", () -> new android.app.AlertDialog.Builder(this)
+            .setMessage(en ? "Delete the local model file?" : "删除本机模型文件？")
+            .setNegativeButton(en ? "Cancel" : "取消", null).setPositiveButton(en ? "Delete" : "删除", (dialog, which) -> remove()).show());
+        delete.setAllCaps(false);
+        delete.setTextSize(12);
+        Button back = button(root, en ? "Back" : "返回", this::finish);
+        back.setAllCaps(false);
+        back.setTextSize(12);
         refresh();
     }
 
@@ -109,7 +133,14 @@ public final class LocalModelActivity extends Activity {
     }
 
     private Button button(LinearLayout root, String label, Runnable action) {
-        Button button = new Button(this); button.setText(label); button.setAllCaps(false);
-        button.setOnClickListener(view -> action.run()); root.addView(button); return button;
+        Button button = new Button(this);
+        button.setText(label);
+        button.setAllCaps(false);
+        button.setOnClickListener(view -> action.run());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
+        params.setMargins(0, Ui.dp(this, 4), 0, 0);
+        root.addView(button, params);
+        return button;
     }
 }
