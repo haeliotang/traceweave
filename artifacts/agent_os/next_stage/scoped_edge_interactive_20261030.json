@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "two isolated debug apps and six synthetic trajectory rows",
+  "pregrant_denied": true,
+  "task_approval_dialog_allowed_via_ui": true,
+  "authorized_summary_history_records": 6,
+  "authorized_summary_eligible_pairs": 5,
+  "grant_revoked_by_test_code": true,
+  "post_revoke_denied": true,
+  "reproducible_script_rerun": true,
+  "isolated_apps_removed": true,
+  "source_sha256": {
+    "agent_os/tests/android/ScopedInteractiveProbe.java": "9e70b5ac63697b815188e0b677c847acb99836ddde76ce562466694761c717ac",
+    "agent_os/scripts/validate_scoped_interactive_android.py": "45d0774e2531b9da5066c9e830b49460c44e0f35bb8681687e07590a33cbdca0",
+    "agent_os/tests/android/scoped_provider_test_identity.patch": "7706328e3e60fb836fb0cd100eb1ee75dc11894ab3113715798f02508ce39c18",
+    "agent_os/android/src/org/traceform/agentos/TraceformProvider.java": "44f10f7d2587f2327285b1beb1afe793913792b903273b1cce59669f5f3b07e7",
+    "agent_os/android/src/org/traceform/agentos/CapabilityBroker.java": "e12eb3c0b939538e061c53a9714b4f52ddbc9aaec4db078833e7c24487933cbb",
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "173a0f66ea78d568db3de5865fa1b760ee6a05e1b596ba5942de4fea289fd20d",
+    "agent_os/tests/android/manifest-scoped-interactive.xml": "7123e1cd3bc73206fbb847cc480563818d4e56fe42d4b09e0f8e6fd01462b29b"
+  },
+  "edge_validation_apk_sha256": "0497f7887f2ec0bcb23629238086ef08ce6886c8aa0d40c1285ceb46d538096c",
+  "agent_validation_apk_sha256": "977b4b9888f1ad57b3a7f5f42f8c96a2c91c17f8c08d01b39c1b55214e581e2a",
+  "limitations": [
+    "Test-only provider source changes the target package and permission to the isolated Edge service",
+    "Test code opens the actual approval dialog directly; navigation and provider toggle were not tested",
+    "Summary invocation and revocation were performed by test code, not task UI controls",
+    "No real Edge history, production app read, automatic memory save, external network or independent security audit"
+  ]
+}
