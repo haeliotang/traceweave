@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated package only; production untouched",
+  "verifier_guard": {
+    "checked": true,
+    "previous_apk": "0.6.14 candidate (same version as candidate)",
+    "rejected": true,
+    "message": "Previous APK must be the same signer/package and a lower version"
+  },
+  "device_drill": {
+    "installed_version_code": 3,
+    "downgrade_to_version_code_2_rejected": true,
+    "downgrade_error": "INSTALL_FAILED_VERSION_DOWNGRADE: Downgrade detected: Update version code 2 is older than current 3",
+    "version_unchanged_after_rejection": 3,
+    "higher_version_code_4_install_succeeded": true,
+    "installed_version_after_upgrade": 4
+  },
+  "isolated_package_removed": true,
+  "limitations": [
+    "The older and newer drill builds use the same source; only the versionCode differs",
+    "No data-migration or downgrade-with-data path exists on Android, so the drill covers the rejection only",
+    "Production signing material was used locally but the production package was never installed or modified in this drill"
+  ]
+}
