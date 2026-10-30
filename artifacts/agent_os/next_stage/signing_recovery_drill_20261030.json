@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-30",
+  "scope": "local signing material recovered from the encrypted backup; test APKs signed but never installed",
+  "backup_archive": "local_device_archives/signing-backup-3ab8918d80e6401f8c35d5ebdcc95f92.edgea",
+  "archive_authenticated": true,
+  "keys_recovered": [
+    {
+      "name": "edge",
+      "alias": "traceform",
+      "certificate_sha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+      "signed_test_apk_verified": true,
+      "matches_backup_record": true,
+      "matches_installed_edge": true
+    },
+    {
+      "name": "agent_os",
+      "alias": "agent-os-rotation-20261025",
+      "certificate_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+      "signed_test_apk_verified": true,
+      "matches_backup_record": true,
+      "matches_installed_agent_os": true
+    }
+  ],
+  "signed_apk_bytes": 2155479,
+  "temporary_key_material_removed": true,
+  "restored_apk_installed": false,
+  "limitations": [
+    "The recovered keys signed an unsigned copy of the 0.6.14 candidate; that copy was verified and then deleted, never installed",
+    "Key rotation, revocation and offline restore on a second device were not exercised",
+    "The drill depends on the macOS keychain entry being unlocked by the operator"
+  ]
+}
