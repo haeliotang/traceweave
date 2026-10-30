@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated package; rule planner only; synthetic goals",
+  "case_count": 11,
+  "matched": 11,
+  "cases": [
+    {
+      "case": "PLANNER_EVAL",
+      "pid": 21732,
+      "passed": true,
+      "result": "10-31 01:57:19.628 21732 21780 I AgentOsDocumentsValidation: PASS document_flow checks=3 mode=PLANNER_EVAL"
+    }
+  ],
+  "method": "fixed goal set with expected capability chains, compared step by step including the final builtin.synthesis step",
+  "limitations": [
+    "Goals are hand-written; real user phrasing and ambiguity are not sampled",
+    "Only capability selection and order are scored, not synthesis quality or execution",
+    "The model planner is not compared in this run; D2 quality data is still missing",
+    "Availability filtering and memory context are not exercised"
+  ]
+}

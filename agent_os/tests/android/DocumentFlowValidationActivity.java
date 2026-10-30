@@ -76,6 +76,7 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_DIAL_UNREACHABLE".equals(getIntent().getAction())) syncDialUnreachable(store);
                 else if ("SYNC_REVOKE_NODE_B".equals(getIntent().getAction())) syncRevokeNodeB(store);
                 else if ("SYNC_EXPECT_REVOKED".equals(getIntent().getAction())) syncExpectRevoked(store);
+                else if ("PLANNER_EVAL".equals(getIntent().getAction())) plannerEval(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -655,6 +656,43 @@ public final class DocumentFlowValidationActivity extends Activity {
                     || "SYNTHETIC sync B edit".equals(content)) return memory;
         }
         return null;
+    }
+
+    private void plannerEval(AgentStore store) throws Exception {
+        SemanticRulePlanner planner = new SemanticRulePlanner();
+        String[][] cases = {
+            {"读一下便笺", CapabilityBroker.DEMO_NOTE_CAPABILITY},
+            {"查看设备状态", CapabilityBroker.DEMO_STATUS_CAPABILITY},
+            {"通知我", CapabilityBroker.NOTIFICATION_CAPABILITY},
+            {"安排一个日程", CapabilityBroker.CALENDAR_CAPABILITY},
+            {"分享这份内容", CapabilityBroker.SHARE_CAPABILITY},
+            {"Traceform 历史预测", CapabilityBroker.TRACEFORM_CAPABILITY},
+            {"跨应用读取外部状态", CapabilityBroker.DEMO_STATUS_CAPABILITY, AndroidRemoteStatusProvider.CAPABILITY},
+            {"读便笺并通知我", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.NOTIFICATION_CAPABILITY},
+            {"查看状态并分享", CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.SHARE_CAPABILITY},
+            {"没有关键词的目标", CapabilityBroker.DEMO_NOTE_CAPABILITY},
+            {"NOTE and STATUS", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_STATUS_CAPABILITY}
+        };
+        StringBuilder failures = new StringBuilder();
+        int matched = 0;
+        for (String[] item : cases) {
+            ExecutionPlan plan = planner.plan("planner-eval", item[0],
+                java.util.Collections.emptyList(), java.util.Collections.emptyList());
+            int expectedSteps = item.length - 1;
+            boolean ok = plan.steps.size() == expectedSteps + 1;
+            StringBuilder actual = new StringBuilder();
+            for (ExecutionPlan.Step step : plan.steps) actual.append(step.capability).append(',');
+            if (ok) {
+                for (int index = 0; index < expectedSteps; index++) {
+                    if (!item[index + 1].equals(plan.steps.get(index).capability)) ok = false;
+                }
+                if (ok && !"builtin.synthesis".equals(plan.steps.get(expectedSteps).capability)) ok = false;
+            }
+            if (ok) matched++;
+            else failures.append(item[0]).append("=>").append(actual).append("; ");
+        }
+        check(matched == cases.length,
+            "planner baseline matched " + matched + "/" + cases.length + " cases " + failures);
     }
 
     private void syncRevokeNodeB(AgentStore store) throws Exception {
