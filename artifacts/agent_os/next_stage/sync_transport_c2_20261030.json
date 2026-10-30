@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-30",
+  "scope": "host-only sync transport crate; not linked into the Android app, no UI entry",
+  "crate": "agent_os/sync (traceform-sync)",
+  "host_unit_tests": {
+    "count": 10,
+    "covers": [
+      "frame encode/decode round trip",
+      "oversized frame rejected at encode and decode",
+      "truncated header rejected",
+      "session byte budget",
+      "session frame budget",
+      "binding transcript domain separation and length prefixes",
+      "binding tamper and wrong-peer rejection",
+      "malformed binding rejected",
+      "deterministic device identity",
+      "signature verification and tamper rejection"
+    ]
+  },
+  "two_process_loopback": {
+    "server": "PASS binding_verified=true frames=1 bytes=4",
+    "client": "PASS binding_verified=true frames=3 bytes=126",
+    "unpaired_peer": "PASS client-unpaired connection refused",
+    "identity": "synthetic Ed25519 seeds 1/2/3"
+  },
+  "default_off": {
+    "android_app_references_sync_crate": false,
+    "ui_entry_present": false
+  },
+  "limitations": [
+    "Host tests use an Ed25519 verifier; Android Keystore P-256 verification is not wired yet",
+    "Only loopback was tested; no wireless, NAT or relay path",
+    "No pairing UI, persistence, manifest exchange or record sync yet",
+    "The libp2p dependency tree is pinned by Cargo.lock but has not been independently audited"
+  ]
+}

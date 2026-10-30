@@ -1,0 +1,19 @@
+[package]
+name = "traceform-sync"
+version = "0.1.0"
+edition = "2021"
+description = "Traceform cross-device sync transport (default off, synthetic tests only)"
+
+[lib]
+name = "traceform_sync"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sync-probe"
+path = "src/bin/sync_probe.rs"
+
+[dependencies]
+futures = "0.3"
+libp2p = { version = "=0.57.1", default-features = false, features = ["tokio", "tcp", "noise", "yamux", "ed25519", "request-response", "cbor"] }
+sha2 = "0.10"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync", "io-std"] }

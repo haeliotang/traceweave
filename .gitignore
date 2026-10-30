@@ -112,3 +112,4 @@ local_private_metadata/
 *.keystore
 *.p12
 *.taos
+.cargo-home/
