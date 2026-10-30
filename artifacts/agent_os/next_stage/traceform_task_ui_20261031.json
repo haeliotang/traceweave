@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "app": "org.traceform.agentos 0.6.14 (production)",
+  "flow": [
+    "enable_provider",
+    "grant_task_capability",
+    "read_summary",
+    "revoke_grant",
+    "read_after_revoke"
+  ],
+  "checks": {
+    "provider_enabled": "Enabled; each read requires per-task auth, zero passive sensor capture.",
+    "grant_created": "Traceform Local History Summary grant remaining ~5 min",
+    "read_succeeded": true,
+    "grant_revoked": true,
+    "read_after_revoke_refused": true
+  },
+  "denial_message": "该任务没有针对此 Agent 的有效能力授权",
+  "final_state": "provider disabled again; grant revoked",
+  "limitations": [
+    "Grant was issued through the task card pre-grant button, not the step-start prompt",
+    "The denial was captured as an on-screen toast; no server-side log entry was kept",
+    "Real Edge history was queried, but only the structural summary was recorded"
+  ]
+}

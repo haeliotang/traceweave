@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "app": "org.traceform.agentos 0.6.14 (production)",
+  "scope": "real production read through the scoped Traceform Binder service; no personal content saved",
+  "authorization": "user granted ALLOW FOR 5 MINUTES in the confirmation dialog",
+  "summary_fields": {
+    "provider": "traceform",
+    "available": false,
+    "reason": "stale_initial_state",
+    "history_records": 3461,
+    "eligible_pairs": 2388,
+    "horizon_steps": 0,
+    "rollouts": 0,
+    "eligible_for_intervention": false,
+    "evidence_scope": "local_retained_history_simulation_not_validated_prediction_or_causal_effect"
+  },
+  "quality_conclusion": "The read path works and returns coherent counts, but Edge reports a stale initial state, so no prediction exists to evaluate. Prediction quality remains unverified.",
+  "limitations": [
+    "Edge was not producing fresh sensor state during the read",
+    "Only structural fields were recorded; no personal content or history rows were captured",
+    "Single read; no repeated sampling or comparison across states"
+  ]
+}

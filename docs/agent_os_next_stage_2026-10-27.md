@@ -157,6 +157,8 @@ Edge 此前已同签名原位更新：原 APK 的代码、资源和原生库逐�
 
 2026-10-29 对正式 Edge 做了不读取历史的拒绝路径验证：独立测试包使用 Agent OS 的签名，Android 授予摘要权限且能连接预期服务，但包名不匹配时调用被拒绝；源码中的身份检查位于历史读取之前。验证后卸载测试包并恢复 Edge 原先的停止状态，见[真机记录](../artifacts/agent_os/next_stage/edge_production_trust_20261029.json)。该测试没有请求传感器采集，不证明正式 Agent OS 读取真实摘要的质量或功能。
 
+2026-10-31 在正式应用完成一次真实读取：用户在授权弹窗选择 5 分钟授权后，读到结构化摘要（历史记录 3461、可用对 2388），但 Edge 报告 `stale_initial_state`，预测字段为空，因此预测质量仍无法评估；随后撤销授权，再次读取被拒（“该任务没有针对此 Agent 的有效能力授权”），并把 Provider 恢复为禁用。见[真实读取记录](../artifacts/agent_os/next_stage/scoped_edge_production_read_20261031.json)与[任务界面记录](../artifacts/agent_os/next_stage/traceform_task_ui_20261031.json)。只记录结构化字段，未保存个人内容。
+
 2026-10-30 在两个隔离调试应用中写入六条与测试模型绑定的合成轨迹；授权调用经受限 Binder 接口返回可用摘要，包含五个连续转移对、四个采样步，且没有返回完整状态数组、完整概率矩阵或来源摘要。Agent OS 的摘要结构校验通过；可复现脚本重新运行也通过，见[非空合成历史记录](../artifacts/agent_os/next_stage/scoped_edge_synthetic_history_20261030.json)。两个隔离包和合成历史均已删除。此测试直接调用了 Agent OS 摘要校验器，没有运行正式 Provider 的读取或用户界面；六条合成轨迹也不能证明真实历史的摘要质量。
 
 随后以仅修改测试目标包名与权限名的 Provider 源码副本连接隔离 Edge，走通 Broker → Provider → Binder → 摘要校验：未授权读取被拒、另一 Agent 不能继承授权、授权后读到合成摘要、撤销后再次拒绝，见[授权链记录](../artifacts/agent_os/next_stage/scoped_edge_broker_synthetic_20261030.json)。授权由测试代码发放，不是用户交互审批；此结果也不能证明正式包对真实数据的读取、摘要质量或界面体验。测试包和合成数据已清理。
