@@ -77,6 +77,9 @@ public final class DocumentFlowValidationActivity extends Activity {
                 else if ("SYNC_REVOKE_NODE_B".equals(getIntent().getAction())) syncRevokeNodeB(store);
                 else if ("SYNC_EXPECT_REVOKED".equals(getIntent().getAction())) syncExpectRevoked(store);
                 else if ("PLANNER_EVAL".equals(getIntent().getAction())) plannerEval(store);
+                else if ("WORKFLOW_GUARD_V4".equals(getIntent().getAction())) workflowGuardV4(store);
+                else if ("WORKFLOW_GUARD_EVAL".equals(getIntent().getAction())) workflowGuardEval(store);
+                else if ("WORKFLOW_GUARD_BLOCKS".equals(getIntent().getAction())) workflowGuardBlocks(store);
                 else if ("VERIFY_REBOOT_STATE".equals(getIntent().getAction())) verifyRebootState(store);
                 else if ("VERIFY_ARCHIVE_DELETE_MULTI_UI".equals(getIntent().getAction())) verifyArchiveDeleteMultiUi(store);
                 else if ("SEED_EXPORT_UI".equals(getIntent().getAction())) seedExportUi(store);
@@ -656,6 +659,70 @@ public final class DocumentFlowValidationActivity extends Activity {
                     || "SYNTHETIC sync B edit".equals(content)) return memory;
         }
         return null;
+    }
+
+    private AgentStore.Memory workflowMemory(AgentStore store, String content) {
+        long now = System.currentTimeMillis();
+        return new AgentStore.Memory("workflow-eval", AgentStore.MEMORY_WORKFLOW, content,
+            AgentStore.MEMORY_SOURCE_USER, "", now, now);
+    }
+
+    private void workflowGuardBlocks(AgentStore store) throws Exception {
+        clearFixture(store);
+        AgentStore.Task task = draft(store);
+        Uri uri = target("guard_share");
+        claim(store, task, uri);
+        DocumentAction.writeOnce(getContentResolver(), store, task.id);
+        org.json.JSONObject receipt = new org.json.JSONObject(store.getTask(task.id).plan.steps.get(0).observation);
+        store.completeDocumentVerification(task.id, receipt.getString("attemptId"), receipt.getString("verificationId"),
+            uri.toString(), receipt.getString("sha256"), receipt.getInt("byteCount"));
+        String content = "# SYNTHETIC approved Markdown\n\nOnly selected content.\n";
+        int bytes = content.getBytes("UTF-8").length;
+        org.json.JSONArray steps = new org.json.JSONArray().put("verified_document").put("share_draft");
+        store.savePlan(task.id, store.getTask(task.id).plan.withContext(new org.json.JSONObject()
+            .put("workflow", new org.json.JSONObject().put("steps", steps)
+                .put("guard", new org.json.JSONObject().put("type", "max_bytes").put("value", bytes - 1))).toString()));
+        int before = store.listTasks().size();
+        rejects(() -> store.createShareFollowup(task.id, content, uri.toString()), "guard stops the share follow-up");
+        check(store.listTasks().size() == before, "blocked follow-up creates no child task");
+        store.savePlan(task.id, store.getTask(task.id).plan.withContext(new org.json.JSONObject()
+            .put("workflow", new org.json.JSONObject().put("steps", steps)
+                .put("guard", new org.json.JSONObject().put("type", "max_bytes").put("value", bytes))).toString()));
+        AgentStore.Task child = store.createShareFollowup(task.id, content, uri.toString());
+        check(child != null && store.listTasks().size() == before + 1, "content within the limit still creates the follow-up");
+    }
+
+    private void workflowGuardV4(AgentStore store) throws Exception {
+        WorkflowTemplate guarded = new WorkflowTemplate("合成条件模板", "整理 {{input}} 并分享", false, true, 120);
+        String encoded = guarded.encode();
+        check(new org.json.JSONObject(encoded).getInt("version") == 4, "guarded template encodes as version 4");
+        WorkflowTemplate decoded = WorkflowTemplate.decode(workflowMemory(store, encoded));
+        check(decoded.shareFollowup && decoded.guardMaxBytes == 120, "guarded template decodes with its limit");
+        WorkflowTemplate legacy = new WorkflowTemplate("旧分享模板", "整理 {{input}} 并分享", false, true);
+        WorkflowTemplate legacyDecoded = WorkflowTemplate.decode(workflowMemory(store, legacy.encode()));
+        check(legacyDecoded.shareFollowup && legacyDecoded.guardMaxBytes == 0, "version 3 template still decodes without a guard");
+        boolean rejected = false;
+        try {
+            WorkflowTemplate.decode(workflowMemory(store,
+                "{\"format\":\"org.traceform.agentos.workflow\",\"version\":4,\"type\":\"markdown_review_save_share_guarded\",\"name\":\"x\",\"goalTemplate\":\"{{input}}\",\"steps\":[\"verified_document\",\"share_draft\"],\"guard\":{\"type\":\"shell\",\"value\":1}}"));
+        } catch (IllegalArgumentException error) {
+            rejected = true;
+        }
+        check(rejected, "unknown guard types are rejected");
+    }
+
+    private void workflowGuardEval(AgentStore store) throws Exception {
+        check(WorkflowTemplate.guardAllows(null, 5000), "no guard always allows the run");
+        org.json.JSONObject limit = new org.json.JSONObject().put("type", "max_bytes").put("value", 100);
+        check(WorkflowTemplate.guardAllows(limit, 100), "content exactly at the limit passes");
+        check(!WorkflowTemplate.guardAllows(limit, 101), "content above the limit stops the run");
+        boolean rejected = false;
+        try {
+            WorkflowTemplate.guardAllows(new org.json.JSONObject().put("type", "loop").put("value", 1), 1);
+        } catch (IllegalArgumentException error) {
+            rejected = true;
+        }
+        check(rejected, "unknown guard condition is rejected");
     }
 
     private void plannerEval(AgentStore store) throws Exception {

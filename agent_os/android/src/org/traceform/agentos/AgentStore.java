@@ -748,6 +748,11 @@ final class AgentStore extends SQLiteOpenHelper {
             Task parent = requireDocument(parentId);
             if (!DocumentAction.locallyVerified(parent)) throw new IllegalStateException("Verify the document on this device first");
             JSONObject receipt = new JSONObject(parent.plan.steps.get(0).observation);
+            JSONObject parentContext = parent.plan.context.isEmpty() ? null : new JSONObject(parent.plan.context);
+            JSONObject workflow = parentContext == null ? null : parentContext.optJSONObject("workflow");
+            JSONObject guard = workflow == null ? null : workflow.optJSONObject("guard");
+            if (guard != null && !WorkflowTemplate.guardAllows(guard, content.getBytes(StandardCharsets.UTF_8).length))
+                throw new IllegalStateException("Workflow guard stopped the run: verified content exceeds the limit");
             String hash = DocumentAction.sha256(content.getBytes(StandardCharsets.UTF_8));
             if (!expectedUri.equals(receipt.optString("uri")) || !hash.equals(receipt.optString("sha256")))
                 throw new IllegalStateException("The document changed during review");

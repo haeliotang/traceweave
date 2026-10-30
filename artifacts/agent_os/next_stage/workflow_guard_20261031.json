@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "isolated package; synthetic workflow and document fixtures",
+  "checks": {
+    "v4_guarded_template_encodes_and_decodes": true,
+    "v3_template_still_compatible": true,
+    "unknown_guard_type_rejected": true,
+    "guard_boundary_exact_limit_passes": true,
+    "guard_boundary_over_limit_stops": true,
+    "over_limit_content_blocks_share_followup": true,
+    "at_limit_content_creates_followup": true
+  },
+  "cases": [
+    {
+      "case": "WORKFLOW_GUARD_V4",
+      "pid": 21914,
+      "passed": true,
+      "result": "10-31 01:58:50.726 21914 21943 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=WORKFLOW_GUARD_V4"
+    },
+    {
+      "case": "WORKFLOW_GUARD_EVAL",
+      "pid": 21963,
+      "passed": true,
+      "result": "10-31 01:58:52.118 21963 21993 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=WORKFLOW_GUARD_EVAL"
+    },
+    {
+      "case": "WORKFLOW_GUARD_BLOCKS",
+      "pid": 22025,
+      "passed": true,
+      "result": "10-31 01:59:20.545 22025 22078 I AgentOsDocumentsValidation: PASS document_flow checks=5 mode=WORKFLOW_GUARD_BLOCKS"
+    }
+  ],
+  "limitations": [
+    "The guard whitelist has a single condition (max_bytes 1-20000); no other conditions are allowed",
+    "No workflow UI to create a guarded template yet, so it is only reachable through code/tests",
+    "Only the share follow-up path is guarded, not the calendar follow-up"
+  ]
+}
