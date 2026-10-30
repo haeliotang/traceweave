@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "device": "Pixel 6a",
+  "scope": "isolated application using synthetic task and summary",
+  "before_fix_english_approval_displayed_chinese": true,
+  "after_fix_english_approval_scope_and_buttons_visible": true,
+  "after_fix_english_result_and_separate_save_button_visible": true,
+  "synthetic_result_dismissed_without_save": true,
+  "isolated_app_removed": true,
+  "source_sha256": {
+    "agent_os/android/src/org/traceform/agentos/MainActivity.java": "173a0f66ea78d568db3de5865fa1b760ee6a05e1b596ba5942de4fea289fd20d",
+    "agent_os/tests/android/WorkflowValidationActivity.java": "18aa2a11b73f509978e2870d57f7b61d430331bdefe7c2c6b1fce27e2cfa3554",
+    "agent_os/scripts/validate_actions_android.py": "144a1115c2f2a738cbfdde5f73f506b236df3ed82c3d65bc6e3791821bac9c32"
+  },
+  "limitations": [
+    "Test harness invoked existing dialogs directly; no actual Traceform provider or history was accessed",
+    "No interactive grant, revoke, actual Edge summary, or production update was tested",
+    "Chinese dialog behavior and persisted-memory absence after dismissal were not separately verified"
+  ]
+}

@@ -131,6 +131,8 @@ Edge 此前已同签名原位更新：原 APK 的代码、资源和原生库逐�
 
 随后以仅修改测试目标包名与权限名的 Provider 源码副本连接隔离 Edge，走通 Broker → Provider → Binder → 摘要校验：未授权读取被拒、另一 Agent 不能继承授权、授权后读到合成摘要、撤销后再次拒绝，见[授权链记录](../artifacts/agent_os/next_stage/scoped_edge_broker_synthetic_20261030.json)。授权由测试代码发放，不是用户交互审批；此结果也不能证明正式包对真实数据的读取、摘要质量或界面体验。测试包和合成数据已清理。
 
+英文界面的 Traceform 授权与摘要审核弹窗此前仍显示中文；候选修复增加英文范围说明、按钮和摘要提示，仍保留单独的保存记忆操作。Pixel 隔离应用直接打开合成弹窗，验证英文说明与按钮，关闭摘要时未选择保存，见[界面记录](../artifacts/agent_os/next_stage/traceform_english_dialogs_20261030.json)。本轮没有读取 Edge 历史或验收实际授权与撤销，修复尚未安装正式应用。
+
 Agent OS 0.6.3 已通过 37 项隔离真机用例、跨安装合成档案恢复和旧版档案迁移，并以原签名原位更新，首次安装时间保持；[验收记录](../artifacts/agent_os/automation_063/acceptance.json)不包括本轮人工系统选择器或物理功耗试验。已确认系统授予新的摘要权限；没有为验证读取真实历史或代替用户授予任务权限。
 
 Agent OS 0.6.5 随后通过 38 项隔离真机用例及跨安装合成档案恢复，同签名原位更新，首次安装时间保持，见[验收记录](../artifacts/agent_os/automation_065/acceptance.json)。本轮未重跑旧版档案迁移或物理耗电测试；模型的系统选择器及合成生成是在单独隔离包验证的。

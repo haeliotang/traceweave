@@ -25,6 +25,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
+                else if ("SEED_TRACEFORM_APPROVAL_EN".equals(getIntent().getAction()) || "SEED_TRACEFORM_RESULT_EN".equals(getIntent().getAction())) seedTraceformApproval(store);
                 else if ("MEMORY_BRANCH_SEED".equals(getIntent().getAction())) memoryBranchSeed(store);
                 else if ("MEMORY_BRANCH_TARGET_EDIT".equals(getIntent().getAction())) memoryBranchTargetEdit(store);
                 else if ("MEMORY_BRANCH_SOURCE_EDIT".equals(getIntent().getAction())) memoryBranchSourceEdit(store);
@@ -404,6 +405,39 @@ public final class WorkflowValidationActivity extends Activity {
         reset(store);
         store.importArchive(new java.io.ByteArrayInputStream(archive), "synthetic-escaped-share".toCharArray());
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "escaped share task survives archive restore");
+    }
+
+    private void seedTraceformApproval(AgentStore store) throws Exception {
+        reset(store);
+        getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
+        AgentStore.Task task = store.createTask("SYNTHETIC Traceform approval");
+        android.app.Application.ActivityLifecycleCallbacks callbacks = new android.app.Application.ActivityLifecycleCallbacks() {
+            public void onActivityCreated(Activity activity, Bundle state) {}
+            public void onActivityStarted(Activity activity) {}
+            public void onActivityResumed(Activity activity) {
+                if (!(activity instanceof MainActivity)) return;
+                getApplication().unregisterActivityLifecycleCallbacks(this);
+                activity.getWindow().getDecorView().post(() -> {
+                    try {
+                        if ("SEED_TRACEFORM_RESULT_EN".equals(getIntent().getAction())) {
+                            java.lang.reflect.Method show = MainActivity.class.getDeclaredMethod("showTraceformResult", AgentStore.Task.class, String.class);
+                            show.setAccessible(true); show.invoke(activity, task, "SYNTHETIC summary");
+                        } else {
+                            java.lang.reflect.Method show = MainActivity.class.getDeclaredMethod("confirmCapabilityGrant", AgentStore.Task.class, String.class, String.class, String.class);
+                            show.setAccessible(true);
+                            show.invoke(activity, task, "Traceform Local History Summary", CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+                        }
+                    } catch (Exception error) { android.util.Log.e("AgentOsWorkflowValidation", "FAIL approval dialog", error); }
+                });
+            }
+            public void onActivityPaused(Activity activity) {}
+            public void onActivityStopped(Activity activity) {}
+            public void onActivitySaveInstanceState(Activity activity, Bundle state) {}
+            public void onActivityDestroyed(Activity activity) {}
+        };
+        getApplication().registerActivityLifecycleCallbacks(callbacks);
+        startActivity(new android.content.Intent(this, MainActivity.class));
+        check(true, "synthetic approval UI launched");
     }
 
     private static final String BRANCH_PASSWORD = "synthetic-offline-branch-passphrase";

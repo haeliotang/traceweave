@@ -20,6 +20,8 @@ CASES = {
     "MEMORY_LIFECYCLE": ("WorkflowValidationActivity", "MEMORY_LIFECYCLE", "AgentOsWorkflowValidation"),
     "DOCUMENT_CALENDAR_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_CALENDAR_CHAIN", "AgentOsWorkflowValidation"),
     "DOCUMENT_SHARE_CHAIN": ("WorkflowValidationActivity", "DOCUMENT_SHARE_CHAIN", "AgentOsWorkflowValidation"),
+    "SEED_TRACEFORM_APPROVAL_EN": ("WorkflowValidationActivity", "SEED_TRACEFORM_APPROVAL_EN", "AgentOsWorkflowValidation"),
+    "SEED_TRACEFORM_RESULT_EN": ("WorkflowValidationActivity", "SEED_TRACEFORM_RESULT_EN", "AgentOsWorkflowValidation"),
     "MEMORY_BRANCH_SEED": ("WorkflowValidationActivity", "MEMORY_BRANCH_SEED", "AgentOsWorkflowValidation"),
     "MEMORY_BRANCH_TARGET_EDIT": ("WorkflowValidationActivity", "MEMORY_BRANCH_TARGET_EDIT", "AgentOsWorkflowValidation"),
     "MEMORY_BRANCH_SOURCE_EDIT": ("WorkflowValidationActivity", "MEMORY_BRANCH_SOURCE_EDIT", "AgentOsWorkflowValidation"),

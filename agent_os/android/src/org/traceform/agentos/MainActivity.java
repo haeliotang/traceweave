@@ -1672,24 +1672,25 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmCapabilityGrant(AgentStore.Task task, String label, String capability, String scope) {
+        boolean en = isEnglish();
         String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
-            ? "允许此任务通过 Traceform 的受控 Binder 接口，在 Edge 进程内只读查询本机保留历史并运行固定范围的本机模拟。Agent OS 不会直接访问历史库，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。"
-            : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。";
+            ? (en ? "Allow this task to query retained local history through the scoped Traceform Binder service and run a bounded local simulation in Edge. Agent OS does not open the history database, start sensor collection, or access the network. The result appears in this task. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked at any time." : "允许此任务通过 Traceform 的受控 Binder 接口，在 Edge 进程内只读查询本机保留历史并运行固定范围的本机模拟。Agent OS 不会直接访问历史库，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。")
+            : (en ? "Allow this task to read " + label + ". Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceform data are read." : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。");
         new AlertDialog.Builder(this)
-            .setTitle("授权" + label + "？")
+            .setTitle(en ? "Allow " + label + "?" : "授权" + label + "？")
             .setMessage(details)
-            .setNegativeButton("拒绝", (dialog, which) -> {
+            .setNegativeButton(en ? "Deny" : "拒绝", (dialog, which) -> {
                 try {
                     capabilityBroker.deny(task.id, capability, scope);
-                    showMessage("已拒绝" + label);
+                    showMessage(en ? "Denied " + label : "已拒绝" + label);
                 } catch (Exception error) {
                     showError(error);
                 }
             })
-            .setPositiveButton("授权 5 分钟", (dialog, which) -> {
+            .setPositiveButton(en ? "Allow for 5 minutes" : "授权 5 分钟", (dialog, which) -> {
                 try {
                     capabilityBroker.grant(task.id, capability, scope);
-                    showMessage("已授权此任务读取" + label);
+                    showMessage(en ? "Allowed this task to read " + label : "已授权此任务读取" + label);
                 } catch (Exception error) {
                     showError(error);
                 }
@@ -1700,7 +1701,7 @@ public final class MainActivity extends Activity {
 
     private void invokeCapability(AgentStore.Task task, String capability, String scope) {
         if (busy) return;
-        setBusy(true, "正在读取授权的本机能力…");
+        setBusy(true, isEnglish() ? "Reading the authorized local capability…" : "正在读取授权的本机能力…");
         io.execute(() -> {
             String value = null;
             Exception failure = null;
@@ -1713,7 +1714,8 @@ public final class MainActivity extends Activity {
             Exception invokeFailure = failure;
             mainHandler.post(() -> {
                 if (destroyed) return;
-                setBusy(false, invokeFailure == null ? "本机能力读取完成" : "本机能力读取失败");
+                setBusy(false, isEnglish() ? (invokeFailure == null ? "Local capability read completed" : "Local capability read failed")
+                    : (invokeFailure == null ? "本机能力读取完成" : "本机能力读取失败"));
                 refreshTasks();
                 if (invokeFailure != null) {
                     showError(invokeFailure);
@@ -1728,23 +1730,25 @@ public final class MainActivity extends Activity {
 
     private void showTraceformResult(AgentStore.Task task, String result) {
         TextView content = new TextView(this);
-        content.setText(result + "\n\n此结果来自 Traceform 本机保留历史的模拟摘要，不是经验证的预测或因果结论。");
+        boolean en = isEnglish();
+        content.setText(result + (en ? "\n\nThis simulated summary uses locally retained Traceform history. It is not a verified prediction or causal conclusion."
+            : "\n\n此结果来自 Traceform 本机保留历史的模拟摘要，不是经验证的预测或因果结论。"));
         content.setTextIsSelectable(true);
         content.setPadding(dp(20), dp(12), dp(20), dp(12));
         ScrollView holder = new ScrollView(this);
         holder.addView(content);
         new AlertDialog.Builder(this)
-            .setTitle("Traceform 本机历史摘要")
+            .setTitle(en ? "Traceform local history summary" : "Traceform 本机历史摘要")
             .setView(holder)
-            .setNegativeButton("完成", null)
-            .setPositiveButton("保存为事实记忆", (dialog, which) -> {
+            .setNegativeButton(en ? "Done" : "完成", null)
+            .setPositiveButton(en ? "Save as factual memory" : "保存为事实记忆", (dialog, which) -> {
                 try {
                     String reference = "task=" + task.id + ";provider=traceform;read="
                         + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
                     store.createMemory(AgentStore.MEMORY_FACT, result,
                         AgentStore.MEMORY_SOURCE_TRACEFORM, reference);
                     refreshMemories();
-                    showMessage("摘要已作为 Traceform 来源的事实记忆保存");
+                    showMessage(en ? "Summary saved as a Traceform-sourced factual memory" : "摘要已作为 Traceform 来源的事实记忆保存");
                 } catch (Exception error) {
                     showError(error);
                 }
