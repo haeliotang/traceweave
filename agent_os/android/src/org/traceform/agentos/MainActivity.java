@@ -643,7 +643,7 @@ public final class MainActivity extends Activity {
         memoryKind = new Spinner(this);
         memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
                 en ? new String[]{"Preference", "Fact", "Workflow"} : new String[]{"偏好", "事实", "工作流"}));
-        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(110), LinearLayout.LayoutParams.WRAP_CONTENT));
+        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(150), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
         memorySearch.setHint(en ? "Search memories..." : "搜索记忆内容...");
@@ -1822,28 +1822,53 @@ public final class MainActivity extends Activity {
     }
 
     private void addMemoryCard(AgentStore.Memory memory) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFFFFFFFF);
-        bg.setCornerRadius(dp(10));
-        bg.setStroke(dp(1), 0xFFE2E8F0);
-        card.setBackground(bg);
-        card.setPadding(dp(12), dp(8), dp(12), dp(8));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, dp(3), 0, dp(5));
-        card.setLayoutParams(lp);
-
-        // Header: Kind Badge + Source Tag + Delete Button
-        LinearLayout topRow = new LinearLayout(this);
-        topRow.setOrientation(LinearLayout.HORIZONTAL);
-        topRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
-        topRow.addView(getMemoryKindBadge(memory.kind));
-
-        TextView srcTv = new TextView(this);
         boolean en = isEnglish();
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setPadding(0, dp(6), 0, dp(6));
+
+        row.addView(getMemoryKindBadge(memory.kind));
+
+        TextView content = new TextView(this);
+        content.setText(memory.content);
+        content.setTextSize(13);
+        content.setTextColor(0xFF1E293B);
+        content.setMaxLines(1);
+        content.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        content.setPadding(dp(6), 0, dp(6), 0);
+        row.addView(content, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+        TextView stamp = new TextView(this);
+        stamp.setText(new java.text.SimpleDateFormat("MM-dd", java.util.Locale.ROOT).format(new java.util.Date(memory.updatedAt)));
+        stamp.setTextSize(10);
+        stamp.setTextColor(0xFF94A3B8);
+        row.addView(stamp);
+
+        row.setOnClickListener(view -> showMemoryDetail(memory));
+
+        LinearLayout wrapper = new LinearLayout(this);
+        wrapper.setOrientation(LinearLayout.VERTICAL);
+        wrapper.addView(row);
+        View divider = new View(this);
+        divider.setBackgroundColor(0xFFE2E8F0);
+        wrapper.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        memoryList.addView(wrapper);
+    }
+
+    private void showMemoryDetail(AgentStore.Memory memory) {
+        boolean en = isEnglish();
+        LinearLayout body = new LinearLayout(this);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(dp(16), dp(8), dp(16), 0);
+
+        TextView content = new TextView(this);
+        content.setText(memory.content);
+        content.setTextSize(13);
+        content.setTextColor(0xFF1E293B);
+        content.setTextIsSelectable(true);
+        body.addView(content);
+
         String source;
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source)) {
             source = memory.sourceReference.startsWith("confirmed:")
@@ -1852,78 +1877,71 @@ public final class MainActivity extends Activity {
         } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
             source = "Traceform";
         } else {
-            source = en ? "User Provided" : "你提供";
+            source = en ? "User provided" : "你提供";
         }
-        srcTv.setText(" · " + source);
-        srcTv.setTextSize(11);
-        srcTv.setTextColor(0xFF64748B);
-        srcTv.setPadding(dp(4), 0, 0, 0);
-        topRow.addView(srcTv, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+        TextView meta = Ui.meta(this, source + " · " + memory.kind);
+        meta.setPadding(0, dp(4), 0, dp(6));
+        body.addView(meta);
 
-        TextView delBtn = new TextView(this);
-        delBtn.setText(en ? "Delete" : "删除");
-        delBtn.setTextSize(12);
-        delBtn.setTextColor(0xFFEF4444);
-        delBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
-        delBtn.setOnClickListener(v -> confirmDeleteMemory(memory));
-        topRow.addView(delBtn);
-
-        card.addView(topRow);
-
-        TextView content = new TextView(this);
-        content.setText(memory.content);
-        content.setTextSize(13);
-        content.setTextColor(0xFF1E293B);
-        content.setPadding(0, dp(4), 0, dp(4));
-        card.addView(content);
-
-        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && memory.sourceReference.startsWith("confirmed:sensor:")) {
-            TextView sensorSource = new TextView(this);
-            sensorSource.setText(en ? "Sensor observation · user confirmed" : "感知观察 · 用户已确认");
-            card.addView(sensorSource);
-        }
-        LinearLayout edit = new LinearLayout(this);
-        addCardActionButton(edit, en ? "Edit / expiration" : "修改 / 有效期", view -> editMemory(memory), memoryButtons);
-        card.addView(edit);
-
-        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && !memory.sourceReference.startsWith("confirmed:")) {
-            LinearLayout review = new LinearLayout(this);
-            addCardActionButton(review, en ? "Review legacy inference" : "审核历史推断", view ->
-                new AlertDialog.Builder(this).setTitle(en ? "Confirm this inference?" : "确认这条推断？")
-                    .setMessage(memory.content + "\n\n" + (en ? "Source: " : "来源：") + memory.sourceReference)
-                    .setNegativeButton(en ? "Keep untrusted" : "保留为未确认", null)
-                    .setPositiveButton(en ? "Confirm for future tasks" : "确认供后续任务使用", (dialog, which) -> {
-                        try { store.reviewLegacyMemory(memory.id, memory.updatedAt); refreshMemories(); }
-                        catch (Exception error) { showError(error); }
-                    }).show(), memoryButtons);
-            card.addView(review);
-        }
-
-        TextView metadata = new TextView(this);
-        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.updatedAt)));
+        TextView metadata = Ui.meta(this, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+            .format(new Date(memory.updatedAt)));
         if (memory.userEdited) metadata.append(en ? " · User edited" : " · 用户已修正");
         if (memory.expiresAt > 0) metadata.append((memory.isExpired(System.currentTimeMillis())
             ? (en ? " · Expired " : " · 已到期 ") : (en ? " · Expires " : " · 到期 "))
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.expiresAt)));
-        metadata.setTextSize(10);
-        metadata.setTextColor(0xFF94A3B8);
-        card.addView(metadata);
+        body.addView(metadata);
 
-        TextView references = new TextView(this);
-        references.setText(en ? "View tasks using this memory" : "查看引用此记忆的任务");
-        references.setTextColor(0xFF0284C7);
-        references.setOnClickListener(v -> {
+        Button edit = new Button(this);
+        edit.setText(en ? "Edit / expiration" : "修改 / 有效期");
+        edit.setAllCaps(false);
+        edit.setTextSize(12);
+        edit.setOnClickListener(view -> { editMemory(memory); });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+        lp.setMargins(0, dp(6), 0, 0);
+        body.addView(edit, lp);
+
+        if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && !memory.sourceReference.startsWith("confirmed:")) {
+            Button review = new Button(this);
+            review.setText(en ? "Review legacy inference" : "审核历史推断");
+            review.setAllCaps(false);
+            review.setTextSize(12);
+            review.setOnClickListener(view -> new AlertDialog.Builder(this)
+                .setTitle(en ? "Confirm this inference?" : "确认这条推断？")
+                .setMessage(memory.content + "\n\n" + (en ? "Source: " : "来源：") + memory.sourceReference)
+                .setNegativeButton(en ? "Keep untrusted" : "保留为未确认", null)
+                .setPositiveButton(en ? "Confirm for future tasks" : "确认供后续任务使用", (dialog, which) -> {
+                    try { store.reviewLegacyMemory(memory.id, memory.updatedAt); refreshMemories(); }
+                    catch (Exception error) { showError(error); }
+                }).show());
+            LinearLayout.LayoutParams reviewLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+            reviewLp.setMargins(0, dp(4), 0, 0);
+            body.addView(review, reviewLp);
+        }
+
+        Button references = new Button(this);
+        references.setText(en ? "Tasks using this memory" : "引用此记忆的任务");
+        references.setAllCaps(false);
+        references.setTextSize(12);
+        references.setOnClickListener(view -> {
             try {
                 StringBuilder text = new StringBuilder();
-                for (AgentStore.Task task : store.memoryReferences(memory.id)) text.append(task.title).append(" · ").append(task.status).append("\n");
+                for (AgentStore.Task task : store.memoryReferences(memory.id))
+                    text.append(task.title).append(" · ").append(task.status).append("\n");
                 new AlertDialog.Builder(this).setTitle(en ? "Historical task references" : "历史任务引用")
                     .setMessage(text.length() == 0 ? (en ? "No task snapshots reference this memory." : "没有任务快照引用此记忆。") : text.toString())
                     .setPositiveButton(en ? "Close" : "关闭", null).show();
             } catch (Exception error) { showError(error); }
         });
-        card.addView(references);
+        LinearLayout.LayoutParams refLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+        refLp.setMargins(0, dp(4), 0, 0);
+        body.addView(references, refLp);
 
-        memoryList.addView(card);
+        new AlertDialog.Builder(this)
+            .setTitle(en ? "Memory detail" : "记忆详情")
+            .setView(body)
+            .setNegativeButton(en ? "Delete" : "删除", (dialog, which) -> confirmDeleteMemory(memory))
+            .setPositiveButton(en ? "Close" : "关闭", null)
+            .show();
     }
 
     private void addTaskButton(LinearLayout parent, String label, AgentStore.Task task, String status) {
