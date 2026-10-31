@@ -128,7 +128,7 @@ public final class AgentFloatingService extends Service {
         }
         if (btnVoice != null) {
             boolean listening = VoiceInteractionManager.getInstance(this).isListening();
-            btnVoice.setText(en ? (listening ? "Stop Audio" : "Live Audio") : (listening ? "停止拾音" : "实时拾音"));
+            btnVoice.setText(T.s(listening ? "overlay.stop_audio" : "overlay.live_audio", en));
         }
         if (btnVision != null) {
             btnVision.setText(T.s("agentfloatingservice.vision_ocr", en));
@@ -256,7 +256,7 @@ public final class AgentFloatingService extends Service {
         headerRow.addView(statusTextView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         collapseBtn = new TextView(this);
-        collapseBtn.setText("收起 ▲");
+        collapseBtn.setText(T.s("overlay.collapse", isEnglish()));
         collapseBtn.setTextSize(11);
         collapseBtn.setTextColor(Color.parseColor("#94A3B8"));
         collapseBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
@@ -278,7 +278,7 @@ public final class AgentFloatingService extends Service {
         jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
         jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 14));
         jitTitle = new TextView(this);
-        jitTitle.setText(" 跨应用 JIT 门禁请求");
+        jitTitle.setText(" " + T.s("overlay.jit_title", isEnglish()));
         jitTitle.setTextColor(Color.parseColor("#FFD54F"));
         jitTitle.setTextSize(12);
         jitTitle.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -294,10 +294,10 @@ public final class AgentFloatingService extends Service {
         LinearLayout jitBtnRow = new LinearLayout(this);
         jitBtnRow.setOrientation(LinearLayout.HORIZONTAL);
 
-        btnGrant = createSmallButton("授权 5 分钟", Color.parseColor("#1B5E20"), Color.WHITE, v -> handleJitDecision(true));
+        btnGrant = createSmallButton(T.s("overlay.grant_five_minutes", isEnglish()), Color.parseColor("#1B5E20"), Color.WHITE, v -> handleJitDecision(true));
         jitBtnRow.addView(btnGrant, new LinearLayout.LayoutParams(0, dp(28), 1.0f));
 
-        btnDeny = createSmallButton("拒绝", Color.parseColor("#B71C1C"), Color.WHITE, v -> handleJitDecision(false));
+        btnDeny = createSmallButton(T.s("overlay.deny", isEnglish()), Color.parseColor("#B71C1C"), Color.WHITE, v -> handleJitDecision(false));
         LinearLayout.LayoutParams denyLp = new LinearLayout.LayoutParams(0, dp(28), 1.0f);
         denyLp.setMargins(dp(6), 0, 0, 0);
         jitBtnRow.addView(btnDeny, denyLp);
@@ -312,7 +312,7 @@ public final class AgentFloatingService extends Service {
         taskRow.setPadding(0, dp(6), 0, 0);
         taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#94A3B8"), 13));
         taskDetailView = new TextView(this);
-        taskDetailView.setText(" 核心运行: 本地规则规划已就绪");
+        taskDetailView.setText(" " + T.s("overlay.core_ready", isEnglish()));
         taskDetailView.setTextColor(Color.parseColor("#E2E8F0"));
         taskDetailView.setTextSize(11);
         taskRow.addView(taskDetailView);
@@ -351,20 +351,20 @@ public final class AgentFloatingService extends Service {
         actionRow.setOrientation(LinearLayout.HORIZONTAL);
         actionRow.setPadding(0, dp(6), 0, 0);
 
-        btnVoice = createSmallButton("实时拾音", Color.argb(220, 2, 132, 199), Color.WHITE, v -> toggleVoiceListening());
+        btnVoice = createSmallButton(T.s("overlay.live_audio", isEnglish()), Color.argb(220, 2, 132, 199), Color.WHITE, v -> toggleVoiceListening());
         actionRow.addView(btnVoice, new LinearLayout.LayoutParams(0, dp(30), 1.0f));
 
-        btnVision = createSmallButton("真机视觉", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerVisionInspection());
+        btnVision = createSmallButton(T.s("overlay.vision", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerVisionInspection());
         LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         visLp.setMargins(dp(4), 0, 0, 0);
         actionRow.addView(btnVision, visLp);
 
-        btnPtt = createSmallButton("PTT 按键", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerPttAction());
+        btnPtt = createSmallButton(T.s("overlay.ptt", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerPttAction());
         LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
         pttLp.setMargins(dp(4), 0, 0, 0);
         actionRow.addView(btnPtt, pttLp);
 
-        btnOpenApp = createSmallButton("主系统", Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> launchMainActivity());
+        btnOpenApp = createSmallButton(T.s("overlay.open_app", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> launchMainActivity());
         LinearLayout.LayoutParams openLp = new LinearLayout.LayoutParams(0, dp(30), 0.9f);
         openLp.setMargins(dp(4), 0, 0, 0);
         actionRow.addView(btnOpenApp, openLp);
@@ -473,7 +473,7 @@ public final class AgentFloatingService extends Service {
                 IconFactory.IconType iconType = isListening ? IconFactory.IconType.STATUS_DOT_BLUE : IconFactory.IconType.STATUS_DOT_GREEN;
                 if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 10));
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 8));
-                if (btnVoice != null) btnVoice.setText(en ? (isListening ? "Stop Audio" : "Live Audio") : (isListening ? "停止拾音" : "实时拾音"));
+                if (btnVoice != null) btnVoice.setText(T.s(isListening ? "overlay.stop_audio" : "overlay.live_audio", en));
                 if (statusTextView != null) statusTextView.setText(isListening
                         ? (T.s("agentfloatingservice.listening_16_khz", en))
                         : (T.s("agentfloatingservice.traceform_capsule", en)));
@@ -507,7 +507,7 @@ public final class AgentFloatingService extends Service {
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 8));
                 if (statusTextView != null) statusTextView.setText(en
                         ? " Intent: " + englishVoiceIntent(classifiedIntent)
-                        : " 意图: " + classifiedIntent);
+                        : " " + T.format("overlay.intent", false, classifiedIntent));
             }
 
             @Override
@@ -526,10 +526,10 @@ public final class AgentFloatingService extends Service {
     }
 
     private String englishVoiceError(String message) {
-        if (!isEnglish()) return " 拾音异常: " + message;
-        if ("RECORD_AUDIO 运行时权限未授予".equals(message)) return " Microphone permission not granted";
-        if (message != null && message.startsWith("录音启动失败:")) return " Failed to start audio capture";
-        if (message != null && message.startsWith("音频硬件读取故障:")) return " Audio hardware read failure";
+        if (!isEnglish()) return " " + T.format("overlay.audio_error", false, message);
+        if ("RECORD_AUDIO 运行时权限未授予".equals(message)) return " " + T.s("overlay.mic_denied", true);
+        if (message != null && message.startsWith("录音启动失败:")) return " " + T.s("overlay.audio_start_failed", true);
+        if (message != null && message.startsWith("音频硬件读取故障:")) return " " + T.s("overlay.audio_hardware_failed", true);
         if (message == null || message.matches(".*[\\u4e00-\\u9fff].*")) return " Audio capture failed";
         return " Audio error: " + message;
     }
@@ -541,7 +541,7 @@ public final class AgentFloatingService extends Service {
             org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(query);
             Toast.makeText(this, (T.s("agentfloatingservice.vision_sense", en)) + (target.optBoolean("matched", false) ? (T.s("agentfloatingservice.target_located", en)) : (T.s("agentfloatingservice.scanning_screen", en))), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, (isEnglish() ? "Vision error: " : "视觉检测异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, T.format("overlay.vision_error", isEnglish(), e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -595,7 +595,7 @@ public final class AgentFloatingService extends Service {
                 statusTextView.setText(" [" + (step + 1) + "] " + (stepTitle != null ? stepTitle : title));
             }
             if (taskDetailView != null) {
-                taskDetailView.setText("当前任务: " + title + "\n当前步骤: " + stepTitle);
+                taskDetailView.setText(T.format("overlay.task_detail", isEnglish(), title, stepTitle));
             }
         } else if (ACTION_REQUEST_JIT.equals(action)) {
             pendingTaskId = intent.getStringExtra(EXTRA_TASK_ID);
@@ -609,7 +609,7 @@ public final class AgentFloatingService extends Service {
                 ballDotView.setImageDrawable(IconFactory.getIcon(this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 8));
             }
             if (jitContainer != null && jitPromptView != null) {
-                jitPromptView.setText("任务: " + pendingTaskId + "\n申请权限: " + pendingCap);
+                jitPromptView.setText(T.format("overlay.jit_prompt", isEnglish(), pendingTaskId, pendingCap));
                 jitContainer.setVisibility(View.VISIBLE);
                 // Auto-expand on security JIT alert so user never misses it
                 if (!isExpanded) toggleExpansion();
@@ -646,7 +646,7 @@ public final class AgentFloatingService extends Service {
                     granted ? 0xFF00E676 : 0xFFFFB300, 8));
         }
         if (statusTextView != null) {
-            statusTextView.setText(granted ? " JIT 租约生效 (5分钟)" : " JIT 授权已拒绝");
+            statusTextView.setText(" " + T.s(granted ? "overlay.jit_granted" : "overlay.jit_denied", isEnglish()));
         }
         if (sJitListener != null) {
             sJitListener.onDecision(pendingTaskId, pendingCap, pendingScope, granted);

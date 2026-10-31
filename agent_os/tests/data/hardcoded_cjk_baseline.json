@@ -1,6 +1,6 @@
 {
   "AgentExecutor.java": 1,
-  "AgentFloatingService.java": 20,
+  "AgentFloatingService.java": 3,
   "AgentStore.java": 5,
   "CapabilityBroker.java": 9,
   "CloudModelClient.java": 3,
