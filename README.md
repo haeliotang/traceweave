@@ -44,14 +44,15 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 |  2. Traceform Runtime                                                                   |
 |     Android task executor plus experimental Rust core                                  |
 |     - User-approved, task-scoped capability broker                                     |
-|     - Deterministic local rule planner; no GGUF model bundled                          |
+|     - Deterministic rule planner by default; optional user-imported GGUF model       |
 |     - Keystore-backed app data and passphrase-encrypted export                         |
 |     - Rust daemon is disabled; no automatic device-to-device sync                     |
 |                                                                                         |
 |  3. Traceform Protocol                                                                  |
 |     Protocol schemas and experimental Rust synchronization code                        |
 |     - Android archive import/export is user initiated                                   |
-|     - Rust sync uses timestamp ordering; it is not vector-clock causal sync             |
+|     - App-side memory merge uses vector clocks and tombstone priority                   |
+|     - Rust sync transport exchanges those records; validation builds only                |
 |     - No deployed cross-device synchronization service                                 |
 |                                                                                         |
 |  4. Traceform Research                                                                  |
@@ -70,9 +71,9 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 | :--- | :--- | :--- | :--- |
 | **Agent OS prototype** | Java Android APK, tested on Android 17 | Android app sandbox and explicit user approvals | No OS image, latency, or battery-life guarantee |
 | **Traceform Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
-| **Local planner and Rust core** | Rule planner in the APK; Rust components remain experimental | No model included in the APK | No throughput benchmark claimed |
+| **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
-| **Traceform protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | No automatic sync or causal convergence claim |
+| **Traceform protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync exists in validation builds; no background sync |
 | **Traceform Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
 
 ---
@@ -109,7 +110,7 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 |  +------------------------+  +------------------------+  +---------------------------+  |
 |  |   Android Broker       |  |    Local Planner       |  |   Experimental Voice DSP  |  |
 |  | - User approval        |  | - Deterministic rules  |  | - Not a continuous service|
-|  | - Task-scoped grants   |  | - No model bundled     |  | - No latency claim        |
+|  | - Task-scoped grants   |  | - User-imported model  |  | - No latency claim        |
 |  +------------------------+  +------------------------+  +---------------------------+  |
 |  +------------------------+  +------------------------+  +---------------------------+  |
 |  |   Android Task Journal |  |   Encrypted App Data   |  |   Experimental JS Engine  |  |
@@ -145,7 +146,7 @@ The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/org/tra
 
 ## 6. Practical Application Scenarios & Real-World Use Cases
 
-This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or automatic device-to-device sync. The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
+This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the production APK does not package the sync library yet. The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
 
 ### 6.1 Third-Party Agent & Standalone Bot Ecosystem Integration
 
@@ -161,7 +162,7 @@ External-agent interoperability is a future direction. Current validation covers
 
 3. **Personal E2EE Memory Substrate & Zero-Trust Context Vault**
    - *Problem*: Users interact with multiple specialized agents (e.g., coding copilots, financial advisors, medical trackers) but cannot risk uploading sensitive personal records, financial history, and home addresses to disparate cloud providers.
-   - *Prototype status*: The Android app encrypts its local task and memory payloads and exports a passphrase-protected archive. Automatic synchronization and causal/vector-clock conflict resolution are not implemented; the Rust file-backed store rejects persistent writes in release builds.
+   - *Prototype status*: The Android app encrypts its local task and memory payloads and exports a passphrase-protected archive. Vector-clock merge with tombstone priority and conflict candidates is implemented and device-tested; the manual sync entry is not yet packaged in production builds, and the Rust file-backed store rejects persistent writes in release builds.
 
 4. **Heterogeneous Dual-Brain Orchestration (Edge-Cloud Cost & Latency Optimization)**
    - *Problem*: Routing all conversational turns and routine device inquiries to cloud frontier models incurs high API token costs and introduces 1-3 second round-trip latencies.
@@ -188,12 +189,16 @@ The repository contains the following experimental components. Their presence in
    - DSP and audio-related code exists, but continuous microphone ingestion, latency, and recognition quality are not part of the Phase 1 device acceptance.
 
 5. **Encrypted Memory Archive and Experimental Sync Code**
-   - The Android app supports user-created encrypted archive import/export. Rust sync code is experimental, uses deterministic timestamp/content ordering rather than vector clocks, and is not exposed through a running daemon.
+   - The Android app supports user-created encrypted archive import/export. Memory merge uses vector clocks, tombstone priority and explicit conflict candidates (device-tested). The Rust sync transport carries those records over libp2p/Noise; it is validated in isolated installs and is not exposed through a running daemon.
 
 6. **Scrollable Prototype Interface and Optional Overlay**
    - The main screen scrolls. The overlay service is optional and requires Android overlay access; the telemetry cards show prototype state and synthetic simulation values, not measured hardware performance.
 
 ---
+
+## 6.3 Current Verification Status
+
+The A–F boundary-closing milestones are tracked in [docs/agent_os_milestones_2026-10-30.md](docs/agent_os_milestones_2026-10-30.md): 28 of 30 are complete with dated device or host receipts. Three require external resources and are not claimed: independent audit, a second device matrix, and power-meter-grade energy measurement. Device results in this repository come from one Pixel 6a unless stated otherwise.
 
 ## 7. Hardware Deployment & Verification
 
