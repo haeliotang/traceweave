@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-31",
+  "goal": "verify AutoSync.runOnce end to end across two packages on one device",
+  "setup": {
+    "packages": ["org.traceform.agentos.actionsvalidation (A)", "org.traceform.agentos.documentsvalidation (B)"],
+    "ports": {"sync": 47960, "pair": 47961}
+  },
+  "achieved": [
+    "B built from a new manifest copy (agent_os/tests/android/manifest-documents-b.xml) and installed",
+    "A paired with B: A now shows 已配对设备：1, SAS 550893 matched on both dialogs",
+    "manual sync now writes sync_cursor (127.0.0.1, SYNC_PORT, ok:N) on success"
+  ],
+  "not_achieved": [
+    "B never stored its own pairing: its settings kept showing 已配对设备：0, so B could not start the sync server through 等待对端",
+    "because B could not serve, A never completed a manual sync, so no cursor row exists yet and the auto-sync dial path stayed untested end to end",
+    "the reverse pairing attempt (A serving, B dialing) lost the 60-second server window between taps"
+  ],
+  "interpretation": "the pairing server is a 60-second one-shot window; driving two packages on one screen through adb taps is too slow to be reliable. The next attempt should either lengthen the window for tests or script the exchange in a single package probe."
+}
