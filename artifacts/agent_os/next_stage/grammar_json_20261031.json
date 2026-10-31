@@ -91,8 +91,16 @@
         "model": "MiniCPM5-2B",
         "budget": 512,
         "grammar": true,
-        "passed": "pending",
+        "passed": 10,
         "total": 10
+      },
+      {
+        "model": "MiniCPM5-2B",
+        "budget": 512,
+        "grammar": true,
+        "passed": 10,
+        "total": 10,
+        "repeat": true
       }
     ],
     "interpretation": "raising the budget from 128 to 512 lifts the prompt-only arm from 1/10 to 5/10 while every failure at 128 was a think block that consumed the window; grammar removes the failure entirely at 128. The budget-allocation explanation is therefore supported, but prompt-only is still far from the grammar arm at 512.",
@@ -120,5 +128,28 @@
     ],
     "interpretation": "the grammar guarantees shape only; half the cases still fail content, so the 10/10 shape number must never be read as quality",
     "artifact": "artifacts/agent_os/next_stage/json4_content_20261031.json"
+  },
+  "timing_repeat": {
+    "runs": [
+      {
+        "run": "json3_512_20261031",
+        "median_ms": 9935,
+        "min_ms": 8117,
+        "max_ms": 14130,
+        "passed": 10
+      },
+      {
+        "run": "json3_512_repeat_20261031",
+        "median_ms": 13158,
+        "min_ms": 9118,
+        "max_ms": 17230,
+        "passed": 10
+      }
+    ],
+    "note": "the same code and model produced a 32% higher median in the repeat run; treat single-run timing as indicative only",
+    "artifacts": [
+      "artifacts/agent_os/next_stage/json3_512_20261031.json",
+      "artifacts/agent_os/next_stage/json3_512_repeat_20261031.json"
+    ]
   }
 }
