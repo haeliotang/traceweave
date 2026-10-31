@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-31",
+  "change": "after a pairing confirms, the address used for the pairing is stored as the peer's sync multiaddr (port rewritten to the sync port), and the background job now picks the peer with the most recent sync instead of the first pairing",
+  "device_evidence": {
+    "action": "paired the two packages again through 127.0.0.1:47961 (code 909662 on both sides)",
+    "cursor_rows": [
+      {"device": "probe-3b191927e58a5071", "address": "127.0.0.1", "port": 47960, "result": "ok:1"},
+      {"device": "peer-5e4cca35c89b6376", "address": "/ip4/127.0.0.1/tcp/47960", "port": 47960, "result": "paired"}
+    ]
+  },
+  "test": "AutoSyncPolicy.pickTarget covered for empty, newest and tie cases",
+  "limitations": [
+    "the sync port is assumed to be 47960 on the peer; nothing advertises it yet",
+    "the LAN branch still cannot be exercised without a second device",
+    "two pairings now exist on the test device, so the selection change matters for the next run"
+  ]
+}

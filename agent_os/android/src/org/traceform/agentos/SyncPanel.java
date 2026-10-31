@@ -281,7 +281,7 @@ final class SyncPanel {
             final String json = payload;
             host.uiRef().post(() -> {
                 android.util.Log.i("AgentOsPairing", "pair_dial show destroyed=" + host.isDestroyedRef() + " json=" + json);
-                if (!host.isDestroyedRef()) showPairResult(json, en);
+                if (!host.isDestroyedRef()) showPairResult(json, en, address);
             });
         });
     }
@@ -296,7 +296,7 @@ final class SyncPanel {
                 payload = null;
             }
             final String json = payload;
-            host.uiRef().post(() -> { if (!host.isDestroyedRef()) showPairResult(json, en); });
+            host.uiRef().post(() -> { if (!host.isDestroyedRef()) showPairResult(json, en, ""); });
         });
     }
 
@@ -311,7 +311,18 @@ final class SyncPanel {
         return (minutes / 60) + " h";
     }
 
-    private void showPairResult(String json, boolean en) {
+    /** Remembers where a peer was reachable so the background job can dial it later. */
+    private void rememberPeerAddress(String deviceId, String pairAddress) {
+        try {
+            String multiaddr = pairAddress.startsWith("/") ? pairAddress : SyncActions.address(pairAddress);
+            if (multiaddr == null || !multiaddr.contains("/ip4/")) return;
+            String target = multiaddr.substring(0, multiaddr.lastIndexOf("/tcp/")) + "/tcp/" + SYNC_PORT;
+            host.storeRef().recordSyncCursor(deviceId, System.currentTimeMillis(), target, SYNC_PORT, "paired");
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void showPairResult(String json, boolean en, String address) {
         SyncActions.Session session = SyncActions.session(json);
         android.util.Log.i("AgentOsPairing", "show_pair_result session=" + (session == null ? "null" : session.sas));
         if (session == null) {
@@ -339,8 +350,10 @@ final class SyncPanel {
             .setNegativeButton(T.s("common.cancel", en), null)
             .setPositiveButton(T.s("pair.confirm", en), (dialog, which) -> {
                 try {
+                    String deviceId = "peer-" + remoteFingerprint.substring(0, 16);
                     SyncPairing.confirm(host.storeRef(), DeviceIdentity.fingerprint(), remoteFingerprint,
-                        "peer-" + remoteFingerprint.substring(0, 16), peerId, sas, sas);
+                        deviceId, peerId, sas, sas);
+                    rememberPeerAddress(deviceId, address);
                     host.refreshAfterSync();
                     host.toast(T.s("pair.done", en));
                 } catch (Exception error) { host.failWith(error); }
