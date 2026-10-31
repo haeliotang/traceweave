@@ -4,4 +4,6 @@
     <string name="shortcut_audit_long">查看本机审计日志</string>
     <string name="shortcut_task_short">新建任务</string>
     <string name="shortcut_task_long">从系统入口新建任务</string>
+    <string name="shortcut_center_short">任务中心</string>
+    <string name="shortcut_center_long">查看等待你处理的任务</string>
 </resources>

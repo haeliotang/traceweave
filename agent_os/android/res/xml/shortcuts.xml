@@ -8,7 +8,7 @@
         <intent
             android:action="org.traceform.agentos.OPEN_AUDIT"
             android:targetPackage="org.traceform.agentos"
-            android:targetClass="org.traceform.agentos.AuditActivity" />
+            android:targetClass="org.traceform.agentos.MainActivity" />
     </shortcut>
     <shortcut
         android:shortcutId="new_task"
@@ -17,6 +17,16 @@
         android:shortcutLongLabel="@string/shortcut_task_long">
         <intent
             android:action="org.traceform.agentos.NEW_TASK"
+            android:targetPackage="org.traceform.agentos"
+            android:targetClass="org.traceform.agentos.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="task_center"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_center_short"
+        android:shortcutLongLabel="@string/shortcut_center_long">
+        <intent
+            android:action="org.traceform.agentos.OPEN_CENTER"
             android:targetPackage="org.traceform.agentos"
             android:targetClass="org.traceform.agentos.MainActivity" />
     </shortcut>

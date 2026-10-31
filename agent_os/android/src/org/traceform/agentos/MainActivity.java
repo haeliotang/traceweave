@@ -60,6 +60,7 @@ public final class MainActivity extends Activity {
     private AgentStore store;
     private CapabilityBroker capabilityBroker;
     private EditText taskInput;
+    private ScrollView pageScroll;
     private EditText memoryInput;
     private EditText memorySearch;
     private Spinner memoryKind;
@@ -94,6 +95,41 @@ public final class MainActivity extends Activity {
         scheduleRemoteUriExpiry();
         updateSensorsCard();
         maybeRequestNotificationPermission(false);
+        handleShortcutIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleShortcutIntent(intent);
+    }
+
+    private void handleShortcutIntent(android.content.Intent intent) {
+        if (intent == null || intent.getAction() == null) return;
+        // Static shortcuts must target an exported activity; AuditActivity and
+        // TaskCenterActivity are not exported, so MainActivity forwards them.
+        if ("org.traceform.agentos.OPEN_AUDIT".equals(intent.getAction())) {
+            intent.setAction(null);
+            startActivity(new android.content.Intent(this, AuditActivity.class));
+            return;
+        }
+        if ("org.traceform.agentos.OPEN_CENTER".equals(intent.getAction())) {
+            intent.setAction(null);
+            startActivity(new android.content.Intent(this, TaskCenterActivity.class));
+            return;
+        }
+        if (!"org.traceform.agentos.NEW_TASK".equals(intent.getAction())) return;
+        intent.setAction(null);
+        if (pageScroll != null) pageScroll.post(() -> pageScroll.fullScroll(android.view.View.FOCUS_UP));
+        if (taskInput != null) {
+            taskInput.post(() -> {
+                taskInput.requestFocus();
+                android.view.inputmethod.InputMethodManager keyboard =
+                    (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (keyboard != null) keyboard.showSoftInput(taskInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+            });
+        }
     }
 
     @Override
@@ -605,12 +641,13 @@ public final class MainActivity extends Activity {
 
         page.addView(dockRow);
 
-        ScrollView pageScroll = new ScrollView(this);
-        pageScroll.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
-        pageScroll.setFillViewport(true);
-        pageScroll.addView(page);
+        ScrollView scroller = new ScrollView(this);
+        pageScroll = scroller;
+        scroller.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
+        scroller.setFillViewport(true);
+        scroller.addView(page);
         CrashLog.install(this);
-        setContentView(pageScroll);
+        setContentView(scroller);
     }
 
     private void showMemoryDialog() {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_audit_short">Audit log</string>
+    <string name="shortcut_audit_long">Open the on-device audit log</string>
+    <string name="shortcut_task_short">New task</string>
+    <string name="shortcut_task_long">Start a task from the system entry point</string>
+    <string name="shortcut_center_short">Task center</string>
+    <string name="shortcut_center_long">Review tasks waiting for you</string>
+</resources>

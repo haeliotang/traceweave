@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-31",
+  "changes": [
+    "three static shortcuts: audit_log, task_center (new), new_task",
+    "shortcut labels added for English (res/values-en/strings.xml)",
+    "all three target MainActivity because AuditActivity and TaskCenterActivity are not exported; MainActivity forwards them",
+    "NEW_TASK now scrolls to the composer, focuses the goal field and opens the keyboard"
+  ],
+  "why_the_targets_changed": "a first attempt pointed the shortcuts at the two internal activities directly; explicit adb starts failed with a security exception because they are exported=false, so a launcher would fail too",
+  "device_evidence": {
+    "OPEN_AUDIT": "topResumedActivity = AuditActivity",
+    "OPEN_CENTER": "topResumedActivity = TaskCenterActivity",
+    "NEW_TASK": "goal field focused=true, mInputShown=true",
+    "package": "org.traceform.agentos.actionsvalidation"
+  },
+  "packaged": {
+    "shortcut_count_in_apk": 3,
+    "english_strings_present": true
+  },
+  "not_verified": "the long-press menu itself was not re-photographed in this round"
+}
