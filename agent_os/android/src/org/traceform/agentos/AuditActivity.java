@@ -105,20 +105,38 @@ public final class AuditActivity extends Activity {
 
     private void export() {
         try {
+            java.util.List<AgentStore.AuditEvent> events = store.listRecentAuditEvents(500);
             StringBuilder out = new StringBuilder();
-            for (AgentStore.AuditEvent event : store.listRecentAuditEvents(500)) {
+            for (AgentStore.AuditEvent event : events) {
                 out.append(event.occurredAt).append('\t').append(event.taskId).append('\t')
                    .append(event.event.replace('\n', ' ')).append('\n');
             }
-            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("text/tab-separated-values")
-                .putExtra(Intent.EXTRA_TITLE, "traceform-audit-" + System.currentTimeMillis() + ".tsv");
-            pendingExport = out.toString();
-            startActivityForResult(intent, REQUEST_EXPORT);
+            String range = events.isEmpty() ? "-" : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                .format(new java.util.Date(events.get(events.size() - 1).occurredAt))
+                + " → " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                .format(new java.util.Date(events.get(0).occurredAt));
+            previewTsv(out.toString(), events.size(), range);
         } catch (Exception error) {
             android.widget.Toast.makeText(this, error.getMessage(), android.widget.Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void previewTsv(String content, int count, String range) {
+        String message = T.format("audit.tsv_scope", en, count, range);
+        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(this)
+            .setView(Ui.dialogBody(this, T.s("audit.tsv_scope_title", en), message, 12))
+            .setNegativeButton(T.s("common.cancel", en), null)
+            .setPositiveButton(T.s("audit.choose_location", en), (inner, which) -> {
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("text/tab-separated-values")
+                    .putExtra(Intent.EXTRA_TITLE, "traceform-audit-" + System.currentTimeMillis() + ".tsv");
+                pendingExport = content;
+                startActivityForResult(intent, REQUEST_EXPORT);
+            })
+            .create();
+        dialog.show();
+        Ui.themeDialog(dialog, this);
     }
 
     private void exportDiagnostics() {

@@ -547,6 +547,8 @@ final class T {
         add("export.scope_note", "Deletion markers travel with the archive; the destination needs the same or newer schema.", "删除标记会随档案迁移；接收方需要相同或更新的数据格式。");
         add("export.scope_title", "Export encrypted archive?", "导出加密档案？");
         add("export.continue", "Continue", "继续");
+        add("audit.tsv_scope", "%d events from %s will be written.", "将写入 %d 条事件，时间范围 %s。");
+        add("audit.tsv_scope_title", "Export audit log?", "导出审计日志？");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

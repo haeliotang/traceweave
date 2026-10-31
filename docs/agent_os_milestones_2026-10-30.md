@@ -413,6 +413,7 @@
 - 2026-10-31：自动同步端到端尝试（未完成）——新建 B 包清单并装好两个包，A 成功与 B 配对（SAS 550893），但 B 侧配对未落库（设置仍显示 0 台），导致 B 无法启动同步服务端，A 也就没有完成一次手动同步、无法写入游标。根因是同屏双包的 60 秒配对窗口在 adb 点击节奏下太短。记录 [auto_sync_pairing_attempt_20261031](artifacts/agent_os/next_stage/auto_sync_pairing_attempt_20261031.json)。
 - 2026-10-31：把修复回路接进应用——文稿重试时会把上次的校验失败原因写回提示（`strictPrompt(goal, memories, previousFailure)`），不再只是“再说一次”。
 - 2026-10-31：内容质量实验（严格提示 vs 修复回路）——同一 10 例、grammar + 512 token：基线内容 **5/10**，加“不要复述示例/用真实日期/类型匹配”的严格提示升到 **6/10**，再加一轮“把失败项写回提示重生成”的修复后升到 **10/10**（4 例被修复）。结论：**校验 + 定向重生成**比单纯加强提示有效得多。数据 [json7_strict_prompt](artifacts/agent_os/next_stage/json7_strict_prompt_20261031.json)、[json8_repair](artifacts/agent_os/next_stage/json8_repair_20261031.json)。
+- 2026-10-31：审计导出前先说明范围——点击“导出 TSV”先显示**条数与时间范围**（实测“将写入 3 条事件，时间范围 2026/10/31 17:40 → 17:43”），确认后导出文件确为 3 行。截图 ui/tsv_scope.png。至此三个数据出口（审计、诊断、加密档案）都有前置说明。
 - 2026-10-31：加密导出前先说明范围——点击“加密导出”先显示**将导出的记忆/任务/删除标记条数**与迁移说明，确认后才进入口令输入；设备实测显示“档案将包含 4 条记忆、0 个任务和 0 条删除标记”。截图 ui/export_scope.png。
 - 2026-10-31：诊断导出前先预览——点击“导出诊断”先显示**字段清单与崩溃摘要**，确认后才打开保存位置；设备上核对导出文件的字段与预览完全一致。截图 ui/diagnostics_preview.png。
 - 2026-10-31：诊断里的崩溃信息可读——`CrashLog.summarize` 输出“异常类型 + 前 5 帧”，导出诊断里 `last_crash` 同时含 `summary` 与 `raw`。设备上用合成崩溃验证：`summary` 为 `java.lang.IllegalStateException: synthetic crash` 加两帧。收据 [diagnostics_with_crash_20261031](artifacts/agent_os/next_stage/diagnostics_with_crash_20261031.json)。
