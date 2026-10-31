@@ -21,6 +21,13 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(match, "runtime script should declare a pinned commit")
         self.assertEqual(match.group(1), PINNED_LLAMA)
 
+    def test_push_runs_are_opt_in(self):
+        """The monthly Actions quota is small: a push must not start jobs unless the
+        commit message contains [ci] or a human dispatched the workflow."""
+        self.assertEqual(self.text.count("contains(github.event.head_commit.message, '[ci]')"), 3,
+                         "every job needs the [ci] guard")
+        self.assertIn("workflow_dispatch:", self.text)
+
     def test_workflow_runs_the_android_gate(self):
         self.assertIn("ci_android.py", self.text)
         self.assertIn("unittest", (ROOT / "agent_os/scripts/ci_android.py").read_text())
