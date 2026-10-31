@@ -1,0 +1,14 @@
+{
+  "apk": "agent_os/build/device-final2/agent-os.apk",
+  "cases": [
+    "RUN_SUITE",
+    "TASK_CENTER",
+    "RUN_DOCUMENTS"
+  ],
+  "ok": true,
+  "output_tail": [
+    "RUN_SUITE => 10-31 18:33:19.763  4949  5003 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE",
+    "TASK_CENTER => 10-31 18:33:21.733  5050  5078 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=TASK_CENTER",
+    "RUN_DOCUMENTS => 10-31 18:33:24.707  5107  5143 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+  ]
+}
