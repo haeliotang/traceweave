@@ -471,9 +471,8 @@ public final class MainActivity extends Activity {
             try {
                 int memCount = store != null ? store.listMemories().size() : 0;
                 syncInfo.setText((T.s("ui.encrypted_memory_vault_n", en))
-                        + (en ? memCount + " memories\nOn-demand archive" : memCount + " 条记忆\n按需加密归档"));
-                Toast.makeText(this, (en ? "Encrypted archive ready: " + memCount + " memories · export/import on demand"
-                        : "加密归档就绪: " + memCount + " 条记忆 · 按需导出与导入"), Toast.LENGTH_SHORT).show();
+                        + T.format("count.memories_archive", en, memCount));
+                Toast.makeText(this, T.format("archive.ready", en, memCount), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(this, "Sync: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -1190,7 +1189,7 @@ public final class MainActivity extends Activity {
             nextTitle = formatStepTitle(task.plan.steps.get(task.executionStep).title, en);
         summary.setText(planSteps == 0
             ? (T.s("ui.draft_only_no_plan_yet", en))
-            : (en ? planDone + "/" + planSteps + " steps" : planDone + "/" + planSteps + " 步")
+            : T.format("task.steps_progress", en, planDone, planSteps)
               + (nextTitle.isEmpty() ? "" : (T.s("ui.next", en)) + nextTitle));
         summary.setTextSize(11);
         summary.setTextColor(0xFF64748B);
@@ -1662,20 +1661,19 @@ public final class MainActivity extends Activity {
         long grantRemaining = capabilityBroker.remainingMillis(task.id, capability, scope);
         TextView capabilityStatus = new TextView(this);
         capabilityStatus.setText(grantRemaining > 0
-            ? (en ? label + " grant remaining ~" + ((grantRemaining + 59_999) / 60_000) + " min"
-                  : label + "授权剩余约 " + ((grantRemaining + 59_999) / 60_000) + " 分钟")
-            : (en ? label + ": Not granted" : label + "：未授权"));
+            ? T.format("cap.grant_remaining", en, label, (grantRemaining + 59_999) / 60_000)
+            : T.format("cap.not_granted", en, label));
         card.addView(capabilityStatus);
 
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
-        addCardActionButton(actions, en ? "Grant " + label : "授权" + label, view -> confirmCapabilityGrant(task, label, capability, scope), taskButtons);
-        addCardActionButton(actions, en ? "Read " + label : "读取" + label, view -> invokeCapability(task, capability, scope), taskButtons);
+        addCardActionButton(actions, T.format("cap.grant", en, label), view -> confirmCapabilityGrant(task, label, capability, scope), taskButtons);
+        addCardActionButton(actions, T.format("cap.read", en, label), view -> invokeCapability(task, capability, scope), taskButtons);
         card.addView(actions);
 
         LinearLayout revokeActions = new LinearLayout(this);
         revokeActions.setOrientation(LinearLayout.HORIZONTAL);
-        addCardActionButton(revokeActions, en ? "Revoke " + label + " grant" : "撤销" + label + "授权",
+        addCardActionButton(revokeActions, T.format("cap.revoke", en, label),
             view -> revokeCapability(task, label, capability, scope), taskButtons);
         card.addView(revokeActions);
     }
@@ -1684,14 +1682,14 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
             ? (T.s("ui.allow_this_task_to_query_retained_local", en))
-            : (en ? "Allow this task to read " + label + ". Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceform data are read." : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。");
+            : T.format("cap.allow_details", en, label);
         new AlertDialog.Builder(this)
-            .setTitle(en ? "Allow " + label + "?" : "授权" + label + "？")
+            .setTitle(T.format("cap.allow_title", en, label))
             .setMessage(details)
             .setNegativeButton(T.s("ui.deny", en), (dialog, which) -> {
                 try {
                     capabilityBroker.deny(task.id, capability, scope);
-                    showMessage(en ? "Denied " + label : "已拒绝" + label);
+                    showMessage(T.format("cap.denied", en, label));
                 } catch (Exception error) {
                     showError(error);
                 }
@@ -1699,7 +1697,7 @@ public final class MainActivity extends Activity {
             .setPositiveButton(T.s("ui.allow_for_5_minutes", en), (dialog, which) -> {
                 try {
                     capabilityBroker.grant(task.id, capability, scope);
-                    showMessage(en ? "Allowed this task to read " + label : "已授权此任务读取" + label);
+                    showMessage(T.format("cap.allowed", en, label));
                 } catch (Exception error) {
                     showError(error);
                 }

@@ -400,6 +400,18 @@ final class T {
         add("memorydetail.workflow_templates_in_this_source_are", ". Workflow templates in this source are included. Existing task snapshots and files remain. Changes since this preview are rejected.", " 的记录（包括此来源的工作流模板）。已有任务快照和文件仍保留。预览后发生变化的记录将拒绝删除。");
         add("taskcenter.cancel_this_task_a_dispatched_external", "Cancel this task? A dispatched external effect cannot be undone here.", "取消此任务？已发出的外部动作无法在此撤回。");
         add("taskcenter.keep", "Keep", "保留");
+        add("count.memories_archive", "%d memories\nOn-demand archive", "%d 条记忆\n按需加密归档");
+        add("archive.ready", "Encrypted archive ready: %d memories · export/import on demand", "加密归档就绪：%d 条记忆 · 按需导出与导入");
+        add("cap.grant_remaining", "%s grant remaining ~%d min", "%s 授权剩余约 %d 分钟");
+        add("cap.not_granted", "%s: Not granted", "%s：未授权");
+        add("cap.grant", "Grant %s", "授权%s");
+        add("cap.read", "Read %s", "读取%s");
+        add("cap.revoke", "Revoke %s grant", "撤销%s授权");
+        add("cap.allow_details", "Allow this task to read %s. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceform data are read.", "允许此任务读取固定的%s。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。");
+        add("cap.allow_title", "Allow %s?", "授权%s？");
+        add("cap.denied", "Denied %s", "已拒绝%s");
+        add("cap.allowed", "Allowed this task to read %s", "已授权此任务读取%s");
+        add("task.steps_progress", "%d/%d steps", "%d/%d 步");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
@@ -437,6 +449,10 @@ final class T {
     }
 
     private T() {}
+
+    static String format(String key, boolean english, Object... args) {
+        return String.format(java.util.Locale.ROOT, s(key, english), args);
+    }
 
     static String s(String key, boolean english) {
         String[] pair = STRINGS.get(key);
