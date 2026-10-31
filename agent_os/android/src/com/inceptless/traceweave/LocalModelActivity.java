@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,6 +23,8 @@ public final class LocalModelActivity extends Activity {
     private Button select;
     private Button delete;
     private Button cancel;
+    private LinearLayout guide;
+    private LinearLayout supported;
 
     static File modelFile(Context context) {
         return new File(new File(context.getFilesDir(), "local_model"), "qwen-1.5b-q4.gguf");
@@ -47,16 +50,43 @@ public final class LocalModelActivity extends Activity {
 
         root.addView(Ui.section(this, T.s("localmodel.status", en)));
         status = new TextView(this);
-        status.setTextSize(12);
-        status.setTextColor(Ui.COLOR_TEXT);
+        status.setTextSize(13);
+        status.setTextColor(Ui.text(this));
         root.addView(status);
+
+        // Guidance for a first install: the page used to assume the reader already
+        // knew which file to fetch and where to put it.
+        guide = new LinearLayout(this);
+        guide.setOrientation(LinearLayout.VERTICAL);
+        TextView guideTitle = Ui.title(this, T.s("model.guide_title", en));
+        guideTitle.setTextSize(14);
+        guide.addView(guideTitle);
+        for (String key : new String[]{"model.guide_step1", "model.guide_step2", "model.guide_step3"}) {
+            TextView step = Ui.meta(this, T.s(key, en));
+            step.setPadding(0, Ui.dp(this, 4), 0, 0);
+            guide.addView(step);
+        }
+        root.addView(guide);
+
+        supported = new LinearLayout(this);
+        supported.setOrientation(LinearLayout.VERTICAL);
+        TextView supportedTitle = Ui.title(this, T.s("model.supported_title", en));
+        supportedTitle.setTextSize(14);
+        supported.addView(supportedTitle);
+        for (LocalModelCatalog.Entry catalogue : LocalModelCatalog.all()) {
+            TextView row = Ui.meta(this, catalogue.display + " · " + gigabytes(catalogue.size)
+                + " · " + T.s("model.supported_note", en));
+            row.setPadding(0, Ui.dp(this, 4), 0, 0);
+            supported.addView(row);
+        }
+        root.addView(supported);
 
         root.addView(Ui.section(this, T.s("localmodel.import", en)));
         select = button(root, T.s("localmodel.choose_model_file", en), () -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
             try { startActivityForResult(intent, SELECT_MODEL); }
             catch (Exception error) { status.setText(T.s("localmodel.no_file_picker_available", en)); }
-        });
+        }, true);
         select.setAllCaps(false);
         select.setTextSize(12);
         cancel = button(root, T.s("localmodel.cancel_import", en), () -> {
@@ -139,16 +169,30 @@ public final class LocalModelActivity extends Activity {
             : modelFile(this).isFile() ? (T.s("localmodel.model_file_present", en))
             : (T.s("localmodel.no_model_installed", en)));
         if (!LocalModelRuntime.isAvailable()) status.append(T.s("localmodel.local_runtime_is_unavailable_on_this_d", en));
+        if (guide != null) guide.setVisibility(verified == null && !modelFile(this).isFile() ? View.VISIBLE : View.GONE);
+        if (supported != null) supported.setVisibility(verified == null ? View.VISIBLE : View.GONE);
+    }
+
+    private static String gigabytes(long bytes) {
+        // Decimal GB keeps this consistent with how the models are advertised.
+        return String.format(java.util.Locale.US, "%.1f GB", bytes / 1000.0 / 1000.0 / 1000.0);
     }
 
     private Button button(LinearLayout root, String label, Runnable action) {
+        return button(root, label, action, false);
+    }
+
+    private Button button(LinearLayout root, String label, Runnable action, boolean primary) {
         Button button = new Button(this);
         button.setText(label);
         button.setAllCaps(false);
+        button.setTextSize(13);
+        button.setBackgroundColor(primary ? 0xFF0F172A : Ui.secondaryBg(this));
+        button.setTextColor(primary ? 0xFFFFFFFF : Ui.secondaryFg(this));
         button.setOnClickListener(view -> action.run());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
-        params.setMargins(0, Ui.dp(this, 4), 0, 0);
+            LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 48));
+        params.setMargins(0, Ui.dp(this, 6), 0, 0);
         root.addView(button, params);
         return button;
     }

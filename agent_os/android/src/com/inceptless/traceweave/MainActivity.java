@@ -1211,6 +1211,8 @@ public final class MainActivity extends Activity implements MemoryHost {
         description.setTextSize(15);
         description.setTypeface(null, android.graphics.Typeface.BOLD);
         description.setTextColor(Ui.text(this));
+        description.setOnClickListener(view -> startActivity(
+            new Intent(this, TaskDetailActivity.class).putExtra(TaskDetailActivity.EXTRA_TASK_ID, task.id)));
         headerRow.addView(description, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         TextView badge = DocumentAction.locallyVerified(task)

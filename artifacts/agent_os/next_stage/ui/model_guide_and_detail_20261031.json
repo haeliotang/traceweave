@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-31",
+  "model_page": {
+    "guide": "first-install instructions in three steps, shown only while no model is installed",
+    "catalog": "supported models listed with size and the checksum note, hidden once a model is verified",
+    "buttons": "one filled primary (Choose model file) and secondary actions at 48dp; the Delete action stays disabled until a model exists"
+  },
+  "task_detail_page": {
+    "activity": "TaskDetailActivity, opened by tapping the task title",
+    "content": "title, status and timestamp, progress,每 step with status/capability/observation, and the audit trail for this task formatted as MM-dd HH:mm:ss · event"
+  },
+  "device_evidence": {
+    "model_page": "artifacts/agent_os/next_stage/ui/model_guide_20261031.png",
+    "detail_page": "artifacts/agent_os/next_stage/ui/task_detail_page_20261031.png",
+    "top_activity": "com.inceptless.traceweave/.TaskDetailActivity"
+  },
+  "verification": "host suite OK; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}

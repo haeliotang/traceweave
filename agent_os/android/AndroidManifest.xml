@@ -71,6 +71,7 @@
         <activity android:name=".TaskCenterActivity" android:exported="false" />
         <activity android:name=".AuditActivity" android:exported="false" />
         <activity android:name=".MemoryVaultActivity" android:exported="false" />
+        <activity android:name=".TaskDetailActivity" android:exported="false" />
         <activity android:name=".MemoryReviewActivity" android:exported="false" />
         <service android:name=".AutoSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity android:name=".MainActivity" android:exported="true">

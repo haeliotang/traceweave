@@ -715,6 +715,17 @@ final class T {
         add("task.filter_done", "Done", "已结束");
         add("task.search_hint", "Search tasks...", "搜索任务...");
         add("task.none_matching", "No matching tasks", "没有匹配的任务");
+        add("model.guide_title", "First install, three steps", "首次安装：三步");
+        add("model.guide_step1", "1. Download one supported model file on a computer.", "1. 在电脑上下载一个受支持的模型文件。");
+        add("model.guide_step2", "2. Copy it to the phone (USB or Downloads). Nothing is fetched by this app.", "2. 用数据线或下载目录把文件传到手机；本应用不会自行下载。");
+        add("model.guide_step3", "3. Tap Choose model file below; the app verifies the checksum before use.", "3. 点下方「选择模型文件」导入，应用会先校验再使用。");
+        add("model.supported_title", "Supported models", "受支持的模型");
+        add("model.supported_note", "verified by checksum", "按校验和验证");
+        add("taskdetail.back", "Back", "返回");
+        add("taskdetail.missing", "This task no longer exists.", "该任务已不存在。");
+        add("taskdetail.steps", "Steps", "执行步骤");
+        add("taskdetail.audit", "Audit for this task", "本任务审计");
+        add("taskdetail.no_audit", "No audit entries yet.", "还没有审计记录。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
