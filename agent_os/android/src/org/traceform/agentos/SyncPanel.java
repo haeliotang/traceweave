@@ -41,6 +41,15 @@ final class SyncPanel {
         syncRow.addView(syncButtons);
 
         android.widget.CheckBox autoSync = new android.widget.CheckBox(host);
+        Button intervalButton = compact(T.format("sync.interval_button", en, intervalLabel(host.storeRef().syncAutoIntervalMs())), view -> {
+            long[] options = {15 * 60 * 1000L, 60 * 60 * 1000L, 6 * 60 * 60 * 1000L};
+            long current = host.storeRef().syncAutoIntervalMs();
+            int next = 0;
+            for (int index = 0; index < options.length; index++) if (options[index] == current) next = (index + 1) % options.length;
+            host.storeRef().setSyncAutoIntervalMs(options[next]);
+            AutoSyncScheduler.apply(host, host.storeRef().syncAutoEnabled(), options[next]);
+            ((Button) view).setText(T.format("sync.interval_button", en, intervalLabel(options[next])));
+        });
         autoSync.setText(T.s("sync.auto", en));
         autoSync.setTextSize(11);
         autoSync.setTextColor(0xFF64748B);
@@ -64,6 +73,10 @@ final class SyncPanel {
             }
         });
         syncRow.addView(autoSync);
+        LinearLayout.LayoutParams intervalLp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, host.dpRef(40));
+        intervalLp.setMargins(host.dpRef(6), 0, 0, 0);
+        syncRow.addView(intervalButton, intervalLp);
         return syncRow;
     }
 
@@ -271,6 +284,12 @@ final class SyncPanel {
             final String json = payload;
             host.uiRef().post(() -> { if (!host.isDestroyedRef()) showPairResult(json, en); });
         });
+    }
+
+    private String intervalLabel(long intervalMs) {
+        long minutes = Math.max(1, intervalMs / 60_000L);
+        if (minutes < 60) return minutes + " min";
+        return (minutes / 60) + " h";
     }
 
     private void showPairResult(String json, boolean en) {

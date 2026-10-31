@@ -1332,6 +1332,16 @@ final class AgentStore extends SQLiteOpenHelper {
         return pairings;
     }
 
+    long syncAutoIntervalMs() {
+        return appContext.getSharedPreferences("agent_os_prefs", 0)
+            .getLong("sync_auto_interval_ms", AutoSyncPolicy.DEFAULT_INTERVAL_MS);
+    }
+
+    void setSyncAutoIntervalMs(long intervalMs) {
+        appContext.getSharedPreferences("agent_os_prefs", 0).edit()
+            .putLong("sync_auto_interval_ms", AutoSyncPolicy.clampInterval(intervalMs)).apply();
+    }
+
     boolean syncAutoEnabled() {
         return appContext.getSharedPreferences("agent_os_prefs", 0).getBoolean("sync_auto", false);
     }
