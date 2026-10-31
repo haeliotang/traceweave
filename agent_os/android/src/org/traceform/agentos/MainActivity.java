@@ -1844,10 +1844,16 @@ public final class MainActivity extends Activity {
         EditText second = passwordField("再次输入口令");
         fields.addView(first);
         fields.addView(second);
-        new AlertDialog.Builder(this)
-            .setTitle("加密导出")
-            .setMessage(isEnglish() ? "Use and retain a passphrase of at least 12 characters. To restore this archive, the destination must run Agent OS 0.6.0 or later."
-                : "请使用至少 12 个字符的长口令，并妥善保存。新档案需在 Agent OS 0.6.0 或更新版本导入；忘记口令后无法恢复内容。")
+        String exportNote = isEnglish()
+            ? "Use and retain a passphrase of at least 12 characters. To restore this archive, the destination must run Agent OS 0.6.0 or later."
+            : "请使用至少 12 个字符的长口令，并妥善保存。新档案需在 Agent OS 0.6.0 或更新版本导入；忘记口令后无法恢复内容。";
+        fields.addView(Ui.title(this, isEnglish() ? "Encrypted export" : "加密导出"), 0);
+        TextView exportNoteView = new TextView(this);
+        exportNoteView.setText(exportNote);
+        exportNoteView.setTextSize(12);
+        exportNoteView.setTextColor(Ui.muted(this));
+        fields.addView(exportNoteView, 1);
+        AlertDialog exportDialog = new AlertDialog.Builder(this)
             .setView(fields)
             .setNegativeButton("取消", null)
             .setPositiveButton("选择保存位置", (dialog, which) -> {
@@ -1881,7 +1887,9 @@ public final class MainActivity extends Activity {
                     showMessage("系统没有可用的文件保存位置");
                 }
             })
-            .show();
+            .create();
+        exportDialog.show();
+        Ui.themeDialog(exportDialog, this);
     }
 
     void chooseArchiveToImport() {
@@ -1904,9 +1912,13 @@ public final class MainActivity extends Activity {
         LinearLayout holder = new LinearLayout(this);
         holder.setPadding(dp(24), dp(8), dp(24), 0);
         holder.addView(input);
-        new AlertDialog.Builder(this)
-            .setTitle(T.s("ui.unlock_archive", en))
-            .setMessage(T.s("ui.review_conflicting_memories_before_imp", en))
+        holder.addView(Ui.title(this, T.s("ui.unlock_archive", en)), 0);
+        TextView unlockNote = new TextView(this);
+        unlockNote.setText(T.s("ui.review_conflicting_memories_before_imp", en));
+        unlockNote.setTextSize(12);
+        unlockNote.setTextColor(Ui.muted(this));
+        holder.addView(unlockNote, 1);
+        AlertDialog unlockDialog = new AlertDialog.Builder(this)
             .setView(holder)
             .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
             .setPositiveButton(T.s("ui.review", en), (dialog, which) -> {
@@ -1920,7 +1932,9 @@ public final class MainActivity extends Activity {
                 reviewArchive(uri, passphrase);
             })
             .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
-            .show();
+            .create();
+        unlockDialog.show();
+        Ui.themeDialog(unlockDialog, this);
     }
 
     private EditText passwordField(String hint) {

@@ -40,6 +40,29 @@ final class Ui {
     static int muted(Context context) { return dark(context) ? 0xFF94A3B8 : COLOR_MUTED; }
     static int stroke(Context context) { return dark(context) ? 0xFF334155 : COLOR_STROKE; }
 
+    /** Recolors text and input fields inside a dark dialog. */
+    static void styleContent(Context context, android.view.View view) {
+        if (!dark(context) || view == null) return;
+        if (view instanceof android.widget.EditText) {
+            android.widget.EditText field = (android.widget.EditText) view;
+            field.setTextColor(text(context));
+            field.setHintTextColor(muted(context));
+            if (android.os.Build.VERSION.SDK_INT >= 21 && field.getBackground() != null) {
+                field.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF475569));
+            }
+        } else if (view instanceof android.widget.Button) {
+            // buttons keep their own styling
+        } else if (view instanceof TextView) {
+            ((TextView) view).setTextColor(text(context));
+        }
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int index = 0; index < group.getChildCount(); index++) {
+                styleContent(context, group.getChildAt(index));
+            }
+        }
+    }
+
     /** Dark-mode dialog surface: window, title, message and action buttons. */
     static void themeDialog(android.app.AlertDialog dialog, Context context) {
         if (dialog == null || !dark(context) || dialog.getWindow() == null) return;
@@ -54,6 +77,7 @@ final class Ui {
             android.widget.Button button = dialog.getButton(which);
             if (button != null) button.setTextColor(0xFF7DD3FC);
         }
+        styleContent(context, dialog.getWindow().getDecorView());
     }
 
     /** Builds a dialog body with our own title and message so dark mode stays readable. */

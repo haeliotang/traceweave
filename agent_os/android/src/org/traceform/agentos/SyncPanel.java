@@ -84,6 +84,9 @@ final class SyncPanel {
             LinearLayout holder = new LinearLayout(host);
             holder.setOrientation(LinearLayout.VERTICAL);
             holder.setPadding(host.dpRef(24), host.dpRef(8), host.dpRef(24), 0);
+            TextView heading = Ui.title(host, T.s("pair.title", en));
+            heading.setTextSize(14);
+            holder.addView(heading);
             holder.addView(localView);
             holder.addView(syncView);
             holder.addView(remote);
@@ -98,8 +101,7 @@ final class SyncPanel {
             holder.addView(waitButton);
             holder.addView(connectButton);
 
-            new AlertDialog.Builder(host)
-                .setTitle(T.s("pair.title", en))
+            AlertDialog pairDialog = new AlertDialog.Builder(host)
                 .setView(holder)
                 .setNegativeButton(T.s("common.cancel", en), null)
                 .setPositiveButton(T.s("sync.pair_by_fingerprint", en), (dialog, which) -> {
@@ -113,10 +115,9 @@ final class SyncPanel {
                         byte[] nonce = SyncPairing.pairingNonce(local, remoteValue);
                         String code = SyncPairing.code(local, remoteValue, nonce);
                         String deviceId = "peer-" + remoteValue.substring(0, 16);
-                        new AlertDialog.Builder(host)
-                            .setTitle(T.s("sync.compare_this_code", en))
-                            .setMessage((T.s("sync.code", en)) + code + "\n"
-                                + (T.s("pair.same_code", en)))
+                        AlertDialog compareDialog = new AlertDialog.Builder(host)
+                            .setView(Ui.dialogBody(host, T.s("sync.compare_this_code", en),
+                                T.s("sync.code", en) + code + "\n" + T.s("pair.same_code", en), 13))
                             .setNegativeButton(T.s("common.cancel", en), null)
                             .setPositiveButton(T.s("pair.confirm", en), (inner, ignored) -> {
                                 try {
@@ -126,12 +127,16 @@ final class SyncPanel {
                                 } catch (Exception error) {
                                     host.failWith(error);
                                 }
-                            }).show();
+                            }).create();
+                        compareDialog.show();
+                        Ui.themeDialog(compareDialog, host);
                     } catch (Exception error) {
                         host.failWith(error);
                     }
                 })
-                .show();
+                .create();
+            pairDialog.show();
+            Ui.themeDialog(pairDialog, host);
         } catch (Exception error) {
             host.failWith(error);
         }
