@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-31",
+  "goal": "make VERIFY_WORKFLOW_UI runnable from the device regression script",
+  "fixture_fixes": [
+    "uiRecipe now accepts the template name 'SYNTHETIC checklist' that the seed actually creates, not only 'SYNTHETIC reusable checklist'",
+    "SEED_WORKFLOW_UI now creates that reusable template, so the verify case no longer depends on a template left by a previous case"
+  ],
+  "result_after_fixes": "SEED_WORKFLOW_UI PASS (0 checks), OPEN_WORKFLOW_UI PASS (1 check), VERIFY_WORKFLOW_UI FAIL: 'same UI-created template produced two independently verified files'",
+  "interpretation": "the case now reaches its real assertions; it expects two completed runs (trip A / trip B) created through the workflow UI, which a headless adb run does not produce",
+  "decision": "leave the case out of the automated suites and document that it needs interactive UI driving; the two fixture fixes stay because they are correct on their own"
+}

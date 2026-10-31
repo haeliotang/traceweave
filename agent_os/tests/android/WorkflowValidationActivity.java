@@ -75,6 +75,9 @@ public final class WorkflowValidationActivity extends Activity {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
                     store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC camping preference: keep checklists concise");
                     store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC camping Traceform fact", AgentStore.MEMORY_SOURCE_TRACEFORM, "synthetic:ui");
+                    // The UI verification needs a reusable template; seed it here so the case stands alone.
+                    WorkflowTemplate recipe = new WorkflowTemplate("SYNTHETIC checklist", "Prepare a local Markdown checklist for {{input}}.");
+                    store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
                 }
                 else if ("OPEN_WORKFLOW_UI".equals(getIntent().getAction())) check(true, "open existing synthetic workflows");
                 else if ("VERIFY_WORKFLOW_UI".equals(getIntent().getAction())) verifyWorkflowUi(store, true);
@@ -805,7 +808,10 @@ public final class WorkflowValidationActivity extends Activity {
 
     private AgentStore.Memory uiRecipe(AgentStore store) throws Exception {
         for (AgentStore.Memory memory : store.listMemories())
-            if (WorkflowTemplate.isTemplate(memory) && "SYNTHETIC reusable checklist".equals(WorkflowTemplate.decode(memory).name)) return memory;
+            if (WorkflowTemplate.isTemplate(memory)) {
+                String name = WorkflowTemplate.decode(memory).name;
+                if ("SYNTHETIC reusable checklist".equals(name) || "SYNTHETIC checklist".equals(name)) return memory;
+            }
         throw new IllegalStateException("Synthetic UI template not found");
     }
     private void workflowGuard(AgentStore store) throws Exception {
