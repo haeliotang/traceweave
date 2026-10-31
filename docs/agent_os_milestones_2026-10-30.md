@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：GBNF 约束解码——拉取 pinned llama.cpp（`d78f40d9d`）重建运行时，`generate` 增加 grammar 参数（grammar + greedy 组成 sampler chain）；设备上 10 条 JSON 用例 **10/10** 为语法合法且含必需键（无 grammar 时 9/10，D2 严格判据为 0/10），中位 8.4 s。收据 [grammar_json_20261031](artifacts/agent_os/next_stage/grammar_json_20261031.json)。首次尝试因裸 grammar sampler 触发 SIGABRT，改用 sampler chain 修复。
 - 2026-10-31：弹窗深色（部分完成）——记忆详情与配对结果改为自绘标题/正文并套用深色背景，文字可读（[memory_detail_dark_themed](artifacts/agent_os/next_stage/ui/memory_detail_dark_themed.png)）；修改记忆等系统文案弹窗仍保持浅色。新增 `check_a11y_android.py`：主屏 10、设置 10、审计 3、任务中心 2 个可点击语音类控件，未标注数均为 0。
 - 2026-10-31：TalkBack 可启用（`com.android.talkback` 存在，服务可被系统识别），但在 TalkBack 开启后 `uiautomator` 只抓到 13 个节点、仅 3 个带标签，无法据此验证朗读；已恢复关闭。无障碍结论仍限于“控件带文本 + 触控 48dp”。
 - 2026-10-31：无障碍初检——`uiautomator` 导出的主屏 10 个按钮全部带可读文本，无纯图标无标签控件；动作网格触控 48dp。深色模式下系统 AlertDialog 仍为浅色（把窗口改成深色会导致标题/正文黑底黑字，已回滚，见 [memory_detail_dark_light_dialog](artifacts/agent_os/next_stage/ui/memory_detail_dark_light_dialog.png)）。

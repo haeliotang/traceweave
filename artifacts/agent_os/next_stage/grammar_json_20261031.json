@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "model": "MiniCPM5-2B Q4_K_M",
+  "change": "GBNF grammar-constrained decoding added to the pinned llama.cpp runtime (d78f40d9d), applied per JSON case with a grammar matching the required keys",
+  "result": {
+    "passed": 10,
+    "total": 10,
+    "criterion": "grammar-valid JSON containing the required keys",
+    "median_ms": 8484
+  },
+  "comparison": {
+    "d2_strict_json": "0/10 — exact expected values, a stricter criterion",
+    "prompt_only_json2": "9/10 — schema prompt + parse + one retry, no grammar",
+    "grammar_json3": "10/10 — grammar forces the object shape in one pass"
+  },
+  "notes": [
+    "The first two grammar attempts aborted the app because a bare grammar sampler was used; wrapping grammar + greedy in a sampler chain fixed it",
+    "Outputs are compact JSON without fences or think traces"
+  ],
+  "limitations": [
+    "Ten synthetic prompts only; not a content-correctness benchmark",
+    "The app document flow still passes no grammar (Markdown drafts are unconstrained)",
+    "Grammar is built per key list, so it proves shape enforcement rather than natural-language understanding"
+  ]
+}

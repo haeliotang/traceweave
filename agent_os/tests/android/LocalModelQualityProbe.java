@@ -123,7 +123,7 @@ public final class LocalModelQualityProbe extends Activity {
             long started = SystemClock.elapsedRealtime();
             try {
                 LocalModelProbe.prepare();
-                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 32),
+                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 32, null),
                     StandardCharsets.UTF_8);
                 report.put("elapsed_ms", SystemClock.elapsedRealtime() - started)
                     .put("output_chars", text.length()).put("exact_done", "DONE".equals(text.trim()))
@@ -136,7 +136,7 @@ public final class LocalModelQualityProbe extends Activity {
             report.put("prompt_chars", prompt.length());
             try {
                 LocalModelProbe.prepare();
-                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 16),
+                String text = new String(LocalModelProbe.generate(path, prompt.getBytes(StandardCharsets.UTF_8), 16, null),
                     StandardCharsets.UTF_8);
                 report.put("accepted", true).put("output_chars", text.length());
             } catch (Exception error) {
@@ -147,10 +147,10 @@ public final class LocalModelQualityProbe extends Activity {
             try {
                 LocalModelProbe.prepare();
                 String first = new String(LocalModelProbe.generate(path,
-                    "Name one color and nothing else.".getBytes(StandardCharsets.UTF_8), 16), StandardCharsets.UTF_8).trim();
+                    "Name one color and nothing else.".getBytes(StandardCharsets.UTF_8), 16, null), StandardCharsets.UTF_8).trim();
                 LocalModelProbe.prepare();
                 String second = new String(LocalModelProbe.generate(path,
-                    ("You said: " + first + ". Reply with exactly DONE.").getBytes(StandardCharsets.UTF_8), 16),
+                    ("You said: " + first + ". Reply with exactly DONE.").getBytes(StandardCharsets.UTF_8), 16, null),
                     StandardCharsets.UTF_8).trim();
                 report.put("elapsed_ms", SystemClock.elapsedRealtime() - started)
                     .put("first", first.length() > 60 ? first.substring(0, 60) : first)
@@ -169,7 +169,7 @@ public final class LocalModelQualityProbe extends Activity {
                     try {
                         LocalModelProbe.prepare();
                         byte[] raw = LocalModelProbe.generate(path,
-                            ("Reply with exactly DONE. Request " + slot).getBytes(StandardCharsets.UTF_8), 16);
+                            ("Reply with exactly DONE. Request " + slot).getBytes(StandardCharsets.UTF_8), 16, null);
                         results[slot] = new String(raw, StandardCharsets.UTF_8).trim();
                     } catch (Exception error) {
                         results[slot] = "<error: " + error.getMessage() + ">";
@@ -193,7 +193,7 @@ public final class LocalModelQualityProbe extends Activity {
                 try {
                     LocalModelProbe.prepare();
                     byte[] raw = LocalModelProbe.generate(path,
-                        ("Write a long synthetic paragraph about tents. " + longPrompt(120)).getBytes(StandardCharsets.UTF_8), 96);
+                        ("Write a long synthetic paragraph about tents. " + longPrompt(120)).getBytes(StandardCharsets.UTF_8), 96, null);
                     cancelled[0] = new String(raw, StandardCharsets.UTF_8);
                 } catch (Exception error) {
                     cancelled[0] = "<error: " + error.getMessage() + ">";
@@ -225,7 +225,7 @@ public final class LocalModelQualityProbe extends Activity {
             long startedAt = SystemClock.elapsedRealtime();
             try {
                 LocalModelProbe.prepare();
-                output = new String(LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96),
+                output = new String(LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96, null),
                     StandardCharsets.UTF_8);
             } catch (Exception error) {
                 output = "<error: " + error.getMessage() + ">";
@@ -265,6 +265,55 @@ public final class LocalModelQualityProbe extends Activity {
         {"empty", "Return JSON with keys ok (boolean) and note (string) when nothing needs doing.", "ok,note"}
     };
 
+    private static String jsonGrammarFor(String keys) {
+        StringBuilder root = new StringBuilder("root ::= \"{\" ws ");
+        String[] parts = keys.split(",");
+        for (int index = 0; index < parts.length; index++) {
+            if (index > 0) root.append("ws \",\" ws ");
+            root.append("\"\\\"").append(parts[index]).append("\\\"\" ws \":\" ws value ws ");
+        }
+        root.append("\"}\"\n");
+        return root
+            + "value ::= array | string | number | \"true\" | \"false\"\n"
+            + "array ::= \"[\" ws (value (ws \",\" ws value)*)? ws \"]\"\n"
+            + "string ::= \"\\\"\" ( [^\"\\\\] | \"\\\\\" . )* \"\\\"\"\n"
+            + "number ::= [0-9]+\n"
+            + "ws ::= [ \\t\\n]*\n";
+    }
+
+    private void runJsonGrammar(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        int passed = 0;
+        for (String[] item : JSON_CASES) {
+            String grammar = jsonGrammarFor(item[2]);
+            String prompt = JsonText.schemaPrompt(item[1],
+                "an object with the requested keys", "{\"title\":\"camping\",\"steps\":[\"pack\",\"go\"]}");
+            boolean ok = false;
+            String output = "";
+            long startedAt = SystemClock.elapsedRealtime();
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128, grammar),
+                    StandardCharsets.UTF_8);
+                org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
+                ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
+            } catch (Exception error) {
+                output = "<error: " + error.getMessage() + ">";
+            }
+            if (ok) passed++;
+            results.put(new JSONObject().put("case", item[0]).put("required_keys", item[2]).put("grammar", grammar)
+                .put("output", output.length() > 200 ? output.substring(0, 200) : output)
+                .put("elapsed_ms", SystemClock.elapsedRealtime() - startedAt).put("passed", ok));
+        }
+        JSONObject summary = new JSONObject().put("passed", passed).put("total", JSON_CASES.length)
+            .put("mode", "GBNF grammar + schema prompt").put("criterion", "grammar-valid JSON containing the required keys")
+            .put("cases", results);
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "json3.json"))) {
+            output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON3_DONE " + passed + "/" + JSON_CASES.length);
+    }
+
     private void runJson2(File model) throws Exception {
         JSONArray results = new JSONArray();
         int passed = 0;
@@ -280,7 +329,7 @@ public final class LocalModelQualityProbe extends Activity {
                 attempts++;
                 try {
                     LocalModelProbe.prepare();
-                    last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128),
+                    last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128, null),
                         StandardCharsets.UTF_8);
                     org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(last));
                     ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
@@ -340,7 +389,7 @@ public final class LocalModelQualityProbe extends Activity {
                     }
                     LocalModelProbe.prepare();
                     long start = SystemClock.elapsedRealtime();
-                    byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96);
+                    byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96, null);
                     StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw));
                     results.put(new JSONObject().put("round", round + 1).put("case", item[0])
@@ -384,6 +433,10 @@ public final class LocalModelQualityProbe extends Activity {
                     runStress3(model, getIntent().getStringExtra("phase"));
                     return;
                 }
+                if ("JSON3".equals(getIntent().getAction())) {
+                    runJsonGrammar(model);
+                    return;
+                }
                 if ("JSON2".equals(getIntent().getAction())) {
                     runJson2(model);
                     return;
@@ -400,7 +453,7 @@ public final class LocalModelQualityProbe extends Activity {
                 for (String[] item : CASES) {
                     LocalModelProbe.prepare();
                     long start = SystemClock.elapsedRealtime();
-                    byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96);
+                    byte[] raw = LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96, null);
                     String response = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw)).toString().trim();
                     boolean passed;

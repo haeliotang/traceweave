@@ -16,7 +16,7 @@ public final class LocalModelProbe extends Activity {
     static { System.loadLibrary("traceform_local_model"); }
     static native void prepare();
     static native void cancel();
-    static native byte[] generate(String path, byte[] prompt, int maxTokens);
+    static native byte[] generate(String path, byte[] prompt, int maxTokens, String grammar);
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -33,18 +33,18 @@ public final class LocalModelProbe extends Activity {
                 if (!MODEL_SHA.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 byte[] prompt = "List three items for a synthetic camping checklist.".getBytes(StandardCharsets.UTF_8);
                 prepare(); cancel();
-                try { generate(model.getPath(), prompt, 32); throw new IllegalStateException("Pre-start cancellation ignored"); }
+                try { generate(model.getPath(), prompt, 32, null); throw new IllegalStateException("Pre-start cancellation ignored"); }
                 catch (IllegalStateException expected) {
                     if (!expected.getMessage().contains("cancelled")) throw expected;
                 }
                 prepare();
-                try { generate(model.getPath(), new byte[4097], 32); throw new IllegalStateException("Oversized input accepted"); }
+                try { generate(model.getPath(), new byte[4097], 32, null); throw new IllegalStateException("Oversized input accepted"); }
                 catch (IllegalStateException expected) {
                     if (!expected.getMessage().contains("limit")) throw expected;
                 }
                 prepare();
                 long started = android.os.SystemClock.elapsedRealtime();
-                byte[] raw = generate(model.getPath(), prompt, 48);
+                byte[] raw = generate(model.getPath(), prompt, 48, null);
                 String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                     .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(raw)).toString();
                 if (text.trim().isEmpty() || text.length() > 32768) throw new IllegalStateException("Invalid generated text");
@@ -52,7 +52,7 @@ public final class LocalModelProbe extends Activity {
                 prepare();
                 AtomicReference<Throwable> failure = new AtomicReference<>();
                 Thread worker = new Thread(() -> {
-                    try { generate(model.getPath(), prompt, 128); }
+                    try { generate(model.getPath(), prompt, 128, null); }
                     catch (Throwable error) { failure.set(error); }
                 });
                 worker.start(); Thread.sleep(40); cancel(); worker.join(15000);

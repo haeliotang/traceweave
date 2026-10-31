@@ -40,7 +40,7 @@ final class LocalModelDraft {
                         synchronized (ACTIVE_LOCK) { activeRequest = cancelled; }
                         LocalModelRuntime.prepare();
                     }
-                    byte[] output = LocalModelRuntime.generate(model.getPath(), attemptInput, entry.maxTokens);
+                    byte[] output = LocalModelRuntime.generate(model.getPath(), attemptInput, entry.maxTokens, null);
                     if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
                     String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();

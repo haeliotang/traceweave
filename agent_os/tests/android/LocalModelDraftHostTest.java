@@ -85,7 +85,7 @@ final class LocalModelRuntime {
     static boolean isAvailable() { return true; }
     static void prepare() { cancelled.set(false); }
     static void cancel() { cancelled.set(true); }
-    static byte[] generate(String path, byte[] prompt, int maxTokens) throws Exception {
+    static byte[] generate(String path, byte[] prompt, int maxTokens, String grammar) throws Exception {
         entered.countDown();
         if (!release.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("runtime timed out");
         if (cancelled.get()) throw new IllegalStateException("runtime cancelled");

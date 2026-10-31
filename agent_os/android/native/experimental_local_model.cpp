@@ -47,7 +47,8 @@ Java_org_traceform_agentos_LocalModelProbe_cancel(JNIEnv *, jclass) {
 
 extern "C" JNIEXPORT jbyteArray JNICALL
 Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring model_path,
-                                                    jbyteArray prompt_bytes, jint max_tokens) {
+                                                    jbyteArray prompt_bytes, jint max_tokens,
+                                                    jstring grammar_text) {
     std::unique_lock<std::mutex> lock(run_mutex, std::try_to_lock);
     try {
         require(lock.owns_lock(), "Another local model request is running");
@@ -88,8 +89,23 @@ Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring
         params.abort_callback = abort_decoding;
         std::unique_ptr<llama_context, decltype(&llama_free)> context(llama_init_from_model(model.get(), params), llama_free);
         require(context != nullptr, "Local model context could not be created");
-        std::unique_ptr<llama_sampler, decltype(&llama_sampler_free)> sampler(llama_sampler_init_greedy(), llama_sampler_free);
+        std::string grammar;
+        if (grammar_text != nullptr) {
+            const char *raw = env->GetStringUTFChars(grammar_text, nullptr);
+            require(raw != nullptr, "Cannot read grammar");
+            grammar.assign(raw);
+            env->ReleaseStringUTFChars(grammar_text, raw);
+        }
+        require(grammar.size() <= 16384, "Local model grammar exceeds the limit");
+        std::unique_ptr<llama_sampler, decltype(&llama_sampler_free)> sampler(
+            llama_sampler_chain_init(llama_sampler_chain_default_params()), llama_sampler_free);
         require(sampler != nullptr, "Local model sampler could not be created");
+        if (!grammar.empty()) {
+            llama_sampler *grammar_sampler = llama_sampler_init_grammar(vocab, grammar.c_str(), "root");
+            require(grammar_sampler != nullptr, "Local model grammar could not be applied");
+            llama_sampler_chain_add(sampler.get(), grammar_sampler);
+        }
+        llama_sampler_chain_add(sampler.get(), llama_sampler_init_greedy());
         llama_batch batch = llama_batch_get_one(tokens.data(), count);
         std::string result;
         for (int i = 0; i < max_tokens; ++i) {
@@ -127,6 +143,6 @@ Java_org_traceform_agentos_LocalModelRuntime_cancel(JNIEnv *env, jclass type) {
 
 extern "C" JNIEXPORT jbyteArray JNICALL
 Java_org_traceform_agentos_LocalModelRuntime_generate(JNIEnv *env, jclass type, jstring path,
-                                                    jbyteArray prompt, jint max_tokens) {
-    return Java_org_traceform_agentos_LocalModelProbe_generate(env, type, path, prompt, max_tokens);
+                                                    jbyteArray prompt, jint max_tokens, jstring grammar) {
+    return Java_org_traceform_agentos_LocalModelProbe_generate(env, type, path, prompt, max_tokens, grammar);
 }

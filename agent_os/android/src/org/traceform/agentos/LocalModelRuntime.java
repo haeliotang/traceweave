@@ -14,5 +14,5 @@ final class LocalModelRuntime {
     static boolean isAvailable() { return AVAILABLE; }
     static native void prepare();
     static native void cancel();
-    static native byte[] generate(String path, byte[] prompt, int maxTokens);
+    static native byte[] generate(String path, byte[] prompt, int maxTokens, String grammar);
 }
