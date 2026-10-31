@@ -56,25 +56,19 @@ public final class MainActivity extends Activity implements MemoryHost {
     };
     final java.util.ArrayList<Button> persistentButtons = new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> taskButtons = new java.util.ArrayList<>();
-    private final java.util.ArrayList<Button> memoryButtons = new java.util.ArrayList<>();
     private AgentStore store;
     private CapabilityBroker capabilityBroker;
     private EditText taskInput;
     private ScrollView pageScroll;
     private LinearLayout onboardingCard;
     private TextView bottomSummary;
-    private EditText memoryInput;
-    private EditText memorySearch;
-    private Spinner memoryKind;
     private LinearLayout taskList;
-    private LinearLayout memoryList;
     private TextView floatPermStatus;
     private TextView vadLiveStatus;
     private Button btnToggleVoice;
     private static final int REQ_RECORD_AUDIO = 2001;
     private static final int REQ_NOTIFICATIONS = 7002;
     private static final int SYNC_PORT = 47960;
-    private MemoryIndex memoryIndex;
     private char[] pendingExportPassphrase;
     private boolean busy;
     private boolean destroyed;
@@ -751,7 +745,6 @@ public final class MainActivity extends Activity implements MemoryHost {
     public AgentStore storeRef() { return store; }
     SyncPanel syncPanelRef() { return syncPanel; }
     CapabilityBroker capabilityBrokerRef() { return capabilityBroker; }
-    TextView memoryKindBadge(String kind) { return getMemoryKindBadge(kind); }
     java.util.concurrent.Executor ioRef() { return io; }
     android.os.Handler uiRef() { return mainHandler; }
     boolean isDestroyedRef() { return destroyed; }
@@ -980,23 +973,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_GOAL, title));
     }
 
-    private void createMemory() {
-        if (busy) return;
-        try {
-            store.createMemory(memoryKindValue(), memoryInput.getText().toString());
-            memoryInput.setText("");
-            refreshMemories();
-        } catch (Exception error) {
-            showError(error);
-        }
-    }
 
-    private String memoryKindValue() {
-        int position = memoryKind.getSelectedItemPosition();
-        if (position == 0) return AgentStore.MEMORY_PREFERENCE;
-        if (position == 1) return AgentStore.MEMORY_FACT;
-        return AgentStore.MEMORY_WORKFLOW;
-    }
 
     private void refreshTasks() {
         if (taskList == null || store == null) return;
@@ -1136,38 +1113,10 @@ public final class MainActivity extends Activity implements MemoryHost {
     }
 
     private void refreshMemories() {
-        if (memoryList == null || store == null) return;
-        try {
-            memoryButtons.clear();
-            memoryList.removeAllViews();
-            List<AgentStore.Memory> memories = store.listMemories();
-            memoryIndex = new MemoryIndex(memories);
-            renderMemories(memoryIndex.search(memorySearch == null ? "" : memorySearch.getText().toString()));
-        } catch (Exception error) {
-            showError(error);
-        }
+        refreshSummary();
+        refreshFirstRun();
     }
 
-    private void renderMemories(List<AgentStore.Memory> memories) {
-        if (memoryList == null) return;
-        memoryButtons.clear();
-        memoryList.removeAllViews();
-            if (memories.isEmpty()) {
-                addEmptyMessage(memoryList, memorySearch != null && memorySearch.length() > 0
-                    ? T.s("memory.none_matching", isEnglish())
-                    : T.s("memory.none_yet", isEnglish()));
-                return;
-            }
-            String query = memorySearch == null ? "" : memorySearch.getText().toString().trim();
-            String currentKind = null;
-            for (AgentStore.Memory memory : memories) {
-                if (!memory.kind.equals(currentKind)) {
-                    currentKind = memory.kind;
-                    memoryList.addView(memoryGroupHeader(currentKind, memories));
-                }
-                addMemoryCard(memory, query);
-            }
-    }
 
     private void addTaskCard(AgentStore.Task task) {
         LinearLayout card = new LinearLayout(this);
@@ -1652,106 +1601,12 @@ public final class MainActivity extends Activity implements MemoryHost {
         card.addView(planContainer);
     }
 
-    private String pendingLabel(boolean en) {
-        int pending = 0;
-        try {
-            for (AgentStore.Memory memory : store.listMemories()) if (store.hasMemoryCandidate(memory.id)) pending++;
-        } catch (Exception ignored) {
-        }
-        return T.format("memory.pending_button", en, pending);
-    }
 
-    private void showPendingMemories() {
-        boolean en = isEnglish();
-        try {
-            java.util.List<AgentStore.Memory> pending = new java.util.ArrayList<>();
-            for (AgentStore.Memory memory : store.listMemories()) if (store.hasMemoryCandidate(memory.id)) pending.add(memory);
-            if (pending.isEmpty()) {
-                showMessage(T.s("memory.no_pending_versions", en));
-                return;
-            }
-            String[] labels = new String[pending.size()];
-            for (int index = 0; index < pending.size(); index++) {
-                AgentStore.Memory memory = pending.get(index);
-                labels[index] = memory.content + "\n" + T.format("memory.pending_badge", en,
-                    store.listMemoryConflicts(memory.id).size());
-            }
-            new AlertDialog.Builder(this)
-                .setTitle(T.s("memory.pending_title", en))
-                .setItems(labels, (dialog, which) -> memoryPanel.showConflicts(pending.get(which), en))
-                .setNegativeButton(T.s("common.close", en), null)
-                .show();
-        } catch (Exception error) {
-            showError(error);
-        }
-    }
 
-    private TextView memoryGroupHeader(String kind, List<AgentStore.Memory> memories) {
-        boolean en = isEnglish();
-        int count = 0;
-        for (AgentStore.Memory memory : memories) if (kind.equals(memory.kind)) count++;
-        TextView header = new TextView(this);
-        header.setText(T.format("memory.group_header", en, getMemoryKindLabel(kind, en), count));
-        header.setTextSize(11);
-        header.setTypeface(null, android.graphics.Typeface.BOLD);
-        header.setTextColor(Ui.muted(this));
-        header.setPadding(0, dp(10), 0, dp(2));
-        return header;
-    }
 
-    private String getMemoryKindLabel(String kind, boolean en) {
-        if (AgentStore.MEMORY_PREFERENCE.equals(kind)) return T.s("memory.kind_preference", en);
-        if (AgentStore.MEMORY_FACT.equals(kind)) return T.s("memory.kind_fact", en);
-        if (AgentStore.MEMORY_WORKFLOW.equals(kind)) return T.s("memory.kind_workflow", en);
-        return kind;
-    }
 
     /** Marks the search term so a long list is easy to scan. */
-    private CharSequence highlightMatch(String text, String query) {
-        if (query == null || query.isEmpty()) return text;
-        int start = text.toLowerCase(java.util.Locale.ROOT).indexOf(query.toLowerCase(java.util.Locale.ROOT));
-        if (start < 0) return text;
-        android.text.SpannableString spanned = new android.text.SpannableString(text);
-        spanned.setSpan(new android.text.style.BackgroundColorSpan(0xFFFDE68A), start, start + query.length(), 0);
-        return spanned;
-    }
 
-    private void addMemoryCard(AgentStore.Memory memory, String query) {
-        boolean en = isEnglish();
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(6), 0, dp(6));
-
-        row.addView(getMemoryKindBadge(memory.kind));
-
-        TextView content = new TextView(this);
-        content.setText(highlightMatch(memory.content, query));
-        content.setTextSize(13);
-        content.setTextColor(0xFF1E293B);
-        content.setMaxLines(1);
-        content.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        content.setPadding(dp(6), 0, dp(6), 0);
-        row.addView(content, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-
-        TextView stamp = new TextView(this);
-        String stampText = new java.text.SimpleDateFormat("MM-dd", java.util.Locale.ROOT).format(new java.util.Date(memory.updatedAt));
-        if (store.hasMemoryCandidate(memory.id)) stampText = stampText + " · " + T.format("memory.pending_badge", en, store.listMemoryConflicts(memory.id).size());
-        stamp.setText(stampText);
-        stamp.setTextSize(10);
-        stamp.setTextColor(0xFF94A3B8);
-        row.addView(stamp);
-
-        row.setOnClickListener(view -> memoryPanel.showDetail(memory));
-
-        LinearLayout wrapper = new LinearLayout(this);
-        wrapper.setOrientation(LinearLayout.VERTICAL);
-        wrapper.addView(row);
-        View divider = new View(this);
-        divider.setBackgroundColor(0xFFE2E8F0);
-        wrapper.addView(divider, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        memoryList.addView(wrapper);
-    }
 
     private void addTaskButton(LinearLayout parent, String label, AgentStore.Task task, String status) {
         addCardActionButton(parent, label, view -> {
@@ -2436,7 +2291,6 @@ public final class MainActivity extends Activity implements MemoryHost {
         if (message != null && !message.isEmpty()) settingsPanel.setRecoveryMessage(message);
         for (Button button : persistentButtons) button.setEnabled(!value);
         for (Button button : taskButtons) button.setEnabled(!value);
-        for (Button button : memoryButtons) button.setEnabled(!value);
     }
 
     private void clearPendingExportPassphrase() {
@@ -2531,15 +2385,6 @@ public final class MainActivity extends Activity implements MemoryHost {
         return IconFactory.createBadge(this, T.s("ui.pending_2", en), 0xFFE0E7FF, 0xFF3730A3);
     }
 
-    private TextView getMemoryKindBadge(String kind) {
-        boolean en = isEnglish();
-        if (AgentStore.MEMORY_PREFERENCE.equals(kind)) {
-            return IconFactory.createBadge(this, T.s("ui.preference", en), 0xFFEDE9FE, 0xFF5B21B6);
-        } else if (AgentStore.MEMORY_FACT.equals(kind)) {
-            return IconFactory.createBadge(this, T.s("ui.fact", en), 0xFFDBEAFE, 0xFF1E40AF);
-        }
-        return IconFactory.createBadge(this, T.s("ui.workflow", en), 0xFFCCFBF1, 0xFF115E59);
-    }
 
     Button createCompactActionButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
         Button btn = new Button(this);
