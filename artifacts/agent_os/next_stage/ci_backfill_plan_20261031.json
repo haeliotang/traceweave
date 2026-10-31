@@ -1,0 +1,33 @@
+{
+  "repo": "haeliotang/traceform",
+  "since": "2026-10-30",
+  "applied": false,
+  "count": 5,
+  "runs": [
+    {
+      "id": 41208303335,
+      "title": "Exercise release notes inside the CI gate",
+      "createdAt": "2026-10-31T14:02:51Z"
+    },
+    {
+      "id": 41208254699,
+      "title": "Verify release assets against local checksums",
+      "createdAt": "2026-10-31T14:02:12Z"
+    },
+    {
+      "id": 41208148364,
+      "title": "Measure power with matched screen state and record the result",
+      "createdAt": "2026-10-31T14:00:55Z"
+    },
+    {
+      "id": 41206513208,
+      "title": "Measure idle drain with the charge counter and record the confound",
+      "createdAt": "2026-10-31T13:38:56Z"
+    },
+    {
+      "id": 41203735080,
+      "title": "Wait for unplug before sampling power",
+      "createdAt": "2026-10-31T13:02:13Z"
+    }
+  ]
+}
