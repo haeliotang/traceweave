@@ -413,6 +413,7 @@
 - 2026-10-31：自动同步端到端尝试（未完成）——新建 B 包清单并装好两个包，A 成功与 B 配对（SAS 550893），但 B 侧配对未落库（设置仍显示 0 台），导致 B 无法启动同步服务端，A 也就没有完成一次手动同步、无法写入游标。根因是同屏双包的 60 秒配对窗口在 adb 点击节奏下太短。记录 [auto_sync_pairing_attempt_20261031](artifacts/agent_os/next_stage/auto_sync_pairing_attempt_20261031.json)。
 - 2026-10-31：把修复回路接进应用——文稿重试时会把上次的校验失败原因写回提示（`strictPrompt(goal, memories, previousFailure)`），不再只是“再说一次”。
 - 2026-10-31：内容质量实验（严格提示 vs 修复回路）——同一 10 例、grammar + 512 token：基线内容 **5/10**，加“不要复述示例/用真实日期/类型匹配”的严格提示升到 **6/10**，再加一轮“把失败项写回提示重生成”的修复后升到 **10/10**（4 例被修复）。结论：**校验 + 定向重生成**比单纯加强提示有效得多。数据 [json7_strict_prompt](artifacts/agent_os/next_stage/json7_strict_prompt_20261031.json)、[json8_repair](artifacts/agent_os/next_stage/json8_repair_20261031.json)。
+- 2026-10-31：文案迁移第八批——`MainActivity` 的归档导出/导入、能力读取、删除任务、感知开关等 38 处迁入 `T`，文件内 54 → **19**，总体基线 119 → **84**。英文界面实测：`Export encrypted archive?` → `Archive will contain 5 memories, 2 tasks and 0 deletion markers.` → `Encrypted export` / `New archive passphrase` 全部为英文。
 - 2026-10-31：文案迁移第七批——`MainActivity` 的任务卡与空态文案 8 处迁入 `T`；同时删掉两个**没人调用的死函数**（`memoryKindLabel`/`statusLabel`，共 12 处中文），基线 140 → **119**，`MainActivity` 95 → 54。删代码前已用 `grep` 确认全仓库无调用点。
 - 2026-10-31：文案迁移第六批——`MainActivity` 的语音/VAD 状态、麦克风与通知权限提示、导入导出取消提示共 18 处迁入 `T`（`voice.*`、`notify.*`、`archive.*`），文件内 95 → **75**，总体基线 158 → **140**。修编译时踩到一处 `String.format` 包裹 `T.format` 的括号残留，已清理。
 - 2026-10-31：文案迁移第五批——`LocalSlmEngine` 的步骤标题/描述与“本地规则整理”报告模板迁入 `T`，文件内剩 12 处（全部是意图关键词表），基线 177 → **158**。判断：关键词表属于输入识别、代码注释属于说明，都不该翻译，因此保留并在文档里写明。
