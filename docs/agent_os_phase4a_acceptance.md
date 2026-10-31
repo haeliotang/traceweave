@@ -2,7 +2,7 @@
 
 > **阶段 4-A 状态**：**端云协同模型路由与上下文脱敏门禁（Hybrid Cloud Planner & Context Redaction Gate）全部 4 项里程碑已在 Pixel 6a（GrapheneOS）物理真机上 100% 验收通过**。
 > 包括：端侧确定性 5 类敏感数据脱敏门禁（`ContextRedactor`）、标准零依赖 OpenAI 兼容客户端（`CloudModelClient`）、端云协同混合推演引擎与断网优雅降级（`HybridReasoningEngine`）、网络线缆级不可信脱敏断言（Socket Wire Inspection），以及前台设置与 JIT 逐步骤授权执行。
-> 关联方案：[`phase4a_hybrid_cloud_and_context_redaction_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase4a_hybrid_cloud_and_context_redaction_plan.md)
+> 关联方案：`phase4a_hybrid_cloud_and_context_redaction_plan.md`（内部方案文档，未随仓库发布）
 
 ---
 

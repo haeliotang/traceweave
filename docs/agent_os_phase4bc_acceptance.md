@@ -4,7 +4,7 @@
 
 > **阶段 4-B/C 状态**：**端侧轻量级量化 SLM 意图规划引擎（Direction B）与 Android 真实日常系统能力接入（Direction C）全部里程碑已在 Pixel 6a（GrapheneOS）物理真机上 100% 验收通过**。
 > 包含：纯 Java 零依赖 64 维量化神经 Micro-SLM（`LocalSlmEngine`，实测单次推演 **0.383 ms**）、三大真实系统日常扩展能力（通知推送、日历待办、系统分享）、`CapabilityBroker` 严格 5 分钟动态时效 JIT 授权与安全审计日志，以及 Tier 1（云端模型）$\to$ Tier 2（端侧 SLM）$\to$ Tier 3（规则引擎）的三级弹性推演架构。
-> 关联方案：[`phase4bc_local_slm_and_system_capabilities_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase4bc_local_slm_and_system_capabilities_plan.md)
+> 关联方案：`phase4bc_local_slm_and_system_capabilities_plan.md`（内部方案文档，未随仓库发布）
 
 ---
 

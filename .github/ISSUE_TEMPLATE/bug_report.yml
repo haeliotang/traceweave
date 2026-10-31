@@ -1,0 +1,44 @@
+name: Bug report
+description: Something in the prototype does not behave as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a research prototype: please describe what you expected, what happened, and how to reproduce it.
+        Do not attach personal data. Use synthetic examples instead.
+  - type: input
+    id: device
+    attributes:
+      label: Device and system
+      description: Model, Android version and build (for example, Pixel 6a / Android 17 / API 37).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: From the APK name or the release tag, for example 0.1.0.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: Filtered `adb logcat` output. Remove anything personal first.

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure
+    url: https://github.com/haeliotang/traceweave/blob/main/SECURITY.md
+    about: Report vulnerabilities privately; do not open a public issue.

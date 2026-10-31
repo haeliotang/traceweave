@@ -5,7 +5,7 @@
 > - **状态机所有权收敛**：任务生命周期状态迁移（`queued` $\to$ `active` $\to$ `waiting_for_user` $\to$ `completed`）、步骤检查点持久化（`step_checkpoints`）、审计流水日志（`task_journal`）100% 由 Rust 事务原子写入；
 > - **记忆去重所有权收敛**：记忆持久化通过 `topic_key` 索引在 Rust SQLite 内部完成原地更新（Update In-place）与去重，杜绝冗余条目堆积；
 > - **展示端解耦**：Android 宿主层蜕变为纯粹的展示端（Thin UI Presentation Client），不再执行业务 SQL 或状态机推演；
-> - **方案关联**：[`phase6_full_rust_sinking_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase6_full_rust_sinking_plan.md)。
+> - **方案关联**：`phase6_full_rust_sinking_plan.md`（内部方案文档，未随仓库发布）。
 
 ---
 

@@ -4,7 +4,7 @@
 
 > **阶段 4-D 状态**：**端侧记忆自动沉淀与自适应关联检索（Direction 1）以及 Agent UI 交互中心跃迁（Direction 2）全部核心功能已在 Pixel 6a（GrapheneOS）物理真机上 100% 验收通过**。
 > 包含：基于任务执行结果的端侧自主事实与工作流沉淀（`MemoryConsolidator`）、时间衰减与语义重合度多维关联记忆筛选（`AssociativeMemorySelector`）、同主题记忆原地更新去重机制、UI 快捷任务模板气泡栏、JIT 待办醒目悬浮授权卡、步骤树完成度进度条，以及自主沉淀记忆的双模标签与溯源展示。
-> 关联方案：[`phase4d_memory_consolidation_and_ui_evolution_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase4d_memory_consolidation_and_ui_evolution_plan.md)
+> 关联方案：`phase4d_memory_consolidation_and_ui_evolution_plan.md`（内部方案文档，未随仓库发布）
 
 ---
 

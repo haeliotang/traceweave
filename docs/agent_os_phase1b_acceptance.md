@@ -2,7 +2,7 @@
 
 > **阶段 1-B 状态**：**阶段 1-B（端侧智能与动态任务引擎）全部 4 个开发里程碑已在 Pixel 6a（GrapheneOS）物理真机上 100% 验收通过**。
 > 包括：端侧确定性语义推演引擎（`SemanticRulePlanner`）、多步结构化执行计划（`ExecutionPlan`）、v2 加密动态检查点（`sealed_payload v2`）、双轨向前向后兼容执行循环（`AgentExecutor`）、渐进式逐步授权（Just-in-Time Grant）与 UI 动态计划步骤树可视化（`MainActivity`），以及 4 步端到端（便笺 + 设备状态 + Traceweave Binder IPC + 内置端侧推演）在**飞行模式（断网）**与**检查点崩溃恢复**下的真机闭环。
-> 关联方案：[`phase4_dynamic_task_and_reasoning_engine_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase4_dynamic_task_and_reasoning_engine_plan.md) · 设备证据目录：[`agent_os/build/`](../agent_os/build/)
+> 关联方案：`phase4_dynamic_task_and_reasoning_engine_plan.md`（内部方案文档，未随仓库发布） · 设备证据目录：[`agent_os/build/`](../agent_os/build/)
 
 ---
 

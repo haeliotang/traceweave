@@ -2,7 +2,7 @@
 
 > **拓展状态**：**`agent-os-core` 原生 Rust 内核全链路拓展已全部完成并通过全量测试（21 项测试 100% PASS）**。
 > 本次拓展将**任务持久化状态机（Task State Machine）**、**5 分钟动态时效 JIT 能力中介（CapabilityBroker）**、**端到端动态执行器（AgentExecutor）** 以及 **Model Context Protocol (MCP) 跨语言工具接入协议** 完整下沉为原生 Rust 实现。
-> 关联方案：[`phase5b_rust_core_runtime_and_mcp_expansion_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase5b_rust_core_runtime_and_mcp_expansion_plan.md)
+> 关联方案：`phase5b_rust_core_runtime_and_mcp_expansion_plan.md`（内部方案文档，未随仓库发布）
 
 ---
 

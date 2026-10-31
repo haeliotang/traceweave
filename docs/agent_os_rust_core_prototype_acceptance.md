@@ -2,7 +2,7 @@
 
 > **原型状态**：**`agent-os-core` 原生 Rust 库已完成架构设计、工程搭建与全量单元测试及 10,000 次 Release 级高精度压测验收（100% PASS）**。
 > 本次将**脱敏门禁（Context Redaction Gate）**、**量化微模型推演（Micro-SLM Tensor Projection）** 与 **自适应记忆关联检索（Associative Memory Selector）** 三大计算与安全核心全面下沉至 Rust 原生层，并导出标准 C-ABI FFI 接口，单次推演与脱敏延迟达微秒（μs）级。
-> 关联方案：[`phase5_rust_core_prototype_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase5_rust_core_prototype_plan.md)
+> 关联方案：`phase5_rust_core_prototype_plan.md`（内部方案文档，未随仓库发布）
 
 ---
 
