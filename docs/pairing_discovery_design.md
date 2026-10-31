@@ -14,7 +14,7 @@
 
 ## 2. 协议
 
-1. 双方进入“配对新设备”页面，启动 mDNS 发现（服务名 `_traceform-pair._udp`），同时监听。
+1. 双方进入“配对新设备”页面，启动 mDNS 发现（服务名 `_traceweave-pair._udp`），同时监听。
 2. 发现候选后拨号，走 Noise 握手（与现有传输相同），随后交换一条 `pair-offer`：
    ```json
    {"v":1,"fingerprint":"<64 hex>","peerId":"<hex>","nonce":"<32 hex>"}
@@ -22,7 +22,7 @@
    `nonce` 由发起方生成，用于绑定本次会话。
 3. 双方计算 SAS：
    ```
-   sas = digits(SHA-256("traceform-pair-sas-v1" || fingerprint_low || 0 || fingerprint_high || 0
+   sas = digits(SHA-256("traceweave-pair-sas-v1" || fingerprint_low || 0 || fingerprint_high || 0
                         || publicKey_low || 0 || publicKey_high || 0 || nonce), 6)
    ```
    其中 `low/high` 按字节序排序，保证双方结果一致。

@@ -7,8 +7,8 @@ not a consumer release or a validated medical product.
 
 `NativeCore` provides robust scaling, kinetic quantization and Monte Carlo
 occupancy from caller-supplied time-conditioned CDF tables. `ModelEngine` loads
-the model/normalizer asset pair. The generated `traceform-sdk.jar` requires the
-matching `libtraceform.so` and assets in its host app. Input arrays must follow
+the model/normalizer asset pair. The generated `traceweave-sdk.jar` requires the
+matching `libtraceweave.so` and assets in its host app. Input arrays must follow
 the normalizer's feature ordering and use its canonical raw-feature units.
 
 `artifacts/native_android_v1/native_128_feature_source_index.json` indexes all
@@ -64,7 +64,7 @@ was 1.066854ms for the same synthetic workload; canonical-vector and Binder
 parity still pass. Normal stop reports running=false. Shell service access is
 rejected for missing CANONICAL_INPUT signature permission.
 
-The build also produces `traceform-core-benchmark`, a standalone ARM64
+The build also produces `traceweave-core-benchmark`, a standalone ARM64
 executable using the same C++ core with 128 dimensions, 16 states, 300 rollouts
 and 120 steps. It includes model matrices, CDFs, draws, outputs and process
 runtime in `getrusage` peak RSS. Five Pixel runs measured 4,370,432–4,485,120
@@ -76,7 +76,7 @@ this standalone measurement.
 
 The builder now accepts `--private-participant` to package the separately built
 ARM64 TLS private-computation executable as
-`lib/arm64-v8a/libtraceform_private_participant.so`. The build report records its
+`lib/arm64-v8a/libtraceweave_private_participant.so`. The build report records its
 digest and size. The v4 runtime was packaged, signed and installed on Pixel;
 its extracted bytes match the tested standalone executable. Launching it under
 the app UID with no arguments returns the expected usage rejection (exit 2).
@@ -367,7 +367,7 @@ frames, tokens or probability trajectory were exported. Continued optimization,
 fresh native-history collection and predictive validation remain required.
 
 The existing C++ core now implements exact Von Mises weight accumulation and
-CDF normalization through `traceform_periodic_cdf`. `NativeCore.periodicCdf`
+CDF normalization through `traceweave_periodic_cdf`. `NativeCore.periodicCdf`
 exposes the bounded JNI interface; `PeriodicTransitionKernel.nativeCdf` supplies
 IANA-aware phase arrays, and the native history forecast uses this path. The
 portable Java CDF remains a reference. The JNI/core reject inconsistent shapes,
@@ -468,7 +468,7 @@ The corrected harness verifies the actual target service permission/exported
 metadata and denied client permission, and passes. Probe source/build/signature
 and result evidence are `sdk_permission_probe_{initial,initial_build,build,pixel}.json`.
 The temporary client was then uninstalled; package lookup confirms removal.
-The real Traceform installation and history were retained. Sources and explicit
+The real Traceweave installation and history were retained. Sources and explicit
 build recipe reside under `android/security_probe` and
 `scripts/build_sdk_permission_probe.py`; build keys/APKs stayed outside the repo.
 This establishes protected binding denial for a differently signed client, not
@@ -665,7 +665,7 @@ SHA-256 十六进制输出改为字符查表，避免每个字节调用格式化
 
 ## 2026-10-02：SDK 融合谱查询与推演入口
 
-新增 FittedPeriodicSpectrum.rollouts(prior,queryPhases,runs,initial,draws)，CDF 保留在原生缓冲区，直接调用现有 traceform_rollouts，仅返回占用 long[]。Java owner 同步查询/关闭，原生注册表锁保护句柄查找到计算结束；1..16 状态、1..2880 步、1..10000 runs、初态及长度先验证，prior/phase/draw 数值由已有核心校验；bad_alloc 映射 OOM。原 cdf API 保留，HistoryForecast/缓存服务尚未切换。
+新增 FittedPeriodicSpectrum.rollouts(prior,queryPhases,runs,initial,draws)，CDF 保留在原生缓冲区，直接调用现有 traceweave_rollouts，仅返回占用 long[]。Java owner 同步查询/关闭，原生注册表锁保护句柄查找到计算结束；1..16 状态、1..2880 步、1..10000 runs、初态及长度先验证，prior/phase/draw 数值由已有核心校验；bad_alloc 映射 OOM。原 cdf API 保留，HistoryForecast/缓存服务尚未切换。
 
 SDK 夹具对比相同随机数下融合与分离路径占用计数逐项一致，检查关闭 owner、伪造句柄、draw 数量错、NaN draw 和单步空 draws。APK 已安装真机，精确 CDF 最大差 8.882e-16，其他生命周期保护继续通过。313 项测试通过（25.379 秒）；融合 JNI 执行验证依赖设备夹具，本地主机测试不代表 Android JNI 执行覆盖。
 
@@ -957,7 +957,7 @@ NativePotentialCalibration 在独立、已审计快照上只读取训练时间�
 
 主机 6 组 1/3/128D 高斯经验漂移及图投影对照 Python 通过，覆盖中心远离样本的极小权重、不变内部状态的非法输入/取消、零漂移比例未定义；327 项全套通过（31.801 秒）。随后 Android Job 生命周期修复后，受影响 5 项主机测试通过（3.040 秒），API35 编译签名验证通过，APK 已安装。
 
-初版完整后台夹具超出广播执行期限，系统交付记录确认 60.008 秒 TIMEOUT、anrCount=1，进程已终止且未产生新势能回执；证据 native_potential_receiver_timeout.json 保留该版本源码/APK摘要。修复为 DUMP 保护广播只派发一次 NativeVerificationJob（34715），由 BIND_JOB_SERVICE 保护 JobService 承载合成计算、取消时中断并释放事务；派发及完成通过唯一 nonce 绑定。当前 nonce=1b57ef3d-8af2-41ca-88fc-1691b5ca96c5、派发时刻 1790894286224，系统仍显示 active ready，实际 traceform-debug 线程正在计算；尚无匹配的新完成回执，不能宣称真机势能/生命周期修复通过。不重复派发或重启该任务。
+初版完整后台夹具超出广播执行期限，系统交付记录确认 60.008 秒 TIMEOUT、anrCount=1，进程已终止且未产生新势能回执；证据 native_potential_receiver_timeout.json 保留该版本源码/APK摘要。修复为 DUMP 保护广播只派发一次 NativeVerificationJob（34715），由 BIND_JOB_SERVICE 保护 JobService 承载合成计算、取消时中断并释放事务；派发及完成通过唯一 nonce 绑定。当前 nonce=1b57ef3d-8af2-41ca-88fc-1691b5ca96c5、派发时刻 1790894286224，系统仍显示 active ready，实际 traceweave-debug 线程正在计算；尚无匹配的新完成回执，不能宣称真机势能/生命周期修复通过。不重复派发或重启该任务。
 
 证据 native_training_potential_pending.json 绑定当前源码/APK及待完成状态；部署前冻结核验通过，任务结束后的后置核验待做。完整 48h 拟合性能与临时空间未验收，当前合成执行耗时也需继续调查。此调试 Job 不是原生每周日演化调度。模型引用/迁移/激活/回滚、原生周调度及其他原有科学/性能/群体隐私缺项继续推进；完整目标未完成，未提交或推送。
 
@@ -977,7 +977,7 @@ native_training_potential_pixel.json 绑定实际部署源码/APK和回执，旧
 
 native_calibration_stage_timing_pixel.json 绑定已安装计时 APK 及其构建源摘要；native_calibration_stack_sample.json 保存单次执行栈及扰动边界。下一步对重复帧解码做针对性验证和优化，不能将此 100 帧夹具成绩外推为完整 48h 或 15ms 门槛通过。
 
-SDK 回归先失败，确认生成的 traceform-sdk.jar 缺少 CalibrationGate、IncrementalManifoldFit、NativePotentialCalibration、TopologyStrain 及其 Result。build_sdk_jar 现在保留原有公开入口，并用 JDK jdeps 递归收集包内依赖，最终 18 个类，构建时拒绝缺失的编译输出。回归随后通过，全套 328 项通过（32.207 秒）；独立目录全构建/签名验证通过，未在运行中的计时 Job 期间替换设备 APK。native_sdk_dependency_closure.json 绑定 SDK/源码及原失败，证明包内符号依赖闭包，不替代完整 Android SDK 消费端实测。模型注册/迁移/激活/回滚与周日演化调度仍待接通，原有完整目标保持，未提交或推送。
+SDK 回归先失败，确认生成的 traceweave-sdk.jar 缺少 CalibrationGate、IncrementalManifoldFit、NativePotentialCalibration、TopologyStrain 及其 Result。build_sdk_jar 现在保留原有公开入口，并用 JDK jdeps 递归收集包内依赖，最终 18 个类，构建时拒绝缺失的编译输出。回归随后通过，全套 328 项通过（32.207 秒）；独立目录全构建/签名验证通过，未在运行中的计时 Job 期间替换设备 APK。native_sdk_dependency_closure.json 绑定 SDK/源码及原失败，证明包内符号依赖闭包，不替代完整 Android SDK 消费端实测。模型注册/迁移/激活/回滚与周日演化调度仍待接通，原有完整目标保持，未提交或推送。
 
 计时任务结束后的十二项冻结核验通过，证据已记录；当前没有待观察的验证 Job。
 
@@ -1088,7 +1088,7 @@ Warm 审计短合成真机回执 1790901125567 passed=true：摘要稳定、计�
 
 ## 2026-10-02：Warm SQL 类型与原值摘要边界
 
-新增主机回归先复现 fractional SQL column accepted via getLong：REAL 1.5 帧数或1000.5时间经整数读取被截断，旧绑定检查可接受；旧摘要也会丢失原始变化。NativeWarmAudit v2 先检查 SQLite 列的实际类型，要求 bucket/ts/n 为 INTEGER、payload 为 TEXT，摘要按原类型编码精确整数/浮点位/文本/二进制/空值；traceform.native-warm-source.v2 明确区别旧摘要方案。WeeklySnapshot 复制时也拒绝非法类型，避免先截断后审计。短 Warm 夹具新增实际 SQLite REAL 场景，完整快照夹具新增非法帧数拒绝及源事务释放断言，尚未真机执行。
+新增主机回归先复现 fractional SQL column accepted via getLong：REAL 1.5 帧数或1000.5时间经整数读取被截断，旧绑定检查可接受；旧摘要也会丢失原始变化。NativeWarmAudit v2 先检查 SQLite 列的实际类型，要求 bucket/ts/n 为 INTEGER、payload 为 TEXT，摘要按原类型编码精确整数/浮点位/文本/二进制/空值；traceweave.native-warm-source.v2 明确区别旧摘要方案。WeeklySnapshot 复制时也拒绝非法类型，避免先截断后审计。短 Warm 夹具新增实际 SQLite REAL 场景，完整快照夹具新增非法帧数拒绝及源事务释放断言，尚未真机执行。
 
 受影响主机 2 项通过（0.95 秒）：运行生产 WarmAudit，但 Cursor/JSON/平台是窄替身，不能替代 Android 类型语义证据。独立 APK 构建/签名通过，native_warm_sql_types_validation.json 绑定未部署版本。正在跟踪的已安装验证 nonce=616e4ed4-4fe3-426a-adf7-9efdc8e2120f 本轮仍 active ready；最新读取回执还是旧失败 nonce=cce177df-87ef-45c0-be50-7d12d47d6086，因此本轮完整注册/回滚结果仍未确认。未提交或推送，完整目标未完成。
 
@@ -1321,7 +1321,7 @@ ColdTrajectory.countSummary 在同一数据库事务中报告 retained_version_t
 
 ## 2026-10-02：实际调试JobService系统超时停止
 
-独立测试包增加现有NativeVerificationJob/Receiver的声明，派发唯一合成weekly任务nonce b95cf7c1-0939-40e5-9557-2654fa1a6cf6。初始待机桶NEVER使WITHIN_QUOTA不满足，不能当作运行中；仅将此测试包改为active后，系统查询确认active ready。随后对明确包名/任务34715触发系统timeout，实际onStopJob写入同nonce、stop_reason=3/available=true。调度器随后退出23并明确unknown；私有cache为空，没有成功完成回执；独立进程16002线程快照无traceform-debug-weekly工作线程。
+独立测试包增加现有NativeVerificationJob/Receiver的声明，派发唯一合成weekly任务nonce b95cf7c1-0939-40e5-9557-2654fa1a6cf6。初始待机桶NEVER使WITHIN_QUOTA不满足，不能当作运行中；仅将此测试包改为active后，系统查询确认active ready。随后对明确包名/任务34715触发系统timeout，实际onStopJob写入同nonce、stop_reason=3/available=true。调度器随后退出23并明确unknown；私有cache为空，没有成功完成回执；独立进程16002线程快照无traceweave-debug-weekly工作线程。
 
 native_debug_job_system_stop_android.json绑定APK/源码、运行与终态、停止回执、临时目录及线程证据。独立包及合成数据已卸载，主应用未替换。此检查覆盖现有调试长任务的系统超时取消，不等同生产WeeklyMaintenanceJob的Sunday拟合/退避/真实历史或所有停止原因，也不把停止当作算法通过。目标继续开放，新生产代码未部署或推送。
 

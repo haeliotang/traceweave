@@ -4,10 +4,10 @@
 
 ## 方法
 
-- 固定目标集：11 条合成目标，覆盖便笺、状态、通知、日历、分享、Traceform 历史、跨应用状态、多意图组合与无关键词兜底。
+- 固定目标集：11 条合成目标，覆盖便笺、状态、通知、日历、分享、Traceweave 历史、跨应用状态、多意图组合与无关键词兜底。
 - 期望值：能力链（顺序敏感）+ 固定收尾步骤 `builtin.synthesis`。
 - 执行：隔离真机用例 `PLANNER_EVAL`，逐条比较实际步骤的能力与顺序，输出通过数与失败详情。
-- 复现：`validate_actions_android.py --package org.traceform.agentos.actionsvalidation --case PLANNER_EVAL`。
+- 复现：`validate_actions_android.py --package org.traceweave.agentos.actionsvalidation --case PLANNER_EVAL`。
 
 ## 基线结果（2026-10-31，0.6.14 代码）
 

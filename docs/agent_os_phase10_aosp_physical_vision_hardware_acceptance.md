@@ -19,7 +19,7 @@ In Phase 10, Agent OS completed an all-in-one evolution across all four strategi
    - Physical document token ingestion: extracts merchant names, dates, amounts, and line items from invoices/receipts into structured Agent tasks and memories.
 4. **Direction 4 (Peripheral Hardware Linkage & BLE/USB-C HID)**:
    - Hardware peripheral manager in Rust (`hardware_broker.rs`) & Android service (`HardwarePeripheralService.java`).
-   - Supports BLE GATT streams (Traceform smart rings, biometric trackers) and USB-C HID inputs.
+   - Supports BLE GATT streams (Traceweave smart rings, biometric trackers) and USB-C HID inputs.
    - Ultra low-latency Push-To-Talk (PTT) physical button listeners (7 μs dispatch latency) for instant voice capture without unlocking the phone.
 5. **Zero-Emoji Professional UI & Visual Integration**:
    - Expanded `IconFactory.java` with 4 new vector icon types: `SERVER` (daemon), `SENSOR` (sensorium), `EYE` (vision OCR), and `HARDWARE` (smart ring & PTT).

@@ -71,7 +71,7 @@ No external cohort, raw observations or model transfer is enabled.
 A separate internal v2 request format permits both owners to approve a comparison
 before its objective is known. `OwnerAuthentication.verifyComputation` reads
 `bindings.bin` (192 bytes) and two bounded ECDSA signatures. Each signature covers
-`traceform.gw.compute-approval.v2` plus NUL, the ordered owner byte, the trusted
+`traceweave.gw.compute-approval.v2` plus NUL, the ordered owner byte, the trusted
 circuit SHA-256 as 64 lowercase ASCII characters, and the exact canonical binding
 bytes. The body contains the public session and ordered model commitments in the
 same two-scalar-per-binding encoding used by the complete statement. Both trusted

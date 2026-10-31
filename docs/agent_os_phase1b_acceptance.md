@@ -1,7 +1,7 @@
 # Agent OS 阶段 1-B 验收记录：端侧智能与动态任务引擎
 
 > **阶段 1-B 状态**：**阶段 1-B（端侧智能与动态任务引擎）全部 4 个开发里程碑已在 Pixel 6a（GrapheneOS）物理真机上 100% 验收通过**。
-> 包括：端侧确定性语义推演引擎（`SemanticRulePlanner`）、多步结构化执行计划（`ExecutionPlan`）、v2 加密动态检查点（`sealed_payload v2`）、双轨向前向后兼容执行循环（`AgentExecutor`）、渐进式逐步授权（Just-in-Time Grant）与 UI 动态计划步骤树可视化（`MainActivity`），以及 4 步端到端（便笺 + 设备状态 + Traceform Binder IPC + 内置端侧推演）在**飞行模式（断网）**与**检查点崩溃恢复**下的真机闭环。
+> 包括：端侧确定性语义推演引擎（`SemanticRulePlanner`）、多步结构化执行计划（`ExecutionPlan`）、v2 加密动态检查点（`sealed_payload v2`）、双轨向前向后兼容执行循环（`AgentExecutor`）、渐进式逐步授权（Just-in-Time Grant）与 UI 动态计划步骤树可视化（`MainActivity`），以及 4 步端到端（便笺 + 设备状态 + Traceweave Binder IPC + 内置端侧推演）在**飞行模式（断网）**与**检查点崩溃恢复**下的真机闭环。
 > 关联方案：[`phase4_dynamic_task_and_reasoning_engine_plan.md`](（内部文档，未随仓库发布）/.gemini/antigravity/brain/414ff755-60da-4b9b-ace3-f45de2ffed51/phase4_dynamic_task_and_reasoning_engine_plan.md) · 设备证据目录：[`agent_os/build/`](../agent_os/build/)
 
 ---
@@ -13,7 +13,7 @@
 | **Step 1：端侧推演接口与语义规划器** | [`ExecutionPlan.java`](../agent_os/android/src/com/inceptless/traceweave/ExecutionPlan.java)<br>[`ReasoningEngine.java`](../agent_os/android/src/com/inceptless/traceweave/ReasoningEngine.java)<br>[`SemanticRulePlanner.java`](../agent_os/android/src/com/inceptless/traceweave/SemanticRulePlanner.java)<br>[`CapabilityDescriptor.java`](../agent_os/android/src/com/inceptless/traceweave/CapabilityDescriptor.java) | 单意图、多意图、回退意图计划生成；JSON 序列化双向保真；单次规划耗时 $<5\text{ ms}$。 | **100% PASS**<br>真机实测 100 次基准规划测试平均耗时 **0.042 ms**（超越 5ms SLA 逾 100 倍）；正确生成 1 步、2 步、3 步及 4 步结构化执行计划；JSON 双向转换保留全部字段与观察值。 |
 | **Step 2：执行器与存储层支持 v2 动态多步检查点** | 升级 [`AgentStore.java`](../agent_os/android/src/com/inceptless/traceweave/AgentStore.java)<br>升级 [`AgentExecutor.java`](../agent_os/android/src/com/inceptless/traceweave/AgentExecutor.java)<br>升级 [`MemoryArchive.java`](../agent_os/android/src/com/inceptless/traceweave/MemoryArchive.java) | `CURRENT_EXECUTION_VERSION = 2`；多步任务在被 kill/模拟崩溃后从检查点恢复，前序步骤无重复调用；未授权外部能力自动挂起入 `WAITING_FOR_USER`；向后兼容 v1 历史归档。 | **100% PASS**<br>动态 3 步任务实测通过；缺少能力授权时执行器捕获 `SecurityException` 优雅切入 `WAITING_FOR_USER`；注入 Step 1 检查点崩溃后，重新拉起精确从 Step 1 恢复，Step 0 便笺调用计数严格为 1（无重复执行）；归档 schema 导入导出向后兼容测试通过。 |
 | **Step 3：逐步授权中介与 UI 步骤树渲染** | 升级 [`MainActivity.java`](../agent_os/android/src/com/inceptless/traceweave/MainActivity.java)<br>升级 [`CapabilityBroker.java`](../agent_os/android/src/com/inceptless/traceweave/CapabilityBroker.java) | UI 动态呈现每一步的状态、观察输出；未授权步骤在界面即时呈现授权控件；支持渐进式授权（JIT Grant）。 | **100% PASS**<br>任务卡片中完整动态渲染“动态执行计划（共 N 步）”步骤树；状态徽章色彩区分（🟢 已完成、🟡 等待授权、🔵 执行中、⚪ 待执行）；内置推演明确标识“端侧内置逻辑推演（无需外部权限）”；未授权步骤即时呈现“为此步骤授权”按钮；授权后点击“继续”平滑推进并实时渲染观察结果。UI View 树生成通过设备断言。 |
-| **Step 4：真机全链路集成验收** | 升级 [`DeviceValidationActivity.java`](../agent_os/tests/android/DeviceValidationActivity.java) | 包含外部能力与底层 Traceform Binder IPC 的 4 步复杂任务；飞行模式（断网）执行；整机与进程崩溃恢复；采集设备能耗与延迟收据。 | **100% PASS**<br>在系统开启**飞行模式（Airplane Mode）**下完整走通 4 步动态规划任务（便笺 + 设备状态 + Traceform Binder IPC 调用 `org.traceform.edge` + 端侧综合推演）；实测 Step 1 崩溃恢复后完成剩余步骤，便笺、状态、Traceform、推演调用计数均为 1；输出完整结构化推演报告； Dalvik Heap PSS 7.4 MB，零网络消耗。 |
+| **Step 4：真机全链路集成验收** | 升级 [`DeviceValidationActivity.java`](../agent_os/tests/android/DeviceValidationActivity.java) | 包含外部能力与底层 Traceweave Binder IPC 的 4 步复杂任务；飞行模式（断网）执行；整机与进程崩溃恢复；采集设备能耗与延迟收据。 | **100% PASS**<br>在系统开启**飞行模式（Airplane Mode）**下完整走通 4 步动态规划任务（便笺 + 设备状态 + Traceweave Binder IPC 调用 `org.traceform.edge` + 端侧综合推演）；实测 Step 1 崩溃恢复后完成剩余步骤，便笺、状态、Traceweave、推演调用计数均为 1；输出完整结构化推演报告； Dalvik Heap PSS 7.4 MB，零网络消耗。 |
 
 ---
 
@@ -23,8 +23,8 @@
 - **机型**：Google Pixel 6a（`bluejay`），物理设备序列号 `25161JEGR06836`。
 - **系统**：GrapheneOS（基于 Android 17 / API 37，安全补丁 2026-09-01）。
 - **签名身份**：受控本地开发签名（SHA-256: `e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c`），与 `org.traceform.edge` 签名完全匹配。
-- **验证包**：`org.traceform.agentos.validation.target`（版本 `0.1.0-validation`）。
-- **生产包**：`org.traceform.agentos`（版本 `0.1.0`，APK 大小 61,843 字节，构建校验通过）。
+- **验证包**：`org.traceweave.agentos.validation.target`（版本 `0.1.0-validation`）。
+- **生产包**：`org.traceweave.agentos`（版本 `0.1.0`，APK 大小 61,843 字节，构建校验通过）。
 
 ---
 
@@ -50,14 +50,14 @@
 
 #### D. 全链路 4 步集成与飞行模式离线实测（`VERIFY_END_TO_END_INTEGRATED`）
 ```text
-10-23 12:36:16.765 17149 17185 I AgentOsValidation: PASS: full 4-step dynamic task (note + status + traceform IPC + builtin synthesis) completed with crash recovery at step 1; zero duplicate executions; planning=73.231ms, resume execution=5845.4ms; task=2c947726-f4f9-4542-a385-ec41637eafb4
+10-23 12:36:16.765 17149 17185 I AgentOsValidation: PASS: full 4-step dynamic task (note + status + traceweave IPC + builtin synthesis) completed with crash recovery at step 1; zero duplicate executions; planning=73.231ms, resume execution=5845.4ms; task=2c947726-f4f9-4542-a385-ec41637eafb4
 ```
 - **系统状态**：`cmd connectivity airplane-mode` 确认为 `enabled`（飞行模式）。
 - **跨应用 Binder IPC**：调用 `org.traceform.edge.EdgeService`（Transaction 2 `FORECAST_TRANSACTION`），成功获取传感器历史分析数据（`history_records: 3461, eligible_pairs: 2388`）。
 - **审计留痕**：
   - `capability_invoked:demo.note.read:synthetic.welcome`: 1 次
   - `capability_invoked:demo.status.read:synthetic.device_status`: 1 次
-  - `capability_invoked:traceform.local_history.read:traceform.local_history_summary_v1`: 1 次
+  - `capability_invoked:traceweave.local_history.read:traceweave.local_history_summary_v1`: 1 次
   - `internal_synthesis_completed:local_inference`: 1 次
   - 零重复调用，零网络泄露。
 

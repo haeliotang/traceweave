@@ -1,9 +1,9 @@
 # Agent 原生移动操作系统：开发方案与平台决策
 
-> 历史验收状态（2026-10-24）：阶段 1 七项已在当前隔离 APK 上完整重跑；前六项通过，功耗/后台项完成记录但测量受屏幕点亮和 28 秒采样窗口限制。阶段 2 应用能力生态验证已通过 · 仓库：Traceform（与 Agent OS 共用同一 GitHub 远端）
+> 历史验收状态（2026-10-24）：阶段 1 七项已在当前隔离 APK 上完整重跑；前六项通过，功耗/后台项完成记录但测量受屏幕点亮和 28 秒采样窗口限制。阶段 2 应用能力生态验证已通过 · 仓库：Traceweave（与 Agent OS 共用同一 GitHub 远端）
 > 最新逐项结果见 [阶段 1 验收记录](agent_os_phase1_acceptance.md) 和 [当前设备收据](../artifacts/agent_os/phase1/phase1_rerun_20261024_device_receipt.json)；APK 来源摘要见 [构建报告](../artifacts/agent_os/phase1/phase1_rerun_20261024_build_report.json)。旧收据 `phase1_mvp_complete_device_receipt.json` 仅代表早期构建。
 
-> 当前增量（2026-10-25）：正式包已轮换开发签名并迁移加密档案；Traceform Edge 保留原签名，当前 Provider 接入暂停。本轮继续实现可验证的 Markdown 文件任务、请求级云端授权、逐条候选记忆审核及跨安装迁移；最新验收与安装结果见[文件与隐私验收](agent_os_documents_privacy_acceptance.md)。
+> 当前增量（2026-10-25）：正式包已轮换开发签名并迁移加密档案；Traceweave Edge 保留原签名，当前 Provider 接入暂停。本轮继续实现可验证的 Markdown 文件任务、请求级云端授权、逐条候选记忆审核及跨安装迁移；最新验收与安装结果见[文件与隐私验收](agent_os_documents_privacy_acceptance.md)。
 
 ## 1. 决策摘要
 
@@ -13,11 +13,11 @@
 
 Pixel 6a 当前运行 GrapheneOS，**不妨碍第一阶段**：它适合开发和验证普通 Android 应用、隐私开关、权限及后台行为。它**不能代表未来的 Agent OS 系统镜像**：自定义系统要独立维护设备构建、签名、Verified Boot、OTA、安全更新和 Google 服务兼容性；刷入会替换当前系统并清除设备数据。
 
-Traceform 与 Agent OS 可以共享 `https://github.com/haeliotang/traceform.git` 这个远端，但应保持为两个边界清楚的项目：Traceform 是一个可选的设备能力提供者，Agent OS 负责通用任务运行时、能力授权和用户记忆。签名级 Binder 接口要求两个 APK 由同一受控签名服务签署；这不意味着向开发者共享私钥、合并数据库或合并发布节奏。
+Traceweave 与 Agent OS 可以共享 `https://github.com/haeliotang/traceweave.git` 这个远端，但应保持为两个边界清楚的项目：Traceweave 是一个可选的设备能力提供者，Agent OS 负责通用任务运行时、能力授权和用户记忆。签名级 Binder 接口要求两个 APK 由同一受控签名服务签署；这不意味着向开发者共享私钥、合并数据库或合并发布节奏。
 
 ### 当前实现检查点
 
-独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v6 迁移、删除墓碑、确定性两步执行器、持久化 JobScheduler 工作及加密检查点，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者、一个独立签名的只读合成 `ContentProvider`，以及默认关闭的 Traceform Provider。Broker 按任务/能力/范围实施二次授权，最多五分钟；授权在进程重启后清空。2026-10-24 的完整重跑已在 Pixel 6a 上验证真实 UI 生命周期、Broker 拒绝/授权/撤销、飞行模式本地执行、来源迁移和索引、冲突与墓碑选择、Traceform Provider，以及整机重启恢复。Traceform 适配器不直接打开其私有数据库；Edge 服务只读查询自己的历史库，不启动传感器采集；保存结果为记忆须另行确认。Android manifest 为可选云推理声明 `INTERNET`，因此离线任务通过不等于零出网证明。电池样本由屏幕功耗主导，不是独立后台计算基准。当前无云同步，档案也未经独立密码学审计；仅使用合成内容。
+独立原型源码位于 `agent_os/`：已有本地任务状态与审计、偏好/事实/工作流记忆、Android Keystore 本机加密、版本化口令加密档案、稳定 ID、数据库 v1→v6 迁移、删除墓碑、确定性两步执行器、持久化 JobScheduler 工作及加密检查点，以及任务感知的 `CapabilityProvider` 契约和 Broker。当前有两个本地合成提供者、一个独立签名的只读合成 `ContentProvider`，以及默认关闭的 Traceweave Provider。Broker 按任务/能力/范围实施二次授权，最多五分钟；授权在进程重启后清空。2026-10-24 的完整重跑已在 Pixel 6a 上验证真实 UI 生命周期、Broker 拒绝/授权/撤销、飞行模式本地执行、来源迁移和索引、冲突与墓碑选择、Traceweave Provider，以及整机重启恢复。Traceweave 适配器不直接打开其私有数据库；Edge 服务只读查询自己的历史库，不启动传感器采集；保存结果为记忆须另行确认。Android manifest 为可选云推理声明 `INTERNET`，因此离线任务通过不等于零出网证明。电池样本由屏幕功耗主导，不是独立后台计算基准。当前无云同步，档案也未经独立密码学审计；仅使用合成内容。
 
 2026-10-22 的 GrapheneOS Pixel 6a 验收已确认：v1→v2 迁移保留加密任务和两条审计事件；PBKDF2-HMAC-SHA256（600,000 次）三次测量中位数为 3,089.1 ms；隔离安装间导入保留任务/记忆 ID、内容、时间戳、状态和三条审计事件；同 ID 冲突档案不会覆盖目标端内容。此前的合成验收确认错误口令拒绝、删除墓碑优先、进程重启和五分钟到期都会拒绝旧授权；本地与共签名跨应用 Provider 的授权、读取、撤销及撤销后拒绝也已通过真机验证。独立签名 Provider 的取消拒绝审计、异常审计、重试成功、即时 URI grant 撤销和进程重启后拒绝回放均已通过真机验证。当前 APK 可由 Android SDK CLI 构建并通过签名验证；这些应用层结果不代表自有系统镜像或安全更新链已验证。五分钟 URI grant 自动关闭逻辑已完成真机计时验收：来源授权记录时间为 23:21:24.766（+0545）；4 分 50 秒时验证 Activity 仍在运行，5 分 58 秒时它已自动结束、正式应用回到前台，且 Android Activity 权限清单中已无该 Provider 的 URI grant。隔离测试库记录了来源选择、任务授权和两次成功读取。验证目标包与 Provider 包随后卸载，正式应用保留安装。
 
@@ -69,7 +69,7 @@ flowchart TB
   RT <--> MV[用户记忆库：规范数据、任务史、偏好、工作流]
   PB --> CAP[能力适配器注册表]
   CAP --> APP[Android 应用：AppFunctions、Intent、分享/API]
-  CAP --> TF[Traceform 适配器：可选能力提供者]
+  CAP --> TF[Traceweave 适配器：可选能力提供者]
   CAP --> HW[USB-C / BLE / HID 外设]
   PB --> ROUTER[执行路由：本地模型 / 云模型 / 确定性工具]
   ROUTER --> RT
@@ -133,18 +133,18 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 
 挑选额外开源依赖时，不用 GitHub Stars 作为成熟度代理，也不因项目“开源”就直接嵌入。记录许可证及再分发条件、最近稳定版本和维护节奏、关键问题响应/安全公告、Android 真机证据、离线能力、数据能否无损导出，以及未来替换成本。若维护者、接口兼容或安全响应不可确认，先以薄适配器隔离，或不引入依赖。
 
-## 5. Traceform 与同一仓库的边界
+## 5. Traceweave 与同一仓库的边界
 
 同一个 GitHub 远端适合承载早期的相关设计与原型，便于设备实测；建议在代码开始前确定独立目录、维护边界和发布门槛。规划方向可为：
 
 - 本方案留在 `docs/agent_os_development_plan.md`。
-- Agent OS 原型已放在独立的 `agent_os/` 子目录；保持与 Traceform Android app、权限、数据库和发布密钥隔离。
-- Traceform 继续维护自身采集、分析与干预系统；Agent OS 通过版本化能力适配器调用它，不反向依赖 Agent Runtime 的内部实现。
-- Traceform 只在用户明确启用后作为可选能力提供者；Agent OS 不应自动读取 Traceform 原始观测或长期历史。
+- Agent OS 原型已放在独立的 `agent_os/` 子目录；保持与 Traceweave Android app、权限、数据库和发布密钥隔离。
+- Traceweave 继续维护自身采集、分析与干预系统；Agent OS 通过版本化能力适配器调用它，不反向依赖 Agent Runtime 的内部实现。
+- Traceweave 只在用户明确启用后作为可选能力提供者；Agent OS 不应自动读取 Traceweave 原始观测或长期历史。
 - 现有 `org.traceform.edge.Canonical` Binder 接口受 `org.traceform.edge.CANONICAL_INPUT` **签名级权限**保护。普通 Agent 应用只有在签名身份满足该权限时才能调用；不要为方便集成而把权限降为普通应用可申请权限，也不要复用或提交本地开发签名密钥。后续要决定采用受控同签名系统组件，还是另行设计经用户授权、能力更窄的跨应用接口。
-- Android 官方定义的签名权限要求调用方使用声明权限的同一签名证书。若最终采用同签名组件，发布签名须进入受控密钥保管/签署流程；不可把开发证书复制给各个开发环境。否则应为 Agent OS 设计新的最小能力 IPC，不要通过放宽现有 Traceform 权限解决集成问题。
-- Traceform 已有 Android SDK 的 GrapheneOS 运行记录：一个合成私有计算夹具因网络访问开关/权限被拒绝，临时授权后通过并随后撤销。该证据说明需在 GrapheneOS 上显式测试权限配置，不代表 Agent OS 必须申请广泛网络权限。详见 [Traceform Native Android SDK](native_android_sdk.md)。
-- 同仓库不等于同一产品发布：未来可采用路径隔离的 CI、独立版本号和可选构建目标；涉及 Traceform 原始数据的改动仍遵循其自身的验证与数据治理门槛。
+- Android 官方定义的签名权限要求调用方使用声明权限的同一签名证书。若最终采用同签名组件，发布签名须进入受控密钥保管/签署流程；不可把开发证书复制给各个开发环境。否则应为 Agent OS 设计新的最小能力 IPC，不要通过放宽现有 Traceweave 权限解决集成问题。
+- Traceweave 已有 Android SDK 的 GrapheneOS 运行记录：一个合成私有计算夹具因网络访问开关/权限被拒绝，临时授权后通过并随后撤销。该证据说明需在 GrapheneOS 上显式测试权限配置，不代表 Agent OS 必须申请广泛网络权限。详见 [Traceweave Native Android SDK](native_android_sdk.md)。
+- 同仓库不等于同一产品发布：未来可采用路径隔离的 CI、独立版本号和可选构建目标；涉及 Traceweave 原始数据的改动仍遵循其自身的验证与数据治理门槛。
 
 ## 6. Pixel 6a + GrapheneOS：具体影响与用法
 
@@ -175,9 +175,9 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 
 | 阶段 | 预估 | 工作内容 | 进入下一阶段的门槛 |
 |---|---:|---|---|
-| 0. 范围与契约 | 1–2 周 | 定义任务 schema、能力描述、授权/撤销、记忆模式与威胁模型；明确“什么数据允许上云”；为 Traceform 适配器写接口边界 | 无隐式全局权限；导出包字段、ID、来源、删除语义和最小任务流程可评审 |
+| 0. 范围与契约 | 1–2 周 | 定义任务 schema、能力描述、授权/撤销、记忆模式与威胁模型；明确“什么数据允许上云”；为 Traceweave 适配器写接口边界 | 无隐式全局权限；导出包字段、ID、来源、删除语义和最小任务流程可评审 |
 | 1. GrapheneOS 应用原型 | 4–6 周 | 在 Pixel 6a 上做普通 APK：任务记录、审计、SQLite 规范数据、用户记忆与加密手动导出/导入；接着实现 Broker 和运行时检查点；只实现自有能力和安全的 Android 分享/Intent 示例 | 合成数据下至少三条脚本化任务可暂停/恢复/取消；断网路径可用；跨安装/模拟设备导出导入保持 ID、时间和任务历史；删除墓碑可阻止旧档案复活；撤销后调用失败；耗电与后台行为有基线 |
-| 2. 应用能力生态验证 | 6–10 周 | 建 capability adapter API；已用共签名和独立签名合成应用验证 Broker；用 ActivityResult 管理单 URI 临时权，撤销时结束持权 Activity；观察 AppFunctions 可用性与版本变化；研究无 API 时可见的 UI 自动化边界；对接 Traceform 时先采用测试夹具 | 至少一个独立签名应用可按用户授权公开窄能力并通过同一 Broker；明确取消、授权、成功读取、异常审计、重试、即时撤销、撤销后拒绝、进程重启后重放拒绝均有设备审计；上述取消/异常/重试/撤销/重启门槛已在 Pixel 6a 通过；五分钟 URI 自动关闭已完成真机计时验收；当前原型不含高风险外部动作，未来增加此类动作前必须要求用户确认 |
+| 2. 应用能力生态验证 | 6–10 周 | 建 capability adapter API；已用共签名和独立签名合成应用验证 Broker；用 ActivityResult 管理单 URI 临时权，撤销时结束持权 Activity；观察 AppFunctions 可用性与版本变化；研究无 API 时可见的 UI 自动化边界；对接 Traceweave 时先采用测试夹具 | 至少一个独立签名应用可按用户授权公开窄能力并通过同一 Broker；明确取消、授权、成功读取、异常审计、重试、即时撤销、撤销后拒绝、进程重启后重放拒绝均有设备审计；上述取消/异常/重试/撤销/重启门槛已在 Pixel 6a 通过；五分钟 URI 自动关闭已完成真机计时验收；当前原型不含高风险外部动作，未来增加此类动作前必须要求用户确认 |
 | 3. AOSP 系统层原型 | 6–12 周 | 在模拟器/备用 Pixel 6a 研究 userdebug AOSP；将 Broker/注册表中确需系统权限的部分移为系统服务；保留独立 APK 提供者；实现最小调试/恢复流程 | 应用级限制已由具体需求证明；system service API、SELinux/权限边界、AVB 和升级/回退均有可重复证据；相机、电话、数据、休眠有设备验收计划 |
 | 4. 记忆治理与端云协同 | 2–4 个月 | 完成版本升级、冲突合并、加密迁移、删除 tombstone 和可选端到端同步；模型路由与最小上下文策略；故障时不丢任务 | 旧备份导入不复活已删除记忆；云端无直接写入权；用户可审计/撤回；网络断开和服务不可用有明确退化行为 |
 | 5. 可维护系统与封闭试点 | 3–6 个月 | 构建发布签名、Verified Boot/锁定验证、OTA、回滚、漏洞响应、设备恢复、功耗和长时任务；先在备用设备进行小规模封闭试点 | 关键安全补丁和签名更新可按流程交付；OTA 失败可恢复；数据密钥与用户数据恢复/清除流程演练通过；设备支持者和更新承诺明确 |
@@ -185,7 +185,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 
 **阶段 2 验收结论（2026-10-22）：通过。** Pixel 6a 上的独立签名合成 Provider 已通过用户选择、单 URI 读取授权、成功调用、异常记录与重试、即时撤销、撤销后拒绝、进程重启后重放拒绝和五分钟到期验证。AppFunctions 与 AccessibilityService 的平台版本、权限和启用边界已按官方文档评估；当前原型未实现 UI 自动化。该验证覆盖应用级能力契约与 Android URI 授权生命周期；Provider 使用固定合成内容。下一阶段进入 AOSP 原型前，仍需指出具体哪项目标被普通应用边界阻挡；当前证据本身不要求扩大系统权限。
 
-**阶段 1 核心能力真机验收结论（2026-10-24）：七项均已重跑。** 当前隔离 APK 在 Pixel 6a 上通过 UI 生命周期、Broker、离线任务、记忆迁移/索引、冲突/墓碑和 Traceform Provider 六项，并通过 force-stop 与整机重启检查点恢复。第七项已留下电量和权限记录，但 28 秒屏幕常亮采样由显示功耗主导，待机桶为 `ACTIVE`，不能支持后台计算续航结论；详见当前[验收记录](agent_os_phase1_acceptance.md)和[收据](../artifacts/agent_os/phase1/phase1_rerun_20261024_device_receipt.json)。进入 AOSP 系统原型前，仍须依据第 7 节指出具体哪项目标被普通应用沙盒阻挡；本轮结果不构成自有系统镜像或量产 OTA 的验证。
+**阶段 1 核心能力真机验收结论（2026-10-24）：七项均已重跑。** 当前隔离 APK 在 Pixel 6a 上通过 UI 生命周期、Broker、离线任务、记忆迁移/索引、冲突/墓碑和 Traceweave Provider 六项，并通过 force-stop 与整机重启检查点恢复。第七项已留下电量和权限记录，但 28 秒屏幕常亮采样由显示功耗主导，待机桶为 `ACTIVE`，不能支持后台计算续航结论；详见当前[验收记录](agent_os_phase1_acceptance.md)和[收据](../artifacts/agent_os/phase1/phase1_rerun_20261024_device_receipt.json)。进入 AOSP 系统原型前，仍须依据第 7 节指出具体哪项目标被普通应用沙盒阻挡；本轮结果不构成自有系统镜像或量产 OTA 的验证。
 
 ### 何时继续 Android，何时转 Linux
 
@@ -204,7 +204,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 | 本地记忆损坏、导入重复、删除后复活 | 用户失去信任或无法真正迁移 | 有版本迁移、稳定 ID、完整性校验、删除账本、恢复演练；同步晚于手动导出/导入 |
 | 后台限制和常驻推理耗电 | 任务中断、设备发热、续航恶化 | 将任务按短任务/可延迟工作/用户可见长任务分类；遵守系统调度和前台服务政策；测量真实 Pixel 行为 |
 | 自建 OTA/安全响应负担过大 | 设备长期停留在脆弱系统 | 先明确维护责任人、更新来源、签名密钥保管、回滚和应急恢复；无法持续更新则不面向真实用户 |
-| Traceform 与 Agent OS 的签名权限形成发布耦合 | 一处签名密钥泄露影响两个产品，或发布签名不一致导致接口不可用 | 分目录、分发布目标、最小 IPC；两应用必须由同一受控签名服务签署，但不向开发者设备分发私钥；Traceform 按 opt-in provider 接入 |
+| Traceweave 与 Agent OS 的签名权限形成发布耦合 | 一处签名密钥泄露影响两个产品，或发布签名不一致导致接口不可用 | 分目录、分发布目标、最小 IPC；两应用必须由同一受控签名服务签署，但不向开发者设备分发私钥；Traceweave 按 opt-in provider 接入 |
 | 硬件 DIY 扩张过早 | 时间耗在 PCB、射频、法规和电源，而 Agent 价值未验证 | 先支持合规外设和参考开发板；自研主板需由独立硬件需求和预算触发 |
 
 ## 9. MVP 的完成定义
@@ -216,7 +216,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 3. 设备断网时，用户可完成被定义为本地可用的任务；云端不可达时，系统不会把未完成任务伪报为成功。
 4. 规范记忆可导出并导入另一测试环境，稳定 ID、来源、时间、偏好和任务历史得到保留；派生索引能重建。
 5. 删除过的记忆不会被旧导出静默恢复；导入冲突给用户可理解的选择。
-6. Traceform 作为可选能力提供者，无 Agent OS 内部模块对其私有数据库或实现细节形成依赖；没有显式授权时不读取其数据。
+6. Traceweave 作为可选能力提供者，无 Agent OS 内部模块对其私有数据库或实现细节形成依赖；没有显式授权时不读取其数据。
 7. 任务耗电、前后台限制和 GrapheneOS 权限设置都有实机记录。此门槛不等于自有 AOSP 系统已准备发布。
 
 ## 10. 一手资料与项目现状
@@ -249,7 +249,7 @@ Agent OS 的差异化应放在任务、授权、记忆所有权和可迁移性�
 - KDE Plasma Mobile 支持的发行版与设备信息：[Getting Plasma Mobile](https://plasma-mobile.org/get/)；[About Plasma Mobile](https://plasma-mobile.org/about/)
 - Phosh 的 GNOME/Wayland 手机壳定位：[Phosh project](https://world.pages.gitlab.gnome.org/Phosh/phosh/)
 - Waydroid 的 Linux 容器定位：[Waydroid documentation](https://docs.waydro.id/)
-- 本仓库现状：[Traceform Native Android SDK](native_android_sdk.md)、[Pixel 6a deployment notes](pixel6a_deployment.md)
+- 本仓库现状：[Traceweave Native Android SDK](native_android_sdk.md)、[Pixel 6a deployment notes](pixel6a_deployment.md)
 
 **0.4.0 增量：** 模型仅规划待审核的 Markdown 文稿，用户单独确认文件保存，读回后才完成同一任务；响应不能携带 URI、任意能力或工具调用。验收与构建边界见[模型文件闭环](agent_os_model_document_acceptance.md)。公开前检查见[检查报告](public_readiness_20261026.md)，仓库仍保持私有。
 

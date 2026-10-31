@@ -10,7 +10,7 @@ It is not a release approval or a claim that the four stages are complete.
 
 | Original requirement | Current evidence and boundary | Completion evidence still required |
 | --- | --- | --- |
-| Continuous 128D drift and diffusion | `traceform/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; the legacy archive has 5961 26D rows and zero eligible 128D pairs, while device 128D inventories and chronological diagnostics now exist; neither establishes scientific acceptance |
+| Continuous 128D drift and diffusion | `traceweave/dynamics/continuous.py`; controlled full-rank second moments in `full_128d_covariance_recovery_host.json` | Held-out empirical drift/diffusion accuracy with source-bound observations; the legacy archive has 5961 26D rows and zero eligible 128D pairs, while device 128D inventories and chronological diagnostics now exist; neither establishes scientific acceptance |
 | Euler–Maruyama simulation | `additive_sde_refinement_host.json`: known 1D OU convergence | Validation of the intended empirical 128D model and appropriate time steps |
 | Long-range/fractional memory | Additive fractional driver and residual profile diagnostics exist; source explicitly disclaims empirical identification | Source-bound identification, uncertainty and comparison with Brownian/null alternatives; archived H=0.0623 is a finite-lag MSD diagnostic, not an accepted driver |
 | Conservative potential inversion | Smoothed graph potential/curvature diagnostics exist | Evidence that a conservative potential describes the empirical drift, or explicit qualification of the nonconservative component |
@@ -18,7 +18,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Configurable haptics/notifications/volume/color | Actuator and restoration implementations and bounded device receipts exist | Current-source device verification and separately authorized physical use; synthetic dispatch is not efficacy |
 | Intervention after recommendation and CSD | Authorized field daemon restored active; prolonged-dwell trigger deployed with source checks (`intervention_trigger_prolonged_dwell_20261004.json`) | Actual execution under the new trigger and decision-to-actuator evidence; deployment receipt records no delivered intervention yet |
 | 5–15 minute follow-up | Delivery-acknowledgment feedback clock with invalid-clock censoring; one authorized real pulse with complete ten-minute post-delivery window in a separate device-private diagnostic ledger | Natural-trigger follow-up and suitable controls; diagnostic state change is not causal attribution |
-| Contextual bandit reward/fatigue | `traceform/intervention/closed_loop.py` and native policy | Current-source policy validation; causal efficacy requires suitable intervention/control evidence |
+| Contextual bandit reward/fatigue | `traceweave/intervention/closed_loop.py` and native policy | Current-source policy validation; causal efficacy requires suitable intervention/control evidence |
 | Hot 48h 1Hz 128D | Primary upgrade exercised 48h retention; bounded isolated sampling and provenance audit pass | Long-term 1Hz retention and complete source observability; Termux field sampling has a different cadence |
 | Warm 30d 30s tokens/potential | Warm migration check passed during primary upgrade; daily device-local SQLite snapshots retain 14 days | Long-term end-to-end retained-source consistency; daily backups do not replace the warm-tier contract |
 | Cold topology/energy under 500KB | Admission gate and lineage/export evidence | Empirically meaningful bifurcation parameters and bounded long-duration retention; small synthetic archives do not prove years of validity |
@@ -33,7 +33,7 @@ It is not a release approval or a claim that the four stages are complete.
 | Standalone APK/Service/Binder | Native APK and actual separate-process Binder/lifecycle evidence exist | Primary upgraded to `23c1065` with same signer, rollback rehearsal, eight checks and bounded collection; long-term behavior and release identity remain open |
 | Complete native 128-feature acquisition | 51 extractor outputs and digital-context formulas ported with host and device parity; dataflow and observability registry distinguish measured inputs, proxies and missing inputs | Verify intended quantities on hardware; 12 port outputs lack required native inputs, and parity on identical base inputs does not establish 128 independently measured quantities |
 | Final USB deployment | `primary_app_upgrade_20261004.json`: primary installed in place, data kept, rollback rehearsed and health checks passed | Long-term operation and actual Sunday task; receipt ended with primary force-stopped, Termux running; development signer is not release identity |
-| Repository publication | Public implementation and bounded source/build evidence are pushed to `https://github.com/haeliotang/traceform.git`; selected device-derived inventory aggregates are also committed; two newer local evaluation reports remain untracked | Verify each new push against the remote commit; publication does not close remaining scientific or deployment gates |
+| Repository publication | Public implementation and bounded source/build evidence are pushed to `https://github.com/haeliotang/traceweave.git`; selected device-derived inventory aggregates are also committed; two newer local evaluation reports remain untracked | Verify each new push against the remote commit; publication does not close remaining scientific or deployment gates |
 
 ## Next execution order
 
@@ -565,7 +565,7 @@ external requirement can be replaced by additional unit tests.
 
 Distributed private proving remains an implementation requirement. The current
 TACEO documentation supports BLS12-381, but its documented honest-majority
-protocols do not resolve Traceform's two-owner security requirement. See
+protocols do not resolve Traceweave's two-owner security requirement. See
 [the compatibility gates](collaborative_proof_integration.md). Full completion
 remains unclaimed. Primary-app upgrade is separately recorded in the October 4
 receipt and does not close scientific or privacy requirements.

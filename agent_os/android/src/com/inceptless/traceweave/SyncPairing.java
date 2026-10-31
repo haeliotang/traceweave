@@ -26,7 +26,7 @@ final class SyncPairing {
         String low = firstFingerprint.compareTo(secondFingerprint) <= 0 ? firstFingerprint : secondFingerprint;
         String high = low.equals(firstFingerprint) ? secondFingerprint : firstFingerprint;
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update("traceform-pairing-nonce-v1".getBytes(StandardCharsets.UTF_8));
+        digest.update("traceweave-pairing-nonce-v1".getBytes(StandardCharsets.UTF_8));
         digest.update(low.getBytes(StandardCharsets.UTF_8));
         digest.update((byte) 0);
         digest.update(high.getBytes(StandardCharsets.UTF_8));
@@ -43,7 +43,7 @@ final class SyncPairing {
         String low = localFingerprint.compareTo(remoteFingerprint) <= 0 ? localFingerprint : remoteFingerprint;
         String high = low.equals(localFingerprint) ? remoteFingerprint : localFingerprint;
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update("traceform-pairing-v1".getBytes(StandardCharsets.UTF_8));
+        digest.update("traceweave-pairing-v1".getBytes(StandardCharsets.UTF_8));
         digest.update(low.getBytes(StandardCharsets.UTF_8));
         digest.update((byte) 0);
         digest.update(high.getBytes(StandardCharsets.UTF_8));

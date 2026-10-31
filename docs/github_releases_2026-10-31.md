@@ -6,7 +6,7 @@
 
 ```
 agent_os/build/release-<version>/
-├── traceform-agent-os-<version>.apk   已签名候选包
+├── traceweave-agent-os-<version>.apk   已签名候选包
 ├── build_report.json                  构建溯源（版本、签名、输入摘要）
 ├── release_verification.json          发布校验结果（含升级校验标记）
 ├── release_manifest.json              文件清单 + 每个文件的 sha256
@@ -29,7 +29,7 @@ python3 agent_os/scripts/package_release_android.py \
 
 ```bash
 # 1) 打标签（与 versionName 一致）
-git tag -a v0.6.14 -m "Traceform Agent OS 0.6.14"
+git tag -a v0.6.14 -m "Traceweave Agent OS 0.6.14"
 git push origin v0.6.14
 
 # 2) 建草稿发布并上传产物
@@ -39,7 +39,7 @@ gh release create v0.6.14 \
   agent_os/build/release-0.6.14/release_verification.json \
   agent_os/build/release-0.6.14/release_manifest.json \
   agent_os/build/release-0.6.14/SHA256SUMS \
-  --title "Traceform Agent OS 0.6.14" \
+  --title "Traceweave Agent OS 0.6.14" \
   --notes-file agent_os/build/release-0.6.14/RELEASE_NOTES.md \
   --draft
 

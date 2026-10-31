@@ -32,7 +32,7 @@ impl DeviceIdentity {
     fn from_keypair(keypair: Keypair) -> Self {
         let public_key = keypair.public().encode_protobuf();
         let mut hasher = Sha256::new();
-        hasher.update(b"traceform-device-id-v1");
+        hasher.update(b"traceweave-device-id-v1");
         hasher.update(&public_key);
         let digest = hasher.finalize();
         let mut device_id = [0u8; 16];

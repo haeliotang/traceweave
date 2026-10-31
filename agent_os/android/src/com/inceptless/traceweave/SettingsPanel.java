@@ -13,8 +13,8 @@ import android.widget.TextView;
 final class SettingsPanel {
     private final MainActivity host;
     private TextView activityStatus;
-    private TextView traceformStatus;
-    private Button traceformToggleButton;
+    private TextView traceweaveStatus;
+    private Button traceweaveToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
 
@@ -89,16 +89,16 @@ final class SettingsPanel {
 
         root.addView(Ui.section(host, T.s("settings.section_services", en)));
 
-        traceformStatus = new TextView(host);
-        traceformStatus.setTextSize(12);
-        root.addView(traceformStatus);
+        traceweaveStatus = new TextView(host);
+        traceweaveStatus.setTextSize(12);
+        root.addView(traceweaveStatus);
 
-        traceformToggleButton = host.createCompactActionButton(T.s("settingspanel.7", en), 0xFFF1F5F9, 0xFF334155, view -> toggleTraceformProvider());
-        host.persistentButtons.add(traceformToggleButton);
+        traceweaveToggleButton = host.createCompactActionButton(T.s("settingspanel.7", en), 0xFFF1F5F9, 0xFF334155, view -> toggleTraceweaveProvider());
+        host.persistentButtons.add(traceweaveToggleButton);
         LinearLayout.LayoutParams tfLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, host.dpRef(34));
         tfLp.setMargins(0, host.dpRef(4), 0, host.dpRef(10));
-        root.addView(traceformToggleButton, tfLp);
-        refreshTraceform();
+        root.addView(traceweaveToggleButton, tfLp);
+        refreshTraceweave();
 
         cloudModelStatus = new TextView(host);
         cloudModelStatus.setTextSize(12);
@@ -123,17 +123,17 @@ final class SettingsPanel {
         }
     }
 
-    void toggleTraceformProvider() {
+    void toggleTraceweaveProvider() {
         boolean en = host.english();
-        if (host.capabilityBrokerRef().isTraceformEnabled()) {
+        if (host.capabilityBrokerRef().isTraceweaveEnabled()) {
             new AlertDialog.Builder(host)
                 .setTitle(T.s("settingspanel.10", en))
                 .setMessage(T.s("settingspanel.11", en))
                 .setNegativeButton(T.s("settingspanel.12", en), null)
                 .setPositiveButton(T.s("settingspanel.13", en), (dialog, which) -> {
                     try {
-                        host.capabilityBrokerRef().setTraceformEnabled(false);
-                        refreshTraceform();
+                        host.capabilityBrokerRef().setTraceweaveEnabled(false);
+                        refreshTraceweave();
                         host.refreshAfterSync();
                     } catch (Exception error) {
                         host.failWith(error);
@@ -142,7 +142,7 @@ final class SettingsPanel {
                 .show();
             return;
         }
-        if (!host.capabilityBrokerRef().canEnableTraceform()) {
+        if (!host.capabilityBrokerRef().canEnableTraceweave()) {
             host.toast(T.s("settingspanel.14", en));
             return;
         }
@@ -152,8 +152,8 @@ final class SettingsPanel {
             .setNegativeButton(T.s("settingspanel.17", en), null)
             .setPositiveButton(T.s("settingspanel.18", en), (dialog, which) -> {
                 try {
-                    host.capabilityBrokerRef().setTraceformEnabled(true);
-                    refreshTraceform();
+                    host.capabilityBrokerRef().setTraceweaveEnabled(true);
+                    refreshTraceweave();
                     host.refreshAfterSync();
                 } catch (Exception error) {
                     host.failWith(error);
@@ -162,13 +162,13 @@ final class SettingsPanel {
             .show();
     }
 
-    void refreshTraceform() {
-        if (traceformStatus == null || traceformToggleButton == null || host.capabilityBrokerRef() == null) return;
+    void refreshTraceweave() {
+        if (traceweaveStatus == null || traceweaveToggleButton == null || host.capabilityBrokerRef() == null) return;
         boolean en = host.english();
-        boolean enabled = host.capabilityBrokerRef().isTraceformEnabled();
-        boolean trustedService = host.capabilityBrokerRef().canEnableTraceform();
-        traceformToggleButton.setText(enabled ? (T.s("settingspanel.19", en)) : (T.s("settingspanel.20", en)));
-        traceformStatus.setText(enabled
+        boolean enabled = host.capabilityBrokerRef().isTraceweaveEnabled();
+        boolean trustedService = host.capabilityBrokerRef().canEnableTraceweave();
+        traceweaveToggleButton.setText(enabled ? (T.s("settingspanel.19", en)) : (T.s("settingspanel.20", en)));
+        traceweaveStatus.setText(enabled
             ? trustedService ? (T.s("settingspanel.21", en))
                 : (T.s("settingspanel.22", en))
             : (T.s("settingspanel.23", en)));

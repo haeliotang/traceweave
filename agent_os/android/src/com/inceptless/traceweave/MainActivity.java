@@ -372,7 +372,7 @@ public final class MainActivity extends Activity {
 
         boolean en = isEnglish();
 
-        // 1. Top Header Row: Traceform OS Title + Language Switcher
+        // 1. Top Header Row: Traceweave OS Title + Language Switcher
         LinearLayout topHeaderRow = new LinearLayout(this);
         topHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
         topHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -381,7 +381,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.setLayoutParams(topHeaderLp);
 
         TextView title = new TextView(this);
-        title.setText(T.s("ui.traceform_agent_os_prototype", en));
+        title.setText(T.s("ui.traceweave_agent_os_prototype", en));
         title.setTextSize(20);
         title.setTextColor(Ui.text(this));
         title.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -1689,13 +1689,13 @@ public final class MainActivity extends Activity {
             addProviderControls(card, task, T.s("ui.cross_app_status", en), AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE);
         }
-        if (capabilityBroker.isTraceformEnabled()) {
-            if (capabilityBroker.canEnableTraceform()) {
-                addProviderControls(card, task, T.s("ui.traceform_local_history_summary", en),
-                    CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+        if (capabilityBroker.isTraceweaveEnabled()) {
+            if (capabilityBroker.canEnableTraceweave()) {
+                addProviderControls(card, task, T.s("ui.traceweave_local_history_summary", en),
+                    CapabilityBroker.TRACEWEAVE_CAPABILITY, CapabilityBroker.TRACEWEAVE_SCOPE);
             } else {
                 TextView unavailable = new TextView(this);
-                unavailable.setText(T.s("ui.traceform_provider_unavailable_trusted_s", en));
+                unavailable.setText(T.s("ui.traceweave_provider_unavailable_trusted_s", en));
                 card.addView(unavailable);
             }
         }
@@ -1737,7 +1737,7 @@ public final class MainActivity extends Activity {
 
     private void confirmCapabilityGrant(AgentStore.Task task, String label, String capability, String scope) {
         boolean en = isEnglish();
-        String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
+        String details = CapabilityBroker.TRACEWEAVE_CAPABILITY.equals(capability)
             ? (T.s("ui.allow_this_task_to_query_retained_local", en))
             : T.format("cap.allow_details", en, label);
         AlertDialog grantDialog = new AlertDialog.Builder(this)
@@ -1783,8 +1783,8 @@ public final class MainActivity extends Activity {
                 refreshTasks();
                 if (invokeFailure != null) {
                     showError(invokeFailure);
-                } else if (CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)) {
-                    showTraceformResult(task, result);
+                } else if (CapabilityBroker.TRACEWEAVE_CAPABILITY.equals(capability)) {
+                    showTraceweaveResult(task, result);
                 } else {
                     showMessage(result);
                 }
@@ -1792,7 +1792,7 @@ public final class MainActivity extends Activity {
         });
     }
 
-    private void showTraceformResult(AgentStore.Task task, String result) {
+    private void showTraceweaveResult(AgentStore.Task task, String result) {
         TextView content = new TextView(this);
         boolean en = isEnglish();
         content.setText(result + (T.s("ui.n_nthis_simulated_summary_uses_locally", en)));
@@ -1801,17 +1801,17 @@ public final class MainActivity extends Activity {
         ScrollView holder = new ScrollView(this);
         holder.addView(content);
         new AlertDialog.Builder(this)
-            .setTitle(T.s("ui.traceform_local_history_summary_2", en))
+            .setTitle(T.s("ui.traceweave_local_history_summary_2", en))
             .setView(holder)
             .setNegativeButton(T.s("ui.done_2", en), null)
             .setPositiveButton(T.s("ui.save_as_factual_memory", en), (dialog, which) -> {
                 try {
-                    String reference = "task=" + task.id + ";provider=traceform;read="
+                    String reference = "task=" + task.id + ";provider=traceweave;read="
                         + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
                     store.createMemory(AgentStore.MEMORY_FACT, result,
-                        AgentStore.MEMORY_SOURCE_TRACEFORM, reference);
+                        AgentStore.MEMORY_SOURCE_TRACEWEAVE, reference);
                     refreshMemories();
-                    showMessage(T.s("ui.summary_saved_as_a_traceform_sourced_fac", en));
+                    showMessage(T.s("ui.summary_saved_as_a_traceweave_sourced_fac", en));
                 } catch (Exception error) {
                     showError(error);
                 }

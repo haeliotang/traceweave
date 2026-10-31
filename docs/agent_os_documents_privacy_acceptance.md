@@ -69,7 +69,7 @@
 
 最终构建来源见[正式包报告](../artifacts/agent_os/documents/production_build_report_20261026.json)、[源隔离包报告](../artifacts/agent_os/documents/validation_build_report_20261026.json)及[目标隔离包报告](../artifacts/agent_os/documents/target_build_report_20261026.json)。同签名原位升级见[安装收据](../artifacts/agent_os/documents/production_upgrade_receipt_20261026.json)：最终安装包摘要与构建产物一致，首次安装时间不变，完整滚动核验保留原有两条任务。[清理收据](../artifacts/agent_os/documents/cleanup_receipt_20261026.json)确认两个隔离包均已移除，正式应用、签名材料和用户加密档案保留。
 
-隔离构建用 `build_android.py` 指定 `tests/android/manifest-documents.xml`，额外加入 `DocumentFlowValidationActivity.java`、`DocumentFixtureProvider.java`、`ActionFlowValidationActivity.java`、`DeviceValidationActivity.java`。目标构建将模板内的 `org.traceform.agentos.actionsvalidation` 替换为 `org.traceform.agentos.documentsvalidation`，保持两个安装身份独立。
+隔离构建用 `build_android.py` 指定 `tests/android/manifest-documents.xml`，额外加入 `DocumentFlowValidationActivity.java`、`DocumentFixtureProvider.java`、`ActionFlowValidationActivity.java`、`DeviceValidationActivity.java`。目标构建将模板内的 `org.traceweave.agentos.actionsvalidation` 替换为 `org.traceweave.agentos.documentsvalidation`，保持两个安装身份独立。
 
 ```sh
 python3 agent_os/scripts/validate_actions_android.py \
@@ -89,7 +89,7 @@ python3 agent_os/scripts/copy_document_validation_fixture.py \
   --adb /path/to/adb --serial DEVICE_SERIAL
 python3 agent_os/scripts/validate_actions_android.py \
   --adb /path/to/adb --serial DEVICE_SERIAL \
-  --package org.traceform.agentos.documentsvalidation \
+  --package org.traceweave.agentos.documentsvalidation \
   --case IMPORT_MIGRATION --output /tmp/migration-target.json
 ```
 

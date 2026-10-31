@@ -19,9 +19,9 @@ import java.time.ZoneId;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-final class TraceformProvider implements CapabilityProvider {
-    static final String CAPABILITY = "traceform.local_history.read";
-    static final String SCOPE = "traceform.local_history_summary_v1";
+final class TraceweaveProvider implements CapabilityProvider {
+    static final String CAPABILITY = "traceweave.local_history.read";
+    static final String SCOPE = "traceweave.local_history_summary_v1";
     static final String PACKAGE = "org.traceform.edge";
     private static final String SERVICE = "org.traceform.edge.EdgeService";
     private static final String SUMMARY_SERVICE = "org.traceform.edge.HistorySummaryService";
@@ -36,7 +36,7 @@ final class TraceformProvider implements CapabilityProvider {
     private final Context context;
     private final SharedPreferences preferences;
 
-    TraceformProvider(Context context) {
+    TraceweaveProvider(Context context) {
         this.context = context.getApplicationContext();
         this.preferences = this.context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
     }
@@ -91,7 +91,7 @@ final class TraceformProvider implements CapabilityProvider {
 
     @Override
     public String read(String taskId, String scope) {
-        if (!isAvailable(taskId, scope)) throw new SecurityException("Traceform is not enabled or its trusted service is unavailable");
+        if (!isAvailable(taskId, scope)) throw new SecurityException("Traceweave is not enabled or its trusted service is unavailable");
         boolean scoped = hasScopedService();
         Intent intent = new Intent().setComponent(new ComponentName(PACKAGE, scoped ? SUMMARY_SERVICE : SERVICE));
         CountDownLatch connected = new CountDownLatch(1);
@@ -112,14 +112,14 @@ final class TraceformProvider implements CapabilityProvider {
         try {
             bound = context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
             if (!bound || !connected.await(5, TimeUnit.SECONDS) || binder[0] == null)
-                throw new IllegalStateException("Traceform service is unavailable");
+                throw new IllegalStateException("Traceweave service is unavailable");
             Parcel input = Parcel.obtain();
             Parcel output = Parcel.obtain();
             try {
                 if (scoped) {
                     input.writeInterfaceToken("org.traceform.edge.HistorySummary");
                     if (!binder[0].transact(IBinder.FIRST_CALL_TRANSACTION, input, output, 0))
-                        throw new IllegalStateException("Traceform summary contract unavailable");
+                        throw new IllegalStateException("Traceweave summary contract unavailable");
                     output.readException();
                     return validateScopedSummary(output.readString());
                 }
@@ -131,7 +131,7 @@ final class TraceformProvider implements CapabilityProvider {
                 input.writeInt(100);
                 input.writeLong(taskId.hashCode());
                 if (!binder[0].transact(FORECAST_TRANSACTION, input, output, 0))
-                    throw new IllegalStateException("Traceform does not support this provider contract");
+                    throw new IllegalStateException("Traceweave does not support this provider contract");
                 output.readException();
                 JSONObject report = new JSONObject(output.readString());
                 org.json.JSONArray tokens = report.optJSONArray("tokens");
@@ -157,7 +157,7 @@ final class TraceformProvider implements CapabilityProvider {
                     }
                 }
                 return new JSONObject()
-                    .put("provider", "traceform")
+                    .put("provider", "traceweave")
                     .put("available", report.optBoolean("available"))
                     .put("reason", report.optString("reason", ""))
                     .put("initial_state", report.optString("initial_state", ""))
@@ -176,7 +176,7 @@ final class TraceformProvider implements CapabilityProvider {
         } catch (SecurityException error) {
             throw error;
         } catch (Exception error) {
-            throw new IllegalStateException("Traceform could not provide a local history summary", error);
+            throw new IllegalStateException("Traceweave could not provide a local history summary", error);
         } finally {
             if (bound) context.unbindService(connection);
         }
@@ -185,18 +185,18 @@ final class TraceformProvider implements CapabilityProvider {
     static String validateScopedSummary(String value) throws Exception {
         if (value == null || value.length() > 12000) throw new IllegalArgumentException("Invalid summary size");
         JSONObject summary = new JSONObject(value);
-        if (summary.length() != 11 || !"traceform".equals(summary.optString("provider"))
+        if (summary.length() != 11 || !"traceweave".equals(summary.optString("provider"))
                 || !(summary.opt("available") instanceof Boolean)
                 || !Boolean.FALSE.equals(summary.opt("eligible_for_intervention"))
                 || !"local_retained_history_simulation_not_validated_prediction_or_causal_effect".equals(summary.optString("evidence_scope"))
                 || !(summary.opt("reason") instanceof String) || !(summary.opt("initial_state") instanceof String)
                 || summary.optString("reason").length() > 80 || summary.optString("initial_state").length() > 128
                 || summary.optJSONArray("sampled_occupancy_probabilities") == null)
-            throw new SecurityException("Unsupported Traceform summary");
+            throw new SecurityException("Unsupported Traceweave summary");
         for (String key : new String[]{"history_records", "eligible_pairs", "horizon_steps", "rollouts"}) {
             Object number = summary.opt(key);
             if (!(number instanceof Integer) && !(number instanceof Long) || ((Number) number).longValue() < 0)
-                throw new SecurityException("Invalid Traceform summary count");
+                throw new SecurityException("Invalid Traceweave summary count");
         }
         org.json.JSONArray rows = summary.getJSONArray("sampled_occupancy_probabilities");
         if (rows.length() > 4) throw new SecurityException("Too many summary samples");

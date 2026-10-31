@@ -106,7 +106,7 @@ public final class AgentFloatingService extends Service {
 
     private void updateLocaleTexts(boolean en) {
         if (statusTextView != null) {
-            statusTextView.setText(T.s("agentfloatingservice.traceform_capsule", en));
+            statusTextView.setText(T.s("agentfloatingservice.traceweave_capsule", en));
         }
         if (collapseBtn != null) {
             collapseBtn.setText(T.s("agentfloatingservice.collapse", en));
@@ -137,7 +137,7 @@ public final class AgentFloatingService extends Service {
             btnPtt.setText(T.s("agentfloatingservice.ptt_key", en));
         }
         if (btnOpenApp != null) {
-            btnOpenApp.setText(T.s("agentfloatingservice.traceform_os", en));
+            btnOpenApp.setText(T.s("agentfloatingservice.traceweave_os", en));
         }
         if (floatingView != null) {
             floatingView.postInvalidate();
@@ -227,7 +227,7 @@ public final class AgentFloatingService extends Service {
         rootContainer.addView(ballView);
 
         // ==========================================
-        // 2. EXPANDED VIEW: TRACEFORM CAPSULE CARD
+        // 2. EXPANDED VIEW: TRACEWEAVE CAPSULE CARD
         // ==========================================
         expandedCard = new LinearLayout(this);
         expandedCard.setOrientation(LinearLayout.VERTICAL);
@@ -248,7 +248,7 @@ public final class AgentFloatingService extends Service {
         headerRow.addView(statusDotView);
 
         statusTextView = new TextView(this);
-        statusTextView.setText(" Traceform Capsule");
+        statusTextView.setText(" Traceweave Capsule");
         statusTextView.setTextColor(Color.parseColor("#4AF6C3"));
         statusTextView.setTextSize(13);
         statusTextView.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -380,7 +380,7 @@ public final class AgentFloatingService extends Service {
         floatingView = rootContainer;
         try {
             windowManager.addView(floatingView, floatingParams);
-            Log.i(TAG, "Traceform floating capsule attached successfully");
+            Log.i(TAG, "Traceweave floating capsule attached successfully");
         } catch (Exception e) {
             Log.w(TAG, "Failed to attach floating overlay: " + e.getMessage());
             floatingView = null;
@@ -476,7 +476,7 @@ public final class AgentFloatingService extends Service {
                 if (btnVoice != null) btnVoice.setText(T.s(isListening ? "overlay.stop_audio" : "overlay.live_audio", en));
                 if (statusTextView != null) statusTextView.setText(isListening
                         ? (T.s("agentfloatingservice.listening_16_khz", en))
-                        : (T.s("agentfloatingservice.traceform_capsule", en)));
+                        : (T.s("agentfloatingservice.traceweave_capsule", en)));
             }
 
             @Override

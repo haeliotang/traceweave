@@ -209,7 +209,7 @@ final class SyncPanel {
             android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager)
                 host.getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
             if (wifi == null) return null;
-            android.net.wifi.WifiManager.MulticastLock lock = wifi.createMulticastLock("traceform-mdns");
+            android.net.wifi.WifiManager.MulticastLock lock = wifi.createMulticastLock("traceweave-mdns");
             lock.setReferenceCounted(false);
             lock.acquire();
             return lock;

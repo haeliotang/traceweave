@@ -8,23 +8,23 @@
 |---|---|
 | Android SDK | `~/Library/Android/sdk`（platforms/android-35、build-tools/35.0.0） |
 | 签名密钥 | `agent_os/build/agent-os-rotation-20261025.p12`，别名 `agent-os-rotation-20261025` |
-| 口令 | 存在 Keychain：`security find-generic-password -s com.inceptless.traceform.agentos.signing -a agent-os-rotation-20261025 -w` |
+| 口令 | 存在 Keychain：`security find-generic-password -s com.inceptless.traceweave.agentos.signing -a agent-os-rotation-20261025 -w` |
 | 期望签名指纹 | `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db` |
-| 模型运行库 | `agent_os/build/model-runtime-production-probe/libtraceform_local_model.so` |
-| 同步运行库 | `agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so` |
+| 模型运行库 | `agent_os/build/model-runtime-production-probe/libtraceweave_local_model.so` |
+| 同步运行库 | `agent_os/sync/target/aarch64-linux-android/release/libtraceweave_sync.so` |
 
 ## 1. 一条命令跑完检查
 
 ```bash
-PW=$(security find-generic-password -s com.inceptless.traceform.agentos.signing -a agent-os-rotation-20261025 -w)
+PW=$(security find-generic-password -s com.inceptless.traceweave.agentos.signing -a agent-os-rotation-20261025 -w)
 AGENT_OS_KEYSTORE_PASSWORD="$PW" python3 agent_os/scripts/release_preflight_android.py \
   --android-jar "$HOME/Library/Android/sdk/platforms/android-35/android.jar" \
   --build-tools "$HOME/Library/Android/sdk/build-tools/35.0.0" \
   --keystore agent_os/build/agent-os-rotation-20261025.p12 \
   --key-alias agent-os-rotation-20261025 \
   --expected-signer 9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db \
-  --model-runtime agent_os/build/model-runtime-production-probe/libtraceform_local_model.so \
-  --sync-runtime agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so \
+  --model-runtime agent_os/build/model-runtime-production-probe/libtraceweave_local_model.so \
+  --sync-runtime agent_os/sync/target/aarch64-linux-android/release/libtraceweave_sync.so \
   --previous-apk <上一版同签名 APK> \
   --output-dir agent_os/build/preflight-$(date +%Y%m%d)
 ```
@@ -61,11 +61,11 @@ PY
 ## 3.5 改文案或界面后必须跑一次设备回归
 
 ```bash
-PW=$(security find-generic-password -s com.inceptless.traceform.agentos.signing -a agent-os-rotation-20261025 -w)
+PW=$(security find-generic-password -s com.inceptless.traceweave.agentos.signing -a agent-os-rotation-20261025 -w)
 AGENT_OS_KEYSTORE_PASSWORD="$PW" python3 agent_os/scripts/device_regression_android.py \
   --serial <serial> --android-jar ... --build-tools ... \
   --keystore agent_os/build/agent-os-rotation-20261025.p12 --key-alias agent-os-rotation-20261025 \
-  --sync-runtime agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so
+  --sync-runtime agent_os/sync/target/aarch64-linux-android/release/libtraceweave_sync.so
 ```
 
 它会用 `manifest-documents.xml` 构建、安装、再跑 `RUN_SUITE` / `TASK_CENTER` / `RUN_DOCUMENTS`，结果写入 `device_regression.json`。
@@ -88,7 +88,7 @@ AGENT_OS_KEYSTORE_PASSWORD="$PW" python3 agent_os/scripts/device_regression_andr
 
 ```bash
 adb -s <serial> install -r agent_os/build/preflight-<date>/agent-os.apk
-adb -s <serial> shell am start -n org.traceform.agentos/org.traceform.agentos.MainActivity
+adb -s <serial> shell am start -n org.traceweave.agentos/org.traceweave.agentos.MainActivity
 ```
 
 最小自动化冒烟：

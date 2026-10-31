@@ -15,9 +15,9 @@
 
 ## 1. 基线（2026-10-30 22:30，0.6.13）
 
-- 正式包 `org.traceform.agentos` 0.6.13（versionCode 22），首装 2026-10-25 10:43:26，未重装；签名 `9effee32…`（开发密钥，非生产身份）。
+- 正式包 `org.traceweave.agentos` 0.6.13（versionCode 22），首装 2026-10-25 10:43:26，未重装；签名 `9effee32…`（开发密钥，非生产身份）。
 - 自动验收：25 项宿主检查 + 43 项隔离真机用例 + 跨安装合成档案/分享工作流恢复；收据 [automation_0613](../artifacts/agent_os/automation_0613/acceptance.json)。
-- 已有能力：手动加密档案导入导出、逐条冲突与删除审核、端侧模型导入与待审核文稿、SAS 配对与手动同步入口、GBNF 约束解码、只读审计日志、深色模式与双语目录、Traceform/Edge 受限摘要（隔离验证）。
+- 已有能力：手动加密档案导入导出、逐条冲突与删除审核、端侧模型导入与待审核文稿、SAS 配对与手动同步入口、GBNF 约束解码、只读审计日志、深色模式与双语目录、Traceweave/Edge 受限摘要（隔离验证）。
 - 明确没有：跨两台真机的同步验证、真正的自动后台同步、系统级审计、生产分发渠道、独立审计、功率计级功耗。
 
 ## 2. 里程碑总览
@@ -35,7 +35,7 @@
 | B2 | 多数量删除确认页 | — | 用户点按 | 完成（2026-10-30） |
 | B3 | 真实分享发送与接收核对 | — | 用户点按 | 完成（2026-10-31） |
 | B4 | 正式 Edge 历史读取与摘要质量 | A3 | 用户授权真实数据 | 完成（2026-10-31） |
-| B5 | Traceform 正式任务页授权/撤销 | — | 用户点按 | 完成（2026-10-31） |
+| B5 | Traceweave 正式任务页授权/撤销 | — | 用户点按 | 完成（2026-10-31） |
 | C1 | 同步协议设计（配对/撤销/回执/恢复） | — | 用户评审 | 完成（2026-10-30，用户批准） |
 | C2 | 传输层接入正式代码（Noise/libp2p） | C1 | 本机 | 完成（2026-10-30） |
 | C3 | 配对 UI 与双身份 | C2 | 第二台设备或同机双安装 | 完成（2026-10-31，对端指纹为合成） |
@@ -193,7 +193,7 @@
 
 **结果（2026-10-31）**：用户在授权弹窗选择 ALLOW FOR 5 MINUTES 后，正式应用经受限 Binder 服务读到真实摘要：`history_records=3461`、`eligible_pairs=2388`，但 `available=false`、`reason=stale_initial_state`、`horizon_steps=0`、`rollouts=0`、`eligible_for_intervention=false`，证据范围标注为未验证的本地历史模拟。**质量结论**：读取路径与结构校验成立，但 Edge 当时没有新鲜状态，因此没有可评估的预测——预测质量仍未验证。只记录结构化字段，未保存任何个人内容。见 [scoped_edge_production_read_20261031](../artifacts/agent_os/next_stage/scoped_edge_production_read_20261031.json)。
 
-### B5 Traceform 正式任务页授权/撤销
+### B5 Traceweave 正式任务页授权/撤销
 
 **目标**：在正式应用任务页完成"启用 Provider → 发起任务 → 授权 → 查看摘要 → 撤销 → 再次读取被拒"的完整交互。
 
@@ -201,7 +201,7 @@
 
 **完成判据**：全链路一次走通，撤销立即生效。
 
-**结果（2026-10-31）**：正式应用设置页启用 Provider（“Enabled; each read requires per-task auth”），任务卡授权（“grant remaining ~5 min”），读取成功显示摘要，撤销后状态回到“Not granted”，再次读取弹出“该任务没有针对此 Agent 的有效能力授权”。测试后已把 Provider 恢复为禁用。见 [traceform_task_ui_20261031](../artifacts/agent_os/next_stage/traceform_task_ui_20261031.json)。**限制**：授权通过任务卡的预授权按钮完成，不是步骤启动弹窗；拒绝只以界面提示记录。
+**结果（2026-10-31）**：正式应用设置页启用 Provider（“Enabled; each read requires per-task auth”），任务卡授权（“grant remaining ~5 min”），读取成功显示摘要，撤销后状态回到“Not granted”，再次读取弹出“该任务没有针对此 Agent 的有效能力授权”。测试后已把 Provider 恢复为禁用。见 [traceweave_task_ui_20261031](../artifacts/agent_os/next_stage/traceweave_task_ui_20261031.json)。**限制**：授权通过任务卡的预授权按钮完成，不是步骤启动弹窗；拒绝只以界面提示记录。
 
 ### C1 同步协议设计
 
@@ -223,7 +223,7 @@
 
 **结果（2026-10-30）**：新增 [agent_os/sync](../agent_os/sync) crate（libp2p 0.57.1 + Noise + yamux），含帧上限 1 MiB、会话 8 MiB / 10,000 帧预算、域分隔且长度前缀的绑定转录、允许列表与 Ed25519 宿主验签器。10 项宿主单测通过；两个本地进程经 127.0.0.1 完成绑定与回显（server PASS frames=1、client PASS frames=3），未配对身份的连接被拒绝。crate 未接入 Android 应用，界面无同步入口。见 [sync_transport_c2_20261030](../artifacts/agent_os/next_stage/sync_transport_c2_20261030.json)。Android Keystore 验签与配对 UI 属于 C3。
 
-**已修复缺陷（2026-10-31）**：隔离包启动时 Android 报“不符合 16 KB 对齐要求”，`libtraceform_sync.so` 的 LOAD 段原为 4 KB 对齐。已在 `agent_os/sync/.cargo/config.toml` 加 `-Wl,-z,max-page-size=16384`，重建后四个 LOAD 段 Align 均为 `0x4000`；构建方式见 [sync_android_build.md](sync_android_build.md)。设备上的系统警告待下次安装时复测。
+**已修复缺陷（2026-10-31）**：隔离包启动时 Android 报“不符合 16 KB 对齐要求”，`libtraceweave_sync.so` 的 LOAD 段原为 4 KB 对齐。已在 `agent_os/sync/.cargo/config.toml` 加 `-Wl,-z,max-page-size=16384`，重建后四个 LOAD 段 Align 均为 `0x4000`；构建方式见 [sync_android_build.md](sync_android_build.md)。设备上的系统警告待下次安装时复测。
 
 ### C3 配对 UI 与双身份
 
@@ -438,7 +438,7 @@
 - 2026-10-31：文案迁移第七批——`MainActivity` 的任务卡与空态文案 8 处迁入 `T`；同时删掉两个**没人调用的死函数**（`memoryKindLabel`/`statusLabel`，共 12 处中文），基线 140 → **119**，`MainActivity` 95 → 54。删代码前已用 `grep` 确认全仓库无调用点。
 - 2026-10-31：文案迁移第六批——`MainActivity` 的语音/VAD 状态、麦克风与通知权限提示、导入导出取消提示共 18 处迁入 `T`（`voice.*`、`notify.*`、`archive.*`），文件内 95 → **75**，总体基线 158 → **140**。修编译时踩到一处 `String.format` 包裹 `T.format` 的括号残留，已清理。
 - 2026-10-31：文案迁移第五批——`LocalSlmEngine` 的步骤标题/描述与“本地规则整理”报告模板迁入 `T`，文件内剩 12 处（全部是意图关键词表），基线 177 → **158**。判断：关键词表属于输入识别、代码注释属于说明，都不该翻译，因此保留并在文档里写明。
-- 2026-10-31：文案迁移第四批——`SemanticRulePlanner` 的 8 个步骤标题/描述与合成报告模板迁入 `T`（`plan` 增加 `en` 重载），文件内只剩 7 处（关键词表），基线 198 → **177**。设备上中英两种界面都核对过：中文显示“读取 Traceform 本机历史摘要”，英文显示 “Read Local Note” 等。
+- 2026-10-31：文案迁移第四批——`SemanticRulePlanner` 的 8 个步骤标题/描述与合成报告模板迁入 `T`（`plan` 增加 `en` 重载），文件内只剩 7 处（关键词表），基线 198 → **177**。设备上中英两种界面都核对过：中文显示“读取 Traceweave 本机历史摘要”，英文显示 “Read Local Note” 等。
 - 2026-10-31：文案迁移第三批——`AgentFloatingService`（悬浮窗按钮、JIT 提示、音频/视觉错误文案）从 20 处降到 **3 处**（剩余为中文输入匹配与一处条件串），基线 215 → **198**；设备冒烟正常。
 - 2026-10-31：文案迁移第二批——`MemoryConsolidator` 生成的记忆正文（日程/偏好/工作流模板）改由 `T.format` 提供，`extractItems` 增加 `en` 参数（内部调用保持中文默认），宿主测试仍全绿；基线 223 → **215**，`CapabilityBroker` 剩 9、`MemoryConsolidator` 剩 2（中文关键词匹配，属于输入识别，不应翻译）。设备冒烟：记忆可正常新增。
 - 2026-10-31：硬编码文案“棘轮”测试——扫描 `agent_os/android/src/.../*.java` 里含中文的字面量（排除 `T.java` 与注释），基线冻结 21 个文件、233 处；任何文件增加新中文硬编码或出现新文件都会让测试失败（已用临时插入验证会真的失败）。目的是止血，不强制一次性重构。基线 `agent_os/tests/data/hardcoded_cjk_baseline.json`。
@@ -472,13 +472,13 @@
 - 2026-10-31：深色模式第一版——`Ui.dark/background/card/text/muted/stroke` 跟随系统 `uiMode`；主屏、设置弹窗、审计页、任务中心、模型页改为深色配色，设置弹窗的按钮栏也按主题着色。设备上 `cmd uimode night yes/no` 双向验证，截图 [main_dark_zh](../artifacts/agent_os/next_stage/ui/main_dark_zh.png)、[settings_dark_zh](../artifacts/agent_os/next_stage/ui/settings_dark_zh.png)、[audit_dark_zh](../artifacts/agent_os/next_stage/ui/audit_dark_zh.png)。同时把动作网格触控高度提到 48dp、给任务中心的“⋯”补了 `contentDescription`。
 - 2026-10-31：第 6 项开始——新增只读审计日志页（`AuditActivity`，入口在控制台），按时间倒序展示最近 200 条事件、可导出带时间戳的 TSV；设备上生成任务后看到 `task_created / local_rule_planning_started / plan_generated` 等真实事件，导出 5 行 TSV 并核对内容。截图 [audit_log_zh](../artifacts/agent_os/next_stage/ui/audit_log_zh.png)。
 - 2026-10-31：字符串迁移收尾（第二批）——外部动作、悬浮服务、传感器上下文、记忆审核、云端失败、记忆选择、模型状态、外设服务共 73 处迁入 `T`；全应用剩余约 5 处（枚举/常量拼接）。`T` 共 522 条。
-- 2026-10-31：字符串迁移收尾——九个主要界面（主屏、设置、配对、记忆、任务、文稿、工作流、模型、任务中心）的文案全部改由 `T` 提供（`T` 共 449 条），这些文件内 `en ? …` 内联三元清零；其余次要类（外部动作、悬浮服务、传感器上下文、记忆审核等）仍有 76 处，已列出待后续迁移。`T` 审计允许专有名词同形（Traceform）。设备冒烟通过。
+- 2026-10-31：字符串迁移收尾——九个主要界面（主屏、设置、配对、记忆、任务、文稿、工作流、模型、任务中心）的文案全部改由 `T` 提供（`T` 共 449 条），这些文件内 `en ? …` 内联三元清零；其余次要类（外部动作、悬浮服务、传感器上下文、记忆审核等）仍有 76 处，已列出待后续迁移。`T` 审计允许专有名词同形（Traceweave）。设备冒烟通过。
 - 2026-10-31：字符串迁移（第五批）——新增 `T.format`，把能力授权、归档计数、任务进度等 12 处带变量的文案改成格式化键；`T` 共 429 条。设备上主屏与任务中心中英显示正常。
 - 2026-10-31：字符串迁移（第四批）——任务/文稿/工作流/模型四个页面共 114 处跨行三元迁入 `T`，`T` 达 417 条；设备上英文文稿页（Verified Markdown task / Task goal / All sources）核对正常。剩余 `MainActivity` 22 处为带拼接的复杂文案。
 - 2026-10-31：字符串迁移（第三批）——`MainActivity` 152 处单行三元批量迁入 `T`（共 277 条键），设备上中英主屏、任务区、底部导航逐项核对正常；剩余 30 处跨行文案留待下批。
 - 2026-10-31：字符串迁移（第二批）——`SettingsPanel` 36 处、`MemoryDetailPanel` 32 处内联三元改为 `T` 键，`T` 共 125 条；设备上中英设置页均确认（“Export Archive / Pair device / Sync now / Services & extensions”）。MainActivity 仍有 189 处待迁。
 - 2026-10-31：字符串迁移（第一批）——`SyncPanel` 的 19 处内联三元改为 `T` 键（新增 19 条双语），设备上中文界面确认“等待对端/同步现在/配对新设备/局域网发现”等显示正常；控制台对话框因与语音、传感器状态耦合过深，本轮未抽离。
-- 2026-10-31：MainActivity 拆分（第三步）——设置页与 Traceform/云端开关抽到 `SettingsPanel`（265 行）；MainActivity 2348 行（累计 −688，目标 2000 以内），设备冒烟确认三个分区与按钮正常。
+- 2026-10-31：MainActivity 拆分（第三步）——设置页与 Traceweave/云端开关抽到 `SettingsPanel`（265 行）；MainActivity 2348 行（累计 −688，目标 2000 以内），设备冒烟确认三个分区与按钮正常。
 - 2026-10-31：MainActivity 拆分（第二步）——记忆详情/编辑/删除/按来源审核抽到 `MemoryDetailPanel`（181 行）；MainActivity 2582 行（累计从 3036 降 454 行），设备冒烟确认记忆列表与详情对话框正常。
 - 2026-10-31：MainActivity 拆分（第一步）——配对/同步 UI 抽到 `SyncPanel`（348 行），地址解析抽到 `AddressParser`、payload 解析抽到 `SyncActions`；MainActivity 从 3036 行降到 2737 行，设备冒烟确认设置页与配对对话框正常。
 - 2026-10-31：真实文稿路径——MiniCPM 经“审核页 → 端侧模型生成”产出草稿，已剥离 `<think>` 与 ``` 围栏，保存并读回核验（55 字节，因运行时 128 token 上限被截断）；见 [model_draft_minicpm_20261031](../artifacts/agent_os/next_stage/model_draft_minicpm_20261031.json)。
@@ -532,7 +532,7 @@
 - 2026-10-30：E2 完成——两套恢复密钥各签一份测试 APK 并验签，证书与备份记录及已安装应用一致；临时材料已删。
 - 2026-10-30：C1 完成——设计草稿经操作人批准，作为 C2–C6 依据。
 - 2026-10-30：E4 完成——发布检查单 + 回滚演练（校验器拒绝同版本、系统拒绝降级、更高 versionCode 升级成功）。
-- 2026-10-30：E2 受阻——签名备份归档可解密，但钥匙串条目 `com.inceptless.traceform.edge.archive` 连续两次返回 exit 161，需要操作人放行后才能签测试 APK。
+- 2026-10-30：E2 受阻——签名备份归档可解密，但钥匙串条目 `org.traceform.edge.archive` 连续两次返回 exit 161，需要操作人放行后才能签测试 APK。
 - 2026-10-30：C1 草稿完成（待评审）——[sync_protocol_design.md](sync_protocol_design.md)。
 - 2026-10-30：A4 完成（仅整机重启）——未知结果任务、无自动重放、档案可读、授权不继承四项通过；断电与损坏未测。
 - 2026-10-30：A7 完成——0.6.14 在正式应用首次启动申请通知权限，拒绝→设置页重试→允许全流程通过；隔离包复现拒绝提示且不崩溃。

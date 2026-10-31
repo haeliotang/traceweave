@@ -2,7 +2,7 @@
 
 > 0.2.0 历史验收。后续 0.3.0 已加入可验证文件任务、逐条候选审核与任务级云请求授权，见[新验收记录](agent_os_documents_privacy_acceptance.md)。
 
-本轮完成四项增量：先提交签名迁移与授权说明，再收敛动作状态，接入真实日历编辑/交接，最后将推断记忆改为用户确认后写入。运行边界仍为普通 Android APK、Binder 与 JobScheduler。Traceform Edge 保留旧签名，其 Provider 接入仍暂停。
+本轮完成四项增量：先提交签名迁移与授权说明，再收敛动作状态，接入真实日历编辑/交接，最后将推断记忆改为用户确认后写入。运行边界仍为普通 Android APK、Binder 与 JobScheduler。Traceweave Edge 保留旧签名，其 Provider 接入仍暂停。
 
 ## 行为与数据契约
 
@@ -34,7 +34,7 @@
 
 ## Pixel 6a 验收
 
-GrapheneOS、Android 17 / API 37；Java 路径，未随包提供 GGUF 模型或 JNI 库。隔离包为 `org.traceform.agentos.actionsvalidation`，测试数据库仅含合成内容。
+GrapheneOS、Android 17 / API 37；Java 路径，未随包提供 GGUF 模型或 JNI 库。隔离包为 `org.traceweave.agentos.actionsvalidation`，测试数据库仅含合成内容。
 
 | 验收组 | 结果及证据 |
 |---|---|
@@ -52,13 +52,13 @@ GrapheneOS、Android 17 / API 37；Java 路径，未随包提供 GGUF 模型或 
 
 ## 正式安装与清理
 
-正式包 `org.traceform.agentos` 已通过同签名 `install -r` 更新为 `0.2.0`，没有卸载正式包。更新前后首次安装时间相同，原有可见任务状态标签均为两条，新日历入口可见；设备实际 APK SHA-256 与构建报告一致。该检查确认安装身份与可见记录保留，没有逐条读取正式用户数据库，也没有发送云请求验证 API Key。
+正式包 `org.traceweave.agentos` 已通过同签名 `install -r` 更新为 `0.2.0`，没有卸载正式包。更新前后首次安装时间相同，原有可见任务状态标签均为两条，新日历入口可见；设备实际 APK SHA-256 与构建报告一致。该检查确认安装身份与可见记录保留，没有逐条读取正式用户数据库，也没有发送云请求验证 API Key。
 
 - [正式包构建报告](../artifacts/agent_os/actions/production_build_report_20261025.json)
 - [隔离包构建报告](../artifacts/agent_os/actions/validation_build_report_20261025.json)
 - [原位升级收据](../artifacts/agent_os/actions/production_upgrade_receipt_20261025.json)
 
-验收后已卸载 `org.traceform.agentos.actionsvalidation`，只保留正式 Agent OS 包；Etar 与空的合成离线日历保留。合成事件已删除以免留下提醒。用户当前 `.taos` 档案与开发签名密钥保留，Edge 应用和数据未替换。
+验收后已卸载 `org.traceweave.agentos.actionsvalidation`，只保留正式 Agent OS 包；Etar 与空的合成离线日历保留。合成事件已删除以免留下提醒。用户当前 `.taos` 档案与开发签名密钥保留，Edge 应用和数据未替换。
 
 ## 重跑
 

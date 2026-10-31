@@ -8,7 +8,7 @@
 
 | 项 | 值 |
 |---|---|
-| Agent OS 包名 | `org.traceform.agentos`，当前 0.6.14（versionCode 23） |
+| Agent OS 包名 | `org.traceweave.agentos`，当前 0.6.14（versionCode 23） |
 | Agent OS 签名证书 | `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`（开发密钥） |
 | Edge 签名证书 | `e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c`（开发密钥） |
 | 私钥位置 | 本机受控目录 `agent_os/build/*.p12`，口令在 macOS 钥匙串 |

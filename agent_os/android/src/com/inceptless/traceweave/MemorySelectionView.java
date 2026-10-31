@@ -32,8 +32,8 @@ final class MemorySelectionView extends LinearLayout {
         query = new EditText(context); query.setHint(T.s("memoryselectionview.search_memory_text_kind_or_source", en)); addView(query);
         source = new Spinner(context);
         source.setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
-            en ? new String[]{"All sources", "User", "Traceform", "Confirmed suggestions"}
-                : new String[]{"全部来源", "你提供", "Traceform", "已确认建议"}));
+            en ? new String[]{"All sources", "User", "Traceweave", "Confirmed suggestions"}
+                : new String[]{"全部来源", "你提供", "Traceweave", "已确认建议"}));
         addView(source);
         Button suggest = new Button(context); suggest.setAllCaps(false);
         suggest.setText(T.s("memoryselectionview.show_suggestions_select_manually", en));
@@ -55,7 +55,7 @@ final class MemorySelectionView extends LinearLayout {
     }
     private void render() {
         if (rows == null) return;
-        String[] sources = {null, AgentStore.MEMORY_SOURCE_USER, AgentStore.MEMORY_SOURCE_TRACEFORM, AgentStore.MEMORY_SOURCE_CONSOLIDATION};
+        String[] sources = {null, AgentStore.MEMORY_SOURCE_USER, AgentStore.MEMORY_SOURCE_TRACEWEAVE, AgentStore.MEMORY_SOURCE_CONSOLIDATION};
         rows.removeAllViews();
         for (AgentStore.Memory memory : selection.visible(query.getText().toString(), sources[Math.max(0, source.getSelectedItemPosition())], suggestions, goal.getText().toString())) {
             CheckBox box = new CheckBox(getContext()); box.setText(memory.content + "\n" + memory.source + " · " + memory.id);

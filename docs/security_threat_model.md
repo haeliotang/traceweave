@@ -10,7 +10,7 @@
 | 跨设备同步 | 本机 Rust 传输 + 回环/局域网 | 配对记录 + Keystore 绑定 |
 | 设备身份 | Android Keystore P-256 | 私钥不可导出 |
 | 端侧模型 | 打包的 llama.cpp 运行库 + 用户导入的 GGUF | 模型文件由用户提供并校验 SHA-256 |
-| Traceform Provider / Broker | Binder + 签名白名单 + 逐任务授权 | 调用方身份由系统校验 |
+| Traceweave Provider / Broker | Binder + 签名白名单 + 逐任务授权 | 调用方身份由系统校验 |
 | 发布签名 | 本地 keystore + 加密归档 | 见[生产签名决策](production_signing_decision.md) |
 
 ## 2. 资产
@@ -43,7 +43,7 @@
 | 配对 | 伪造设备、错码 | 双方指纹 + 6 位确认码、撤销即拒 | [配对](../artifacts/agent_os/next_stage/sync_pairing_20261031.json) |
 | 合并 | 删除复活、时钟伪造 | 墓碑优先、32 设备上限、同钟不同内容拒绝 | [合并](../artifacts/agent_os/next_stage/memory_merge_device_20261030.json) |
 | 模型运行 | 恶意 GGUF、越界输入 | SHA-256 校验、输入/上下文上限、取消 | [质量](../artifacts/agent_os/next_stage/local_model_quality50_20261031.json) |
-| Provider/Broker | 越权读取、权限继承 | 签名白名单 + 包名/UID 校验 + 逐任务授权 | Traceform 记录 |
+| Provider/Broker | 越权读取、权限继承 | 签名白名单 + 包名/UID 校验 + 逐任务授权 | Traceweave 记录 |
 | 签名 | 私钥泄露、误签 | 恢复演练、发布校验、开发密钥标注 | [E1](production_signing_decision.md) |
 
 ## 5. 已知残留风险

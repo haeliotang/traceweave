@@ -1,4 +1,4 @@
-# Traceform
+# Traceweave
 
 > A sovereign personal computing system independent of any single device, model, or provider.  
 > An open architecture and operating substrate designed and maintained by **Inceptless**.
@@ -14,12 +14,12 @@
 
 ## 1. Executive Summary
 
-Traceform redefines personal computing for the post-application agent era. Traditional consumer operating systems remain organized around isolated application silos and cloud platforms that fragment personal identity, memory, and agency. 
+Traceweave redefines personal computing for the post-application agent era. Traditional consumer operating systems remain organized around isolated application silos and cloud platforms that fragment personal identity, memory, and agency. 
 
-Traceform's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
+Traceweave's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
-  <img src="docs/assets/traceform_os_handheld_dashboard_en.png" alt="Pixel 6a screenshot of the Traceform Agent OS prototype main screen in English" width="380" />
+  <img src="docs/assets/traceweave_os_handheld_dashboard_en.png" alt="Pixel 6a screenshot of the Traceweave Agent OS prototype main screen in English" width="380" />
   <br />
 </p>
 
@@ -27,7 +27,7 @@ Traceform's design goal is a device-agnostic computing substrate where computati
 
 ## 2. Four Target Architecture Pillars
 
-Traceform's target architecture has four mutually reinforcing layers; the diagram distinguishes design goals from the current prototype:
+Traceweave's target architecture has four mutually reinforcing layers; the diagram distinguishes design goals from the current prototype:
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -41,22 +41,22 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 |     - Optional overlay service; requires user-controlled Android access                |
 |     - Sensor, voice, vision, and peripheral components are experimental                |
 |                                                                                         |
-|  2. Traceform Runtime                                                                   |
+|  2. Traceweave Runtime                                                                   |
 |     Android task executor plus experimental Rust core                                  |
 |     - User-approved, task-scoped capability broker                                     |
 |     - Deterministic rule planner by default; optional user-imported GGUF model       |
 |     - Keystore-backed app data and passphrase-encrypted export                         |
 |     - Rust daemon is disabled; no automatic device-to-device sync                     |
 |                                                                                         |
-|  3. Traceform Protocol                                                                  |
+|  3. Traceweave Protocol                                                                  |
 |     Protocol schemas and experimental Rust synchronization code                        |
 |     - Android archive import/export is user initiated                                   |
 |     - App-side memory merge uses vector clocks and tombstone priority                   |
 |     - Rust sync transport exchanges those records; validation builds only                |
 |     - No deployed cross-device synchronization service                                 |
 |                                                                                         |
-|  4. Traceform Research                                                                  |
-|     Exploratory scientific research subproject (research/traceform/)                   |
+|  4. Traceweave Research                                                                  |
+|     Exploratory scientific research subproject (research/traceweave/)                   |
 |     - Feature extraction and dynamical-systems research                                |
 |     - Metrics are research results only when tied to a dated reproducible record        |
 |                                                                                         |
@@ -70,11 +70,11 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 | Subsystem | Primary Implementation | Standards & Specifications | Key Engineering Metrics |
 | :--- | :--- | :--- | :--- |
 | **Agent OS prototype** | Java Android APK, tested on Android 17 | Android app sandbox and explicit user approvals | No OS image, latency, or battery-life guarantee |
-| **Traceform Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
+| **Traceweave Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
 | **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
-| **Traceform protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync exists in validation builds; no background sync |
-| **Traceform Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
+| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync exists in validation builds; no background sync |
+| **Traceweave Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
 
 ---
 
@@ -96,7 +96,7 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 |                                                                                         |
 |  - MainActivity: Viewport coordination, multi-language localization (ZH / EN)           |
 |  - AgentFloatingService: SYSTEM_ALERT_WINDOW lifecycle, gesture-drag and touch events   |
-|  - TraceformProvider: Signature-protected optional local context bridge                |
+|  - TraceweaveProvider: Signature-protected optional local context bridge                |
 |  - PhysicalSensoriumManager: Explicit start/stop prototype                              |
 |  - HardwarePeripheralService: Experimental input adapter                                |
 |  - VisionAgentManager: Experimental, not accepted for general UI automation             |
@@ -137,9 +137,9 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 The Android Broker mediates the prototype's registered capabilities. A request is bound to a caller UID, package, task, capability, and scope. For cross-app calls, the user sees an Android approval screen; an accepted grant lasts up to five minutes, and denial, timeout, expiry, or revoke fails closed and is recorded in the app database. This is an application-level prototype, not a system-wide zero-trust boundary or an immutable audit ledger.
 
 ### 5.2 Optional Local Context Bridge
-The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/com/inceptless/traceweave/TraceformProvider.java)) is an optional local context adapter in the Android prototype:
+The `TraceweaveProvider` ([`TraceweaveProvider.java`](agent_os/android/src/com/inceptless/traceweave/TraceweaveProvider.java)) is an optional local context adapter in the Android prototype:
 - **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. The current Agent OS signer differs from the installed Edge signer, so this integration is paused. No HSM release-signing process is implemented.
-- **Current validation**: The Pixel 6a test used the Traceform Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
+- **Current validation**: The Pixel 6a test used the Traceweave Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
 - **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; global configuration alone does not authorize transmission. Each cloud planning request requires an exact payload preview and single-use user approval; subsequent execution observations remain local.
 
 ---
@@ -177,9 +177,9 @@ External-agent interoperability is a future direction. Current validation covers
 The repository contains the following experimental components. Their presence in source does not mean they are end-to-end device capabilities:
 
 1. **Multi-Level Agent-IR Compilation & Deterministic Security Gates**
-   - Inspired by MLIR multi-level intermediate representation, Traceform lowers tasks through four formal compilation passes: `SemanticNormalizationPass`, `DataPrivacyRedactionPass` (PII masking across scopes), `CycleAndDeadlockDetectionPass` (Kahn topological sort preventing circular dependencies), and `ExecutionLoweringPass` (cryptographic SHA-256 seal preventing parameter tampering).
+   - Inspired by MLIR multi-level intermediate representation, Traceweave lowers tasks through four formal compilation passes: `SemanticNormalizationPass`, `DataPrivacyRedactionPass` (PII masking across scopes), `CycleAndDeadlockDetectionPass` (Kahn topological sort preventing circular dependencies), and `ExecutionLoweringPass` (cryptographic SHA-256 seal preventing parameter tampering).
 
-2. **Traceform Compute Engine (TCE) Heterogeneous Scheduling**
+2. **Traceweave Compute Engine (TCE) Heterogeneous Scheduling**
    - Experimental scheduling and kernel code; GPU/Vulkan and Edge TPU execution, thermal policy, and the cited latency are not verified as an end-to-end device runtime.
 
 3. **Disabled Background Daemon (`agentosd`)**
@@ -254,7 +254,7 @@ subprocess.run([
     "--android-jar", os.path.join(os.environ["ANDROID_HOME"], "platforms/android-35/android.jar"),
     "--build-tools", os.path.join(os.environ["ANDROID_HOME"], "build-tools/35.0.0"),
     "--keystore", "android/build/development.keystore",
-    "--key-alias", "traceform",
+    "--key-alias", "traceweave",
     "--manifest", "agent_os/tests/android/manifest-target.xml",
     "--extra-source", "agent_os/tests/android/DeviceValidationActivity.java",
     "--output-dir", "agent_os/build/phase1-validation",
@@ -264,8 +264,8 @@ PY
 # 3. Install the isolated validation package on a test device
 adb install -r agent_os/build/phase1-validation/agent-os.apk
 
-# 4. Launch the validation app; its package is not org.traceform.agentos
-adb shell am start -n org.traceform.agentos.validation.target/org.traceform.agentos.MainActivity
+# 4. Launch the validation app; its package is not org.traceweave.agentos
+adb shell am start -n org.traceweave.agentos.validation.target/org.traceweave.agentos.MainActivity
 ```
 
 ---
@@ -281,10 +281,10 @@ adb shell am start -n org.traceform.agentos.validation.target/org.traceform.agen
 │   ├── core/               Rust native library; agentosd runtime is disabled
 │   ├── sdk_python/         Experimental Python client SDK for local substrate IPC
 │   └── scripts/            Compilation, packaging, signing, and device deployment pipelines
-├── research/               Traceform Research scientific subproject
+├── research/               Traceweave Research scientific subproject
 │   ├── README.md           Mathematical foundations and research overview
 │   ├── pyproject.toml      Research package configuration
-│   └── traceform/          Feature extraction, recurrence, forecasting, and probes
+│   └── traceweave/          Feature extraction, recurrence, forecasting, and probes
 ├── docs/                   System specifications, protocol definitions, and audit reports
 │   ├── protocol/           Substrate protocol specification and agent manifest JSON schemas
 │   └── archive/            Historical engineering design records and hardware migration notes
@@ -297,7 +297,7 @@ adb shell am start -n org.traceform.agentos.validation.target/org.traceform.agen
 
 We actively encourage community participation, issues, and security feedback:
 
-- **Issue Tracker**: Submit bugs, enhancement proposals, and architecture questions through [GitHub Issues](https://github.com/haeliotang/traceform/issues).
+- **Issue Tracker**: Submit bugs, enhancement proposals, and architecture questions through [GitHub Issues](https://github.com/haeliotang/traceweave/issues).
 - **Bug Reports**: Please include the device model, OS build (for example, the tested Google Pixel 6a / GrapheneOS / Android 17 build), relevant `adb logcat` output (filtered by tags `AgentOsValidation`, `SubstrateService`, `AgentOS`, `NativeAgentCore`, `HardwarePeripheral`, `agentosd`), and deterministic reproduction steps.
 - **Security Disclosures**: Report vulnerabilities privately to support@inceptless.com; see [SECURITY.md](SECURITY.md). Do not include credentials or personal device data in public issues.
 
@@ -305,7 +305,7 @@ We actively encourage community participation, issues, and security feedback:
 
 ## 10. Contributing
 
-Contributions from systems engineers, machine learning researchers, and security practitioners are warmly welcomed. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, synthetic fixtures and reproducible checks. Traceform follows a structured development workflow:
+Contributions from systems engineers, machine learning researchers, and security practitioners are warmly welcomed. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, synthetic fixtures and reproducible checks. Traceweave follows a structured development workflow:
 
 ### Development Workflow
 1. **Fork & Branch**: Fork the repository and create a feature branch (`git checkout -b feature/agent-ir-pass` or `fix/sensor-fusion-deadlock`).
@@ -321,7 +321,7 @@ Contributions from systems engineers, machine learning researchers, and security
 
 ## 11. Open Source License
 
-Traceform is released under the **Apache License, Version 2.0**.
+Traceweave is released under the **Apache License, Version 2.0**.
 
 The root [LICENSE](LICENSE) applies to project code. Third-party components retain their own licenses; preserve their notices when redistributing dependencies or binaries.
 
@@ -329,9 +329,9 @@ The root [LICENSE](LICENSE) applies to project code. Third-party components reta
 
 ## 12. Governance & Authorship
 
-Traceform is initiated, engineered, and governed by **Inceptless**.
+Traceweave is initiated, engineered, and governed by **Inceptless**.
 
 - Parent Entity: Inceptless
-- Core Product: Traceform
-- Subsystems: Traceform OS, Traceform Runtime, Traceform Protocol, Traceform Research
+- Core Product: Traceweave
+- Subsystems: Traceweave OS, Traceweave Runtime, Traceweave Protocol, Traceweave Research
 - Copyright: (c) 2026 Inceptless. All rights reserved.

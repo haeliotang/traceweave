@@ -46,20 +46,20 @@ final class T {
         add("settingspanel.4", "Enable notifications", "启用通知");
         add("settingspanel.5", "Pair device", "配对设备");
         add("settingspanel.6", "Manage", "管理设备");
-        add("settingspanel.7", "Configure Traceform Provider", "配置 Traceform Provider");
+        add("settingspanel.7", "Configure Traceweave Provider", "配置 Traceweave Provider");
         add("settingspanel.8", "Configure Hybrid Cloud Inference", "配置端云协同推理");
         add("settingspanel.9", "Close", "关闭");
-        add("settingspanel.10", "Disable Traceform Provider?", "停用 Traceform Provider？");
-        add("settingspanel.11", "Disabling revokes Traceform task grants in this process. You remain in control of saved Traceform-sourced memories.", "停用后会撤销当前进程中的 Traceform 任务授权。已保存的 Traceform 来源记忆仍由你管理。");
+        add("settingspanel.10", "Disable Traceweave Provider?", "停用 Traceweave Provider？");
+        add("settingspanel.11", "Disabling revokes Traceweave task grants in this process. You remain in control of saved Traceweave-sourced memories.", "停用后会撤销当前进程中的 Traceweave 任务授权。已保存的 Traceweave 来源记忆仍由你管理。");
         add("settingspanel.12", "Keep enabled", "继续启用");
         add("settingspanel.13", "Disable", "停用");
-        add("settingspanel.14", "Trusted Traceform summary service is unavailable or unauthorized; check the Edge version and signer.", "Traceform 可信摘要服务未就绪或未获授权；请检查 Edge 版本及签名");
-        add("settingspanel.15", "Enable optional Traceform Provider?", "启用可选 Traceform Provider？");
-        add("settingspanel.16", "Enabling adds Traceform to task capabilities. Each read still requires separate authorization for that task. Edge reads its own history; Agent OS does not open the file, start sensor collection, or access the network. Saving a result as memory requires another confirmation.", "启用后，Traceform 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；Edge 服务会只读查询自己的历史库，Agent OS 不直接打开该文件，不启动传感器采集或访问网络。保存结果为记忆还需再次确认。");
+        add("settingspanel.14", "Trusted Traceweave summary service is unavailable or unauthorized; check the Edge version and signer.", "Traceweave 可信摘要服务未就绪或未获授权；请检查 Edge 版本及签名");
+        add("settingspanel.15", "Enable optional Traceweave Provider?", "启用可选 Traceweave Provider？");
+        add("settingspanel.16", "Enabling adds Traceweave to task capabilities. Each read still requires separate authorization for that task. Edge reads its own history; Agent OS does not open the file, start sensor collection, or access the network. Saving a result as memory requires another confirmation.", "启用后，Traceweave 才会出现在任务的能力列表中。每次读取仍需为具体任务单独授权；Edge 服务会只读查询自己的历史库，Agent OS 不直接打开该文件，不启动传感器采集或访问网络。保存结果为记忆还需再次确认。");
         add("settingspanel.17", "Cancel", "取消");
         add("settingspanel.18", "Enable", "启用");
-        add("settingspanel.19", "Disable Traceform Provider", "停用 Traceform Provider");
-        add("settingspanel.20", "Enable Traceform Provider", "启用 Traceform Provider");
+        add("settingspanel.19", "Disable Traceweave Provider", "停用 Traceweave Provider");
+        add("settingspanel.20", "Enable Traceweave Provider", "启用 Traceweave Provider");
         add("settingspanel.21", "Enabled; each read requires per-task auth, zero passive sensor capture.", "已启用；读取仍需逐任务授权，且不会启动传感器采集。");
         add("settingspanel.22", "Enabled in settings, but the trusted summary service is unavailable.", "设置已启用，但可信摘要服务不可用。");
         add("settingspanel.23", "Disabled by default. Reads/saves always require explicit user confirmation.", "默认关闭。启用本身不会读取数据；每次读取和保存为记忆都需单独确认。");
@@ -108,7 +108,7 @@ final class T {
         add("memorydetailpanel.30", "Cancel", "取消");
         add("memorydetailpanel.31", "Delete selected records", "删除选中记录");
         add("memorydetailpanel.32", "Cancel", "取消");
-        add("ui.traceform_agent_os_prototype", "Traceform Agent OS Prototype", "Traceform Agent OS 原型");
+        add("ui.traceweave_agent_os_prototype", "Traceweave Agent OS Prototype", "Traceweave Agent OS 原型");
         add("ui.en", "EN / 中", "中 / EN");
         add("ui.hardware", "Hardware", "硬件常驻");
         add("ui.tensor_g1_pixel_6a_nsynthetic_profile", "Tensor G1 · Pixel 6a\nSynthetic profile", "Tensor G1 · Pixel 6a\n模拟数据");
@@ -212,15 +212,15 @@ final class T {
         add("ui.synthesis_status", "Synthesis Status", "合成状态");
         add("ui.select_cross_app_source", "Select Cross-App Source", "选择跨应用状态来源");
         add("ui.cross_app_status", "Cross-App Status", "跨应用状态");
-        add("ui.traceform_local_history_summary", "Traceform Local History Summary", "Traceform 本机历史摘要");
-        add("ui.traceform_provider_unavailable_trusted_s", "Traceform Provider unavailable: trusted summary service not granted", "Traceform Provider 不可用：可信摘要服务未就绪或未获授权");
-        add("ui.allow_this_task_to_query_retained_local", "Allow this task to query retained local history through the scoped Traceform Binder service and run a bounded local simulation in Edge. Agent OS does not open the history database, start sensor collection, or access the network. The result appears in this task. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked at any time.", "允许此任务通过 Traceform 的受控 Binder 接口，在 Edge 进程内只读查询本机保留历史并运行固定范围的本机模拟。Agent OS 不会直接访问历史库，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。");
+        add("ui.traceweave_local_history_summary", "Traceweave Local History Summary", "Traceweave 本机历史摘要");
+        add("ui.traceweave_provider_unavailable_trusted_s", "Traceweave Provider unavailable: trusted summary service not granted", "Traceweave Provider 不可用：可信摘要服务未就绪或未获授权");
+        add("ui.allow_this_task_to_query_retained_local", "Allow this task to query retained local history through the scoped Traceweave Binder service and run a bounded local simulation in Edge. Agent OS does not open the history database, start sensor collection, or access the network. The result appears in this task. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked at any time.", "允许此任务通过 Traceweave 的受控 Binder 接口，在 Edge 进程内只读查询本机保留历史并运行固定范围的本机模拟。Agent OS 不会直接访问历史库，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。");
         add("ui.deny", "Deny", "拒绝");
         add("ui.allow_for_5_minutes", "Allow for 5 minutes", "授权 5 分钟");
-        add("ui.traceform_local_history_summary_2", "Traceform local history summary", "Traceform 本机历史摘要");
+        add("ui.traceweave_local_history_summary_2", "Traceweave local history summary", "Traceweave 本机历史摘要");
         add("ui.done_2", "Done", "完成");
         add("ui.save_as_factual_memory", "Save as factual memory", "保存为事实记忆");
-        add("ui.summary_saved_as_a_traceform_sourced_fac", "Summary saved as a Traceform-sourced factual memory", "摘要已作为 Traceform 来源的事实记忆保存");
+        add("ui.summary_saved_as_a_traceweave_sourced_fac", "Summary saved as a Traceweave-sourced factual memory", "摘要已作为 Traceweave 来源的事实记忆保存");
         add("ui.archive_passphrase", "Archive passphrase", "档案口令");
         add("ui.unlock_archive", "Unlock archive", "解锁档案");
         add("ui.import_cancelled", "Import cancelled", "导入已取消");
@@ -260,12 +260,12 @@ final class T {
         add("ui.preference", "Preference", "偏好");
         add("ui.fact", "Fact", "事实");
         add("ui.workflow", "Workflow", "工作流");
-        add("ui.floating_capsule_requires_permission_t", "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'.", "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Traceform 并开启【在其他应用上层显示】。");
+        add("ui.floating_capsule_requires_permission_t", "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'.", "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Traceweave 并开启【在其他应用上层显示】。");
         add("ui.cloud_planning_requires_a_fresh_single", "Cloud planning requires a fresh, single-request approval. Later observations stay local.\n\n", "云端规划需要新的单次请求授权；后续步骤观察保持本地。\n\n");
         add("ui.these_are_suggestions_not_established", "These are suggestions, not established facts. Save only what you accept.\n\n", "以下为候选建议，不会自动成为事实。请只保存你认可的内容。\n\n");
         add("ui.a_file_is_complete_only_after_readback", "A file is complete only after readback matches the approved text. Recovery verifies without writing again.", "仅在文件读回内容与确认文本一致后完成；恢复只核验，不重新写入。");
         add("ui.saving_sending_is_handled_by_the_recei", "Saving/sending is handled by the receiving app. A return code is not a verified receipt; dispatched actions are never replayed automatically.", "保存或发送由目标应用处理，返回码不是成功回执；已交接动作不会自动重放。");
-        add("ui.n_nthis_simulated_summary_uses_locally", "\n\nThis simulated summary uses locally retained Traceform history. It is not a verified prediction or causal conclusion.", "\n\n此结果来自 Traceform 本机保留历史的模拟摘要，不是经验证的预测或因果结论。");
+        add("ui.n_nthis_simulated_summary_uses_locally", "\n\nThis simulated summary uses locally retained Traceweave history. It is not a verified prediction or causal conclusion.", "\n\n此结果来自 Traceweave 本机保留历史的模拟摘要，不是经验证的预测或因果结论。");
         add("ui.review_conflicting_memories_before_imp", "Review conflicting memories before importing. Deletions take priority; existing tasks stay local.", "导入前逐条审核冲突记忆。删除标记优先；已有任务保留本机版本。");
         add("ui.source_accelerometer_gyroscope_3_secon", "Source: accelerometer + gyroscope; 3-second rule window. This is an observation, not a personal habit.\nObserved: ", "来源：加速度计与陀螺仪，3 秒规则窗口。这是一次观察，不代表个人习惯。\n观察时间：");
         add("taskreview.review_task_context", "Review task context", "审核本次任务上下文");
@@ -407,7 +407,7 @@ final class T {
         add("cap.grant", "Grant %s", "授权%s");
         add("cap.read", "Read %s", "读取%s");
         add("cap.revoke", "Revoke %s grant", "撤销%s授权");
-        add("cap.allow_details", "Allow this task to read %s. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceform data are read.", "允许此任务读取固定的%s。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。");
+        add("cap.allow_details", "Allow this task to read %s. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceweave data are read.", "允许此任务读取固定的%s。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceweave 数据。");
         add("cap.allow_title", "Allow %s?", "授权%s？");
         add("cap.denied", "Denied %s", "已拒绝%s");
         add("cap.allowed", "Allowed this task to read %s", "已授权此任务读取%s");
@@ -446,11 +446,11 @@ final class T {
         add("memory.expire_90", "Expire in 90 days", "90 天后到期");
         add("memory.keep_expiration", "Keep current expiration", "保持当前有效期");
         add("memory.source_user", "User-provided", "你提供");
-        add("memory.source_traceform", "Traceform", "Traceform");
+        add("memory.source_traceweave", "Traceweave", "Traceweave");
         add("memory.source_suggestions", "All confirmed / inferred suggestions (including sensor)", "全部 Agent 建议（含感知）");
         add("memory.source_sensor", "Sensor observations only", "仅感知观察");
         add("model.verified_on", "%s verified on this device.", "本机已校验：%s。");
-        add("agentfloatingservice.traceform_capsule", " Traceform Capsule", " Traceform 胶囊");
+        add("agentfloatingservice.traceweave_capsule", " Traceweave Capsule", " Traceweave 胶囊");
         add("agentfloatingservice.collapse", "Collapse ▲", "收起 ▲");
         add("agentfloatingservice.cross_app_jit_gate_request", " Cross-App JIT Gate Request", " 跨应用 JIT 门禁请求");
         add("agentfloatingservice.grant_5_min", "Grant 5 Min", "授权 5 分钟");
@@ -458,7 +458,7 @@ final class T {
         add("agentfloatingservice.core_local_rule_planner_ready", " Core: Local rule planner ready", " 核心运行: 本地规则规划已就绪");
         add("agentfloatingservice.vision_ocr", "Vision OCR", "真机视觉");
         add("agentfloatingservice.ptt_key", "PTT Key", "PTT 按键");
-        add("agentfloatingservice.traceform_os", "Traceform OS", "主系统");
+        add("agentfloatingservice.traceweave_os", "Traceweave OS", "主系统");
         add("agentfloatingservice.listening_16_khz", " Listening (16 kHz)", " 拾音中 (16kHz NEON)");
         add("agentfloatingservice.capturing_speech", " Capturing speech...", " 语音捕获中...");
         add("agentfloatingservice.new_agent_task", "New Agent Task", "新建智能体任务");
@@ -562,7 +562,7 @@ final class T {
         add("cap.unknown", "Unknown capability", "未知能力");
         add("cap.demo_note", "Demo note", "示例便笺");
         add("cap.demo_status", "Device status", "设备运行状态");
-        add("cap.traceform", "Traceform local history", "Traceform 本机历史摘要");
+        add("cap.traceweave", "Traceweave local history", "Traceweave 本机历史摘要");
         add("cap.notification", "Task notifications", "系统任务通知");
         add("cap.calendar", "Calendar draft", "系统日历待办");
         add("cap.share", "Share export", "系统分享导出");
@@ -598,8 +598,8 @@ final class T {
         add("step.read_note.desc", "Read the fixed synthetic demo note", "读取本地固定的合成示例便笺内容");
         add("step.device_status.title", "Read device status", "读取设备运行状态");
         add("step.device_status.desc", "Collect on-device offline runtime and device status", "获取端侧离线运行与设备状态");
-        add("step.traceform.title", "Read Traceform history", "读取 Traceform 本机历史摘要");
-        add("step.traceform.desc", "Read sensor manifold forecasts and historical samples", "读取底层传感器流形预测与历史候选样本");
+        add("step.traceweave.title", "Read Traceweave history", "读取 Traceweave 本机历史摘要");
+        add("step.traceweave.desc", "Read sensor manifold forecasts and historical samples", "读取底层传感器流形预测与历史候选样本");
         add("step.remote.title", "Read cross-app status", "读取跨应用状态");
         add("step.remote.desc", "Read cross-app status from the selected ContentProvider", "从已选取的 ContentProvider 读取跨应用状态");
         add("step.notify.title", "Send system notification", "发送系统通知");
@@ -738,7 +738,7 @@ final class T {
 
     /** Proper nouns that are legitimately identical in both languages. */
     private static final java.util.Set<String> SAME_IN_BOTH = new java.util.HashSet<>(
-        java.util.Arrays.asList("memory.source_traceform"));
+        java.util.Arrays.asList("memory.source_traceweave"));
 
     /** Keys whose two languages are identical or empty; used by the host test. */
     static Map<String, String> audit() {

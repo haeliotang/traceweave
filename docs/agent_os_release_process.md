@@ -4,7 +4,7 @@
 
 ## 固定更新身份
 
-更新必须保留包名 `org.traceform.agentos` 和同一 APK 签名证书。使用现有忽略目录中的 keystore 和本机 Keychain 项；找不到签名材料时停止，不自动生成新密钥。Keychain 项与 keystore 都需要由持有人纳入受控加密备份，GitHub 不保管它们。不要把口令写入聊天、日志或仓库。
+更新必须保留包名 `org.traceweave.agentos` 和同一 APK 签名证书。使用现有忽略目录中的 keystore 和本机 Keychain 项；找不到签名材料时停止，不自动生成新密钥。Keychain 项与 keystore 都需要由持有人纳入受控加密备份，GitHub 不保管它们。不要把口令写入聊天、日志或仓库。
 
 已安装包的证书 SHA-256 是公开校验值，不是私钥。操作人应从可信旧 APK/安装记录核对并作为 `--expected-signer` 传入。
 
@@ -20,7 +20,7 @@ GitHub Actions 在托管 runner 上从固定提交重建端侧运行库，再使
 
 流水线另运行固定 Rust 工具链的核心单元测试、因果合并测试和生产明文存储拒绝测试。依赖使用仓库锁文件；这些电脑端测试不能替代 Android 真机、加密同步协议或独立安全审查。
 
-需要端侧文稿模型时，先用 `build_experimental_model_runtime.py` 从固定的干净 llama.cpp 源码和 Android NDK 构建运行库，再向验收脚本传入 `--model-runtime` 指向生成的 `libtraceform_local_model.so`。候选构建会核对同目录构建记录中的固定提交、JNI 源码和运行库摘要，发布检查会核对 APK 中的运行库与打包的 MIT 许可证。该本机记录不是第三方独立审计。未传入该参数的构建不包含端侧运行库，界面会显示不可用；它不能作为端侧模型功能已验收的发布包。模型权重由用户单独选择，不随 APK 分发。
+需要端侧文稿模型时，先用 `build_experimental_model_runtime.py` 从固定的干净 llama.cpp 源码和 Android NDK 构建运行库，再向验收脚本传入 `--model-runtime` 指向生成的 `libtraceweave_local_model.so`。候选构建会核对同目录构建记录中的固定提交、JNI 源码和运行库摘要，发布检查会核对 APK 中的运行库与打包的 MIT 许可证。该本机记录不是第三方独立审计。未传入该参数的构建不包含端侧运行库，界面会显示不可用；它不能作为端侧模型功能已验收的发布包。模型权重由用户单独选择，不随 APK 分发。
 
 2026-10-27 在 Pixel 6a 上运行了本地流水线：30 项隔离用例、合成档案跨安装恢复和同签名 0.5.3 原位更新通过，收据见[自动验收记录](../artifacts/agent_os/automation_053/acceptance.json)。本次运行期间单独核验两个隔离包的 UID 不同；该检查随后加入脚本，等待下次完整流水线验证。人工选择器与物理功耗没有在这一轮自动运行。
 

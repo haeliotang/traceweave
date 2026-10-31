@@ -1,4 +1,4 @@
-# Agent OS 与 Traceform 代码审计及阶段 1 复验
+# Agent OS 与 Traceweave 代码审计及阶段 1 复验
 
 日期：2026-10-24
 范围：本次工作树改动、Agent OS Android/Rust 边界、部署脚本、设备验收路径，以及因仓库目录变化而受影响的 Python 测试与特征审计脚本。该报告是源码审阅与本地/真机验证记录，不是独立渗透测试或密码学认证。
@@ -18,7 +18,7 @@ Android 原型保留为普通 APK。Broker 通过 Binder caller UID 与包名归
 | Agent 注册信任调用方提供的 key hash，解析失败时采用默认身份 | Rust 注册不再假装验证调用方身份；该路径被禁用。Android Binder MVP 将身份改为宿主派生的包名与 APK 签名证书 SHA-256，并在每次会话调用时复核 UID、包归属和签名 | `agentPublicKeyHash` 仅为兼容保留且被忽略；它不是持钥证明。同一 APK 内多个 Agent 仍共享身份；独立 Agent 密钥协议未实现 |
 | Cloud API key 以普通偏好明文保存 | 使用 Android Keystore AES-GCM 密文；加载时迁移旧明文；加密失败时拒绝保存 | Pixel 6a 合成 key round-trip 与旧值迁移验证通过；未做独立 Keystore/硬件安全审计 |
 | UI 把规则规划器、合成计算和归档误标为真实模型性能、GPU/TPU 实测或因果同步 | 改为规则规划器、合成调度模拟、按需加密归档，并删除未验证性能徽标 | 当前界面陈述与实现边界一致；相关代码仍含实验性 TCE/native 组件 |
-| 仓库 Python 包迁入 `research/traceform` 后，默认脚本路径和测试导入仍指向旧目录 | 修正脚本/测试默认路径和 pytest 搜索路径；旧物理设备 v2 测试依赖缺失，明确排除；缺失 v2 模块的守护测试跳过 | Python 全量测试通过（见验证记录）；9 个缺失实现的历史设备测试不纳入收集 |
+| 仓库 Python 包迁入 `research/traceweave` 后，默认脚本路径和测试导入仍指向旧目录 | 修正脚本/测试默认路径和 pytest 搜索路径；旧物理设备 v2 测试依赖缺失，明确排除；缺失 v2 模块的守护测试跳过 | Python 全量测试通过（见验证记录）；9 个缺失实现的历史设备测试不纳入收集 |
 | parity fixture 测试只检查 Java 工具，不检查 Android API jar | 增加 SDK jar 前置条件；本次显式使用本机 Android API 35 jar 实际运行 | 对应测试真实运行并通过；无 jar 环境按说明跳过 |
 
 ## 仍需明确的风险与限制

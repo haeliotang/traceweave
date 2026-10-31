@@ -17,12 +17,12 @@
 3. 在接收应用里核对内容与摘要，确认收到后删除接收端内容。
 4. 记录：接收应用名、内容摘要、是否出现"结果未知"、是否自动重放（应为否）。
 
-## B4 / B5 Traceform 正式历史（需要用户当场授权）
+## B4 / B5 Traceweave 正式历史（需要用户当场授权）
 
-当前状态：正式应用设置里的 `Enable Traceform Provider` 默认关闭。**启用本身不读数据**，但读取真实历史必须在场授权。
+当前状态：正式应用设置里的 `Enable Traceweave Provider` 默认关闭。**启用本身不读数据**，但读取真实历史必须在场授权。
 
-1. 用户在场时，设置页点 `Enable Traceform Provider`（或确认由我代点）。
-2. 新建任务，目标包含 traceform 关键词（例如 `traceform history summary`）。
+1. 用户在场时，设置页点 `Enable Traceweave Provider`（或确认由我代点）。
+2. 新建任务，目标包含 traceweave 关键词（例如 `traceweave history summary`）。
 3. 启动任务 → 系统/应用内授权弹窗 → 用户点允许。
 4. 读取摘要后记录**结构性统计**（字段是否齐全、样本量、时间范围），不保存个人内容。
 5. 在任务页撤销授权，确认再次读取被拒。

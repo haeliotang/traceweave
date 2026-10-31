@@ -57,7 +57,7 @@ In Phase 8, all four strategic evolution directions (**A, B, C, and D**) were im
 - Manifest structure:
   ```json
   {
-    "id": "org.traceform.plugin.converter",
+    "id": "org.traceweave.plugin.converter",
     "name": "Unit Converter",
     "version": "1.0.0",
     "description": "Temperature unit conversion plugin",

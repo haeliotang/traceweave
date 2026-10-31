@@ -79,7 +79,7 @@ publication is separately authorized
 Findings that follow from the code alone:
 
 - `digital_context` is not a sensor channel. The edge daemon fills it from
-  `dumpsys` text and fixed formulas in `traceform/probes/digital_sensorium.py`:
+  `dumpsys` text and fixed formulas in `traceweave/probes/digital_sensorium.py`:
   touch velocity and jitter are functions of application-switch and unlock
   counts and screen state; the BLE density falls back to `wifi_ap_count / 3`
   whenever the Bluetooth dump yields nothing; BLE variance is `1.6 x` that
@@ -106,7 +106,7 @@ normalizer, the installed model or any stored trajectory.
 **Observability registry.** `scripts/build_feature_observability_registry.py` marks each of the 128
 dimensions `observed_inputs`, `proxy_from_observed_inputs`, `unobservable_in_current_acquisition` or
 `not_assessed_at_runtime`, and records the basis. A dimension is statically unobservable when no
-producer code in `pixel_physical`, `traceform/streaming` or `traceform/probes` contains any of its
+producer code in `pixel_physical`, `traceweave/streaming` or `traceweave/probes` contains any of its
 input field names as a string literal; that is a fact about the code, not about one device
 (`artifacts/representation_v1/feature_observability_static.json`). Runtime-based statuses need a
 device-derived ledger and stay local. `validate_continuous_holdout.py --observability-registry`

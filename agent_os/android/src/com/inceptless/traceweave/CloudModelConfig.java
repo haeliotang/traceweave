@@ -21,7 +21,7 @@ final class CloudModelConfig {
     private static final String KEY_MODEL_NAME = "cloud_model_name";
     private static final String KEY_TIMEOUT_MILLIS = "cloud_timeout_millis";
     private static final String KEY_TEMPERATURE = "cloud_temperature";
-    private static final String KEY_ALIAS = "traceform.agentos.cloud-api-key.v1";
+    private static final String KEY_ALIAS = "traceweave.agentos.cloud-api-key.v1";
     private static final String API_KEY_PREFIX = "android-keystore:v1:";
 
     static final int DEFAULT_TIMEOUT_MILLIS = 15000;

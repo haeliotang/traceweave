@@ -14,7 +14,7 @@ final class SemanticRulePlanner implements ReasoningEngine {
     };
 
     private static final String[] TRACEFORM_KEYWORDS = {
-        "traceform", "预测", "历史", "轨迹", "流形", "forecast", "history"
+        "traceweave", "预测", "历史", "轨迹", "流形", "forecast", "history"
     };
 
     private static final String[] REMOTE_KEYWORDS = {
@@ -47,14 +47,14 @@ final class SemanticRulePlanner implements ReasoningEngine {
 
         boolean matchedNote = matchesAny(lowerGoal, NOTE_KEYWORDS);
         boolean matchedStatus = matchesAny(lowerGoal, STATUS_KEYWORDS);
-        boolean matchedTraceform = matchesAny(lowerGoal, TRACEFORM_KEYWORDS);
+        boolean matchedTraceweave = matchesAny(lowerGoal, TRACEFORM_KEYWORDS);
         boolean matchedRemote = matchesAny(lowerGoal, REMOTE_KEYWORDS);
         boolean matchedNotification = matchesAny(lowerGoal, NOTIFICATION_KEYWORDS);
         boolean matchedCalendar = matchesAny(lowerGoal, CALENDAR_KEYWORDS);
         boolean matchedShare = matchesAny(lowerGoal, SHARE_KEYWORDS);
 
         // If no keyword matches, default to note reading to ensure deterministic baseline.
-        if (!matchedNote && !matchedStatus && !matchedTraceform && !matchedRemote
+        if (!matchedNote && !matchedStatus && !matchedTraceweave && !matchedRemote
                 && !matchedNotification && !matchedCalendar && !matchedShare) {
             matchedNote = true;
         }
@@ -85,13 +85,13 @@ final class SemanticRulePlanner implements ReasoningEngine {
             ));
         }
 
-        if (matchedTraceform) {
+        if (matchedTraceweave) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                T.s("step.traceform.title", en),
-                CapabilityBroker.TRACEFORM_CAPABILITY,
-                CapabilityBroker.TRACEFORM_SCOPE,
-                T.s("step.traceform.desc", en),
+                T.s("step.traceweave.title", en),
+                CapabilityBroker.TRACEWEAVE_CAPABILITY,
+                CapabilityBroker.TRACEWEAVE_SCOPE,
+                T.s("step.traceweave.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L

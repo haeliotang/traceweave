@@ -36,8 +36,8 @@ final class MemoryDetailPanel {
             source = memory.sourceReference.startsWith("confirmed:")
                 ? (T.s("memorydetailpanel.1", en))
                 : (T.s("memorydetailpanel.2", en));
-        } else if (AgentStore.MEMORY_SOURCE_TRACEFORM.equals(memory.source)) {
-            source = "Traceform";
+        } else if (AgentStore.MEMORY_SOURCE_TRACEWEAVE.equals(memory.source)) {
+            source = "Traceweave";
         } else {
             source = T.s("memorydetailpanel.3", en);
         }
@@ -228,7 +228,7 @@ final class MemoryDetailPanel {
 
     void reviewBySource() {
         boolean en = host.english();
-        String[] labels = new String[]{T.s("memory.source_user", en), T.s("memory.source_traceform", en),
+        String[] labels = new String[]{T.s("memory.source_user", en), T.s("memory.source_traceweave", en),
             T.s("memory.source_suggestions", en), T.s("memory.source_sensor", en)};
         new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.26", en))
             .setItems(labels, (dialog, which) -> {

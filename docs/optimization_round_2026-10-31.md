@@ -18,7 +18,7 @@
 
 ## 3. 配对体验（SAS 确认码）
 
-- Rust：`pairing`（offer 编解码 + 方向无关 SAS）、`pairing_session`（Noise 上的 `/traceform/pair/1` 一次性会话）、`discovery`（mDNS）。
+- Rust：`pairing`（offer 编解码 + 方向无关 SAS）、`pairing_session`（Noise 上的 `/traceweave/pair/1` 一次性会话）、`discovery`（mDNS）。
 - JNI：`nativeDiscover` / `nativePairServe` / `nativePairDial`；Android 侧补 `CHANGE_WIFI_MULTICAST_STATE` 与 MulticastLock。
 - UI：配对页支持“局域网发现 / 等待对方设备 / 连接此地址”，确认码比对后写入 pairing。
 - 实测：同机双安装，双方 SAS 均为 `045675`，两条配对记录 active，peer_id 为 76 位十六进制。

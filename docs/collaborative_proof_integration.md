@@ -19,7 +19,7 @@ uses three parties for witness extension and a BN254 example. The official
 [generate-proof reference](https://docs.taceo.io/docs/co-circom/cli/generate-proof/)
 explicitly lists both BN254 and BLS12-381, with REP3 and SHAMIR protocols.
 BLS12-381 support is therefore documented; it is not an established curve
-incompatibility. Compatibility with Traceform's exact Arkworks relation, keys,
+incompatibility. Compatibility with Traceweave's exact Arkworks relation, keys,
 witness layout and Android deployment remains unverified.
 
 The implementation's

@@ -50,7 +50,7 @@ final class AgentStore extends SQLiteOpenHelper {
     static final String MEMORY_WORKFLOW = "workflow";
     static final String MEMORY_SOURCE_USER = "user";
     static final String LOCAL_ACTOR = "local-device";
-    static final String MEMORY_SOURCE_TRACEFORM = "traceform";
+    static final String MEMORY_SOURCE_TRACEWEAVE = "traceweave";
     static final String MEMORY_SOURCE_CONSOLIDATION = "agent_consolidation";
 
     static final class Task {
@@ -1866,7 +1866,7 @@ final class AgentStore extends SQLiteOpenHelper {
         if (expiresAt < 0) throw new IllegalArgumentException("Memory expiration must be non-negative");
         String normalized = validateMemory(kind, content);
         String reference = sourceReference == null ? "" : sourceReference.trim();
-        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
+        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEWEAVE.equals(source)
                 && !MEMORY_SOURCE_CONSOLIDATION.equals(source))
             throw new IllegalArgumentException("Choose a valid memory source");
         if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");
@@ -1939,7 +1939,7 @@ final class AgentStore extends SQLiteOpenHelper {
         if (expiresAt < 0) throw new IllegalArgumentException("Memory expiration must be non-negative");
         String normalized = validateMemory(kind, content);
         String reference = sourceReference == null ? "" : sourceReference.trim();
-        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEFORM.equals(source)
+        if (!MEMORY_SOURCE_USER.equals(source) && !MEMORY_SOURCE_TRACEWEAVE.equals(source)
                 && !MEMORY_SOURCE_CONSOLIDATION.equals(source))
             throw new IllegalArgumentException("Choose a valid memory source");
         if (reference.length() > 512) throw new IllegalArgumentException("Memory source references are limited to 512 characters");

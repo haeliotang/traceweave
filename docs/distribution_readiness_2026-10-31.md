@@ -6,7 +6,7 @@
 
 | 项 | 现状 | 证据 |
 |---|---|---|
-| 包名 | `org.traceform.agentos` | `AndroidManifest.xml` |
+| 包名 | `org.traceweave.agentos` | `AndroidManifest.xml` |
 | 版本 | `0.6.14` / versionCode 23 | 构建报告 |
 | 签名 | 开发密钥 `agent-os-rotation-20261025`，SHA-256 `9effee32…a6db` | 发布校验输出 |
 | 分发渠道 | 无 | 无商店、无更新源 |
@@ -44,7 +44,7 @@
 python3 agent_os/scripts/release_preflight_android.py \
   --android-jar <android.jar> --build-tools <build-tools> \
   --keystore <keystore.p12> --key-alias <alias> --expected-signer <sha256> \
-  --model-runtime <libtraceform_local_model.so> --sync-runtime <libtraceform_sync.so> \
+  --model-runtime <libtraceweave_local_model.so> --sync-runtime <libtraceweave_sync.so> \
   --output-dir build/preflight-<date>
 ```
 

@@ -20,7 +20,7 @@ final class LocalSlmEngine implements ReasoningEngine {
     static final int CLASS_NOTIFICATION = 2;
     static final int CLASS_CALENDAR = 3;
     static final int CLASS_SHARE = 4;
-    static final int CLASS_TRACEFORM = 5;
+    static final int CLASS_TRACEWEAVE = 5;
 
     // Compact token to class mapping
     private static final Map<String, Integer> TOKEN_CLASS_MAP = new HashMap<>();
@@ -45,9 +45,9 @@ final class LocalSlmEngine implements ReasoningEngine {
         for (String w : new String[]{"分享", "导出", "发送", "share", "export", "send"}) {
             TOKEN_CLASS_MAP.put(w, CLASS_SHARE);
         }
-        // CLASS_TRACEFORM (5)
-        for (String w : new String[]{"traceform", "预测", "轨迹", "历史", "流形", "forecast", "history"}) {
-            TOKEN_CLASS_MAP.put(w, CLASS_TRACEFORM);
+        // CLASS_TRACEWEAVE (5)
+        for (String w : new String[]{"traceweave", "预测", "轨迹", "历史", "流形", "forecast", "history"}) {
+            TOKEN_CLASS_MAP.put(w, CLASS_TRACEWEAVE);
         }
     }
 
@@ -184,7 +184,7 @@ final class LocalSlmEngine implements ReasoningEngine {
 
         List<ExecutionPlan.Step> steps = new ArrayList<>();
 
-        // 1. Reading steps first (Note, Status, Traceform)
+        // 1. Reading steps first (Note, Status, Traceweave)
         if (logits[CLASS_NOTE] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.DEMO_NOTE_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
@@ -211,13 +211,13 @@ final class LocalSlmEngine implements ReasoningEngine {
             ));
         }
 
-        if (logits[CLASS_TRACEFORM] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.TRACEFORM_CAPABILITY)) {
+        if (logits[CLASS_TRACEWEAVE] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.TRACEWEAVE_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                T.s("step.traceform.title", en),
-                CapabilityBroker.TRACEFORM_CAPABILITY,
-                CapabilityBroker.TRACEFORM_SCOPE,
-                T.s("step.traceform.desc", en),
+                T.s("step.traceweave.title", en),
+                CapabilityBroker.TRACEWEAVE_CAPABILITY,
+                CapabilityBroker.TRACEWEAVE_SCOPE,
+                T.s("step.traceweave.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L

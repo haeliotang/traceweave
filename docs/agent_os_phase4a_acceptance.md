@@ -25,4 +25,4 @@
 
 - **测试设备**：Google Pixel 6a（`bluejay`），物理设备序列号 `25161JEGR06836`，运行 GrapheneOS（Android 17 / API 37）。
 - **GrapheneOS 权限状态**：`android.permission.INTERNET: granted=true`（GrapheneOS 独立网络权限开关生效，未授权敏感权限保持 `mode=ignore`）。
-- **生产包 APK**：`org.traceform.agentos` 构建成功并通过 v2/v3 签名校验，体积仅 **65,939 字节**（增加端云能力后体积增幅仅约 4KB）。
+- **生产包 APK**：`org.traceweave.agentos` 构建成功并通过 v2/v3 签名校验，体积仅 **65,939 字节**（增加端云能力后体积增幅仅约 4KB）。

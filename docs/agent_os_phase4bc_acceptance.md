@@ -67,7 +67,7 @@
 
 ### 3. 全链路端到端动态推演回归收据
 ```text
-10-23 13:32:27.683 19363 19392 I AgentOsValidation: PASS: full 4-step dynamic task (note + status + traceform IPC + builtin synthesis) completed with crash recovery at step 1; zero duplicate executions; planning=61.966ms, resume execution=7638.1ms; task=74d88822-fa7d-4448-8fb1-83d9f2ee7c7d
+10-23 13:32:27.683 19363 19392 I AgentOsValidation: PASS: full 4-step dynamic task (note + status + traceweave IPC + builtin synthesis) completed with crash recovery at step 1; zero duplicate executions; planning=61.966ms, resume execution=7638.1ms; task=74d88822-fa7d-4448-8fb1-83d9f2ee7c7d
 ```
 
 ---

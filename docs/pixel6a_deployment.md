@@ -7,7 +7,7 @@ server-side update timer and explicit freshness bounds. Intervention efficacy
 remains unverified.
 
 Code was backed up on-device before replacement to
-`/data/data/com.termux/files/home/traceform-runtime-rollback-20261001.tar`.
+`/data/data/com.termux/files/home/traceweave-runtime-rollback-20261001.tar`.
 Stop the recorded current daemon PID before restoring that archive; verify the
 single-instance lock and original start arguments before restarting. Do not
 restore runtime data from a source-code archive.
@@ -81,7 +81,7 @@ launched the new process in the Termux job domain. The device's older
 normalizer yields an identical 128D vector for new frames, which only add
 `feature_provenance`. The daemon and normalizer were not changed. The gap in
 acquisition was about three minutes. Rollback archive:
-`~/traceform-runtime-rollback-20261003-acq.tar` (files absent before:
+`~/traceweave-runtime-rollback-20261003-acq.tar` (files absent before:
 `physical_audio_v2.py`, `physical_connectivity_v2.py`,
 `physical_device_state_v2.py`, `physical_sensors_v2.py`, `daemon_lock_probe.py`).
 This establishes the throttle code is loaded, not long-run sensing health.
@@ -91,19 +91,19 @@ This establishes the throttle code is loaded, not long-run sensing health.
 The active daemon started through `adb run-as` exited when its first sandbox call built a
 `ZoneInfo('Asia/Kathmandu')`: that process had no `PYTHONTZPATH` and Termux has no system zoneinfo.
 Every earlier sandbox timeout in the event ledger belongs to the same environment gap. The 15-minute
-job then relaunched a silent default daemon. Fixes: `traceform/timezones.py` also looks in the
+job then relaunched a silent default daemon. Fixes: `traceweave/timezones.py` also looks in the
 Termux zoneinfo directory; unattended relaunch now goes through `scripts/edge_runtime.sh`
 (time-zone path, tiered storage, arguments) and `scripts/runtime_launch_mode.py` chooses active only
 when the authorization record carries `restart_policy: relaunch_active_after_runtime_failure` and
 no `.silent` exists. A damaged or unknown record means silent. The stop switch is an empty file
 named `.silent` in the data directory. Rollback archive:
-`~/traceform-runtime-rollback-20261003-launch.tar`.
+`~/traceweave-runtime-rollback-20261003-launch.tar`.
 
 ## 2026-10-03: daily local snapshot of the edge store
 
 The hot tier keeps 48 hours of raw frames, so multi-day evaluations need copies. The hourly
 maintenance job (`scripts/edge_maintenance_job.sh`, job 11401) now passes `--snapshot-dir
-~/traceform_archive`, and `traceform/streaming/daily_snapshot.py` takes one SQLite online backup of
+~/traceweave_archive`, and `traceweave/streaming/daily_snapshot.py` takes one SQLite online backup of
 the whole store per local day, before compaction, retaining 14 days. Each copy is written to a temporary
 file as a single self-contained file (rollback-journal mode), checked with `quick_check` and its hot row
 count, then renamed and listed in `MANIFEST.jsonl` with its SHA-256. A snapshot is skipped, not
@@ -112,7 +112,7 @@ is never pruned. Snapshots hold raw device observations and stay on the device
 by default. To copy them to the computer, use the manual USB-only workflow in
 `docs/local_device_archives.md`; the archive is verified and stored locally,
 while the phone originals remain in place. Rollback archive:
-`~/traceform-runtime-rollback-20261003-snapshot.tar`. The first scheduled
+`~/traceweave-runtime-rollback-20261003-snapshot.tar`. The first scheduled
 snapshot happens at the first hourly run after local midnight.
 
 ## 2026-10-04 primary app upgrade
@@ -132,9 +132,9 @@ runtime and the twelve frozen verifiers were unchanged. Receipt:
 An offline replay of the stored hot tier showed that the daemon's gate (CSD_TIPPING at dwell >= 60) was
 met by 1 of 607 matched alerts, so the active daemon had recorded no intervention trials. By the user's
 choice a PROLONGED_DWELL event (fired once when the dwell count reaches the threshold) now also goes to the
-counterfactual check and the policy (`should_consider_intervention` in `traceform/intervention/closed_loop.py`).
+counterfactual check and the policy (`should_consider_intervention` in `traceweave/intervention/closed_loop.py`).
 Authorization, actions, cooldown, no-action probability and the counterfactual are unchanged. The two changed
 files were deployed with their SHA-256 values checked, the daemon was restarted in active mode through job
 7703, and the twelve frozen verifiers still pass. Rollback archive:
-`~/traceform-runtime-rollback-20261004-trigger.tar`. No intervention has been delivered under the new
+`~/traceweave-runtime-rollback-20261004-trigger.tar`. No intervention has been delivered under the new
 trigger yet. Receipt: `artifacts/forecasting_v2/intervention_trigger_prolonged_dwell_20261004.json`.

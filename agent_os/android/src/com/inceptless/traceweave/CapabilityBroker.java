@@ -12,8 +12,8 @@ public final class CapabilityBroker {
     public static final String DEMO_NOTE_SCOPE = "synthetic.welcome";
     public static final String DEMO_STATUS_CAPABILITY = "demo.status.read";
     public static final String DEMO_STATUS_SCOPE = "synthetic.device_status";
-    public static final String TRACEFORM_CAPABILITY = TraceformProvider.CAPABILITY;
-    public static final String TRACEFORM_SCOPE = TraceformProvider.SCOPE;
+    public static final String TRACEWEAVE_CAPABILITY = TraceweaveProvider.CAPABILITY;
+    public static final String TRACEWEAVE_SCOPE = TraceweaveProvider.SCOPE;
     public static final String NOTIFICATION_CAPABILITY = LocalNotificationProvider.CAPABILITY;
     public static final String NOTIFICATION_SCOPE = LocalNotificationProvider.SCOPE;
     public static final String CALENDAR_CAPABILITY = LocalCalendarProvider.CAPABILITY;
@@ -37,7 +37,7 @@ public final class CapabilityBroker {
 
     private final AgentStore store;
     private final Map<String, CapabilityProvider> providers = new HashMap<>();
-    private final TraceformProvider traceformProvider;
+    private final TraceweaveProvider traceweaveProvider;
 
     public static final class Grant {
         public final String agentId;
@@ -67,29 +67,29 @@ public final class CapabilityBroker {
 
     public CapabilityBroker(android.content.Context context, AgentStore store) {
         this.store = store;
-        traceformProvider = new TraceformProvider(context);
+        traceweaveProvider = new TraceweaveProvider(context);
         registerProvider(new LocalDemoNoteProvider());
         registerProvider(new LocalDemoStatusProvider(context));
         registerProvider(new AndroidRemoteStatusProvider(context));
         registerProvider(new LocalNotificationProvider(context));
         registerProvider(new LocalCalendarProvider());
         registerProvider(new LocalShareProvider());
-        registerProvider(traceformProvider);
+        registerProvider(traceweaveProvider);
     }
 
-    boolean isTraceformEnabled() {
-        return traceformProvider.isEnabled();
+    boolean isTraceweaveEnabled() {
+        return traceweaveProvider.isEnabled();
     }
 
-    boolean canEnableTraceform() {
-        return traceformProvider.hasTrustedService();
+    boolean canEnableTraceweave() {
+        return traceweaveProvider.hasTrustedService();
     }
 
-    void setTraceformEnabled(boolean enabled) throws Exception {
-        traceformProvider.setEnabled(enabled);
+    void setTraceweaveEnabled(boolean enabled) throws Exception {
+        traceweaveProvider.setEnabled(enabled);
         if (!enabled) {
             for (AgentStore.Task task : store.listTasks()) {
-                revoke(task.id, TRACEFORM_CAPABILITY, TRACEFORM_SCOPE);
+                revoke(task.id, TRACEWEAVE_CAPABILITY, TRACEWEAVE_SCOPE);
             }
         }
     }
@@ -111,7 +111,7 @@ public final class CapabilityBroker {
         if (capability == null) return T.s("cap.unknown", en);
         if (DEMO_NOTE_CAPABILITY.equals(capability)) return T.s("cap.demo_note", en);
         if (DEMO_STATUS_CAPABILITY.equals(capability)) return T.s("cap.demo_status", en);
-        if (TRACEFORM_CAPABILITY.equals(capability)) return T.s("cap.traceform", en);
+        if (TRACEWEAVE_CAPABILITY.equals(capability)) return T.s("cap.traceweave", en);
         if (NOTIFICATION_CAPABILITY.equals(capability)) return T.s("cap.notification", en);
         if (CALENDAR_CAPABILITY.equals(capability)) return T.s("cap.calendar", en);
         if (SHARE_CAPABILITY.equals(capability)) return T.s("cap.share", en);
@@ -139,9 +139,9 @@ public final class CapabilityBroker {
             descriptors.add(new CapabilityDescriptor(AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE, "跨应用状态", "从外部应用授权 URI 读取状态", true));
         }
-        if (isTraceformEnabled()) {
-            descriptors.add(new CapabilityDescriptor(TRACEFORM_CAPABILITY, TRACEFORM_SCOPE,
-                "Traceform 本机历史摘要", "通过受控 Binder 读取 Traceform 本机历史模拟摘要", canEnableTraceform()));
+        if (isTraceweaveEnabled()) {
+            descriptors.add(new CapabilityDescriptor(TRACEWEAVE_CAPABILITY, TRACEWEAVE_SCOPE,
+                "Traceweave 本机历史摘要", "通过受控 Binder 读取 Traceweave 本机历史模拟摘要", canEnableTraceweave()));
         }
         return descriptors;
     }

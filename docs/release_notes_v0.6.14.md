@@ -1,4 +1,4 @@
-# Traceform Agent OS 0.6.14
+# Traceweave Agent OS 0.6.14
 
 本版本把「数据能不能真的同步起来」这件事做实了，并补齐了深色、审计与发布验证。
 
@@ -60,7 +60,7 @@
 | 项 | 值 |
 |---|---|
 | 版本 | 0.6.14（versionCode 23） |
-| 包名 | `org.traceform.agentos` |
+| 包名 | `org.traceweave.agentos` |
 | 数据格式 | schema 11 |
 | 签名指纹 | `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db` |
 | APK SHA-256 | `0432b9fc7ed9ec325c5d751953a5bce0332b925021a27310cf74032aa72eec4d` |

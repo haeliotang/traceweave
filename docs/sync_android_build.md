@@ -1,6 +1,6 @@
 # 同步库的 Android 构建（可复现）
 
-`agent_os/sync` 需要交叉编译成 `libtraceform_sync.so` 才能被 Android 加载。本文件记录可复现的构建方式与已验证的对齐要求。
+`agent_os/sync` 需要交叉编译成 `libtraceweave_sync.so` 才能被 Android 加载。本文件记录可复现的构建方式与已验证的对齐要求。
 
 ## 工具链
 
@@ -22,7 +22,7 @@ export RUSTC=$TC/bin/rustc
 CARGO_HOME=../.cargo-home $TC/bin/cargo build --release --target aarch64-linux-android --lib
 ```
 
-产物：`target/aarch64-linux-android/release/libtraceform_sync.so`。
+产物：`target/aarch64-linux-android/release/libtraceweave_sync.so`。
 
 ## 16 KB 页对齐（必须）
 
@@ -36,7 +36,7 @@ rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]
 验证：
 
 ```sh
-$TOOLCHAIN/bin/llvm-readelf -lW target/aarch64-linux-android/release/libtraceform_sync.so | grep LOAD
+$TOOLCHAIN/bin/llvm-readelf -lW target/aarch64-linux-android/release/libtraceweave_sync.so | grep LOAD
 ```
 
 四个 LOAD 段的 Align 必须都是 `0x4000`。

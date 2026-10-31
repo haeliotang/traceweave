@@ -43,7 +43,7 @@
 - 传输层使用独立的 Ed25519 PeerId（libp2p Noise 要求传输密钥参与握手）。Keystore 密钥不替代 PeerId，而是**绑定**它：
 
 ```
-binding = Sign_keystore("traceform-sync-v1" || peer_id || device_id || nonce)
+binding = Sign_keystore("traceweave-sync-v1" || peer_id || device_id || nonce)
 ```
 
 绑定记录随配对保存；接收方用实际握手得到的 PeerId 与配对记录比对，绑定失败即拒绝。

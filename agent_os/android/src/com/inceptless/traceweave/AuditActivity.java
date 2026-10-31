@@ -130,7 +130,7 @@ public final class AuditActivity extends Activity {
                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                     .addCategory(Intent.CATEGORY_OPENABLE)
                     .setType("text/tab-separated-values")
-                    .putExtra(Intent.EXTRA_TITLE, "traceform-audit-" + System.currentTimeMillis() + ".tsv");
+                    .putExtra(Intent.EXTRA_TITLE, "traceweave-audit-" + System.currentTimeMillis() + ".tsv");
                 pendingExport = content;
                 startActivityForResult(intent, REQUEST_EXPORT);
             })
@@ -173,7 +173,7 @@ public final class AuditActivity extends Activity {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .setType("application/json")
-            .putExtra(Intent.EXTRA_TITLE, "traceform-diagnostics-" + System.currentTimeMillis() + ".json");
+            .putExtra(Intent.EXTRA_TITLE, "traceweave-diagnostics-" + System.currentTimeMillis() + ".json");
         pendingExport = json;
         startActivityForResult(intent, REQUEST_EXPORT);
     }

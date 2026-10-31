@@ -15,8 +15,8 @@ import java.util.Locale;
 /** Local device identity only; this does not establish trust or pair devices. */
 final class DeviceIdentity {
     static final String ALIAS = "com.inceptless.traceweave.device-identity.v1";
-    private static final byte[] DOMAIN = "traceform-device-identity-challenge-v1\0".getBytes(StandardCharsets.UTF_8);
-    private static final byte[] BINDING_DOMAIN = "traceform-device-transport-binding-v1\0".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] DOMAIN = "traceweave-device-identity-challenge-v1\0".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] BINDING_DOMAIN = "traceweave-device-transport-binding-v1\0".getBytes(StandardCharsets.UTF_8);
 
     private DeviceIdentity() {}
 
