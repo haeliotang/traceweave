@@ -2,21 +2,26 @@
   "date": "2026-10-31",
   "device": "Pixel 6a",
   "talkback": "com.android.talkback enabled by the user; service confirmed active in dumpsys accessibility",
+  "method": "tap moves the TalkBack focus, KEYCODE_ENTER activates the focused control; scripted double-tap was unreliable",
+  "walkthrough": [
+    "main screen -> Task center (activate)",
+    "Task center -> Back (activate)",
+    "main screen -> Settings (activate)",
+    "Settings -> Pair device (activate, pairing dialog opened)",
+    "pairing dialog -> Cancel (activate, dialog closed)",
+    "Settings -> close, Console (activate)",
+    "Console -> Audit log (activate, audit page opened)"
+  ],
   "checks": {
     "service_enabled": true,
-    "focus_highlight_captured": [
-      "main screen title",
-      "pairing dialog fingerprint text",
-      "pairing dialog sync-id field"
-    ],
+    "focus_highlight_captured": ["main title", "pairing fingerprint", "pairing sync-id field", "audit page"],
     "labeled_nodes_in_tree": true,
     "tree_nodes": 65,
-    "navigation_by_double_tap": "main -> task center succeeded once",
-    "settings_dialog_opened": true
+    "screens_visited": ["main", "task center", "settings", "pairing dialog", "console", "audit log"]
   },
   "limitations": [
-    "Scripted double-tap activation under TalkBack was unreliable: most attempts only moved focus, so a full multi-screen walkthrough was not completed",
-    "Spoken output is not captured; evidence is the focus highlight, the labeled tree and one observed navigation",
-    "A TalkBack phone-permission setup dialog kept reappearing until the permission was granted via adb"
+    "Spoken output is not captured; evidence is focus highlight, labeled tree and completed navigation",
+    "One TalkBack phone-permission prompt had to be granted via adb before the service stayed quiet",
+    "Authorization here means the pairing dialog, not a capability grant dialog"
   ]
 }
