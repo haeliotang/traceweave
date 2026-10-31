@@ -1259,10 +1259,40 @@ public final class MainActivity extends Activity {
             ? (T.s("ui.draft_only_no_plan_yet", en))
             : T.format("task.steps_progress", en, planDone, planSteps)
               + (nextTitle.isEmpty() ? "" : (T.s("ui.next", en)) + nextTitle));
-        summary.setTextSize(11);
-        summary.setTextColor(0xFF64748B);
+        summary.setTextSize(12);
+        summary.setTextColor(Ui.muted(this));
         summary.setPadding(0, 0, 0, dp(2));
         card.addView(summary);
+
+        if (planSteps > 0) {
+            android.widget.ProgressBar progress = new android.widget.ProgressBar(
+                this, null, android.R.attr.progressBarStyleHorizontal);
+            progress.setMax(100);
+            progress.setProgress(Math.round(planDone * 100f / planSteps));
+            progress.setProgressTintList(android.content.res.ColorStateList.valueOf(
+                AgentStore.COMPLETED.equals(task.status) ? 0xFF15803D : Ui.cardAccent(this)));
+            LinearLayout.LayoutParams barLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(4));
+            barLp.setMargins(0, dp(2), 0, dp(2));
+            card.addView(progress, barLp);
+        }
+
+        if (AgentStore.ACTIVE.equals(task.status) && planSteps > 0) {
+            TextView running = new TextView(this);
+            String stepTitle = task.executionStep < planSteps
+                ? formatStepTitle(task.plan.steps.get(task.executionStep).title, en) : nextTitle;
+            long elapsedSeconds = Math.max(0, (System.currentTimeMillis() - task.createdAt) / 1000);
+            String elapsed = elapsedSeconds < 60
+                ? elapsedSeconds + "s"
+                : (elapsedSeconds / 60) + "m " + (elapsedSeconds % 60) + "s";
+            running.setText(T.format("task.running_step", en, Math.min(task.executionStep + 1, planSteps),
+                    planSteps, stepTitle) + " · " + T.format("task.elapsed", en, elapsed));
+            running.setTextSize(12);
+            running.setTypeface(null, android.graphics.Typeface.BOLD);
+            running.setTextColor(Ui.cardAccent(this));
+            running.setPadding(0, dp(2), 0, dp(2));
+            card.addView(running);
+        }
         boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
             || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
         addMemoryCandidateControls(card, task);

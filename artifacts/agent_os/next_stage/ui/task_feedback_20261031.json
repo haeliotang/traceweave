@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-31",
+  "goal": "give a running task visible feedback instead of a text-only progress line",
+  "added": [
+    "a horizontal progress bar per task card, tinted green when completed and slate while running",
+    "a running line for ACTIVE tasks: step number, step title and elapsed time since the task was created, refreshed by the existing one-second task refresh"
+  ],
+  "evidence": {
+    "completed_card": "progress bar at 100% in green, badge Completed, 2/2 steps",
+    "screenshot": "artifacts/agent_os/next_stage/ui/task_completed_progress_20261031.png"
+  },
+  "not_photographed": "the running line itself: both steps of a local task finish in well under a second, so the ACTIVE state cannot be captured by screen automation; the code path is guarded by planSteps > 0 and did not crash during the run",
+  "device_regression": "RUN_SUITE 48, TASK_CENTER 10, RUN_DOCUMENTS 20 all PASS"
+}
