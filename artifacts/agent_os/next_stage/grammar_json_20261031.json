@@ -151,5 +151,33 @@
       "artifacts/agent_os/next_stage/json3_512_20261031.json",
       "artifacts/agent_os/next_stage/json3_512_repeat_20261031.json"
     ]
+  },
+  "unseen_cases": {
+    "date": "2026-10-31",
+    "cases": 12,
+    "arms": [
+      {
+        "schema_prompt": true,
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "schema_prompt": false,
+        "passed": 12,
+        "total": 12
+      }
+    ],
+    "criterion": "top-level keys present; nested objects checked at the top level only",
+    "observations": [
+      "nested objects work once the grammar defines a child rule",
+      "removing the schema prompt with its example did not change the result, so the example leak is not what makes these pass",
+      "copy-from-prompt worked: the token QX7 was reproduced in both arms",
+      "content quality still varies: the plain arm invented 'Alex' and 'monospace' while the schema arm used placeholders"
+    ],
+    "generator_finding": "GBNF rule names must be alphabetic; a generated name like obj_867202238 made llama_sampler_init_grammar return null, which surfaced as 'grammar could not be applied'. Renaming to suba0 fixed it.",
+    "artifacts": [
+      "artifacts/agent_os/next_stage/json5_unseen_20261031.json",
+      "artifacts/agent_os/next_stage/json5_plain_20261031.json"
+    ]
   }
 }

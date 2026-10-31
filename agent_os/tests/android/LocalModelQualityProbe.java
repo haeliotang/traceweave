@@ -359,6 +359,137 @@ public final class LocalModelQualityProbe extends Activity {
         return issues;
     }
 
+    /** Grammar for a small schema spec: s=string, n=number, b=boolean, a=array of 2 strings, {..}=object. */
+    private static String grammarFor(String schema) {
+        java.util.LinkedHashMap<String, String> rules = new java.util.LinkedHashMap<>();
+        emitObject("root", schema, rules);
+        String rootRule = rules.remove("root");
+        StringBuilder grammar = new StringBuilder();
+        grammar.append("root ::= ").append(rootRule).append("\n");
+        for (java.util.Map.Entry<String, String> rule : rules.entrySet()) {
+            grammar.append(rule.getKey()).append(" ::= ").append(rule.getValue()).append("\n");
+        }
+        return grammar
+            + "array ::= \"[\" ws string ws \",\" ws string ws \"]\"\n"
+            + "string ::= \"\\\"\" [a-zA-Z0-9 _]* \"\\\"\"\n"
+            + "number ::= [0-9]+\n"
+            + "boolean ::= \"true\" | \"false\"\n"
+            + "ws ::= [ \\t\\n]*\n";
+    }
+
+    private static void emitObject(String ruleName, String schema, java.util.LinkedHashMap<String, String> rules) {
+        String body = schema.trim();
+        if (body.startsWith("{")) body = body.substring(1, body.length() - 1);
+        StringBuilder rhs = new StringBuilder("\"{\" ws ");
+        java.util.List<String> parts = splitTopLevel(body);
+        for (int index = 0; index < parts.size(); index++) {
+            String part = parts.get(index).trim();
+            int colon = part.indexOf(':');
+            if (colon < 0) continue;
+            String key = part.substring(0, colon).trim();
+            String type = part.substring(colon + 1).trim();
+            if (index > 0) rhs.append("\",\" ws ");
+            rhs.append("\"\\\"").append(key).append("\\\"\" ws \":\" ws ");
+            if (type.startsWith("{")) {
+                String child = "sub" + (char) ('a' + (rules.size() % 26)) + (rules.size() / 26);
+                emitObject(child, type, rules);
+                rhs.append(child);
+            } else {
+                rhs.append(valueRule(type));
+            }
+            rhs.append(" ws ");
+        }
+        rhs.append("\"}\"");
+        rules.put(ruleName, rhs.toString());
+    }
+
+    private static java.util.List<String> splitTopLevel(String body) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        int depth = 0;
+        StringBuilder current = new StringBuilder();
+        for (char character : body.toCharArray()) {
+            if (character == '{') depth++;
+            if (character == '}') depth--;
+            if (character == ',' && depth == 0) { parts.add(current.toString()); current.setLength(0); continue; }
+            current.append(character);
+        }
+        if (current.length() > 0) parts.add(current.toString());
+        return parts;
+    }
+
+    private static String valueRule(String type) {
+        if (type.equals("n")) return "number";
+        if (type.equals("b")) return "boolean";
+        if (type.equals("a")) return "array";
+        return "string";
+    }
+
+    private static java.util.List<String> keysOf(String schema) {
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        String inner = schema.trim();
+        if (inner.startsWith("{")) inner = inner.substring(1, inner.length() - 1);
+        for (String part : splitTopLevel(inner)) {
+            int colon = part.indexOf(':');
+            if (colon < 0) continue;
+            keys.add(part.substring(0, colon).trim());
+        }
+        return keys;
+    }
+
+    private static final String[][] UNSEEN_CASES = {
+        {"nested_plan", "Return JSON with title, steps (two short words) and meta (object with author and count) for a reading plan.", "{title:s,steps:a,meta:{author:s,count:n}}"},
+        {"nested_route", "Return JSON with to, reason and options (object with mode and minutes) for going to the library.", "{to:s,reason:s,options:{mode:s,minutes:n}}"},
+        {"copy_token", "Return JSON with key code set to the value QX7 and note describing that it was copied.", "{code:s,note:s}"},
+        {"flight", "Return JSON with flight, gate and boarding (object with hour and minute) for synthetic flight TF100.", "{flight:s,gate:s,boarding:{hour:n,minute:n}}"},
+        {"inventory", "Return JSON with item, quantity and tags (two short words) for synthetic warehouse stock.", "{item:s,quantity:n,tags:a}"},
+        {"receipt", "Return JSON with merchant, total and lines (object with count and currency) for a synthetic receipt.", "{merchant:s,total:n,lines:{count:n,currency:s}}"},
+        {"meeting", "Return JSON with topic, attendees and room with a single word, for a synthetic standup.", "{topic:s,attendees:n,room:s}"},
+        {"backup", "Return JSON with target, encrypted and size for a synthetic backup job.", "{target:s,encrypted:b,size:n}"},
+        {"alert", "Return JSON with level, message and source for a synthetic disk alert.", "{level:s,message:s,source:s}"},
+        {"profile", "Return JSON with name, verified and prefs (object with theme and font) for a synthetic profile.", "{name:s,verified:b,prefs:{theme:s,font:s}}"},
+        {"shipment", "Return JSON with tracking, delivered and attempts for a synthetic parcel.", "{tracking:s,delivered:b,attempts:n}"},
+        {"gateway", "Return JSON with host, port and healthy for a synthetic gateway.", "{host:s,port:n,healthy:b}"}
+    };
+
+    private void runUnseenJson(File model, boolean withSchemaPrompt) throws Exception {
+        JSONArray results = new JSONArray();
+        int passed = 0;
+        for (String[] item : UNSEEN_CASES) {
+            String grammar = grammarFor(item[2]);
+            String prompt = withSchemaPrompt
+                ? JsonText.schemaPrompt(item[1], "an object with the requested keys", null)
+                : item[1];
+            boolean ok = false;
+            java.util.List<String> issues = new java.util.ArrayList<>();
+            String output = "";
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, grammar),
+                    StandardCharsets.UTF_8);
+                org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
+                java.util.List<String> missing = StructuredOutput.missingKeys(parsed, keysOf(item[2]).toArray(new String[0]));
+                ok = missing.isEmpty();
+                if (!ok) issues.add("missing: " + missing);
+            } catch (Exception error) {
+                issues.add("<error: " + error.getMessage() + ">");
+                issues.add("grammar: " + grammar);
+            }
+            if (ok) passed++;
+            results.put(new JSONObject().put("case", item[0]).put("schema", item[2]).put("passed", ok)
+                .put("issues", new JSONArray(issues))
+                .put("output", output.length() > 1200 ? output.substring(0, 1200) : output));
+        }
+        JSONObject summary = new JSONObject().put("passed", passed).put("total", UNSEEN_CASES.length)
+            .put("schema_prompt", withSchemaPrompt)
+            .put("criterion", "keys present (nested keys checked at the top level), grammar built from the case schema")
+            .put("cases", results);
+        String file = withSchemaPrompt ? "json5_schema.json" : "json5_plain.json";
+        try (java.io.FileOutputStream stream = new java.io.FileOutputStream(new File(getFilesDir(), file))) {
+            stream.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON5_DONE schema_prompt=" + withSchemaPrompt + " " + passed + "/" + UNSEEN_CASES.length);
+    }
+
     private void runJsonContent(File model) throws Exception {
         JSONArray results = new JSONArray();
         int shapeOk = 0;
@@ -516,6 +647,59 @@ public final class LocalModelQualityProbe extends Activity {
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 if ("STRESS3".equals(getIntent().getAction())) {
                     runStress3(model, getIntent().getStringExtra("phase"));
+                    return;
+                }
+                if ("GRAMMARTEST".equals(getIntent().getAction())) {
+                    String base = grammarFor("{title:s,steps:a,meta:{author:s,count:n}}");
+                    String[] variants = {
+                        base,
+                        base.replace("string ::= \"\\\"\" [a-zA-Z0-9 _]* \"\\\"\"",
+                                      "string ::= \"\\\"\" ( [^\"\\\\] | \"\\\\\" . )* \"\\\"\""),
+                        base.replace("obj_", "sub_"),
+                        base.replace("boolean ::= \"true\" | \"false\"\n", "").replace("array ::= \"[\" ws string ws \",\" ws string ws \"]\"\n", ""),
+                    };
+                    String inlined = "root ::= \"{\" ws \"\\\"title\\\"\" ws \":\" ws string ws \",\" ws \"\\\"meta\\\"\" ws \":\" ws "
+                        + "\"{\" ws \"\\\"author\\\"\" ws \":\" ws string ws \"}\" ws \"}\"\n"
+                        + "string ::= \"\\\"\" [a-zA-Z0-9 _]* \"\\\"\"\n"
+                        + "ws ::= [ \\t\\n]*\n";
+                    String alphabetic = base.replace("obj_", "subrule");
+                    String[] more = {inlined, alphabetic};
+                    for (int i = 0; i < more.length; i++) {
+                        String result;
+                        try {
+                            LocalModelProbe.prepare();
+                            LocalModelProbe.generate(model.getPath(), "say hi".getBytes(StandardCharsets.UTF_8), 1, more[i]);
+                            result = "ok";
+                        } catch (Exception error) {
+                            result = "fail: " + error.getMessage();
+                        }
+                        Log.i("AgentOsModelQuality", "GRAMMARTEST B" + i + " -> " + result);
+                    }
+                    for (int i = 0; i < variants.length; i++) {
+                        String result;
+                        try {
+                            LocalModelProbe.prepare();
+                            LocalModelProbe.generate(model.getPath(), "say hi".getBytes(StandardCharsets.UTF_8), 1, variants[i]);
+                            result = "ok";
+                        } catch (Exception error) {
+                            result = "fail: " + error.getMessage();
+                        }
+                        Log.i("AgentOsModelQuality", "GRAMMARTEST " + i + " -> " + result);
+                    }
+                    return;
+                }
+                if ("GRAMMAR".equals(getIntent().getAction())) {
+                    for (String[] item : UNSEEN_CASES) {
+                        Log.i("AgentOsModelQuality", "GRAMMAR " + item[0] + " >>>\n" + grammarFor(item[2]));
+                    }
+                    return;
+                }
+                if ("JSON5".equals(getIntent().getAction())) {
+                    runUnseenJson(model, true);
+                    return;
+                }
+                if ("JSON6".equals(getIntent().getAction())) {
+                    runUnseenJson(model, false);
                     return;
                 }
                 if ("JSON4".equals(getIntent().getAction())) {
