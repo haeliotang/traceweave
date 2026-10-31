@@ -277,13 +277,18 @@ final class SyncPanel {
         host.ioRef().execute(() -> {
             String payload;
             try {
-                payload = SyncTransport.nativePairServe(syncSeed(), PAIR_PORT, DeviceIdentity.fingerprint(), 60000L);
+                payload = SyncTransport.nativePairServe(syncSeed(), PAIR_PORT, DeviceIdentity.fingerprint(), pairWindowMs());
             } catch (Throwable error) {
                 payload = null;
             }
             final String json = payload;
             host.uiRef().post(() -> { if (!host.isDestroyedRef()) showPairResult(json, en); });
         });
+    }
+
+    /** Validation builds keep the pairing server open long enough for scripted checks. */
+    private long pairWindowMs() {
+        return host.getPackageName().endsWith("validation") ? 300_000L : 60_000L;
     }
 
     private String intervalLabel(long intervalMs) {

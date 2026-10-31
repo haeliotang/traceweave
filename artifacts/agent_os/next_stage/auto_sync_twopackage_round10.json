@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-31",
+  "changes": [
+    "validation builds keep the pairing server open for 300s instead of 60s (SyncPanel.pairWindowMs)",
+    "both packages rebuilt and installed with that window"
+  ],
+  "findings": [
+    "the earlier B-side pairing did persist: after a restart B showed 已配对设备：1, so the earlier 'not stored' conclusion was a stale UI read",
+    "the AutoSyncProbe run revoked every existing pairing before seeding its own, which removed A's pairing with B; A's management dialog now lists only probe-3b191927e58a5071",
+    "as a result no manual sync between A and B happened this round and no cross-package cursor exists"
+  ],
+  "next_run_checklist": [
+    "start from a clean state (clear both packages; do not launch AutoSyncProbe)",
+    "pair A with B and verify both sides show 1 paired device after a restart",
+    "B starts 等待对端, A taps 同步现在, verify sync_cursor is written on A",
+    "A starts the job (cmd jobscheduler run -f ... 4711) while B is still serving",
+    "expect an audit event sync_auto_completed on A"
+  ]
+}
