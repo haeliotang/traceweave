@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a, density override 356 (2.225 px/dp)",
+  "P0": {
+    "touch_targets": "language toggle, submit, four secondary actions, three dock buttons and the task field are now 48dp tall (measured from the accessibility tree)",
+    "diagnostics": "JAVA FALLBACK / DAEMON DISABLED / PIXEL 6A are hidden behind a 诊断 toggle instead of being the first thing on screen",
+    "empty_state": "还没有任务 now offers 新建第一个任务, which scrolls to the composer, focuses it and opens the keyboard"
+  },
+  "P1": {
+    "hierarchy": "submit stays the only filled dark button; the four secondary actions and the diagnostics toggle use the outlined style",
+    "typography": "card body text raised from 10sp to 12sp",
+    "bottom": "a 状态 card closes the page instead of ending in blank space"
+  },
+  "P2": {
+    "language_label": "the toggle now shows the language you would switch to (英文 in the Chinese UI)",
+    "cards": "every card has an action: sensors open a panel, the planner opens the model page, the daemon explains why it is off, the archive reports counts",
+    "sync_status": "the 状态 card shows memory/task counts and the paired-device count on the home screen"
+  },
+  "dark_mode_followup": "the first dark screenshot showed white secondary buttons and dark-on-dark card text; colours now come from Ui.body/secondaryBg/secondaryFg and the task field follows the theme",
+  "verification": {
+    "device_regression": "RUN_SUITE 48, TASK_CENTER 10, RUN_DOCUMENTS 20, VERIFY_DOCUMENT_RESTART 8 — all PASS",
+    "screenshots": ["ui/ui_p012_light_20261031.png", "ui/ui_p012_dark_20261031.png"]
+  }
+}

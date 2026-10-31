@@ -316,7 +316,7 @@ public final class DeviceValidationActivity extends Activity {
             }
 
             AgentStore.Memory source = store.createMemory(AgentStore.MEMORY_PREFERENCE,
-                "SYNTHETIC 搜索来源 and local choice", AgentStore.MEMORY_SOURCE_TRACEFORM, "provider=traceform;synthetic=true");
+                "SYNTHETIC 搜索来源 and local choice", AgentStore.MEMORY_SOURCE_TRACEWEAVE, "provider=traceweave;synthetic=true");
             AgentStore.Memory consolidated = store.createMemory(AgentStore.MEMORY_FACT,
                 "SYNTHETIC consolidated memory archive round trip", AgentStore.MEMORY_SOURCE_CONSOLIDATION,
                 "task=synthetic-consolidation");
@@ -329,8 +329,8 @@ public final class DeviceValidationActivity extends Activity {
             MemoryArchive.Data archiveData = new MemoryArchive.Data();
             archiveData.exportedAt = System.currentTimeMillis();
             archiveData.memories.add(new AgentStore.Memory(source.id, source.kind,
-                "SYNTHETIC archive-selected content", AgentStore.MEMORY_SOURCE_TRACEFORM,
-                "provider=traceform;archive=synthetic", source.createdAt, source.updatedAt));
+                "SYNTHETIC archive-selected content", AgentStore.MEMORY_SOURCE_TRACEWEAVE,
+                "provider=traceweave;archive=synthetic", source.createdAt, source.updatedAt));
             archiveData.memories.add(consolidated);
             char[] passphrase = TEST_PASSPHRASE.toCharArray();
             byte[] archive;
@@ -365,7 +365,7 @@ public final class DeviceValidationActivity extends Activity {
             AgentStore.Memory afterReplace = findMemory(store.listMemories(), source.id);
             if (chooseArchive.memoryConflicts != 1 || chooseArchive.memoriesReplaced != 1
                     || !"SYNTHETIC archive-selected content".equals(afterReplace.content)
-                    || !"provider=traceform;archive=synthetic".equals(afterReplace.sourceReference)) {
+                    || !"provider=traceweave;archive=synthetic".equals(afterReplace.sourceReference)) {
                 throw new IllegalStateException("The archive conflict choice did not replace content and provenance");
             }
             store.deleteMemory(source.id);

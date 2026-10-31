@@ -39,6 +39,11 @@ final class Ui {
     static int text(Context context) { return dark(context) ? 0xFFE2E8F0 : COLOR_TEXT; }
     static int muted(Context context) { return dark(context) ? 0xFF94A3B8 : COLOR_MUTED; }
     static int stroke(Context context) { return dark(context) ? 0xFF334155 : COLOR_STROKE; }
+    /** Body text inside cards; the light value is too dark against a dark card. */
+    static int body(Context context) { return dark(context) ? 0xFFCBD5E1 : 0xFF475569; }
+    /** Secondary (outlined) buttons keep a light chip in light mode and a dark one in dark mode. */
+    static int secondaryBg(Context context) { return dark(context) ? 0xFF1E293B : 0xFFF1F5F9; }
+    static int secondaryFg(Context context) { return dark(context) ? 0xFFE2E8F0 : 0xFF0F172A; }
 
     /** Recolors text and input fields inside a dark dialog. */
     static void styleContent(Context context, android.view.View view) {

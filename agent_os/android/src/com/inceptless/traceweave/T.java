@@ -688,6 +688,15 @@ final class T {
         add("cap.step_line_remaining", "Capability: %s · Grant remaining ~%d min", "能力标识：%s · 授权剩余约 %d 分钟");
         add("cap.step_line_none", "Capability: %s · Not granted", "能力标识：%s · 尚未授权");
         add("sensor.save_as_memory", "Save as memory", "保存为记忆");
+        add("task.start_first", "Start your first task", "新建第一个任务");
+        add("ui.status", "Status", "状态");
+        add("ui.daemon_disabled_body", "The background daemon is intentionally off in this build; tasks run inside the app process and only when you start them.", "此版本有意关闭后台守护进程；任务只在应用进程内、且由你启动时执行。");
+        add("summary.line", "%d memories · %d tasks", "%d 条记忆 · %d 个任务");
+        add("summary.peers", "Sync: %d paired devices", "同步：%d 台已配对设备");
+        add("ui.diagnostics_closed", "Diagnostics ▸", "诊断 ▸");
+        add("ui.diagnostics_open", "Diagnostics ▾", "诊断 ▾");
+        add("ui.chinese", "Chinese", "中文");
+        add("ui.english", "English", "英文");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

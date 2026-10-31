@@ -61,6 +61,7 @@ public final class MainActivity extends Activity {
     private CapabilityBroker capabilityBroker;
     private EditText taskInput;
     private ScrollView pageScroll;
+    private TextView bottomSummary;
     private EditText memoryInput;
     private EditText memorySearch;
     private Spinner memoryKind;
@@ -391,7 +392,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.addView(title);
 
         Button langBtn = new Button(this);
-        langBtn.setText(T.s("ui.en", en));
+        langBtn.setText(en ? T.s("ui.chinese", en) : T.s("ui.english", en));
         langBtn.setTextSize(12);
         langBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         langBtn.setTextColor(0xFF0284C7);
@@ -404,16 +405,28 @@ public final class MainActivity extends Activity {
         langBtn.setPadding(dp(12), dp(2), dp(12), dp(2));
         langBtn.setOnClickListener(v -> toggleLanguage());
         LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, dp(32));
+                LinearLayout.LayoutParams.WRAP_CONTENT, dp(48));
         topHeaderRow.addView(langBtn, btnLp);
 
         page.addView(topHeaderRow);
 
-        // 2. Status Badges Row
+        // 2. Status badges, collapsed behind a diagnostics toggle: these are
+        // implementation states (native fallback, daemon off) and only get in the way.
+        Button diagnosticsToggle = createCompactActionButton(T.s("ui.diagnostics_closed", en), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> { });
+        diagnosticsToggle.setTextSize(11);
+        LinearLayout.LayoutParams diagLp = new LinearLayout.LayoutParams(dp(96), dp(48));
+        page.addView(diagnosticsToggle, diagLp);
+
         LinearLayout statusRow = new LinearLayout(this);
         statusRow.setOrientation(LinearLayout.HORIZONTAL);
         statusRow.setGravity(Gravity.CENTER_VERTICAL);
         statusRow.setPadding(0, dp(4), 0, dp(8));
+        statusRow.setVisibility(View.GONE);
+        diagnosticsToggle.setOnClickListener(v -> {
+            boolean showing = statusRow.getVisibility() == View.VISIBLE;
+            statusRow.setVisibility(showing ? View.GONE : View.VISIBLE);
+            diagnosticsToggle.setText(T.s(showing ? "ui.diagnostics_closed" : "ui.diagnostics_open", en));
+        });
 
         TextView rustBadge = IconFactory.createBadge(this, NativeAgentCore.isAvailable() ? "RUST NATIVE" : "JAVA FALLBACK",
                 NativeAgentCore.isAvailable() ? 0xFFDCFCE7 : 0xFFFEF3C7,
@@ -439,9 +452,9 @@ public final class MainActivity extends Activity {
         LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, T.s("ui.hardware", en), 0xFF1565C0);
         TextView hwInfo = new TextView(this);
         hwInfo.setText(T.s("ui.tensor_g1_pixel_6a_nsynthetic_profile", en));
-        hwInfo.setTextSize(10);
+        hwInfo.setTextSize(12);
         hwInfo.setLineSpacing(dp(1), 1.0f);
-        hwInfo.setTextColor(0xFF475569);
+        hwInfo.setTextColor(Ui.body(this));
         hwInfo.setPadding(0, dp(4), 0, 0);
         hwCard.addView(hwInfo);
 
@@ -469,9 +482,9 @@ public final class MainActivity extends Activity {
         LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), 0xFF6A1B9A);
         slmInfo = new TextView(this);
         updateLocalModelStatus();
-        slmInfo.setTextSize(10);
+        slmInfo.setTextSize(12);
         slmInfo.setLineSpacing(dp(1), 1.0f);
-        slmInfo.setTextColor(0xFF475569);
+        slmInfo.setTextColor(Ui.body(this));
         slmInfo.setPadding(0, dp(4), 0, 0);
         slmCard.addView(slmInfo);
 
@@ -480,19 +493,21 @@ public final class MainActivity extends Activity {
         LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, T.s("ui.daemon", en), 0xFFD84315);
         TextView daemonInfo = new TextView(this);
         daemonInfo.setText(T.s("status.daemon_off", en));
-        daemonInfo.setTextSize(10);
+        daemonInfo.setTextSize(12);
         daemonInfo.setLineSpacing(dp(1), 1.0f);
-        daemonInfo.setTextColor(0xFF475569);
+        daemonInfo.setTextColor(Ui.body(this));
         daemonInfo.setPadding(0, dp(4), 0, 0);
         daemonCard.addView(daemonInfo);
+        daemonCard.setOnClickListener(v -> showInfoCard(T.s("ui.daemon", isEnglish()),
+            T.s("ui.daemon_disabled_body", isEnglish())));
 
         LinearLayout gridRow2 = createGridRow(page);
         LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, T.s("ui.encrypted_archive", en), 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
         syncInfo.setText(T.s("status.archive_local", en));
-        syncInfo.setTextSize(10);
+        syncInfo.setTextSize(12);
         syncInfo.setLineSpacing(dp(1), 1.0f);
-        syncInfo.setTextColor(0xFF475569);
+        syncInfo.setTextColor(Ui.body(this));
         syncInfo.setPadding(0, dp(4), 0, 0);
         syncCard.addView(syncInfo);
 
@@ -510,9 +525,9 @@ public final class MainActivity extends Activity {
         LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), 0xFF0277BD);
         sensInfo = new TextView(this);
         sensInfo.setText(T.s("status.sensors_off", en));
-        sensInfo.setTextSize(10);
+        sensInfo.setTextSize(12);
         sensInfo.setLineSpacing(dp(1), 1.0f);
-        sensInfo.setTextColor(0xFF475569);
+        sensInfo.setTextColor(Ui.body(this));
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
@@ -524,9 +539,9 @@ public final class MainActivity extends Activity {
         visionInfo.setText((T.s("ui.accessibility_ocr_n", en))
                 + bleStatus + "\n"
                 + (T.s("ui.physical_wakeup_ready", en)));
-        visionInfo.setTextSize(10);
+        visionInfo.setTextSize(12);
         visionInfo.setLineSpacing(dp(1), 1.0f);
-        visionInfo.setTextColor(0xFF475569);
+        visionInfo.setTextColor(Ui.body(this));
         visionInfo.setPadding(0, dp(4), 0, 0);
         visionCard.addView(visionInfo);
 
@@ -563,32 +578,36 @@ public final class MainActivity extends Activity {
         LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, T.s("ui.new_agent_task", en), 0xFF0284C7);
 
         taskInput = new EditText(this);
+        taskInput.setMinHeight(dp(48));
         taskInput.setHint(T.s("task.hint", en));
         taskInput.setTextSize(12);
         taskInput.setMinLines(1);
         taskInput.setMaxLines(2);
         GradientDrawable inputBg = new GradientDrawable();
-        inputBg.setColor(0xFFF8FAFC);
+        inputBg.setColor(Ui.dark(this) ? 0xFF0F172A : 0xFFF8FAFC);
         inputBg.setCornerRadius(dp(8));
-        inputBg.setStroke(dp(1), 0xFFE2E8F0);
+        inputBg.setStroke(dp(1), Ui.stroke(this));
         taskInput.setBackground(inputBg);
         taskInput.setPadding(dp(8), dp(6), dp(8), dp(6));
+        taskInput.setTextColor(Ui.text(this));
+        taskInput.setHintTextColor(Ui.muted(this));
         taskInputCard.addView(taskInput);
 
         Button submitTaskBtn = createCompactActionButton(T.s("task.submit", en), 0xFF0F172A, 0xFFFFFFFF, view -> createTask());
         submitTaskBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(submitTaskBtn);
-        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
+        LinearLayout.LayoutParams subLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(48));
         subLp.setMargins(0, dp(4), 0, 0);
         taskInputCard.addView(submitTaskBtn, subLp);
-        int actionBg = 0xFF1E293B;
-        Button calendarBtn = createCompactActionButton(T.s("task.calendar", en), actionBg, 0xFFFFFFFF,
+        int actionBg = Ui.secondaryBg(this);
+        int actionFg = Ui.secondaryFg(this);
+        Button calendarBtn = createCompactActionButton(T.s("task.calendar", en), actionBg, actionFg,
             view -> startActivity(new Intent(this, ExternalActionActivity.class)));
-        Button fileBtn = createCompactActionButton(T.s("task.file", en), actionBg, 0xFFFFFFFF,
+        Button fileBtn = createCompactActionButton(T.s("task.file", en), actionBg, actionFg,
             view -> startActivity(new Intent(this, DocumentTaskActivity.class)));
-        Button workflowBtn = createCompactActionButton(T.s("task.workflow", en), actionBg, 0xFFFFFFFF,
+        Button workflowBtn = createCompactActionButton(T.s("task.workflow", en), actionBg, actionFg,
             view -> startActivity(new Intent(this, WorkflowActivity.class)));
-        Button centerBtn = createCompactActionButton(T.s("task.center", en), actionBg, 0xFFFFFFFF,
+        Button centerBtn = createCompactActionButton(T.s("task.center", en), actionBg, actionFg,
             view -> startActivity(new Intent(this, TaskCenterActivity.class)));
         LinearLayout actionGrid = Ui.actionGrid(this, calendarBtn, fileBtn, workflowBtn, centerBtn);
         LinearLayout.LayoutParams gridLp = new LinearLayout.LayoutParams(
@@ -607,19 +626,27 @@ public final class MainActivity extends Activity {
 
         Button btnMemDialog = createCompactActionButton(T.s("nav.memory", en), 0xFF7C3AED, 0xFFFFFFFF, v -> showMemoryDialog());
         btnMemDialog.setTypeface(null, android.graphics.Typeface.BOLD);
-        dockRow.addView(btnMemDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
+        dockRow.addView(btnMemDialog, new LinearLayout.LayoutParams(0, dp(48), 1.0f));
 
         Button btnSettingsDialog = createCompactActionButton(T.s("nav.settings", en), 0xFF334155, 0xFFFFFFFF, v -> showSettingsDialog());
         btnSettingsDialog.setTypeface(null, android.graphics.Typeface.BOLD);
-        LinearLayout.LayoutParams setLp = new LinearLayout.LayoutParams(0, dp(36), 1.0f);
+        LinearLayout.LayoutParams setLp = new LinearLayout.LayoutParams(0, dp(48), 1.0f);
         setLp.setMargins(dp(6), 0, dp(6), 0);
         dockRow.addView(btnSettingsDialog, setLp);
 
         Button btnConsoleDialog = createCompactActionButton(T.s("nav.console", en), 0xFF00695C, 0xFFFFFFFF, v -> showConsoleDialog());
         btnConsoleDialog.setTypeface(null, android.graphics.Typeface.BOLD);
-        dockRow.addView(btnConsoleDialog, new LinearLayout.LayoutParams(0, dp(36), 1.0f));
+        dockRow.addView(btnConsoleDialog, new LinearLayout.LayoutParams(0, dp(48), 1.0f));
 
         page.addView(dockRow);
+
+        LinearLayout summaryCard = createCard(page, IconFactory.IconType.SHIELD, T.s("ui.status", en), 0xFF475569);
+        bottomSummary = new TextView(this);
+        bottomSummary.setTextSize(12);
+        bottomSummary.setLineSpacing(dp(2), 1.0f);
+        bottomSummary.setTextColor(Ui.muted(this));
+        summaryCard.addView(bottomSummary);
+        summaryCard.setOnClickListener(v -> showSettingsDialog());
 
         ScrollView scroller = new ScrollView(this);
         pageScroll = scroller;
@@ -1032,8 +1059,9 @@ public final class MainActivity extends Activity {
             taskButtons.clear();
             taskList.removeAllViews();
             List<AgentStore.Task> tasks = store.listTasks();
+            refreshSummary();
             if (tasks.isEmpty()) {
-                addEmptyMessage(taskList, T.s("task.none_active", isEnglish()));
+                addEmptyTasks(taskList, T.s("task.none_active", isEnglish()));
                 mainHandler.removeCallbacks(taskRefresh);
                 return;
             }
@@ -1128,6 +1156,25 @@ public final class MainActivity extends Activity {
         banner.addView(buttons);
         container.addView(banner);
         addDivider(container, null);
+    }
+
+    private void refreshSummary() {
+        if (bottomSummary == null || store == null) return;
+        boolean en = isEnglish();
+        try {
+            int memories = store.listMemories().size();
+            int tasks = store.listTasks().size();
+            String peers = T.format("summary.peers", en, store.listPairings().size());
+            bottomSummary.setText(T.format("summary.line", en, memories, tasks) + "\n" + peers);
+        } catch (Exception ignored) {}
+    }
+
+    private void showInfoCard(String title, String body) {
+        new AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(body)
+            .setPositiveButton(T.s("common.close", isEnglish()), null)
+            .show();
     }
 
     private void refreshMemories() {
@@ -2310,6 +2357,24 @@ public final class MainActivity extends Activity {
         empty.setTextColor(Ui.muted(this));
         empty.setPadding(0, 8, 0, 8);
         parent.addView(empty);
+    }
+
+    /** Empty state with a way out: focus the composer so the next tap can start a task. */
+    private void addEmptyTasks(LinearLayout parent, String text) {
+        addEmptyMessage(parent, text);
+        Button start = createCompactActionButton(T.s("task.start_first", isEnglish()), 0xFF0F172A, 0xFFFFFFFF,
+            view -> {
+                if (pageScroll != null) pageScroll.post(() -> pageScroll.fullScroll(View.FOCUS_UP));
+                if (taskInput != null) {
+                    taskInput.requestFocus();
+                    android.view.inputmethod.InputMethodManager keyboard =
+                        (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (keyboard != null) keyboard.showSoftInput(taskInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(48));
+        lp.setMargins(0, dp(4), 0, 0);
+        parent.addView(start, lp);
     }
 
     private void setBusy(boolean value, String message) {

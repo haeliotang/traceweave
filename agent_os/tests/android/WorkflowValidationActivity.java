@@ -74,7 +74,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("SEED_WORKFLOW_UI".equals(getIntent().getAction())) {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
                     store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC camping preference: keep checklists concise");
-                    store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC camping Traceweave fact", AgentStore.MEMORY_SOURCE_TRACEFORM, "synthetic:ui");
+                    store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC camping Traceweave fact", AgentStore.MEMORY_SOURCE_TRACEWEAVE, "synthetic:ui");
                     // The UI verification needs a reusable template; seed it here so the case stands alone.
                     WorkflowTemplate recipe = new WorkflowTemplate("SYNTHETIC checklist", "Prepare a local Markdown checklist for {{input}}.");
                     store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
@@ -751,18 +751,18 @@ public final class WorkflowValidationActivity extends Activity {
     private void memoryChoices(AgentStore store) throws Exception {
         reset(store);
         AgentStore.Memory user = store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC 露营清单简洁");
-        AgentStore.Memory trace = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC bounded local source", AgentStore.MEMORY_SOURCE_TRACEFORM, "synthetic:source");
+        AgentStore.Memory trace = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC bounded local source", AgentStore.MEMORY_SOURCE_TRACEWEAVE, "synthetic:source");
         AgentStore.Memory suggestion = store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC user confirmed preference", AgentStore.MEMORY_SOURCE_CONSOLIDATION, "confirmed:synthetic");
         store.createMemory(AgentStore.MEMORY_WORKFLOW, new WorkflowTemplate("SYNTHETIC recipe", "Plan {{input}}").encode());
         MemorySelection selection = new MemorySelection(store.listPlanningMemories(), null);
         check(selection.ids().isEmpty(), "no automatic selection");
         check(selection.visible("露营", null, false, "").size() == 1, "Chinese text search");
-        check(selection.visible("", AgentStore.MEMORY_SOURCE_TRACEFORM, false, "").get(0).id.equals(trace.id), "source filter");
+        check(selection.visible("", AgentStore.MEMORY_SOURCE_TRACEWEAVE, false, "").get(0).id.equals(trace.id), "source filter");
         check(selection.visible("", null, false, "").size() == 3, "executable templates excluded from memory suggestions");
         selection.visible("", null, true, "露营清单");
         check(selection.ids().isEmpty(), "ranking never selects a memory");
         selection.choose(user.id, true);
-        selection.visible("bounded", AgentStore.MEMORY_SOURCE_TRACEFORM, false, "");
+        selection.visible("bounded", AgentStore.MEMORY_SOURCE_TRACEWEAVE, false, "");
         check(selection.chosen(store.listPlanningMemories()).size() == 1, "filter changes retain explicit selection");
         AgentStore.Task task = store.createTask("SYNTHETIC memory reference");
         store.savePlan(task.id, new ExecutionPlan(task.id, task.title, Collections.emptyList(), 1, 0)
