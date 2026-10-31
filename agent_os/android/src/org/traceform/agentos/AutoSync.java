@@ -20,8 +20,10 @@ final class AutoSync {
             if (cursor == null || cursor.lastAddress.isEmpty())
                 return record(store, "skipped: no known address for " + target.deviceId);
             byte[] request = SyncRecords.encode(store.exportSyncRecords());
-            byte[] response = SyncTransport.nativeDialOnce(SyncTransport.seed(context), cursor.lastPort,
-                target.peerId, request);
+            byte[] response = cursor.lastAddress.startsWith("/ip4/")
+                ? SyncTransport.nativeDialAddressOnce(SyncTransport.seed(context), cursor.lastAddress,
+                    target.peerId, request)
+                : SyncTransport.nativeDialOnce(SyncTransport.seed(context), cursor.lastPort, target.peerId, request);
             boolean ok = response != null;
             int applied = ok ? SyncRecords.merge(store, response) : 0;
             store.recordSyncCursor(target.deviceId, System.currentTimeMillis(), cursor.lastAddress, cursor.lastPort,

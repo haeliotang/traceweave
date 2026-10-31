@@ -43,6 +43,9 @@ final class SyncTransport {
 
     static native byte[] nativeDialOnce(String seedHex, int port, String expectedPeerHex, byte[] payload);
 
+    /** Dials an explicit multiaddr (LAN peer) instead of loopback. */
+    static native byte[] nativeDialAddressOnce(String seedHex, String address, String expectedPeerHex, byte[] payload);
+
     static native String nativeDiscover(String seedHex, long timeoutMs);
 
     static native String nativePairServe(String seedHex, int port, String fingerprint, long timeoutMs);

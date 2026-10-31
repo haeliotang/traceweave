@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-31",
+  "change": "AutoSync can now dial an explicit multiaddr through the new JNI entry nativeDialAddressOnce; the loopback port path is kept for same-device sync",
+  "why": "the previous dial API always connected to 127.0.0.1, so a background sync could never reach a peer on the LAN",
+  "evidence": {
+    "rust": "agent_os/sync/src/jni_bridge.rs exports Java_org_traceform_agentos_SyncTransport_nativeDialAddressOnce",
+    "build": "sync library cross-compiled for aarch64-linux-android and packaged",
+    "probe": "AUTO_SYNC_PROBE outcome=completed with probe-3b191927e58a5071 applied=1 cursor=127.0.0.1:47960 ok:1"
+  },
+  "limitations": [
+    "the probe still uses a loopback address, so the LAN branch is compiled but not exercised against a remote host",
+    "a stored address only becomes a multiaddr after a manual sync records one; discovery does not yet write it"
+  ]
+}

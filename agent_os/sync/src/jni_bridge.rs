@@ -295,6 +295,55 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeDialOnce(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialAddressOnce(
+    mut env: JNIEnv<'_>,
+    _class: JClass<'_>,
+    seed: JString<'_>,
+    address: JString<'_>,
+    expected_peer: JString<'_>,
+    payload: JByteArray<'_>,
+) -> jni::sys::jbyteArray {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let address: String = match env.get_string(&address) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let expected: String = match env.get_string(&expected_peer) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(seed) = seed_from_hex(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let Ok(target) = address.parse() else {
+        return std::ptr::null_mut();
+    };
+    let Some(peer) = peer_from_hex(&expected) else {
+        return std::ptr::null_mut();
+    };
+    let payload = match env.convert_byte_array(&payload) {
+        Ok(value) => value,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let identity = DeviceIdentity::from_bytes(seed);
+    let runtime = match tokio::runtime::Builder::new_multi_thread().enable_all().build() {
+        Ok(runtime) => runtime,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let result = runtime.block_on(dial_payload(identity, target, peer, &payload, Duration::from_secs(30)));
+    match result {
+        Ok((response, _summary)) => match env.byte_array_from_slice(&response) {
+            Ok(value) => value.into_raw(),
+            Err(_) => std::ptr::null_mut(),
+        },
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePublicKey(
     mut env: JNIEnv,
     _class: JClass,

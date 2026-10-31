@@ -36,6 +36,15 @@ final class SyncActions {
         return result;
     }
 
+    /** Address advertised by a specific peer during discovery, or an empty string. */
+    static String addressFor(String json, String peerId) {
+        if (peerId == null || peerId.isEmpty()) return "";
+        for (JSONObject item : items(json)) {
+            if (peerId.equals(item.optString("peer", ""))) return item.optString("addr", "");
+        }
+        return "";
+    }
+
     static List<String> addresses(String json) {
         List<String> result = new ArrayList<>();
         for (JSONObject item : items(json)) result.add(item.optString("addr", ""));
