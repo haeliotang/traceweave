@@ -6,7 +6,7 @@ public final class LocalModelCatalogHostTest {
         LocalModelCatalog.Entry qwen = LocalModelCatalog.bySize(1066227232L);
         LocalModelCatalog.Entry mini = LocalModelCatalog.bySize(1561318368L);
         if (qwen == null || mini == null) throw new AssertionError("size lookup failed");
-        if (qwen.maxTokens != 128 || mini.maxTokens != 128) throw new AssertionError("token budgets");
+        if (qwen.maxTokens != 256 || mini.maxTokens != 384) throw new AssertionError("token budgets");
         if (LocalModelCatalog.bySha(qwen.sha256) != qwen) throw new AssertionError("sha lookup");
         if (LocalModelCatalog.bySize(123L) != null) throw new AssertionError("unknown size accepted");
         if (LocalModelCatalog.bySha("00") != null) throw new AssertionError("unknown sha accepted");

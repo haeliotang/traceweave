@@ -238,7 +238,7 @@ public final class LocalModelQualityProbe extends Activity {
             if (ok) counts[0]++;
             results.put(new JSONObject().put("category", category).put("prompt", item[1])
                 .put("expected", item.length > 4 ? item[3] + "=" + item[4] : item[3])
-                .put("output", output.length() > 200 ? output.substring(0, 200) : output)
+                .put("output", output.length() > 2000 ? output.substring(0, 2000) : output)
                 .put("elapsed_ms", elapsedMs).put("passed", ok));
         }
         JSONObject categories = new JSONObject();
@@ -293,7 +293,7 @@ public final class LocalModelQualityProbe extends Activity {
             long startedAt = SystemClock.elapsedRealtime();
             try {
                 LocalModelProbe.prepare();
-                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128, grammar),
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, grammar),
                     StandardCharsets.UTF_8);
                 org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
                 ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
@@ -302,7 +302,7 @@ public final class LocalModelQualityProbe extends Activity {
             }
             if (ok) passed++;
             results.put(new JSONObject().put("case", item[0]).put("required_keys", item[2]).put("grammar", grammar)
-                .put("output", output.length() > 200 ? output.substring(0, 200) : output)
+                .put("output", output.length() > 2000 ? output.substring(0, 2000) : output)
                 .put("elapsed_ms", SystemClock.elapsedRealtime() - startedAt).put("passed", ok));
         }
         JSONObject summary = new JSONObject().put("passed", passed).put("total", JSON_CASES.length)
@@ -312,6 +312,91 @@ public final class LocalModelQualityProbe extends Activity {
             output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
         }
         Log.i("AgentOsModelQuality", "JSON3_DONE " + passed + "/" + JSON_CASES.length);
+    }
+
+    /** Content-level checks that the presence-only criterion cannot see. */
+    private static java.util.List<String> contentIssues(String testCase, org.json.JSONObject parsed, String runDate) {
+        java.util.List<String> issues = new java.util.ArrayList<>();
+        try {
+            switch (testCase) {
+                case "error":
+                    if (!(parsed.get("error") instanceof String)) issues.add("error is not a string");
+                    if (!(parsed.get("retry") instanceof Boolean)) issues.add("retry is not a boolean");
+                    break;
+                case "count":
+                    if (parsed.get("total") instanceof String) issues.add("total is a string");
+                    if (!(parsed.get("items") instanceof org.json.JSONArray)) issues.add("items is not an array");
+                    else if (parsed.getJSONArray("items").length() != 3) issues.add("items does not hold three entries");
+                    break;
+                case "schedule":
+                    for (String key : new String[]{"start", "end"}) {
+                        String value = parsed.optString(key, "");
+                        if (!value.startsWith(runDate.substring(0, 4))) issues.add(key + " is not in " + runDate.substring(0, 4));
+                    }
+                    break;
+                case "summary": {
+                    String text = parsed.optString("summary", "");
+                    if (text.length() < 20 || text.toLowerCase().contains("brief summary")) issues.add("summary looks like a placeholder");
+                    org.json.JSONArray tags = parsed.optJSONArray("tags");
+                    if (tags != null && tags.length() == 2 && tags.optString(0).equals(tags.optString(1))) issues.add("tags repeat the same word");
+                    break;
+                }
+                case "empty":
+                    if (parsed.optString("note", "").isEmpty()) issues.add("note is empty");
+                    break;
+                case "plan": {
+                    org.json.JSONArray steps = parsed.optJSONArray("steps");
+                    if (steps != null && steps.length() == 2 && steps.optString(0).equals("pack")
+                        && steps.optString(1).equals("go")) issues.add("steps repeat the prompt example verbatim");
+                    break;
+                }
+                default:
+                    break;
+            }
+        } catch (Exception error) {
+            issues.add("content check failed: " + error.getMessage());
+        }
+        return issues;
+    }
+
+    private void runJsonContent(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        int shapeOk = 0;
+        int contentOk = 0;
+        String runDate = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
+        for (String[] item : JSON_CASES) {
+            String grammar = jsonGrammarFor(item[2]);
+            String prompt = JsonText.schemaPrompt(item[1],
+                "an object with the requested keys", "{\"title\":\"camping\",\"steps\":[\"pack\",\"go\"]}");
+            boolean shape = false;
+            java.util.List<String> issues = new java.util.ArrayList<>();
+            String output = "";
+            long startedAt = SystemClock.elapsedRealtime();
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, grammar),
+                    StandardCharsets.UTF_8);
+                org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
+                shape = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
+                if (shape) issues.addAll(contentIssues(item[0], parsed, runDate));
+            } catch (Exception error) {
+                issues.add("<error: " + error.getMessage() + ">");
+            }
+            if (shape) shapeOk++;
+            if (shape && issues.isEmpty()) contentOk++;
+            results.put(new JSONObject().put("case", item[0]).put("keys_present", shape)
+                .put("content_issues", new JSONArray(issues))
+                .put("output", output.length() > 2000 ? output.substring(0, 2000) : output)
+                .put("elapsed_ms", SystemClock.elapsedRealtime() - startedAt));
+        }
+        JSONObject summary = new JSONObject().put("keys_present", shapeOk).put("content_ok", contentOk)
+            .put("total", JSON_CASES.length).put("run_date", runDate)
+            .put("criterion", "keys present (shape) vs keys present AND case-specific content checks passed")
+            .put("cases", results);
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "json4.json"))) {
+            output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON4_DONE shape=" + shapeOk + "/" + JSON_CASES.length + " content=" + contentOk + "/" + JSON_CASES.length);
     }
 
     private void runJson2(File model) throws Exception {
@@ -329,7 +414,7 @@ public final class LocalModelQualityProbe extends Activity {
                 attempts++;
                 try {
                     LocalModelProbe.prepare();
-                    last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128, null),
+                    last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, null),
                         StandardCharsets.UTF_8);
                     org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(last));
                     ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
@@ -341,7 +426,7 @@ public final class LocalModelQualityProbe extends Activity {
             }
             if (ok) passed++;
             results.put(new JSONObject().put("case", item[0]).put("required_keys", item[2]).put("attempts", attempts)
-                .put("output", last.length() > 200 ? last.substring(0, 200) : last)
+                .put("output", last.length() > 2000 ? last.substring(0, 2000) : last)
                 .put("elapsed_ms", SystemClock.elapsedRealtime() - startedAt).put("passed", ok));
         }
         JSONObject summary = new JSONObject().put("passed", passed).put("total", JSON_CASES.length)
@@ -431,6 +516,10 @@ public final class LocalModelQualityProbe extends Activity {
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 if ("STRESS3".equals(getIntent().getAction())) {
                     runStress3(model, getIntent().getStringExtra("phase"));
+                    return;
+                }
+                if ("JSON4".equals(getIntent().getAction())) {
+                    runJsonContent(model);
                     return;
                 }
                 if ("JSON3".equals(getIntent().getAction())) {
