@@ -7,6 +7,8 @@
 pub mod binding;
 pub mod frame;
 pub mod identity;
+pub mod pairing;
+pub mod pairing_session;
 pub mod jni_bridge;
 pub mod transport;
 

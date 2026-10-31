@@ -5,7 +5,14 @@
 
 use std::time::Duration;
 use traceform_sync::identity::DeviceIdentity;
+use traceform_sync::pairing_session::{pair_dial, pair_serve};
 use traceform_sync::transport::{dial, loopback, serve, Ed25519BindingVerifier};
+use sha2::{Digest, Sha256};
+
+fn fingerprint(identity: &DeviceIdentity) -> String {
+    let digest = Sha256::digest(identity.public_key_bytes());
+    digest.iter().map(|byte| format!("{:02x}", byte)).collect()
+}
 
 #[tokio::main]
 async fn main() {
@@ -47,6 +54,21 @@ async fn main() {
                 println!("FAIL client {error}");
                 std::process::exit(1);
             }
+        }
+    } else if role == "pair-server" {
+        let identity = DeviceIdentity::from_seed(1);
+        let local = fingerprint(&identity);
+        match pair_serve(identity, loopback(port), &local, Duration::from_secs(20)).await {
+            Ok(session) => println!("PASS pair-server sas={} peer={} offer={}", session.sas, session.peer, session.peer_offer.fingerprint),
+            Err(error) => { println!("FAIL pair-server {error}"); std::process::exit(1); }
+        }
+    } else if role == "pair-client" {
+        let identity = DeviceIdentity::from_seed(2);
+        let local = fingerprint(&identity);
+        let address: libp2p::Multiaddr = format!("/ip4/127.0.0.1/tcp/{port}").parse().unwrap();
+        match pair_dial(identity, address, &local, Duration::from_secs(20)).await {
+            Ok(session) => println!("PASS pair-client sas={} peer={} offer={}", session.sas, session.peer, session.peer_offer.fingerprint),
+            Err(error) => { println!("FAIL pair-client {error}"); std::process::exit(1); }
         }
     } else if role == "client-unpaired" {
         // Not in the server allow-list: the connection must be refused.
