@@ -490,6 +490,97 @@ public final class LocalModelQualityProbe extends Activity {
         Log.i("AgentOsModelQuality", "JSON5_DONE schema_prompt=" + withSchemaPrompt + " " + passed + "/" + UNSEEN_CASES.length);
     }
 
+    private void runJsonRepair(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        int shapeOk = 0;
+        int contentOk = 0;
+        int repaired = 0;
+        String runDate = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
+        for (String[] item : JSON_CASES) {
+            String grammar = jsonGrammarFor(item[2]);
+            String prompt = item[1] + " Today is " + runDate + ". Return only the JSON object. "
+                + "Never repeat values from an example, never use placeholder words, "
+                + "use the real date where a date is asked, and match the requested type for every key.";
+            boolean shape = false;
+            java.util.List<String> issues = new java.util.ArrayList<>();
+            String output = "";
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, grammar),
+                    StandardCharsets.UTF_8);
+                org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
+                shape = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
+                if (shape) issues = contentIssues(item[0], parsed, runDate);
+                if (!issues.isEmpty()) {
+                    String correction = prompt + " The previous answer failed these checks: "
+                        + issues.toString() + ". Fix exactly those problems and keep the same keys.";
+                    LocalModelProbe.prepare();
+                    String second = new String(LocalModelProbe.generate(model.getPath(),
+                        correction.getBytes(StandardCharsets.UTF_8), 512, grammar), StandardCharsets.UTF_8);
+                    org.json.JSONObject repairedJson = StructuredOutput.parse(JsonText.stripThink(second));
+                    if (StructuredOutput.missingKeys(repairedJson, item[2].split(",")).isEmpty()) {
+                        shape = true;
+                        issues = contentIssues(item[0], repairedJson, runDate);
+                        output = second;
+                        repaired++;
+                    }
+                }
+            } catch (Exception error) {
+                issues.add("<error: " + error.getMessage() + ">");
+            }
+            if (shape) shapeOk++;
+            if (shape && issues.isEmpty()) contentOk++;
+            results.put(new JSONObject().put("case", item[0]).put("keys_present", shape)
+                .put("content_issues", new JSONArray(issues))
+                .put("output", output.length() > 2000 ? output.substring(0, 2000) : output));
+        }
+        JSONObject summary = new JSONObject().put("keys_present", shapeOk).put("content_ok", contentOk)
+            .put("repaired_cases", repaired).put("total", JSON_CASES.length).put("run_date", runDate)
+            .put("mode", "strict prompt + grammar + one repair attempt").put("cases", results);
+        try (java.io.FileOutputStream stream = new java.io.FileOutputStream(new File(getFilesDir(), "json8.json"))) {
+            stream.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON8_DONE shape=" + shapeOk + " content=" + contentOk + " repaired=" + repaired);
+    }
+
+    private void runJsonContentStrict(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        int shapeOk = 0;
+        int contentOk = 0;
+        String runDate = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(new java.util.Date());
+        for (String[] item : JSON_CASES) {
+            String grammar = jsonGrammarFor(item[2]);
+            String prompt = item[1] + " Today is " + runDate + ". Return only the JSON object. "
+                + "Never repeat values from an example, never use placeholder words, "
+                + "use the real date where a date is asked, and match the requested type for every key.";
+            boolean shape = false;
+            java.util.List<String> issues = new java.util.ArrayList<>();
+            String output = "";
+            try {
+                LocalModelProbe.prepare();
+                output = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 512, grammar),
+                    StandardCharsets.UTF_8);
+                org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(output));
+                shape = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
+                if (shape) issues.addAll(contentIssues(item[0], parsed, runDate));
+            } catch (Exception error) {
+                issues.add("<error: " + error.getMessage() + ">");
+            }
+            if (shape) shapeOk++;
+            if (shape && issues.isEmpty()) contentOk++;
+            results.put(new JSONObject().put("case", item[0]).put("keys_present", shape)
+                .put("content_issues", new JSONArray(issues))
+                .put("output", output.length() > 2000 ? output.substring(0, 2000) : output));
+        }
+        JSONObject summary = new JSONObject().put("keys_present", shapeOk).put("content_ok", contentOk)
+            .put("total", JSON_CASES.length).put("run_date", runDate).put("mode", "strict prompt + grammar")
+            .put("cases", results);
+        try (java.io.FileOutputStream stream = new java.io.FileOutputStream(new File(getFilesDir(), "json7.json"))) {
+            stream.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON7_DONE shape=" + shapeOk + " content=" + contentOk);
+    }
+
     private void runJsonContent(File model) throws Exception {
         JSONArray results = new JSONArray();
         int shapeOk = 0;
@@ -647,6 +738,14 @@ public final class LocalModelQualityProbe extends Activity {
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 if ("STRESS3".equals(getIntent().getAction())) {
                     runStress3(model, getIntent().getStringExtra("phase"));
+                    return;
+                }
+                if ("JSON8".equals(getIntent().getAction())) {
+                    runJsonRepair(model);
+                    return;
+                }
+                if ("JSON7".equals(getIntent().getAction())) {
+                    runJsonContentStrict(model);
                     return;
                 }
                 if ("TRUNC".equals(getIntent().getAction())) {

@@ -369,6 +369,8 @@ final class SyncPanel {
                         outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);
                     } else {
                         int applied = SyncRecords.merge(host.storeRef(), response);
+                        host.storeRef().recordSyncCursor(target.deviceId, System.currentTimeMillis(),
+                            "127.0.0.1", SYNC_PORT, "ok:" + applied);
                         outcome = T.format("sync.changes_applied", en, applied);
                     }
                 } catch (Throwable error) {
