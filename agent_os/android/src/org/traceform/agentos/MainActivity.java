@@ -352,7 +352,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.setLayoutParams(topHeaderLp);
 
         TextView title = new TextView(this);
-        title.setText(en ? "Traceform Agent OS Prototype" : "Traceform Agent OS 原型");
+        title.setText(T.s("ui.traceform_agent_os_prototype", en));
         title.setTextSize(20);
         title.setTextColor(0xFF0F172A);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -362,7 +362,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.addView(title);
 
         Button langBtn = new Button(this);
-        langBtn.setText(en ? "EN / 中" : "中 / EN");
+        langBtn.setText(T.s("ui.en", en));
         langBtn.setTextSize(12);
         langBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         langBtn.setTextColor(0xFF0284C7);
@@ -407,9 +407,9 @@ public final class MainActivity extends Activity {
 
         // 3. Telemetry 6 Cards (2 Rows x 3 Columns)
         LinearLayout gridRow1 = createGridRow(page);
-        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, en ? "Hardware" : "硬件常驻", 0xFF1565C0);
+        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, T.s("ui.hardware", en), 0xFF1565C0);
         TextView hwInfo = new TextView(this);
-        hwInfo.setText(en ? "Tensor G1 · Pixel 6a\nSynthetic profile" : "Tensor G1 · Pixel 6a\n模拟数据");
+        hwInfo.setText(T.s("ui.tensor_g1_pixel_6a_nsynthetic_profile", en));
         hwInfo.setTextSize(10);
         hwInfo.setLineSpacing(dp(1), 1.0f);
         hwInfo.setTextColor(0xFF475569);
@@ -427,17 +427,17 @@ public final class MainActivity extends Activity {
                 long latencyUs = resObj.optLong("total_latency_us", 0);
                 double tflops = resObj.optDouble("effective_tflops", 0.0);
 
-                hwInfo.setText((en ? "Scheduler simulation\n" : "调度器模拟结果\n")
+                hwInfo.setText((T.s("ui.scheduler_simulation_n", en))
                     + "GPU(" + gpu + ") TPU(" + tpu + ") CPU(" + cpu + ")\n"
                     + String.format(Locale.US, "%.2f simulated TFLOPS (%dμs)", tflops, latencyUs));
-                Toast.makeText(this, (en ? "Synthetic TCE simulation: " : "TCE 合成调度模拟: ")
+                Toast.makeText(this, (T.s("ui.synthetic_tce_simulation", en))
                     + "GPU:" + gpu + " TPU:" + tpu + " NEON:" + cpu + " (" + latencyUs + "μs)", Toast.LENGTH_SHORT).show();
             } catch (Exception ex) {
                 Toast.makeText(this, "TCE: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, en ? "Local Planner" : "本地规划", 0xFF6A1B9A);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), 0xFF6A1B9A);
         slmInfo = new TextView(this);
         updateLocalModelStatus();
         slmInfo.setTextSize(10);
@@ -448,7 +448,7 @@ public final class MainActivity extends Activity {
 
         slmCard.setOnClickListener(v -> startActivity(new Intent(this, LocalModelActivity.class)));
 
-        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, en ? "Daemon" : "守护进程", 0xFFD84315);
+        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, T.s("ui.daemon", en), 0xFFD84315);
         TextView daemonInfo = new TextView(this);
         daemonInfo.setText(T.s("status.daemon_off", en));
         daemonInfo.setTextSize(10);
@@ -458,7 +458,7 @@ public final class MainActivity extends Activity {
         daemonCard.addView(daemonInfo);
 
         LinearLayout gridRow2 = createGridRow(page);
-        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, en ? "Encrypted Archive" : "加密归档", 0xFF2E7D32);
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, T.s("ui.encrypted_archive", en), 0xFF2E7D32);
         TextView syncInfo = new TextView(this);
         syncInfo.setText(T.s("status.archive_local", en));
         syncInfo.setTextSize(10);
@@ -470,7 +470,7 @@ public final class MainActivity extends Activity {
         syncCard.setOnClickListener(v -> {
             try {
                 int memCount = store != null ? store.listMemories().size() : 0;
-                syncInfo.setText((en ? "Encrypted memory vault\n" : "加密记忆库\n")
+                syncInfo.setText((T.s("ui.encrypted_memory_vault_n", en))
                         + (en ? memCount + " memories\nOn-demand archive" : memCount + " 条记忆\n按需加密归档"));
                 Toast.makeText(this, (en ? "Encrypted archive ready: " + memCount + " memories · export/import on demand"
                         : "加密归档就绪: " + memCount + " 条记忆 · 按需导出与导入"), Toast.LENGTH_SHORT).show();
@@ -479,7 +479,7 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, en ? "Sensors" : "环境感知", 0xFF0277BD);
+        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), 0xFF0277BD);
         sensInfo = new TextView(this);
         sensInfo.setText(T.s("status.sensors_off", en));
         sensInfo.setTextSize(10);
@@ -488,7 +488,7 @@ public final class MainActivity extends Activity {
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
-        Button reviewBtn = createCompactActionButton(en ? "Review" : "审核", 0xFF1E293B, 0xFFFFFFFF,
+        Button reviewBtn = createCompactActionButton(T.s("ui.review", en), 0xFF1E293B, 0xFFFFFFFF,
             view -> reviewSensorObservation());
         reviewBtn.setTextSize(10);
         LinearLayout.LayoutParams reviewLp = new LinearLayout.LayoutParams(
@@ -500,7 +500,7 @@ public final class MainActivity extends Activity {
             try {
                 PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
                 if (!sens.isMonitoring()) {
-                    Toast.makeText(this, en ? "Enable sensors to view live context" : "请先启用感知，再查看实时状态", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, T.s("ui.enable_sensors_to_view_live_context", en), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 updateSensorsCard();
@@ -510,12 +510,12 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, en ? "Vision/PTT" : "视觉/PTT", 0xFF4527A0);
+        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, T.s("ui.vision_ptt", en), 0xFF4527A0);
         TextView visionInfo = new TextView(this);
         String bleStatus = HardwarePeripheralService.getInstance().getPeripheralStatus(en);
-        visionInfo.setText((en ? "Accessibility OCR\n" : "无障碍破障定位\n")
+        visionInfo.setText((T.s("ui.accessibility_ocr_n", en))
                 + bleStatus + "\n"
-                + (en ? "Physical Wakeup Ready" : "物理按键微秒唤醒"));
+                + (T.s("ui.physical_wakeup_ready", en)));
         visionInfo.setTextSize(10);
         visionInfo.setLineSpacing(dp(1), 1.0f);
         visionInfo.setTextColor(0xFF475569);
@@ -524,19 +524,19 @@ public final class MainActivity extends Activity {
 
         visionCard.setOnClickListener(v -> {
             try {
-                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "New Agent Task" : "新建智能体任务");
+                org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(T.s("ui.new_agent_task", en));
                 String bleLiveStatus = HardwarePeripheralService.getInstance().getPeripheralStatus(en);
                 if (target.optBoolean("matched", false)) {
                     int x = (int) target.optDouble("tap_x");
                     int y = (int) target.optDouble("tap_y");
-                    visionInfo.setText((en ? "Target: (" : "焦点: (") + x + "," + y + ")\n"
-                            + (en ? "A11y Node: Matched\n" : "无障碍破障: 匹配成功\n")
+                    visionInfo.setText((T.s("ui.target", en)) + x + "," + y + ")\n"
+                            + (T.s("ui.a11y_node_matched_n", en))
                             + bleLiveStatus);
-                    Toast.makeText(this, (en ? "Vision Target: Located (" : "视觉破障定位成功: 焦点坐标 (") + x + "," + y + ") · " + bleLiveStatus, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, (T.s("ui.vision_target_located", en)) + x + "," + y + ") · " + bleLiveStatus, Toast.LENGTH_SHORT).show();
                 } else {
-                    visionInfo.setText((en ? "Target: Not Found\nA11y Node: Standby\n" : "目标: 扫描未命中\n无障碍树: 监听待命\n")
+                    visionInfo.setText((T.s("ui.target_not_found_na11y_node_standby_n", en))
                             + bleLiveStatus);
-                    Toast.makeText(this, (en ? "Vision mismatch: " : "视觉扫描未命中: ") + target.optString("reasoning") + " · " + bleLiveStatus, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, (T.s("ui.vision_mismatch", en)) + target.optString("reasoning") + " · " + bleLiveStatus, Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
                 Toast.makeText(this, "Vision/PTT: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -552,7 +552,7 @@ public final class MainActivity extends Activity {
         taskHeading.setPadding(0, dp(10), 0, dp(4));
         page.addView(taskHeading);
 
-        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, en ? "New Agent Task" : "新建智能体任务", 0xFF0284C7);
+        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, T.s("ui.new_agent_task", en), 0xFF0284C7);
 
         taskInput = new EditText(this);
         taskInput.setHint(T.s("task.hint", en));
@@ -627,7 +627,7 @@ public final class MainActivity extends Activity {
         root.setPadding(dp(20), dp(16), dp(20), dp(12));
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.BRAIN,
-                en ? "Encrypted Memory Vault" : "用户记忆与知识库", 0xFF7C3AED, 16);
+                T.s("ui.encrypted_memory_vault", en), 0xFF7C3AED, 16);
         root.addView(titleRow);
 
         LinearLayout memControlsRow = new LinearLayout(this);
@@ -641,7 +641,7 @@ public final class MainActivity extends Activity {
         memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(150), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
-        memorySearch.setHint(en ? "Search memories..." : "搜索记忆内容...");
+        memorySearch.setHint(T.s("ui.search_memories", en));
         memorySearch.setTextSize(12);
         GradientDrawable searchBg = new GradientDrawable();
         searchBg.setColor(0xFFF8FAFC);
@@ -662,7 +662,7 @@ public final class MainActivity extends Activity {
         root.addView(memControlsRow);
 
         memoryInput = new EditText(this);
-        memoryInput.setHint(en ? "Record a user preference, fact, or workflow..." : "记录一条个人偏好、重要事实或固定工作流（来源标记为你提供）");
+        memoryInput.setHint(T.s("ui.record_a_user_preference_fact_or_workflo", en));
         memoryInput.setTextSize(13);
         memoryInput.setMinLines(2);
         memoryInput.setMaxLines(3);
@@ -676,13 +676,13 @@ public final class MainActivity extends Activity {
         miLp.setMargins(0, dp(6), 0, dp(6));
         root.addView(memoryInput, miLp);
 
-        Button saveMemoryBtn = createCompactActionButton(en ? "Save Encrypted Memory" : "保存加密记忆", 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
+        Button saveMemoryBtn = createCompactActionButton(T.s("ui.save_encrypted_memory", en), 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
         saveMemoryBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         persistentButtons.add(saveMemoryBtn);
         LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
         root.addView(saveMemoryBtn, smLp);
 
-        addPageButton(root, en ? "Review deletion by source" : "按来源审核删除", view -> memoryPanel.reviewBySource());
+        addPageButton(root, T.s("ui.review_deletion_by_source", en), view -> memoryPanel.reviewBySource());
 
         ScrollView memScroll = new ScrollView(this);
         memScroll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
@@ -692,7 +692,7 @@ public final class MainActivity extends Activity {
         root.addView(memScroll);
 
         builder.setView(root);
-        builder.setPositiveButton(en ? "Close" : "关闭", null);
+        builder.setPositiveButton(T.s("ui.close", en), null);
         AlertDialog dlg = builder.create();
         dlg.show();
         refreshMemories();
@@ -703,7 +703,7 @@ public final class MainActivity extends Activity {
         try {
             final java.util.List<AgentStore.Pairing> active = store.activePairings();
             if (active.isEmpty()) {
-                showMessage(en ? "No paired devices" : "没有已配对设备");
+                showMessage(T.s("ui.no_paired_devices", en));
                 return;
             }
             final String[] labels = new String[active.size()];
@@ -712,24 +712,24 @@ public final class MainActivity extends Activity {
                 labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…";
             }
             new AlertDialog.Builder(this)
-                .setTitle(en ? "Paired devices" : "已配对设备")
+                .setTitle(T.s("ui.paired_devices", en))
                 .setItems(labels, (dialog, which) -> {
                     final AgentStore.Pairing pairing = active.get(which);
                     new AlertDialog.Builder(this)
-                        .setTitle(en ? "Revoke pairing" : "撤销配对")
+                        .setTitle(T.s("ui.revoke_pairing", en))
                         .setMessage(en ? "Revoke access for " + pairing.deviceId + "? It must pair again."
                                        : "撤销 " + pairing.deviceId + " 的访问？它必须重新配对。")
-                        .setNegativeButton(en ? "Cancel" : "取消", null)
-                        .setPositiveButton(en ? "Revoke" : "撤销", (inner, ignored) -> {
+                        .setNegativeButton(T.s("ui.cancel", en), null)
+                        .setPositiveButton(T.s("ui.revoke", en), (inner, ignored) -> {
                             try {
                                 SyncPairing.revoke(store, pairing.deviceId);
-                                showMessage(en ? "Pairing revoked" : "配对已撤销");
+                                showMessage(T.s("ui.pairing_revoked", en));
                             } catch (Exception error) {
                                 showError(error);
                             }
                         }).show();
                 })
-                .setNegativeButton(en ? "Close" : "关闭", null)
+                .setNegativeButton(T.s("ui.close", en), null)
                 .show();
         } catch (Exception error) {
             showError(error);
@@ -785,11 +785,11 @@ public final class MainActivity extends Activity {
         root.setPadding(dp(20), dp(16), dp(20), dp(12));
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.SCREEN,
-                en ? "Console & Diagnostics Hub" : "交互中枢与诊断控制台", 0xFF00695C, 16);
+                T.s("ui.console_diagnostics_hub", en), 0xFF00695C, 16);
         root.addView(titleRow);
 
         vadLiveStatus = new TextView(this);
-        vadLiveStatus.setText(en ? "Live Audio: Standby · 16kHz NEON SIMD" : "实时拾音: 待命中 · 16kHz NEON SIMD");
+        vadLiveStatus.setText(T.s("ui.live_audio_standby_16khz_neon_simd", en));
         vadLiveStatus.setTextSize(11);
         vadLiveStatus.setTextColor(0xFF0284C7);
         vadLiveStatus.setPadding(0, dp(8), 0, dp(6));
@@ -799,13 +799,13 @@ public final class MainActivity extends Activity {
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(2), 0, dp(4));
 
-        Button toggleFloatingBtn = createCompactActionButton(en ? "Launch Capsule" : "开启悬浮胶囊", 0xFF0284C7, 0xFFFFFFFF, v -> {
+        Button toggleFloatingBtn = createCompactActionButton(T.s("ui.launch_capsule", en), 0xFF0284C7, 0xFFFFFFFF, v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
-                        .setTitle(en ? "Grant Floating Capsule Permission" : "开启悬浮胶囊权限")
+                        .setTitle(T.s("ui.grant_floating_capsule_permission", en))
                         .setMessage(en ? "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'."
                                        : "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Traceform 并开启【在其他应用上层显示】。")
-                        .setPositiveButton(en ? "Settings" : "前往设置", (dialog, which) -> {
+                        .setPositiveButton(T.s("ui.settings", en), (dialog, which) -> {
                             try {
                                 Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                         Uri.parse("package:" + getPackageName()));
@@ -814,7 +814,7 @@ public final class MainActivity extends Activity {
                                 startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
                             }
                         })
-                        .setNegativeButton(en ? "Cancel" : "取消", null)
+                        .setNegativeButton(T.s("ui.cancel", en), null)
                         .show();
                 return;
             }
@@ -822,15 +822,15 @@ public final class MainActivity extends Activity {
             Intent fIntent = new Intent(this, AgentFloatingService.class);
             fIntent.setAction(AgentFloatingService.ACTION_SHOW);
             startService(fIntent);
-            Toast.makeText(this, en ? "Floating capsule active" : "悬浮胶囊已开启", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, T.s("ui.floating_capsule_active", en), Toast.LENGTH_SHORT).show();
         });
         autoBtnRow.addView(toggleFloatingBtn, new LinearLayout.LayoutParams(0, dp(34), 1.2f));
 
-        Button hideFloatingBtn = createCompactActionButton(en ? "Hide Capsule" : "隐藏胶囊", 0xFFF1F5F9, 0xFF334155, v -> {
+        Button hideFloatingBtn = createCompactActionButton(T.s("ui.hide_capsule", en), 0xFFF1F5F9, 0xFF334155, v -> {
             Intent fIntent = new Intent(this, AgentFloatingService.class);
             fIntent.setAction(AgentFloatingService.ACTION_HIDE);
             startService(fIntent);
-            Toast.makeText(this, en ? "Floating capsule hidden" : "悬浮胶囊已隐藏", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, T.s("ui.floating_capsule_hidden", en), Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams hideLp = new LinearLayout.LayoutParams(0, dp(34), 0.9f);
         hideLp.setMargins(dp(4), 0, 0, 0);
@@ -842,10 +842,10 @@ public final class MainActivity extends Activity {
         diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow.setPadding(0, dp(4), 0, dp(4));
 
-        btnToggleVoice = createCompactActionButton(en ? "Live Audio" : "实时拾音", 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
+        btnToggleVoice = createCompactActionButton(T.s("ui.live_audio", en), 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
         diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(32), 1.1f));
 
-        Button testVoiceBtn = createCompactActionButton(en ? "Synth Test" : "合成压测", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testVoiceBtn = createCompactActionButton(T.s("ui.synth_test", en), 0xFFF8FAFC, 0xFF475569, v -> {
             short[] testPcm = new short[640];
             for (int i = 0; i < testPcm.length; i++) {
                 testPcm[i] = (short) (Math.sin(i * 0.1) * 8000);
@@ -857,7 +857,7 @@ public final class MainActivity extends Activity {
         testVoiceLp.setMargins(dp(3), 0, 0, 0);
         diagBtnRow.addView(testVoiceBtn, testVoiceLp);
 
-        sensorToggleButton = createCompactActionButton(en ? "Enable sensors" : "启用感知", 0xFFF8FAFC, 0xFF475569, v -> {
+        sensorToggleButton = createCompactActionButton(T.s("ui.enable_sensors", en), 0xFFF8FAFC, 0xFF475569, v -> {
             PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
             if (sens.isMonitoring()) {
                 sens.stopMonitoring();
@@ -868,7 +868,7 @@ public final class MainActivity extends Activity {
             mainHandler.removeCallbacks(sensorRefresh);
             mainHandler.post(sensorRefresh);
             if (!sens.isMonitoring()) {
-                Toast.makeText(this, en ? "Sensor monitoring stopped" : "已停止传感器采集", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, T.s("ui.sensor_monitoring_stopped", en), Toast.LENGTH_SHORT).show();
                 return;
             }
             org.json.JSONObject ctx = sens.evaluateCurrentContext();
@@ -884,15 +884,15 @@ public final class MainActivity extends Activity {
         diagBtnRow2.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow2.setPadding(0, dp(2), 0, dp(4));
 
-        Button testVisionBtn = createCompactActionButton(en ? "Vision OCR" : "真机视觉", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testVisionBtn = createCompactActionButton(T.s("ui.vision_ocr", en), 0xFFF8FAFC, 0xFF475569, v -> {
             try {
-                String query = en ? "New Agent Task" : "新建智能体任务";
+                String query = T.s("ui.new_agent_task", en);
                 org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(query);
                 if (!target.optBoolean("matched", false)) {
-                    target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "Console" : "控制台");
+                    target = VisionAgentManager.getInstance().locateTargetOnScreen(T.s("ui.console", en));
                 }
                 if (!target.optBoolean("matched", false)) {
-                    target = VisionAgentManager.getInstance().locateTargetOnScreen(en ? "Vision" : "视觉");
+                    target = VisionAgentManager.getInstance().locateTargetOnScreen(T.s("ui.vision", en));
                 }
                 if (target.optBoolean("matched", false)) {
                     int x = (int) target.optDouble("tap_x");
@@ -901,31 +901,31 @@ public final class MainActivity extends Activity {
                         @Override
                         public void onBitmapCaptured(android.graphics.Bitmap bitmap) {
                             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    (en ? "Vision Target: (" : "视觉定位成功: (") + x + "," + y + (en ? ") · Silent Shot: " : ") · 静默截屏: ") + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
+                                    (T.s("ui.vision_target", en)) + x + "," + y + (T.s("ui.silent_shot", en)) + bitmap.getWidth() + "x" + bitmap.getHeight(), Toast.LENGTH_SHORT).show());
                         }
 
                         @Override
                         public void onError(int errorCode) {
                             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                                    (en ? "Vision Target: (" : "真机视觉定位: (") + x + "," + y + (en ? ") [Capture Code: " : ") [截屏码: ") + errorCode + "]", Toast.LENGTH_SHORT).show());
+                                    (T.s("ui.vision_target_2", en)) + x + "," + y + (T.s("ui.capture_code", en)) + errorCode + "]", Toast.LENGTH_SHORT).show());
                         }
                     });
                 } else {
-                    Toast.makeText(this, (en ? "Vision mismatch: " : "视觉匹配未命中: ") + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, (T.s("ui.vision_mismatch_2", en)) + target.optString("reasoning"), Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception ex) {
-                Toast.makeText(this, (en ? "Locate error: " : "定位异常: ") + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, (T.s("ui.locate_error", en)) + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
         diagBtnRow2.addView(testVisionBtn, new LinearLayout.LayoutParams(0, dp(32), 1.0f));
 
-        Button testPttBtn = createCompactActionButton(en ? "PTT Key" : "PTT 按键", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testPttBtn = createCompactActionButton(T.s("ui.ptt_key", en), 0xFFF8FAFC, 0xFF475569, v -> {
             HardwarePeripheralService hwSvc = HardwarePeripheralService.getInstance();
             boolean nextState = !hwSvc.isPttActive();
             org.json.JSONObject pttRes = hwSvc.triggerPttAction(this, nextState);
-            ((Button) v).setText(nextState ? (en ? "Release PTT" : "松开 PTT") : (en ? "PTT Key" : "PTT 按键"));
+            ((Button) v).setText(nextState ? (T.s("ui.release_ptt", en)) : (T.s("ui.ptt_key", en)));
             ((Button) v).setTextColor(nextState ? 0xFFE11D48 : 0xFF475569);
-            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs " + (en ? "latency" : "延迟") + ")", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "PTT: " + pttRes.optString("action") + " (" + pttRes.optLong("latency_us") + "μs " + (T.s("ui.latency", en)) + ")", Toast.LENGTH_SHORT).show();
         });
         LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(32), 1.0f);
         pttLp.setMargins(dp(4), 0, 0, 0);
@@ -937,7 +937,7 @@ public final class MainActivity extends Activity {
         diagBtnRow3.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow3.setPadding(0, dp(2), 0, dp(4));
 
-        Button testTceBtn = createCompactActionButton(en ? "TCE Graph" : "TCE 异构算力", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testTceBtn = createCompactActionButton(T.s("ui.tce_graph", en), 0xFFF8FAFC, 0xFF475569, v -> {
             try {
                 String resJson = NativeAgentCore.tceExecuteBenchmark(0, 35.0f, 90.0f);
                 org.json.JSONObject resObj = new org.json.JSONObject(resJson);
@@ -947,7 +947,7 @@ public final class MainActivity extends Activity {
                 int tpu = breakdown.optInt("EDGE_TPU", 0);
                 long latencyUs = resObj.optLong("total_latency_us", 0);
                 double tflops = resObj.optDouble("effective_tflops", 0.0);
-                Toast.makeText(this, (en ? "TCE Nominal: " : "TCE 常规调度: ")
+                Toast.makeText(this, (T.s("ui.tce_nominal", en))
                         + "GPU(" + gpu + ") TPU(" + tpu + ") CPU(" + cpu + ") · "
                         + String.format(Locale.US, "%.2f TFLOPS (%dμs)", tflops, latencyUs), Toast.LENGTH_LONG).show();
             } catch (Exception ex) {
@@ -956,7 +956,7 @@ public final class MainActivity extends Activity {
         });
         diagBtnRow3.addView(testTceBtn, new LinearLayout.LayoutParams(0, dp(32), 1.0f));
 
-        Button testThermalShedBtn = createCompactActionButton(en ? "Thermal Shed" : "热降频协同", 0xFFF8FAFC, 0xFF475569, v -> {
+        Button testThermalShedBtn = createCompactActionButton(T.s("ui.thermal_shed", en), 0xFFF8FAFC, 0xFF475569, v -> {
             try {
                 String resJson = NativeAgentCore.tceExecuteBenchmark(0, 44.5f, 30.0f);
                 org.json.JSONObject resObj = new org.json.JSONObject(resJson);
@@ -965,7 +965,7 @@ public final class MainActivity extends Activity {
                 int gpu = breakdown.optInt("GPU_VULKAN", 0);
                 int tpu = breakdown.optInt("EDGE_TPU", 0);
                 long delay = resObj.optLong("pacing_delay_ms", 0);
-                Toast.makeText(this, (en ? "Thermal Throttling: " : "热敏避险降频: ")
+                Toast.makeText(this, (T.s("ui.thermal_throttling", en))
                         + "100% 卸载至 CPU NEON (" + cpu + " ops, GPU=" + gpu + ", TPU=" + tpu + ") · 避险延迟 " + delay + "ms", Toast.LENGTH_LONG).show();
             } catch (Exception ex) {
                 Toast.makeText(this, "Thermal shed error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
@@ -979,7 +979,7 @@ public final class MainActivity extends Activity {
 
         scroll.addView(root);
         builder.setView(scroll);
-        builder.setPositiveButton(en ? "Close" : "关闭", null);
+        builder.setPositiveButton(T.s("ui.close", en), null);
         builder.show();
     }
 
@@ -1190,9 +1190,9 @@ public final class MainActivity extends Activity {
         if (task.plan != null && task.executionStep < task.plan.steps.size())
             nextTitle = formatStepTitle(task.plan.steps.get(task.executionStep).title, en);
         summary.setText(planSteps == 0
-            ? (en ? "Draft only · no plan yet" : "仅草稿 · 尚未生成计划")
+            ? (T.s("ui.draft_only_no_plan_yet", en))
             : (en ? planDone + "/" + planSteps + " steps" : planDone + "/" + planSteps + " 步")
-              + (nextTitle.isEmpty() ? "" : (en ? " · next: " : " · 下一步：") + nextTitle));
+              + (nextTitle.isEmpty() ? "" : (T.s("ui.next", en)) + nextTitle));
         summary.setTextSize(11);
         summary.setTextColor(0xFF64748B);
         summary.setPadding(0, 0, 0, dp(2));
@@ -1202,21 +1202,21 @@ public final class MainActivity extends Activity {
         addMemoryCandidateControls(card, task);
         if (task.plan != null && task.plan.totalSteps() == 1
                 && DocumentAction.CAPABILITY.equals(task.plan.steps.get(0).capability)) {
-            addPageButton(card, en ? "Review file and receipt" : "查看文件与回执", view ->
+            addPageButton(card, T.s("ui.review_file_and_receipt", en), view ->
                 startActivity(new Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID, task.id)));
         }
         final LinearLayout detailContainer = new LinearLayout(this);
         detailContainer.setOrientation(LinearLayout.VERTICAL);
         if (task.plan != null && !task.plan.context.isEmpty()) {
-            addPageButton(detailContainer, en ? "Review selected task memories" : "查看本任务选定的记忆", view -> {
+            addPageButton(detailContainer, T.s("ui.review_selected_task_memories", en), view -> {
                 StringBuilder context = new StringBuilder(TaskContext.localOnly(task.plan)
-                    ? (en ? "Task stays local.\n\n" : "此任务保持本地。\n\n")
+                    ? (T.s("ui.task_stays_local_n_n", en))
                     : (en ? "Cloud planning requires a fresh, single-request approval. Later observations stay local.\n\n"
                         : "云端规划需要新的单次请求授权；后续步骤观察保持本地。\n\n"));
                 for (AgentStore.Memory memory : TaskContext.memories(task.plan))
                     context.append(memory.content).append("\n").append(memory.source).append(" · ").append(memory.id).append("\n\n");
-                new AlertDialog.Builder(this).setTitle(en ? "Selected memory snapshots" : "选定的记忆快照")
-                    .setMessage(context.toString()).setPositiveButton(en ? "Close" : "关闭", null).show();
+                new AlertDialog.Builder(this).setTitle(T.s("ui.selected_memory_snapshots", en))
+                    .setMessage(context.toString()).setPositiveButton(T.s("ui.close", en), null).show();
             });
         }
 
@@ -1231,10 +1231,10 @@ public final class MainActivity extends Activity {
             final TextView toggleBtn = new TextView(this);
             int stepCount = (task.plan != null) ? task.plan.totalSteps() : 0;
             String statusText = AgentStore.COMPLETED.equals(task.status)
-                    ? (en ? "Completed" : "已完成")
-                    : AgentStore.OUTCOME_UNKNOWN.equals(task.status) ? (en ? "Outcome unknown" : "结果未知")
-                    : AgentStore.CANCELLED.equals(task.status) ? (en ? "Cancelled" : "已取消")
-                    : (en ? "Details" : "详情");
+                    ? (T.s("ui.completed", en))
+                    : AgentStore.OUTCOME_UNKNOWN.equals(task.status) ? (T.s("ui.outcome_unknown", en))
+                    : AgentStore.CANCELLED.equals(task.status) ? (T.s("ui.cancelled", en))
+                    : (T.s("ui.details", en));
             toggleBtn.setText(statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
             toggleBtn.setTextSize(12);
             toggleBtn.setTextColor(0xFF0284C7);
@@ -1266,22 +1266,22 @@ public final class MainActivity extends Activity {
             && ExecutionPlan.STEP_DRAFT_READY.equals(task.plan.steps.get(task.executionStep).status);
         boolean documentPlanning = TaskContext.isDocument(task.plan) && task.plan.steps.isEmpty();
         if (documentPlanning && !isTerminal)
-            addCardActionButton(actions, en ? "Review workflow" : "审阅工作流", view ->
+            addCardActionButton(actions, T.s("ui.review_workflow", en), view ->
                 startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
         if (!documentPlanning && !externalDraft && (AgentStore.QUEUED.equals(task.status) || AgentStore.PAUSED.equals(task.status)
                 || AgentStore.WAITING_FOR_USER.equals(task.status) || AgentStore.FAILED.equals(task.status))) {
-            String label = AgentStore.QUEUED.equals(task.status) ? (en ? "Start" : "开始")
-                : AgentStore.FAILED.equals(task.status) ? (en ? "Retry" : "重试") : (en ? "Resume" : "继续");
+            String label = AgentStore.QUEUED.equals(task.status) ? (T.s("ui.start", en))
+                : AgentStore.FAILED.equals(task.status) ? (T.s("ui.retry", en)) : (T.s("ui.resume", en));
             LinearLayout primaryRow = new LinearLayout(this);
             primaryRow.setOrientation(LinearLayout.HORIZONTAL);
             primaryRow.setPadding(0, dp(2), 0, dp(2));
             addTaskButton(primaryRow, label, task, AgentStore.ACTIVE);
             card.addView(primaryRow);
         }
-        if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, en ? "Pause" : "暂停", task, AgentStore.PAUSED);
+        if (AgentStore.ACTIVE.equals(task.status)) addTaskButton(actions, T.s("ui.pause", en), task, AgentStore.PAUSED);
         if (!isTerminal)
-            addTaskButton(actions, en ? "Cancel" : "取消", task, AgentStore.CANCELLED);
-        addCardActionButton(actions, en ? "Delete" : "删除", view -> confirmDeleteTask(task), taskButtons);
+            addTaskButton(actions, T.s("ui.cancel", en), task, AgentStore.CANCELLED);
+        addCardActionButton(actions, T.s("ui.delete", en), view -> confirmDeleteTask(task), taskButtons);
         detailContainer.addView(actions);
 
         if (!isTerminal && !documentPlanning) {
@@ -1302,7 +1302,7 @@ public final class MainActivity extends Activity {
         if (candidates.isEmpty()) return;
         boolean en = isEnglish();
         LinearLayout actions = new LinearLayout(this);
-        addCardActionButton(actions, en ? "Edit and review suggestions individually" : "逐条修改与审核候选", view ->
+        addCardActionButton(actions, T.s("ui.edit_and_review_suggestions_individually", en), view ->
             startActivity(new Intent(this, MemoryReviewActivity.class).putExtra(MemoryReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
         addCardActionButton(actions, en ? "Review memory suggestions (" + candidates.size() + ")"
             : "审核候选记忆（" + candidates.size() + "）", view -> {
@@ -1310,12 +1310,12 @@ public final class MainActivity extends Activity {
                 : "以下为候选建议，不会自动成为事实。请只保存你认可的内容。\n\n");
             for (MemoryConsolidator.ConsolidatedItem item : candidates)
                 preview.append(item.kind).append(": ").append(item.content).append("\n\n");
-            preview.append(en ? "Source task: " : "来源任务：").append(task.id);
-            new AlertDialog.Builder(this).setTitle(en ? "Confirm long-term memory" : "确认长期记忆")
+            preview.append(T.s("ui.source_task", en)).append(task.id);
+            new AlertDialog.Builder(this).setTitle(T.s("ui.confirm_long_term_memory", en))
                 .setMessage(preview.toString())
-                .setNegativeButton(en ? "Later" : "稍后", null)
-                .setNeutralButton(en ? "Reject all" : "全部拒绝", (dialog, which) -> reviewMemoryCandidates(task.id, false))
-                .setPositiveButton(en ? "Confirm and save all" : "确认并保存全部", (dialog, which) -> reviewMemoryCandidates(task.id, true))
+                .setNegativeButton(T.s("ui.later", en), null)
+                .setNeutralButton(T.s("ui.reject_all", en), (dialog, which) -> reviewMemoryCandidates(task.id, false))
+                .setPositiveButton(T.s("ui.confirm_and_save_all", en), (dialog, which) -> reviewMemoryCandidates(task.id, true))
                 .show();
         }, taskButtons);
         card.addView(actions);
@@ -1439,35 +1439,35 @@ public final class MainActivity extends Activity {
             String statusTag;
 
             if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status)) {
-                statusTag = en ? "[Draft ready · confirm]" : "[草稿就绪 · 待确认]";
+                statusTag = T.s("ui.draft_ready_confirm", en);
                 textColor = 0xFFB78103;
                 dotType = IconFactory.IconType.STATUS_DOT_AMBER;
             } else if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status) || ExecutionPlan.STEP_UNKNOWN.equals(step.status)) {
-                statusTag = en ? "[Handed off · outcome unknown]" : "[已交接 · 结果未知]";
+                statusTag = T.s("ui.handed_off_outcome_unknown", en);
                 textColor = 0xFFB78103;
                 dotType = IconFactory.IconType.STATUS_DOT_AMBER;
             } else if (ExecutionPlan.STEP_FAILED.equals(step.status) || ExecutionPlan.STEP_CANCELLED.equals(step.status)) {
-                statusTag = ExecutionPlan.STEP_FAILED.equals(step.status) ? (en ? "[Failed]" : "[失败]") : (en ? "[Cancelled]" : "[已取消]");
+                statusTag = ExecutionPlan.STEP_FAILED.equals(step.status) ? (T.s("ui.failed", en)) : (T.s("ui.cancelled_2", en));
                 textColor = 0xFF991B1B;
                 dotType = IconFactory.IconType.STATUS_DOT_GRAY;
             } else if (step.isExternalAction() && ExecutionPlan.STEP_DONE.equals(step.status) && !isStepDone) {
-                statusTag = en ? "[Historical entry · no receipt]" : "[历史记录 · 无成功回执]";
+                statusTag = T.s("ui.historical_entry_no_receipt", en);
                 textColor = 0xFFB78103;
                 dotType = IconFactory.IconType.STATUS_DOT_AMBER;
             } else if (isStepDone) {
-                statusTag = en ? "[Done]" : "[已完成]";
+                statusTag = T.s("ui.done", en);
                 textColor = 0xFF1B5E20;
                 dotType = IconFactory.IconType.STATUS_DOT_GREEN;
             } else if (isStepWaiting) {
-                statusTag = en ? "[Awaiting Grant]" : "[等待授权]";
+                statusTag = T.s("ui.awaiting_grant", en);
                 textColor = 0xFFB78103;
                 dotType = IconFactory.IconType.STATUS_DOT_AMBER;
             } else if (isStepRunning) {
-                statusTag = en ? "[Running]" : "[执行中]";
+                statusTag = T.s("ui.running", en);
                 textColor = 0xFF0D47A1;
                 dotType = IconFactory.IconType.STATUS_DOT_BLUE;
             } else {
-                statusTag = en ? "[Pending]" : "[待执行]";
+                statusTag = T.s("ui.pending", en);
                 textColor = 0xFF555555;
                 dotType = IconFactory.IconType.STATUS_DOT_GRAY;
             }
@@ -1477,7 +1477,7 @@ public final class MainActivity extends Activity {
             headerLine.setGravity(android.view.Gravity.CENTER_VERTICAL);
             headerLine.addView(IconFactory.createIconView(this, dotType, textColor, 10));
 
-            stepHeader.setText(" " + statusTag + (en ? " Step " : " 步骤 ") + (i + 1) + (en ? ": " : "：") + formatStepTitle(step.title, en));
+            stepHeader.setText(" " + statusTag + (T.s("ui.step", en)) + (i + 1) + (T.s("ui.text", en)) + formatStepTitle(step.title, en));
             stepHeader.setTextColor(textColor);
             headerLine.addView(stepHeader);
             stepRow.addView(headerLine);
@@ -1494,7 +1494,7 @@ public final class MainActivity extends Activity {
                 if (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status)
                         && ExecutionPlan.STEP_DRAFT_READY.equals(step.status)) {
                     LinearLayout review = new LinearLayout(this);
-                    addCardActionButton(review, en ? "Review action draft" : "预览并确认动作", view -> {
+                    addCardActionButton(review, T.s("ui.review_action_draft", en), view -> {
                         boolean document = DocumentAction.CAPABILITY.equals(step.capability);
                         startActivity(new Intent(this, document ? DocumentTaskActivity.class : ExternalActionActivity.class)
                             .putExtra(document ? DocumentTaskActivity.EXTRA_TASK_ID : ExternalActionActivity.EXTRA_TASK_ID, task.id));
@@ -1504,14 +1504,14 @@ public final class MainActivity extends Activity {
             } else if (step.isBuiltin()) {
                 if (isStepDone && step.observation != null && !step.observation.isEmpty()) {
                     TextView obsView = new TextView(this);
-                    obsView.setText(en ? "Local summary prepared" : "本地摘要已生成");
+                    obsView.setText(T.s("ui.local_summary_prepared", en));
                     obsView.setTextSize(12);
                     obsView.setTextColor(0xFF1B5E20);
                     obsView.setPadding(dp(16), dp(2), 0, 0);
                     stepRow.addView(obsView);
                 } else {
                     TextView hint = new TextView(this);
-                    hint.setText(en ? "On-device verification (no external permissions required)" : "端侧多步核对（无需外部权限）");
+                    hint.setText(T.s("ui.on_device_verification_no_external_permi", en));
                     hint.setTextSize(12);
                     hint.setTextColor(0xFF777777);
                     hint.setPadding(dp(16), dp(2), 0, 0);
@@ -1521,7 +1521,7 @@ public final class MainActivity extends Activity {
                 String cleanObs = formatStepObservation(step.observation, en);
                 if (isStepDone && !cleanObs.isEmpty()) {
                     TextView obsView = new TextView(this);
-                    obsView.setText((en ? "Observation: " : "观察结果：") + cleanObs);
+                    obsView.setText((T.s("ui.observation", en)) + cleanObs);
                     obsView.setTextSize(13);
                     obsView.setTextColor(0xFF1B5E20);
                     obsView.setPadding(dp(16), dp(2), 0, 0);
@@ -1552,7 +1552,7 @@ public final class MainActivity extends Activity {
                             addCardActionButton(authRow, btnLabel, view ->
                                 confirmCapabilityGrant(task, step.title, step.capability, step.scope), taskButtons);
                         } else {
-                            addCardActionButton(authRow, en ? "Revoke step grant" : "撤销此步骤授权", view ->
+                            addCardActionButton(authRow, T.s("ui.revoke_step_grant", en), view ->
                                 revokeCapability(task, step.title, step.capability, step.scope), taskButtons);
                         }
                         stepRow.addView(authRow);
@@ -1626,25 +1626,25 @@ public final class MainActivity extends Activity {
 
     private void addCapabilityControls(LinearLayout card, AgentStore.Task task) {
         boolean en = isEnglish();
-        addProviderControls(card, task, en ? "Demo Note" : "示例便笺", CapabilityBroker.DEMO_NOTE_CAPABILITY,
+        addProviderControls(card, task, T.s("ui.demo_note", en), CapabilityBroker.DEMO_NOTE_CAPABILITY,
             CapabilityBroker.DEMO_NOTE_SCOPE);
-        addProviderControls(card, task, en ? "Synthesis Status" : "合成状态", CapabilityBroker.DEMO_STATUS_CAPABILITY,
+        addProviderControls(card, task, T.s("ui.synthesis_status", en), CapabilityBroker.DEMO_STATUS_CAPABILITY,
             CapabilityBroker.DEMO_STATUS_SCOPE);
         LinearLayout remoteActions = new LinearLayout(this);
         remoteActions.setOrientation(LinearLayout.HORIZONTAL);
-        addCardActionButton(remoteActions, en ? "Select Cross-App Source" : "选择跨应用状态来源", view -> selectRemoteStatus(task), taskButtons);
+        addCardActionButton(remoteActions, T.s("ui.select_cross_app_source", en), view -> selectRemoteStatus(task), taskButtons);
         card.addView(remoteActions);
         if (capabilityBroker.hasRemoteResource(task.id)) {
-            addProviderControls(card, task, en ? "Cross-App Status" : "跨应用状态", AndroidRemoteStatusProvider.CAPABILITY,
+            addProviderControls(card, task, T.s("ui.cross_app_status", en), AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE);
         }
         if (capabilityBroker.isTraceformEnabled()) {
             if (capabilityBroker.canEnableTraceform()) {
-                addProviderControls(card, task, en ? "Traceform Local History Summary" : "Traceform 本机历史摘要",
+                addProviderControls(card, task, T.s("ui.traceform_local_history_summary", en),
                     CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
             } else {
                 TextView unavailable = new TextView(this);
-                unavailable.setText(en ? "Traceform Provider unavailable: trusted summary service not granted" : "Traceform Provider 不可用：可信摘要服务未就绪或未获授权");
+                unavailable.setText(T.s("ui.traceform_provider_unavailable_trusted_s", en));
                 card.addView(unavailable);
             }
         }
@@ -1688,12 +1688,12 @@ public final class MainActivity extends Activity {
     private void confirmCapabilityGrant(AgentStore.Task task, String label, String capability, String scope) {
         boolean en = isEnglish();
         String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
-            ? (en ? "Allow this task to query retained local history through the scoped Traceform Binder service and run a bounded local simulation in Edge. Agent OS does not open the history database, start sensor collection, or access the network. The result appears in this task. Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked at any time." : "允许此任务通过 Traceform 的受控 Binder 接口，在 Edge 进程内只读查询本机保留历史并运行固定范围的本机模拟。Agent OS 不会直接访问历史库，也不会启动传感器采集或访问网络。结果会显示在本任务界面。授权仅限此任务和此能力范围，最多 5 分钟有效；进程重启后清除，也可随时撤销。")
+            ? (T.s("ui.allow_this_task_to_query_retained_local", en))
             : (en ? "Allow this task to read " + label + ". Access is limited to this task and capability for at most 5 minutes, clears when the process restarts, and can be revoked. No user memories or Traceform data are read." : "允许此任务读取固定的" + label + "。授权仅限本任务和此能力范围，最多 5 分钟有效；进程重启后失效，也可随时撤销。不会读取用户记忆或 Traceform 数据。");
         new AlertDialog.Builder(this)
             .setTitle(en ? "Allow " + label + "?" : "授权" + label + "？")
             .setMessage(details)
-            .setNegativeButton(en ? "Deny" : "拒绝", (dialog, which) -> {
+            .setNegativeButton(T.s("ui.deny", en), (dialog, which) -> {
                 try {
                     capabilityBroker.deny(task.id, capability, scope);
                     showMessage(en ? "Denied " + label : "已拒绝" + label);
@@ -1701,7 +1701,7 @@ public final class MainActivity extends Activity {
                     showError(error);
                 }
             })
-            .setPositiveButton(en ? "Allow for 5 minutes" : "授权 5 分钟", (dialog, which) -> {
+            .setPositiveButton(T.s("ui.allow_for_5_minutes", en), (dialog, which) -> {
                 try {
                     capabilityBroker.grant(task.id, capability, scope);
                     showMessage(en ? "Allowed this task to read " + label : "已授权此任务读取" + label);
@@ -1752,17 +1752,17 @@ public final class MainActivity extends Activity {
         ScrollView holder = new ScrollView(this);
         holder.addView(content);
         new AlertDialog.Builder(this)
-            .setTitle(en ? "Traceform local history summary" : "Traceform 本机历史摘要")
+            .setTitle(T.s("ui.traceform_local_history_summary_2", en))
             .setView(holder)
-            .setNegativeButton(en ? "Done" : "完成", null)
-            .setPositiveButton(en ? "Save as factual memory" : "保存为事实记忆", (dialog, which) -> {
+            .setNegativeButton(T.s("ui.done_2", en), null)
+            .setPositiveButton(T.s("ui.save_as_factual_memory", en), (dialog, which) -> {
                 try {
                     String reference = "task=" + task.id + ";provider=traceform;read="
                         + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
                     store.createMemory(AgentStore.MEMORY_FACT, result,
                         AgentStore.MEMORY_SOURCE_TRACEFORM, reference);
                     refreshMemories();
-                    showMessage(en ? "Summary saved as a Traceform-sourced factual memory" : "摘要已作为 Traceform 来源的事实记忆保存");
+                    showMessage(T.s("ui.summary_saved_as_a_traceform_sourced_fac", en));
                 } catch (Exception error) {
                     showError(error);
                 }
@@ -1897,27 +1897,27 @@ public final class MainActivity extends Activity {
 
     private void promptImportPassphrase(Uri uri) {
         boolean en = isEnglish();
-        EditText input = passwordField(en ? "Archive passphrase" : "档案口令");
+        EditText input = passwordField(T.s("ui.archive_passphrase", en));
         LinearLayout holder = new LinearLayout(this);
         holder.setPadding(dp(24), dp(8), dp(24), 0);
         holder.addView(input);
         new AlertDialog.Builder(this)
-            .setTitle(en ? "Unlock archive" : "解锁档案")
+            .setTitle(T.s("ui.unlock_archive", en))
             .setMessage(en ? "Review conflicting memories before importing. Deletions take priority; existing tasks stay local."
                 : "导入前逐条审核冲突记忆。删除标记优先；已有任务保留本机版本。")
             .setView(holder)
-            .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
-            .setPositiveButton(en ? "Review" : "审核", (dialog, which) -> {
+            .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
+            .setPositiveButton(T.s("ui.review", en), (dialog, which) -> {
                 char[] passphrase = input.getText().toString().toCharArray();
                 input.setText("");
                 if (passphrase.length == 0) {
                     setBusy(false, "");
-                    showMessage(en ? "Enter the archive passphrase" : "请输入档案口令");
+                    showMessage(T.s("ui.enter_the_archive_passphrase", en));
                     return;
                 }
                 reviewArchive(uri, passphrase);
             })
-            .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+            .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
             .show();
     }
 
@@ -1980,41 +1980,41 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         if (index == ids.size()) {
             new AlertDialog.Builder(this)
-                .setTitle(en ? "Confirm archive import" : "确认导入档案")
+                .setTitle(T.s("ui.confirm_archive_import", en))
                 .setMessage(en ? "Import the archive with the reviewed choices? Deletion markers take priority and will remove "
                     + review.localMemoryDeletions + " local memories and " + review.localTaskDeletions + " local tasks."
                     : "按已审核的选择导入档案？删除标记优先，将删除本机 " + review.localMemoryDeletions
                         + " 条记忆和 " + review.localTaskDeletions + " 个任务。")
-                .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
-                .setPositiveButton(en ? "Import" : "导入", (dialog, which) -> importReviewedArchive(review, choices))
-                .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+                .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
+                .setPositiveButton(T.s("ui.import", en), (dialog, which) -> importReviewedArchive(review, choices))
+                .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
                 .show();
             return;
         }
         String id = ids.get(index);
         AgentStore.ArchiveConflict conflict = review.conflicts.get(id);
         new AlertDialog.Builder(this)
-            .setTitle((en ? "Memory conflict " : "记忆冲突 ") + (index + 1) + "/" + ids.size())
-            .setMessage((en ? "On this device:\n" : "本机：\n") + archiveMemoryDescription(conflict.local, en)
-                + (en ? "\n\nIn the archive:\n" : "\n\n档案：\n") + archiveMemoryDescription(conflict.incoming, en))
-            .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
-            .setNeutralButton(en ? "Use archive" : "采用档案", (dialog, which) -> {
+            .setTitle((T.s("ui.memory_conflict", en)) + (index + 1) + "/" + ids.size())
+            .setMessage((T.s("ui.on_this_device_n", en)) + archiveMemoryDescription(conflict.local, en)
+                + (T.s("ui.n_nin_the_archive_n", en)) + archiveMemoryDescription(conflict.incoming, en))
+            .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
+            .setNeutralButton(T.s("ui.use_archive", en), (dialog, which) -> {
                 choices.put(id, true); reviewArchiveConflict(review, ids, index + 1, choices);
             })
-            .setPositiveButton(en ? "Keep local" : "保留本机", (dialog, which) -> {
+            .setPositiveButton(T.s("ui.keep_local", en), (dialog, which) -> {
                 choices.put(id, false); reviewArchiveConflict(review, ids, index + 1, choices);
             })
-            .setOnCancelListener(dialog -> setBusy(false, en ? "Import cancelled" : "导入已取消"))
+            .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
             .show();
     }
 
     private String archiveMemoryDescription(AgentStore.Memory memory, boolean en) {
-        String expires = memory.expiresAt == 0 ? (en ? "None" : "无") : DateFormat.getDateTimeInstance().format(new Date(memory.expiresAt));
-        return memory.content + (en ? "\nType: " : "\n类型：") + memory.kind
-            + (en ? " · Source: " : " · 来源：") + memory.source
+        String expires = memory.expiresAt == 0 ? (T.s("ui.none", en)) : DateFormat.getDateTimeInstance().format(new Date(memory.expiresAt));
+        return memory.content + (T.s("ui.ntype", en)) + memory.kind
+            + (T.s("ui.source", en)) + memory.source
             + (memory.sourceReference.isEmpty() ? "" : " (" + memory.sourceReference + ")")
-            + (en ? "\nExpires: " : "\n有效期至：") + expires
-            + (en ? " · User edited: " : " · 用户修改：") + (memory.userEdited ? (en ? "Yes" : "是") : (en ? "No" : "否"));
+            + (T.s("ui.nexpires", en)) + expires
+            + (T.s("ui.user_edited", en)) + (memory.userEdited ? (T.s("ui.yes", en)) : (T.s("ui.no", en)));
     }
 
     private void importReviewedArchive(AgentStore.ArchiveReview review, java.util.Map<String, Boolean> choices) {
@@ -2032,7 +2032,7 @@ public final class MainActivity extends Activity {
             mainHandler.post(() -> {
                 if (destroyed) return;
                 boolean en = isEnglish();
-                setBusy(false, importFailure == null ? (en ? "Archive imported" : "档案已导入") : (en ? "Import failed" : "导入失败"));
+                setBusy(false, importFailure == null ? (T.s("ui.archive_imported", en)) : (T.s("ui.import_failed", en)));
                 if (importFailure != null) {
                     showError(importFailure);
                 } else {
@@ -2094,9 +2094,9 @@ public final class MainActivity extends Activity {
         try {
             PhysicalSensoriumManager sensors = PhysicalSensoriumManager.getInstance(this);
             org.json.JSONObject event = sensors.lastMotionChange();
-            if (event == null) throw new IllegalStateException(en ? "Enable sensors and wait for a motion-state change" : "请启用感知并等待运动状态发生变化");
-            String from = "LowMotion".equals(event.getString("from")) ? (en ? "low motion" : "低运动") : (en ? "motion detected" : "检测到运动");
-            String to = "LowMotion".equals(event.getString("to")) ? (en ? "low motion" : "低运动") : (en ? "motion detected" : "检测到运动");
+            if (event == null) throw new IllegalStateException(T.s("ui.enable_sensors_and_wait_for_a_motion_sta", en));
+            String from = "LowMotion".equals(event.getString("from")) ? (T.s("ui.low_motion", en)) : (T.s("ui.motion_detected", en));
+            String to = "LowMotion".equals(event.getString("to")) ? (T.s("ui.low_motion", en)) : (T.s("ui.motion_detected", en));
             LinearLayout content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(36, 12, 36, 0);
             TextView info = new TextView(this);
             info.setText((en ? "Source: accelerometer + gyroscope; 3-second rule window. This is an observation, not a personal habit.\nObserved: "
@@ -2104,17 +2104,17 @@ public final class MainActivity extends Activity {
                 + DateFormat.getDateTimeInstance().format(new Date(event.getLong("observedAt"))));
             content.addView(info);
             EditText text = new EditText(this); text.setMinLines(2);
-            text.setText((en ? "Sensor estimate changed from " : "传感器规则估计由 ") + from + (en ? " to " : " 变为 ") + to);
+            text.setText((T.s("ui.sensor_estimate_changed_from", en)) + from + (T.s("ui.to", en)) + to);
             content.addView(text);
             Spinner expiry = new Spinner(this); expiry.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
                 en ? new String[]{"Expire in 7 days", "Expire in 30 days", "No expiration"} : new String[]{"7 天后到期", "30 天后到期", "不设到期时间"}));
             content.addView(expiry);
-            new AlertDialog.Builder(this).setTitle(en ? "Review before saving memory" : "保存记忆前审核")
-                .setView(content).setNegativeButton(en ? "Discard" : "放弃", null)
-                .setPositiveButton(en ? "Confirm and save" : "确认并保存", (dialog, which) -> {
+            new AlertDialog.Builder(this).setTitle(T.s("ui.review_before_saving_memory", en))
+                .setView(content).setNegativeButton(T.s("ui.discard", en), null)
+                .setPositiveButton(T.s("ui.confirm_and_save", en), (dialog, which) -> {
                     try {
                         org.json.JSONObject latest = sensors.lastMotionChange();
-                        if (latest == null || !latest.toString().equals(event.toString())) throw new IllegalStateException(en ? "Observation changed; review it again" : "观察已变化或采集已停止，请重新审核");
+                        if (latest == null || !latest.toString().equals(event.toString())) throw new IllegalStateException(T.s("ui.observation_changed_review_it_again", en));
                         int index = expiry.getSelectedItemPosition();
                         long expiresAt = index == 2 ? 0 : System.currentTimeMillis() + (index == 0 ? 7L : 30L) * 24 * 60 * 60 * 1000;
                         store.confirmSensorObservation(event, text.getText().toString(), expiresAt);
@@ -2129,10 +2129,10 @@ public final class MainActivity extends Activity {
         boolean canDraw = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this);
         boolean en = isEnglish();
         if (canDraw) {
-            floatPermStatus.setText(en ? "Overlay Permission: Granted (Can display over any app)" : "悬浮窗权限状态：已授权 (可在任意应用顶层呼出)");
+            floatPermStatus.setText(T.s("ui.overlay_permission_granted_can_display_o", en));
             floatPermStatus.setTextColor(0xFF00796B);
         } else {
-            floatPermStatus.setText(en ? "Overlay Permission: Not Granted (Click below to grant in Settings)" : "悬浮窗权限状态：未授权 (点击下方按钮前往系统设置开启)");
+            floatPermStatus.setText(T.s("ui.overlay_permission_not_granted_click_bel", en));
             floatPermStatus.setTextColor(0xFFD32F2F);
         }
     }
@@ -2299,31 +2299,31 @@ public final class MainActivity extends Activity {
     private TextView getStatusBadge(String status) {
         boolean en = isEnglish();
         if (AgentStore.COMPLETED.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Completed" : "已完成", 0xFFDCFCE7, 0xFF166534);
+            return IconFactory.createBadge(this, T.s("ui.completed", en), 0xFFDCFCE7, 0xFF166534);
         } else if (AgentStore.OUTCOME_UNKNOWN.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Outcome unknown" : "结果未知", 0xFFFEF3C7, 0xFF92400E);
+            return IconFactory.createBadge(this, T.s("ui.outcome_unknown", en), 0xFFFEF3C7, 0xFF92400E);
         } else if (AgentStore.FAILED.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Failed" : "失败", 0xFFFEE2E2, 0xFF991B1B);
+            return IconFactory.createBadge(this, T.s("ui.failed_2", en), 0xFFFEE2E2, 0xFF991B1B);
         } else if (AgentStore.ACTIVE.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Scheduled / active" : "已调度 / 执行中", 0xFFDBEAFE, 0xFF1E40AF);
+            return IconFactory.createBadge(this, T.s("ui.scheduled_active", en), 0xFFDBEAFE, 0xFF1E40AF);
         } else if (AgentStore.WAITING_FOR_USER.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Awaiting user" : "等待用户", 0xFFFEF3C7, 0xFF92400E);
+            return IconFactory.createBadge(this, T.s("ui.awaiting_user", en), 0xFFFEF3C7, 0xFF92400E);
         } else if (AgentStore.PAUSED.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Paused" : "已暂停", 0xFFF1F5F9, 0xFF475569);
+            return IconFactory.createBadge(this, T.s("ui.paused", en), 0xFFF1F5F9, 0xFF475569);
         } else if (AgentStore.CANCELLED.equals(status)) {
-            return IconFactory.createBadge(this, en ? "Cancelled" : "已取消", 0xFFFEE2E2, 0xFF991B1B);
+            return IconFactory.createBadge(this, T.s("ui.cancelled", en), 0xFFFEE2E2, 0xFF991B1B);
         }
-        return IconFactory.createBadge(this, en ? "Pending" : "待处理", 0xFFE0E7FF, 0xFF3730A3);
+        return IconFactory.createBadge(this, T.s("ui.pending_2", en), 0xFFE0E7FF, 0xFF3730A3);
     }
 
     private TextView getMemoryKindBadge(String kind) {
         boolean en = isEnglish();
         if (AgentStore.MEMORY_PREFERENCE.equals(kind)) {
-            return IconFactory.createBadge(this, en ? "Preference" : "偏好", 0xFFEDE9FE, 0xFF5B21B6);
+            return IconFactory.createBadge(this, T.s("ui.preference", en), 0xFFEDE9FE, 0xFF5B21B6);
         } else if (AgentStore.MEMORY_FACT.equals(kind)) {
-            return IconFactory.createBadge(this, en ? "Fact" : "事实", 0xFFDBEAFE, 0xFF1E40AF);
+            return IconFactory.createBadge(this, T.s("ui.fact", en), 0xFFDBEAFE, 0xFF1E40AF);
         }
-        return IconFactory.createBadge(this, en ? "Workflow" : "工作流", 0xFFCCFBF1, 0xFF115E59);
+        return IconFactory.createBadge(this, T.s("ui.workflow", en), 0xFFCCFBF1, 0xFF115E59);
     }
 
     Button createCompactActionButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
