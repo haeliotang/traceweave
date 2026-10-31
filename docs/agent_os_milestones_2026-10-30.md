@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：字符串迁移（第二批）——`SettingsPanel` 36 处、`MemoryDetailPanel` 32 处内联三元改为 `T` 键，`T` 共 125 条；设备上中英设置页均确认（“Export Archive / Pair device / Sync now / Services & extensions”）。MainActivity 仍有 189 处待迁。
 - 2026-10-31：字符串迁移（第一批）——`SyncPanel` 的 19 处内联三元改为 `T` 键（新增 19 条双语），设备上中文界面确认“等待对端/同步现在/配对新设备/局域网发现”等显示正常；控制台对话框因与语音、传感器状态耦合过深，本轮未抽离。
 - 2026-10-31：MainActivity 拆分（第三步）——设置页与 Traceform/云端开关抽到 `SettingsPanel`（265 行）；MainActivity 2348 行（累计 −688，目标 2000 以内），设备冒烟确认三个分区与按钮正常。
 - 2026-10-31：MainActivity 拆分（第二步）——记忆详情/编辑/删除/按来源审核抽到 `MemoryDetailPanel`（181 行）；MainActivity 2582 行（累计从 3036 降 454 行），设备冒烟确认记忆列表与详情对话框正常。
