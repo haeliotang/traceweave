@@ -3,6 +3,8 @@
 > A sovereign personal computing system independent of any single device, model, or provider.  
 > An open architecture and operating substrate designed and maintained by **Inceptless**.
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Hardware Validation: Google Pixel 6a](https://img.shields.io/badge/Hardware-Google_Pixel_6a_(Tensor_G1)-059669.svg)]()
 [![Platform: GrapheneOS Pixel 6a test device](https://img.shields.io/badge/Platform-GrapheneOS_Pixel_6a-0284C7.svg)]()
@@ -19,8 +21,15 @@ Traceweave redefines personal computing for the post-application agent era. Trad
 Traceweave's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
-  <img src="docs/assets/traceweave_os_handheld_dashboard_en.png" alt="Pixel 6a screenshot of the Traceweave Agent OS prototype main screen in English" width="380" />
+  <img src="docs/assets/screen_home_light_en.png" alt="Traceweave Agent OS home screen in light mode" width="240" />
+  <img src="docs/assets/screen_home_dark_en.png" alt="Traceweave Agent OS home screen in dark mode" width="240" />
+  <img src="docs/assets/screen_task_plan_en.png" alt="A planned task with its steps expanded" width="240" />
   <br />
+  <img src="docs/assets/screen_memory_vault_en.png" alt="Encrypted memory vault" width="240" />
+  <img src="docs/assets/screen_audit_log_en.png" alt="On-device audit log" width="240" />
+  <img src="docs/assets/screen_settings_en.png" alt="Settings: archive, sync and providers" width="240" />
+  <br />
+  <sub>Pixel 6a, 0.1.0 build: home (light and dark), a planned task, the memory vault, the audit log and settings.</sub>
 </p>
 
 ---
@@ -31,7 +40,7 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                                        TRACEFORM                                        |
+|                                        TRACEWEAVE                                        |
 |                          Personal Computing System (Inceptless)                         |
 +-----------------------------------------------------------------------------------------+
 |                                                                                         |
@@ -73,7 +82,7 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 | **Traceweave Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
 | **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
-| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync exists in validation builds; no background sync |
+| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync is validated; optional background sync runs only while the app is open and a peer is paired |
 | **Traceweave Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
 
 ---
@@ -138,7 +147,7 @@ The Android Broker mediates the prototype's registered capabilities. A request i
 
 ### 5.2 Optional Local Context Bridge
 The `TraceweaveProvider` ([`TraceweaveProvider.java`](agent_os/android/src/com/inceptless/traceweave/TraceweaveProvider.java)) is an optional local context adapter in the Android prototype:
-- **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. The current Agent OS signer differs from the installed Edge signer, so this integration is paused. No HSM release-signing process is implemented.
+- **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. Agent OS and the Edge app now share one signing identity, and the bridge has been enabled and exercised on the device. No HSM release-signing process is implemented.
 - **Current validation**: The Pixel 6a test used the Traceweave Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
 - **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; global configuration alone does not authorize transmission. Each cloud planning request requires an exact payload preview and single-use user approval; subsequent execution observations remain local.
 
@@ -146,7 +155,7 @@ The `TraceweaveProvider` ([`TraceweaveProvider.java`](agent_os/android/src/com/i
 
 ## 6. Practical Application Scenarios & Real-World Use Cases
 
-This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the sync runtime is now part of the local production candidate and its packaging is checked by the release verifier (no released version bump yet). The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
+This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or unattended background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the sync runtime is now part of the local production candidate and its packaging is checked by the release verifier (no released version bump yet). The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
 
 ### 6.1 Third-Party Agent & Standalone Bot Ecosystem Integration
 
