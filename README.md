@@ -198,6 +198,8 @@ The repository contains the following experimental components. Their presence in
 
 ## 6.3 Current Verification Status
 
+A one-page capability and limits overview is in [docs/capability_overview_2026-10-31.md](docs/capability_overview_2026-10-31.md).
+
 The six follow-up optimizations (documentation alignment, sync packaging, SAS pairing, model reliability, code/structure split, audit and dark mode) are summarized in [docs/optimization_round_2026-10-31.md](docs/optimization_round_2026-10-31.md).
 
 The A–F boundary-closing milestones are tracked in [docs/agent_os_milestones_2026-10-30.md](docs/agent_os_milestones_2026-10-30.md): 28 of 30 are complete with dated device or host receipts. Three require external resources and are not claimed: independent audit, a second device matrix, and power-meter-grade energy measurement. Device results in this repository come from one Pixel 6a unless stated otherwise.
