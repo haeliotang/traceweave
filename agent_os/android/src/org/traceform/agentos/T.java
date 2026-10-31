@@ -550,6 +550,11 @@ final class T {
         add("audit.tsv_scope", "%d events from %s will be written.", "将写入 %d 条事件，时间范围 %s。");
         add("audit.tsv_scope_title", "Export audit log?", "导出审计日志？");
         add("pair.never_synced", "Never synced", "尚未同步");
+        add("pair.sync_done", "Synced · %s changes", "已同步 · %s 条变更");
+        add("pair.paired_not_synced", "Paired, not synced yet", "已配对，尚未同步");
+        add("pair.peer_offline", "Peer offline", "对端不在线");
+        add("pair.sync_skipped", "Skipped", "已跳过");
+        add("pair.sync_error", "Failed", "失败");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

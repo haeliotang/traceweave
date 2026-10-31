@@ -714,7 +714,7 @@ public final class MainActivity extends Activity {
                 String last = cursor == null || cursor.lastSyncedAt == 0
                     ? T.s("pair.never_synced", en)
                     : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                        .format(new Date(cursor.lastSyncedAt)) + " · " + cursor.lastResult;
+                        .format(new Date(cursor.lastSyncedAt)) + " · " + SyncResultText.describe(cursor.lastResult, en);
                 labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…\n" + last;
             }
             new AlertDialog.Builder(this)
