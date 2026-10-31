@@ -72,6 +72,15 @@ gh release edit v0.6.14 --draft=false
 - 签名托管：密钥仍在开发机 Keychain，发布密钥的归属需要你决定；
 - 商店渠道：Play 需要无障碍/悬浮窗用途申报，留待后续。
 
+## 5.1 下载侧验证（已执行）
+
+用 `gh release download v0.6.14` 拉回全部资产后：
+
+- `shasum -a 256 -c SHA256SUMS` → 五个文件全部 `OK`；
+- `apksigner verify --print-certs` → 签名指纹 `9effee32…a6db`，与发布说明一致。
+
+也就是说，用户拿到包之后可以独立核对“校验和 + 签名身份”，不需要信任发布者的一面之词。
+
 ## 6. 当前状态（2026-10-31）
 
 - 标签 `v0.6.14` 已推送；

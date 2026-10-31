@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "what": "downloaded every asset of the draft release v0.6.14 and verified them locally",
+  "checks": {
+    "sha256sums": "all five listed files OK against the downloaded copies",
+    "apk_signer": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+    "apk_size_bytes": 3916906,
+    "assets": ["RELEASE_NOTES.md", "SHA256SUMS", "build_report.json", "release_manifest.json", "release_verification.json", "traceform-agent-os-0.6.14.apk"]
+  },
+  "meaning": "a user who downloads the release can verify both the checksums and the signing identity; the uploaded bytes match what was built",
+  "still_draft": true
+}
