@@ -61,23 +61,22 @@ public final class DocumentTaskActivity extends Activity {
             return insets;
         });
         setContentView(scroll);
-        label(root, en ? "Verified Markdown task" : "可验证的 Markdown 任务");
+        label(root, T.s("documenttask.verified_markdown_task", en));
         if (taskId == null) {
             goal = new EditText(this);
-            goal.setHint(en ? "Task goal" : "任务目标");
+            goal.setHint(T.s("documenttask.task_goal", en));
             if (state != null) goal.setText(state.getString("goal", ""));
             root.addView(goal);
-            label(root, en ? "Select the memories to use. Nothing is selected automatically. This editor works locally."
-                : "选择本次使用的记忆，默认均不选。此编辑器在本地生成草稿。");
+            label(root, T.s("documenttask.select_the_memories_to_use_nothing_is", en));
             memorySelection = new MemorySelectionView(this, store, goal, en, state == null ? null : state.getStringArrayList("selected"));
             root.addView(memorySelection);
-            button(root, en ? "Review context and preview model document request" : "审核上下文并预览模型文稿请求", () -> {
+            button(root, T.s("documenttask.review_context_and_preview_model_docum", en), () -> {
                 startActivity(new Intent(this, TaskReviewActivity.class).putExtra(TaskReviewActivity.EXTRA_DOCUMENT, true)
                     .putExtra(TaskReviewActivity.EXTRA_GOAL, goal.getText().toString())
                     .putStringArrayListExtra(TaskReviewActivity.EXTRA_SELECTED, memorySelection.selectedIds()));
                 finish();
             });
-            button(root, en ? "Generate local Markdown draft" : "生成本地 Markdown 草稿", () -> {
+            button(root, T.s("documenttask.generate_local_markdown_draft", en), () -> {
                 try {
                     List<AgentStore.Memory> chosen = memorySelection.chosen();
                     JSONArray sources = new JSONArray();
@@ -94,24 +93,21 @@ public final class DocumentTaskActivity extends Activity {
             });
         } else {
             AgentStore.Task task = store.getTask(taskId);
-            if (task == null) throw new IllegalStateException(en ? "Task no longer exists" : "任务已不存在");
+            if (task == null) throw new IllegalStateException(T.s("documenttask.task_no_longer_exists", en));
             ExecutionPlan.Step step = task.plan.steps.get(0);
             JSONObject value = new JSONObject(step.observation);
             label(root, task.title);
-            button(root, en ? "Save as workflow template" : "保存为工作流模板", () ->
+            button(root, T.s("documenttask.save_as_workflow_template", en), () ->
                 startActivity(new Intent(this, WorkflowActivity.class).putExtra(WorkflowActivity.EXTRA_GOAL, task.title)));
             if (ExecutionPlan.STEP_DRAFT_READY.equals(step.status) && AgentStore.WAITING_FOR_USER.equals(task.status)) {
-                if ("model".equals(value.optString("draftOrigin"))) label(root, en ? "Model proposal · review before saving"
-                    : "模型建议文稿 · 请审核后再保存");
-                if ("on_device_model".equals(value.optString("draftOrigin"))) label(root, en ? "On-device model proposal · review before saving"
-                    : "端侧模型建议文稿 · 请审核后再保存");
+                if ("model".equals(value.optString("draftOrigin"))) label(root, T.s("documenttask.model_proposal_review_before_saving", en));
+                if ("on_device_model".equals(value.optString("draftOrigin"))) label(root, T.s("documenttask.on_device_model_proposal_review_before", en));
                 markdown = new EditText(this);
                 markdown.setMinLines(8);
                 markdown.setText(state == null ? value.getString("content") : state.getString("markdown", value.getString("content")));
                 root.addView(markdown);
-                label(root, en ? "Review the full text, then choose a local file. The selected document will be written once and read back. Cloud-drive providers handle their own uploads."
-                    : "请核对全文后选择本机保存位置。只写入选中的文件一次，再读回核验；云盘提供者自行处理上传。");
-                button(root, en ? "Confirm text and choose file" : "确认内容并选择保存文件", () -> {
+                label(root, T.s("documenttask.review_the_full_text_then_choose_a_loc", en));
+                button(root, T.s("documenttask.confirm_text_and_choose_file", en), () -> {
                     try {
                         JSONObject edited = new JSONObject(value.toString()).put("content", markdown.getText().toString());
                         Intent picker = ExternalAction.intent(DocumentAction.CAPABILITY, edited);
@@ -125,33 +121,31 @@ public final class DocumentTaskActivity extends Activity {
                         }
                     } catch (Exception error) { fail(error); }
                 });
-                button(root, en ? "Cancel before saving" : "保存前取消", () -> {
+                button(root, T.s("documenttask.cancel_before_saving", en), () -> {
                     try { store.transition(taskId, AgentStore.CANCELLED); show(null); }
                     catch (Exception error) { fail(error); }
                 });
             } else {
                 label(root, AgentStore.COMPLETED.equals(task.status)
-                    ? (value.optBoolean("localAccess") ? (en ? "Content verified by readback" : "内容已通过读回核验")
-                        : (en ? "Historical readback receipt" : "历史读回核验回执"))
-                    : (en ? "Task state: " : "任务状态：") + task.status);
+                    ? (value.optBoolean("localAccess") ? (T.s("documenttask.content_verified_by_readback", en))
+                        : (T.s("documenttask.historical_readback_receipt", en)))
+                    : (T.s("documenttask.task_state", en)) + task.status);
                 label(root, "SHA-256: " + value.optString("sha256", "—"));
-                if (value.has("verifiedAt")) label(root, (en ? "Last verified: " : "最近核验时间：")
+                if (value.has("verifiedAt")) label(root, (T.s("documenttask.last_verified", en))
                     + java.text.DateFormat.getDateTimeInstance().format(new java.util.Date(value.getLong("verifiedAt"))));
-                if (!value.optBoolean("localAccess")) label(root, en ? "Historical receipt only; select a file here to verify. File access is not transferred in an archive."
-                    : "仅保留历史回执；请在此设备重新选择文件核验，档案不携带文件访问权限。");
+                if (!value.optBoolean("localAccess")) label(root, T.s("documenttask.historical_receipt_only_select_a_file", en));
                 if (DocumentAction.locallyVerified(task)) {
                     JSONObject context = task.plan.context.isEmpty() ? new JSONObject() : new JSONObject(task.plan.context);
                     JSONObject workflow = context.optJSONObject("workflow");
                     JSONArray steps = workflow == null ? null : workflow.optJSONArray("steps");
                     if (steps != null && steps.length() == 2 && "calendar_draft".equals(steps.optString(1)))
-                        label(root, en ? "Workflow next step: review a calendar draft" : "工作流下一步：审核日历草稿");
+                        label(root, T.s("documenttask.workflow_next_step_review_a_calendar_d", en));
                     if (steps != null && steps.length() == 2 && "share_draft".equals(steps.optString(1))) {
-                        label(root, en ? "Workflow next step: review a share draft" : "工作流下一步：审核分享草稿");
-                        button(root, en ? "Continue to share draft" : "继续：创建分享草稿", this::shareInBackground);
+                        label(root, T.s("documenttask.workflow_next_step_review_a_share_draf", en));
+                        button(root, T.s("documenttask.continue_to_share_draft", en), this::shareInBackground);
                     }
-                    label(root, en ? "Continue to a separate calendar draft. It requires its own confirmation; no event is created automatically."
-                        : "可以继续创建独立的日历草稿；需要再次确认，不会自动创建日程。");
-                    button(root, en ? "Continue to calendar draft" : "继续：创建日历草稿", () -> {
+                    label(root, T.s("documenttask.continue_to_a_separate_calendar_draft", en));
+                    button(root, T.s("documenttask.continue_to_calendar_draft", en), () -> {
                         try {
                             AgentStore.Task child = store.createCalendarFollowup(taskId);
                             startActivity(new Intent(this, ExternalActionActivity.class)
@@ -162,21 +156,21 @@ public final class DocumentTaskActivity extends Activity {
                 if ((AgentStore.OUTCOME_UNKNOWN.equals(task.status) || AgentStore.COMPLETED.equals(task.status))
                         && !value.optString("attemptId").isEmpty()) {
                     if (value.optBoolean("localAccess") && value.has("uri")) {
-                        button(root, en ? "Verify existing file (read only)" : "只读核验现有文件", () -> {
+                        button(root, T.s("documenttask.verify_existing_file_read_only", en), () -> {
                             try {
                                 store.selectDocumentForVerification(taskId, value.getString("uri"));
                                 verifyInBackground(false);
                             } catch (Exception error) { fail(error); }
                         });
                     }
-                    button(root, en ? "Select file to verify (read only)" : "重新选择文件核验（只读）", () ->
+                    button(root, T.s("documenttask.select_file_to_verify_read_only", en), () ->
                         startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
                             .setType("*/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                                 | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION), VERIFY_DOCUMENT));
                 }
             }
         }
-        button(root, en ? "Back to tasks" : "返回任务", this::finish);
+        button(root, T.s("documenttask.back_to_tasks", en), this::finish);
     }
 
     @Override protected void onActivityResult(int request, int result, Intent data) {
@@ -211,7 +205,7 @@ public final class DocumentTaskActivity extends Activity {
         if (busy) return;
         busy = true;
         TextView progress = new TextView(this);
-        progress.setText(en ? "Checking the verified file before sharing…" : "正在检查已核验文件，准备分享草稿…");
+        progress.setText(T.s("documenttask.checking_the_verified_file_before_shar", en));
         setContentView(progress);
         new Thread(() -> {
             Exception failure = null;
@@ -239,7 +233,7 @@ public final class DocumentTaskActivity extends Activity {
         if (busy) return;
         busy = true;
         TextView progress = new TextView(this);
-        progress.setText(en ? "Checking the selected file…" : "正在核验选中的文件…");
+        progress.setText(T.s("documenttask.checking_the_selected_file", en));
         progress.setOnApplyWindowInsetsListener((view, insets) -> {
             view.setPadding(32, 48 + insets.getSystemWindowInsetTop(), 32, 32 + insets.getSystemWindowInsetBottom());
             return insets;

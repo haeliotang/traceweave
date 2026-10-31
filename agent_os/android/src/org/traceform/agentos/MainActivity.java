@@ -803,8 +803,7 @@ public final class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
                         .setTitle(T.s("ui.grant_floating_capsule_permission", en))
-                        .setMessage(en ? "Floating capsule requires permission to display over apps. Please tap Settings and enable 'Display over other apps'."
-                                       : "悬浮胶囊需要在第三方应用与系统桌面顶层常驻显示。请点击“前往设置”，在系统列表中找到 Traceform 并开启【在其他应用上层显示】。")
+                        .setMessage(T.s("ui.floating_capsule_requires_permission_t", en))
                         .setPositiveButton(T.s("ui.settings", en), (dialog, which) -> {
                             try {
                                 Intent reqIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -1211,8 +1210,7 @@ public final class MainActivity extends Activity {
             addPageButton(detailContainer, T.s("ui.review_selected_task_memories", en), view -> {
                 StringBuilder context = new StringBuilder(TaskContext.localOnly(task.plan)
                     ? (T.s("ui.task_stays_local_n_n", en))
-                    : (en ? "Cloud planning requires a fresh, single-request approval. Later observations stay local.\n\n"
-                        : "云端规划需要新的单次请求授权；后续步骤观察保持本地。\n\n"));
+                    : (T.s("ui.cloud_planning_requires_a_fresh_single", en)));
                 for (AgentStore.Memory memory : TaskContext.memories(task.plan))
                     context.append(memory.content).append("\n").append(memory.source).append(" · ").append(memory.id).append("\n\n");
                 new AlertDialog.Builder(this).setTitle(T.s("ui.selected_memory_snapshots", en))
@@ -1306,8 +1304,7 @@ public final class MainActivity extends Activity {
             startActivity(new Intent(this, MemoryReviewActivity.class).putExtra(MemoryReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
         addCardActionButton(actions, en ? "Review memory suggestions (" + candidates.size() + ")"
             : "审核候选记忆（" + candidates.size() + "）", view -> {
-            StringBuilder preview = new StringBuilder(en ? "These are suggestions, not established facts. Save only what you accept.\n\n"
-                : "以下为候选建议，不会自动成为事实。请只保存你认可的内容。\n\n");
+            StringBuilder preview = new StringBuilder(T.s("ui.these_are_suggestions_not_established", en));
             for (MemoryConsolidator.ConsolidatedItem item : candidates)
                 preview.append(item.kind).append(": ").append(item.content).append("\n\n");
             preview.append(T.s("ui.source_task", en)).append(task.id);
@@ -1485,10 +1482,8 @@ public final class MainActivity extends Activity {
             if (step.isExternalAction()) {
                 TextView hint = new TextView(this);
                 hint.setText(DocumentAction.CAPABILITY.equals(step.capability)
-                    ? (en ? "A file is complete only after readback matches the approved text. Recovery verifies without writing again."
-                        : "仅在文件读回内容与确认文本一致后完成；恢复只核验，不重新写入。")
-                    : en ? "Saving/sending is handled by the receiving app. A return code is not a verified receipt; dispatched actions are never replayed automatically."
-                    : "保存或发送由目标应用处理，返回码不是成功回执；已交接动作不会自动重放。");
+                    ? (T.s("ui.a_file_is_complete_only_after_readback", en))
+                    : T.s("ui.saving_sending_is_handled_by_the_recei", en));
                 hint.setTextSize(12);
                 stepRow.addView(hint);
                 if (isCurrentStep && AgentStore.WAITING_FOR_USER.equals(task.status)
@@ -1745,8 +1740,7 @@ public final class MainActivity extends Activity {
     private void showTraceformResult(AgentStore.Task task, String result) {
         TextView content = new TextView(this);
         boolean en = isEnglish();
-        content.setText(result + (en ? "\n\nThis simulated summary uses locally retained Traceform history. It is not a verified prediction or causal conclusion."
-            : "\n\n此结果来自 Traceform 本机保留历史的模拟摘要，不是经验证的预测或因果结论。"));
+        content.setText(result + (T.s("ui.n_nthis_simulated_summary_uses_locally", en)));
         content.setTextIsSelectable(true);
         content.setPadding(dp(20), dp(12), dp(20), dp(12));
         ScrollView holder = new ScrollView(this);
@@ -1903,8 +1897,7 @@ public final class MainActivity extends Activity {
         holder.addView(input);
         new AlertDialog.Builder(this)
             .setTitle(T.s("ui.unlock_archive", en))
-            .setMessage(en ? "Review conflicting memories before importing. Deletions take priority; existing tasks stay local."
-                : "导入前逐条审核冲突记忆。删除标记优先；已有任务保留本机版本。")
+            .setMessage(T.s("ui.review_conflicting_memories_before_imp", en))
             .setView(holder)
             .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
             .setPositiveButton(T.s("ui.review", en), (dialog, which) -> {
@@ -2099,8 +2092,7 @@ public final class MainActivity extends Activity {
             String to = "LowMotion".equals(event.getString("to")) ? (T.s("ui.low_motion", en)) : (T.s("ui.motion_detected", en));
             LinearLayout content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(36, 12, 36, 0);
             TextView info = new TextView(this);
-            info.setText((en ? "Source: accelerometer + gyroscope; 3-second rule window. This is an observation, not a personal habit.\nObserved: "
-                : "来源：加速度计与陀螺仪，3 秒规则窗口。这是一次观察，不代表个人习惯。\n观察时间：")
+            info.setText((T.s("ui.source_accelerometer_gyroscope_3_secon", en))
                 + DateFormat.getDateTimeInstance().format(new Date(event.getLong("observedAt"))));
             content.addView(info);
             EditText text = new EditText(this); text.setMinLines(2);

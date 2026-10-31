@@ -25,10 +25,10 @@ final class SyncPanel {
         TextView syncState = new TextView(host);
         int pairedNow = host.storeRef().activePairings().size();
         String mySyncId = localSyncId();
-        syncState.setText((en ? "Sync: " : "同步：") + (SyncTransport.available()
+        syncState.setText((T.s("sync.sync", en)) + (SyncTransport.available()
             ? (en ? pairedNow + " paired device(s)" : pairedNow + " 台已配对设备")
-            : (en ? "runtime unavailable in this build" : "此构建不包含同步运行库"))
-            + (mySyncId.isEmpty() ? "" : (en ? " · this device " : " · 本机 ") + mySyncId.substring(0, Math.min(8, mySyncId.length()))));
+            : (T.s("sync.runtime_unavailable_in_this_build", en)))
+            + (mySyncId.isEmpty() ? "" : (T.s("sync.this_device", en)) + mySyncId.substring(0, Math.min(8, mySyncId.length()))));
         syncState.setTextSize(11);
         syncState.setTextColor(0xFF64748B);
         syncState.setPadding(0, host.dpRef(6), 0, host.dpRef(2));
@@ -70,11 +70,11 @@ final class SyncPanel {
             EditText remote = new EditText(host);
             remote.setHint(T.s("pair.remote_hint", en));
             TextView localView = new TextView(host);
-            localView.setText((en ? "This device: " : "本机：") + local);
+            localView.setText((T.s("sync.this_device_2", en)) + local);
             localView.setTextSize(11);
             TextView syncView = new TextView(host);
             String localSyncId = localSyncId();
-            syncView.setText((en ? "Sync ID: " : "同步 ID：") + (localSyncId.isEmpty() ? "—" : localSyncId));
+            syncView.setText((T.s("sync.sync_id", en)) + (localSyncId.isEmpty() ? "—" : localSyncId));
             syncView.setTextSize(11);
             EditText remoteSync = new EditText(host);
             remoteSync.setHint(T.s("pair.sync_hint", en));
@@ -102,10 +102,10 @@ final class SyncPanel {
                 .setTitle(T.s("pair.title", en))
                 .setView(holder)
                 .setNegativeButton(T.s("common.cancel", en), null)
-                .setPositiveButton(en ? "Pair by fingerprint" : "用指纹配对", (dialog, which) -> {
+                .setPositiveButton(T.s("sync.pair_by_fingerprint", en), (dialog, which) -> {
                     String remoteValue = remote.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
                     if (!SyncPairing.validFingerprint(remoteValue) || remoteValue.equals(local)) {
-                        host.toast(en ? "Enter the other device's fingerprint" : "请输入对端设备的指纹");
+                        host.toast(T.s("sync.enter_the_other_device_s_fingerprint", en));
                         return;
                     }
                     String peerId = remoteSync.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
@@ -114,8 +114,8 @@ final class SyncPanel {
                         String code = SyncPairing.code(local, remoteValue, nonce);
                         String deviceId = "peer-" + remoteValue.substring(0, 16);
                         new AlertDialog.Builder(host)
-                            .setTitle(en ? "Compare this code" : "核对确认码")
-                            .setMessage((en ? "Code: " : "确认码：") + code + "\n"
+                            .setTitle(T.s("sync.compare_this_code", en))
+                            .setMessage((T.s("sync.code", en)) + code + "\n"
                                 + (T.s("pair.same_code", en)))
                             .setNegativeButton(T.s("common.cancel", en), null)
                             .setPositiveButton(T.s("pair.confirm", en), (inner, ignored) -> {
@@ -196,8 +196,8 @@ final class SyncPanel {
     }
 
     private void startPairDiscovery(boolean en) {
-        if (!SyncTransport.available()) { host.toast(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
-        host.toast(en ? "Searching the local network…" : "正在搜索局域网…");
+        if (!SyncTransport.available()) { host.toast(T.s("sync.sync_runtime_is_not_in_this_build", en)); return; }
+        host.toast(T.s("sync.searching_the_local_network", en));
         final android.net.wifi.WifiManager.MulticastLock multicastLock = acquireMulticastLock();
         host.ioRef().execute(() -> {
             String payload;
@@ -214,11 +214,11 @@ final class SyncPanel {
                 java.util.List<String> labels = SyncActions.labels(json);
                 java.util.List<String> addresses = SyncActions.addresses(json);
                 if (labels.isEmpty()) {
-                    host.toast(en ? "No device found on this network" : "局域网内没有发现设备");
+                    host.toast(T.s("sync.no_device_found_on_this_network", en));
                     return;
                 }
                 new AlertDialog.Builder(host)
-                    .setTitle(en ? "Pick a device" : "选择设备")
+                    .setTitle(T.s("sync.pick_a_device", en))
                     .setItems(labels.toArray(new String[0]), (dialog, which) -> startPairDial(addresses.get(which), en))
                     .setNegativeButton(T.s("common.cancel", en), null)
                     .show();
@@ -229,14 +229,14 @@ final class SyncPanel {
     private void startPairDialFromText(String text, boolean en) {
         String address = SyncActions.address(text);
         if (address == null) {
-            host.toast(en ? "Enter host:port" : "请输入 主机:端口");
+            host.toast(T.s("sync.enter_host_port", en));
             return;
         }
         startPairDial(address, en);
     }
 
     private void startPairDial(String address, boolean en) {
-        host.toast(en ? "Pairing…" : "正在配对…");
+        host.toast(T.s("sync.pairing", en));
         host.ioRef().execute(() -> {
             String payload;
             try {
@@ -250,7 +250,7 @@ final class SyncPanel {
     }
 
     private void startPairServe(boolean en) {
-        host.toast(en ? "Waiting for the other device…" : "正在等待对方设备…");
+        host.toast(T.s("sync.waiting_for_the_other_device", en));
         host.ioRef().execute(() -> {
             String payload;
             try {
@@ -275,7 +275,7 @@ final class SyncPanel {
         final String peerId = session.peerId;
         new AlertDialog.Builder(host)
             .setTitle(T.s("pair.compare", en))
-            .setMessage((en ? "Code: " : "确认码：") + sas + "\n"
+            .setMessage((T.s("sync.code", en)) + sas + "\n"
                 + (T.s("pair.same_code", en)))
             .setNegativeButton(T.s("common.cancel", en), null)
             .setPositiveButton(T.s("pair.confirm", en), (dialog, which) -> {
@@ -290,21 +290,21 @@ final class SyncPanel {
     }
 
     private void startSyncServe(boolean en) {
-        if (!SyncTransport.available()) { host.toast(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
+        if (!SyncTransport.available()) { host.toast(T.s("sync.sync_runtime_is_not_in_this_build", en)); return; }
         try {
             final AgentStore.Pairing target = syncTarget();
-            if (target == null) { host.toast(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
-            host.toast(en ? "Waiting for the peer…" : "正在等待对端…");
+            if (target == null) { host.toast(T.s("sync.pair_a_device_and_add_its_sync_id_firs", en)); return; }
+            host.toast(T.s("sync.waiting_for_the_peer", en));
             host.ioRef().execute(() -> {
                 String outcome;
                 try {
                     String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
                         request -> SyncRecords.handle(host.storeRef(), request));
                     outcome = result != null && result.startsWith("OK")
-                        ? (en ? "Peer synced" : "对端已完成同步")
+                        ? (T.s("sync.peer_synced", en))
                         : (en ? "Wait failed: " + result : "等待失败：" + result);
                 } catch (Throwable error) {
-                    outcome = (en ? "Wait failed: " : "等待失败：") + error.getMessage();
+                    outcome = (T.s("sync.wait_failed", en)) + error.getMessage();
                 }
                 final String message = outcome;
                 host.uiRef().post(() -> { if (!host.isDestroyedRef()) host.toast(message); });
@@ -315,23 +315,23 @@ final class SyncPanel {
     }
 
     private void startSyncDial(boolean en) {
-        if (!SyncTransport.available()) { host.toast(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
+        if (!SyncTransport.available()) { host.toast(T.s("sync.sync_runtime_is_not_in_this_build", en)); return; }
         try {
             final AgentStore.Pairing target = syncTarget();
-            if (target == null) { host.toast(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
+            if (target == null) { host.toast(T.s("sync.pair_a_device_and_add_its_sync_id_firs", en)); return; }
             host.ioRef().execute(() -> {
                 String outcome;
                 try {
                     byte[] payload = SyncRecords.encode(host.storeRef().exportSyncRecords());
                     byte[] response = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
                     if (response == null) {
-                        outcome = en ? "Sync failed: no response from the peer" : "同步失败：对端没有响应";
+                        outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);
                     } else {
                         int applied = SyncRecords.merge(host.storeRef(), response);
                         outcome = en ? "Synced; " + applied + " change(s) applied" : "同步完成；应用 " + applied + " 条变更";
                     }
                 } catch (Throwable error) {
-                    outcome = (en ? "Sync failed: " : "同步失败：") + error.getMessage();
+                    outcome = (T.s("sync.sync_failed", en)) + error.getMessage();
                 }
                 final String message = outcome;
                 host.uiRef().post(() -> {

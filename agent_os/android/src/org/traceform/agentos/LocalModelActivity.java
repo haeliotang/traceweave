@@ -36,7 +36,7 @@ public final class LocalModelActivity extends Activity {
         root.setBackgroundColor(0xFFFFFFFF);
         setContentView(root);
 
-        TextView title = Ui.title(this, en ? "On-device draft model" : "端侧文稿模型");
+        TextView title = Ui.title(this, T.s("localmodel.on_device_draft_model", en));
         title.setTextSize(15);
         root.addView(title);
         TextView explanation = Ui.meta(this, en
@@ -45,34 +45,34 @@ public final class LocalModelActivity extends Activity {
         explanation.setPadding(0, Ui.dp(this, 2), 0, 0);
         root.addView(explanation);
 
-        root.addView(Ui.section(this, en ? "Status" : "状态"));
+        root.addView(Ui.section(this, T.s("localmodel.status", en)));
         status = new TextView(this);
         status.setTextSize(12);
         status.setTextColor(Ui.COLOR_TEXT);
         root.addView(status);
 
-        root.addView(Ui.section(this, en ? "Import" : "导入"));
-        select = button(root, en ? "Choose model file" : "选择模型文件", () -> {
+        root.addView(Ui.section(this, T.s("localmodel.import", en)));
+        select = button(root, T.s("localmodel.choose_model_file", en), () -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
             try { startActivityForResult(intent, SELECT_MODEL); }
-            catch (Exception error) { status.setText(en ? "No file picker available" : "无法打开文件选择器"); }
+            catch (Exception error) { status.setText(T.s("localmodel.no_file_picker_available", en)); }
         });
         select.setAllCaps(false);
         select.setTextSize(12);
-        cancel = button(root, en ? "Cancel import" : "取消导入", () -> {
+        cancel = button(root, T.s("localmodel.cancel_import", en), () -> {
             if (cancelled != null) LocalModelFiles.cancelImport(cancelled);
-            status.setText(en ? "Cancelling import…" : "正在取消导入…");
+            status.setText(T.s("localmodel.cancelling_import", en));
         });
         cancel.setAllCaps(false);
         cancel.setTextSize(12);
 
-        root.addView(Ui.section(this, en ? "Actions" : "操作"));
-        delete = button(root, en ? "Delete local model" : "删除本地模型", () -> new android.app.AlertDialog.Builder(this)
-            .setMessage(en ? "Delete the local model file?" : "删除本机模型文件？")
-            .setNegativeButton(en ? "Cancel" : "取消", null).setPositiveButton(en ? "Delete" : "删除", (dialog, which) -> remove()).show());
+        root.addView(Ui.section(this, T.s("localmodel.actions", en)));
+        delete = button(root, T.s("localmodel.delete_local_model", en), () -> new android.app.AlertDialog.Builder(this)
+            .setMessage(T.s("localmodel.delete_the_local_model_file", en))
+            .setNegativeButton(T.s("localmodel.cancel", en), null).setPositiveButton(T.s("localmodel.delete", en), (dialog, which) -> remove()).show());
         delete.setAllCaps(false);
         delete.setTextSize(12);
-        Button back = button(root, en ? "Back" : "返回", this::finish);
+        Button back = button(root, T.s("localmodel.back", en), this::finish);
         back.setAllCaps(false);
         back.setTextSize(12);
         refresh();
@@ -83,7 +83,7 @@ public final class LocalModelActivity extends Activity {
         if (request != SELECT_MODEL || result != RESULT_OK || data == null || data.getData() == null || busy) return;
         Uri uri = data.getData();
         busy = true; cancelled = new AtomicBoolean(); refresh();
-        status.setText(en ? "Importing and verifying the selected file…" : "正在导入并核验所选文件…");
+        status.setText(T.s("localmodel.importing_and_verifying_the_selected_f", en));
         AtomicBoolean token = cancelled;
         new Thread(() -> {
             Exception failure = null;
@@ -99,8 +99,8 @@ public final class LocalModelActivity extends Activity {
                 busy = false; cancelled = null;
                 if (isFinishing() || isDestroyed()) return;
                 refresh();
-                status.setText(resultError == null ? (en ? "Model imported and verified." : "模型已导入并核验。")
-                    : (en ? "Import failed or cancelled; the previous model was retained." : "导入失败或已取消；原有模型未被替换。"));
+                status.setText(resultError == null ? (T.s("localmodel.model_imported_and_verified", en))
+                    : (T.s("localmodel.import_failed_or_cancelled_the_previou", en)));
             });
         }, "local-model-import").start();
     }
@@ -115,7 +115,7 @@ public final class LocalModelActivity extends Activity {
                 busy = false;
                 if (isFinishing() || isDestroyed()) return;
                 refresh();
-                if (resultError != null) status.setText(en ? "Could not delete the model." : "无法删除模型。");
+                if (resultError != null) status.setText(T.s("localmodel.could_not_delete_the_model", en));
             });
         }, "local-model-delete").start();
     }
@@ -136,9 +136,9 @@ public final class LocalModelActivity extends Activity {
         final LocalModelCatalog.Entry verified = entry;
         status.setText(verified != null
             ? (en ? verified.display + " verified on this device." : "本机已校验：" + verified.display + "。")
-            : modelFile(this).isFile() ? (en ? "Model file present." : "本机已有模型文件。")
-            : (en ? "No model installed." : "尚未导入模型。"));
-        if (!LocalModelRuntime.isAvailable()) status.append(en ? " Local runtime is unavailable on this device or build." : " 此设备或构建上的端侧运行库不可用。");
+            : modelFile(this).isFile() ? (T.s("localmodel.model_file_present", en))
+            : (T.s("localmodel.no_model_installed", en)));
+        if (!LocalModelRuntime.isAvailable()) status.append(T.s("localmodel.local_runtime_is_unavailable_on_this_d", en));
     }
 
     private Button button(LinearLayout root, String label, Runnable action) {

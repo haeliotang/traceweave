@@ -93,23 +93,21 @@ public final class TaskReviewActivity extends Activity {
     }
 
     private void selection(Bundle state) throws Exception {
-        LinearLayout root = page(en ? "Review task context" : "审核本次任务上下文");
+        LinearLayout root = page(T.s("taskreview.review_task_context", en));
         goal = new EditText(this);
-        goal.setHint(en ? "Task goal" : "任务目标");
+        goal.setHint(T.s("taskreview.task_goal", en));
         goal.setText(state == null ? getIntent().getStringExtra(EXTRA_GOAL) : state.getString("goal", ""));
         root.addView(goal);
-        text(root, en ? "Select memories for this task. Nothing is selected automatically. Stored snapshots remain with its history."
-            : "选择本次任务允许使用的记忆，默认不选；选定快照随任务历史保留。");
+        text(root, T.s("taskreview.select_memories_for_this_task_nothing", en));
         ArrayList<String> ids = state == null ? getIntent().getStringArrayListExtra(EXTRA_SELECTED) : state.getStringArrayList("selected");
         memorySelection = new MemorySelectionView(this, store, goal, en, ids);
         root.addView(memorySelection);
-        text(root, en ? "Maximum output tokens for this request (input tokens and actual cost are not capped here):"
-            : "本次请求的最大输出 token 数（输入 token 和实际费用不受此项限制）：");
+        text(root, T.s("taskreview.maximum_output_tokens_for_this_request", en));
         outputLimit = new Spinner(this);
         outputLimit.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"256", "512", "1024"}));
         outputLimit.setSelection(state == null ? 2 : state.getInt("outputLimit", 2));
         root.addView(outputLimit);
-        button(root, en ? "Plan locally · keep this task local" : "本地规划 · 此任务保持本地", this::planLocally);
+        button(root, T.s("taskreview.plan_locally_keep_this_task_local", en), this::planLocally);
         modelAction = null;
         if (document) {
             modelAction = button(root, "", () -> {
@@ -118,7 +116,7 @@ public final class TaskReviewActivity extends Activity {
             });
             updateModelAction();
         }
-        button(root, en ? "Preview one cloud planning request" : "预览本次云端规划请求", () -> {
+        button(root, T.s("taskreview.preview_one_cloud_planning_request", en), () -> {
             try {
                 AgentStore.Task task = prepareTask(false);
                 CloudModelConfig config = CloudModelConfig.load(this);
@@ -128,12 +126,12 @@ public final class TaskReviewActivity extends Activity {
                 cloudPreview();
             } catch (Exception error) { fail(error); }
         });
-        button(root, en ? "Back" : "返回", this::finish);
+        button(root, T.s("taskreview.back", en), this::finish);
     }
 
     private AgentStore.Task prepareTask(boolean localOnly) throws Exception {
         String title = goal.getText().toString().trim();
-        if (title.isEmpty() || title.length() > 2000) throw new IllegalArgumentException(en ? "Enter a task goal (up to 2000 characters)" : "请输入 1–2000 字的任务目标");
+        if (title.isEmpty() || title.length() > 2000) throw new IllegalArgumentException(T.s("taskreview.enter_a_task_goal_up_to_2000_character", en));
         List<AgentStore.Memory> selected = memorySelection.chosen();
         String snapshot = TaskContext.selected(selected, localOnly);
         AgentStore.Task existing = taskId == null ? null : store.getTask(taskId);
@@ -143,7 +141,7 @@ public final class TaskReviewActivity extends Activity {
             existing = store.createTask(title);
             taskId = existing.id;
         }
-        if (!AgentStore.QUEUED.equals(existing.status)) throw new IllegalStateException(en ? "Task already started" : "任务已开始，不能替换上下文");
+        if (!AgentStore.QUEUED.equals(existing.status)) throw new IllegalStateException(T.s("taskreview.task_already_started", en));
         org.json.JSONObject context = new org.json.JSONObject(snapshot);
         if (document) context.put("intent", "verified_document");
         if (previousContext.has("workflow")) context.put("workflow", previousContext.getJSONObject("workflow"));
@@ -177,10 +175,9 @@ public final class TaskReviewActivity extends Activity {
             String fingerprint = TaskContext.fingerprint(task);
             java.util.concurrent.atomic.AtomicBoolean token = new java.util.concurrent.atomic.AtomicBoolean();
             localRequest = token; busy = true;
-            LinearLayout progress = page(en ? "Generating on device…" : "正在设备上生成文稿…");
-            text(progress, en ? "The goal and selected memories stay on this device. The result requires review before saving."
-                : "目标和所选记忆保留在设备上。生成结果需要审核后才能保存。");
-            Button cancel = new Button(this); cancel.setText(en ? "Cancel generation" : "取消生成");
+            LinearLayout progress = page(T.s("taskreview.generating_on_device", en));
+            text(progress, T.s("taskreview.the_goal_and_selected_memories_stay_on", en));
+            Button cancel = new Button(this); cancel.setText(T.s("taskreview.cancel_generation", en));
             cancel.setOnClickListener(view -> {
                 try { cancelLocalRequest(); finish(); } catch (Exception error) { fail(error); }
             });
@@ -201,10 +198,9 @@ public final class TaskReviewActivity extends Activity {
                     localRequest = null;
                     if (resultError == null) openDocument();
                     else {
-                        LinearLayout fallback = page(en ? "On-device draft unavailable" : "端侧文稿未生成");
-                        text(fallback, en ? "Check the model and selected context, then try again or use the local template."
-                            : "请检查模型和所选上下文，然后重试或使用本地模板。");
-                        button(fallback, en ? "Review context and retry" : "返回检查上下文并重试", () -> {
+                        LinearLayout fallback = page(T.s("taskreview.on_device_draft_unavailable", en));
+                        text(fallback, T.s("taskreview.check_the_model_and_selected_context_t", en));
+                        button(fallback, T.s("taskreview.review_context_and_retry", en), () -> {
                             try {
                                 Bundle state = new Bundle();
                                 state.putString("goal", goal.getText().toString());
@@ -213,8 +209,8 @@ public final class TaskReviewActivity extends Activity {
                                 selection(state);
                             } catch (Exception error) { fail(error); }
                         });
-                        button(fallback, en ? "Use local template" : "使用本地模板", this::planLocally);
-                        button(fallback, en ? "Back" : "返回", this::finish);
+                        button(fallback, T.s("taskreview.use_local_template", en), this::planLocally);
+                        button(fallback, T.s("taskreview.back", en), this::finish);
                     }
                 });
             }, "local-model-draft").start();
@@ -224,8 +220,8 @@ public final class TaskReviewActivity extends Activity {
     private void updateModelAction() {
         if (modelAction == null) return;
         boolean ready = LocalModelRuntime.isAvailable() && LocalModelActivity.modelFile(this).isFile();
-        modelAction.setText(ready ? (en ? "Draft with on-device model" : "使用端侧模型生成文稿")
-            : (en ? "Set up on-device model" : "配置端侧模型"));
+        modelAction.setText(ready ? (T.s("taskreview.draft_with_on_device_model", en))
+            : (T.s("taskreview.set_up_on_device_model", en)));
     }
 
     private void cancelLocalRequest() throws Exception {
@@ -243,33 +239,29 @@ public final class TaskReviewActivity extends Activity {
     }
 
     private void cloudPreview() {
-        LinearLayout root = page(en ? "Exact request preview" : "本次实际请求预览");
-        text(root, (en ? "Endpoint: " : "目标端点：") + pending.endpoint);
-        text(root, (en ? "Model: " : "模型：") + pending.config.modelName);
-        text(root, (en ? "Request bytes: " : "请求字节数：") + pending.body.getBytes(java.nio.charset.StandardCharsets.UTF_8).length);
-        text(root, en ? "The provider must support max_tokens. This limits output tokens, not input usage or monetary cost."
-            : "服务商需支持 max_tokens。此项限制输出 token，不限制输入用量或实际费用。");
-        text(root, en ? "The request below includes the goal, selected memories and capability descriptions. Pattern redaction cannot guarantee removal of all sensitive information. Approval is for this planning request only; later observations stay local."
-            : "下方为将发送的目标、所选记忆及能力描述。规则脱敏不能保证移除所有敏感信息。授权仅限本次规划，后续步骤观察保持本地。");
+        LinearLayout root = page(T.s("taskreview.exact_request_preview", en));
+        text(root, (T.s("taskreview.endpoint", en)) + pending.endpoint);
+        text(root, (T.s("taskreview.model", en)) + pending.config.modelName);
+        text(root, (T.s("taskreview.request_bytes", en)) + pending.body.getBytes(java.nio.charset.StandardCharsets.UTF_8).length);
+        text(root, T.s("taskreview.the_provider_must_support_max_tokens_t", en));
+        text(root, T.s("taskreview.the_request_below_includes_the_goal_se", en));
         text(root, pending.body);
-        if (document) text(root, en ? "The model proposes text only. Review and edit its draft before separately confirming a file save."
-            : "模型仅提出文稿。返回后先审核、编辑全文，再单独确认文件保存；发送请求不会授权写文件。");
-        button(root, en ? "Allow this planning request once" : "仅允许本次规划发送", () -> {
+        if (document) text(root, T.s("taskreview.the_model_proposes_text_only_review_an", en));
+        button(root, T.s("taskreview.allow_this_planning_request_once", en), () -> {
             try {
                 CloudRequest request = pending;
                 CloudModelConfig current = CloudModelConfig.load(this);
                 if (!current.isConfigured() || !request.endpoint.equals(CloudModelClient.normalizeEndpointUrl(current.endpointUrl))
                         || !request.config.modelName.equals(current.modelName) || !request.config.apiKey.equals(current.apiKey)) {
                     request.revoke();
-                    throw new SecurityException(en ? "Cloud settings changed; review a new request" : "云端设置已改变，请重新预览请求");
+                    throw new SecurityException(T.s("taskreview.cloud_settings_changed_review_a_new_re", en));
                 }
                 request.approveOnce();
                 busy = true;
-                LinearLayout progress = page(en ? "Sending the approved request…" : "正在发送已授权的本次请求…");
-                text(progress, en ? "Cancellation discards the result; a request already sent cannot be recalled."
-                    : "取消将丢弃返回结果；已发出的请求无法收回。");
+                LinearLayout progress = page(T.s("taskreview.sending_the_approved_request", en));
+                text(progress, T.s("taskreview.cancellation_discards_the_result_a_req", en));
                 Button cancel = new Button(this);
-                cancel.setText(en ? "Cancel task and discard response" : "取消任务并丢弃返回结果");
+                cancel.setText(T.s("taskreview.cancel_task_and_discard_response", en));
                 cancel.setOnClickListener(view -> cancelPlanning());
                 progress.addView(cancel);
                 new Thread(() -> {
@@ -287,12 +279,11 @@ public final class TaskReviewActivity extends Activity {
                             else finish();
                         }
                         else {
-                            LinearLayout fallback = page(en ? "Request did not produce a usable plan" : "本次请求未获得可用计划");
+                            LinearLayout fallback = page(T.s("taskreview.request_did_not_produce_a_usable_plan", en));
                             text(fallback, CloudFailure.describe(error, en));
-                            text(fallback, en ? "No automatic retry will be sent. You can plan locally or review a new request."
-                                : "不会自动重发。可以改为本地规划，或返回重新预览新请求。");
-                            button(fallback, en ? "Plan locally" : "改为本地规划", this::planLocally);
-                            button(fallback, en ? "Review a new request" : "重新审核新请求", () -> {
+                            text(fallback, T.s("taskreview.no_automatic_retry_will_be_sent_you_ca", en));
+                            button(fallback, T.s("taskreview.plan_locally", en), this::planLocally);
+                            button(fallback, T.s("taskreview.review_a_new_request", en), () -> {
                                 try {
                                     Bundle selected = new Bundle();
                                     selected.putString("goal", goal.getText().toString());
@@ -301,14 +292,14 @@ public final class TaskReviewActivity extends Activity {
                                     selection(selected);
                                 } catch (Exception problem) { fail(problem); }
                             });
-                            button(fallback, en ? "Back" : "返回", this::finish);
+                            button(fallback, T.s("taskreview.back", en), this::finish);
                         }
                     });
                 }, "consented-cloud-planning").start();
             } catch (Exception error) { busy = false; fail(error); }
         });
-        button(root, en ? "Keep local · do not send" : "保持本地 · 不发送", this::planLocally);
-        button(root, en ? "Revoke preview and edit context" : "撤销预览并修改上下文", () -> {
+        button(root, T.s("taskreview.keep_local_do_not_send", en), this::planLocally);
+        button(root, T.s("taskreview.revoke_preview_and_edit_context", en), () -> {
             try {
                 pending.revoke();
                 Bundle selected = new Bundle();

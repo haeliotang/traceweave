@@ -177,8 +177,7 @@ final class SettingsPanel {
         cloudModelStatus.setText(config.enabled
             ? (en ? "Configured (Model: " + config.modelName + ") · Each planning request needs its own preview and approval; execution observations stay local."
                   : "已配置（模型：" + config.modelName + "） · 每次规划请求仍需预览并单独授权；执行观察保持本地。")
-            : (en ? "Cloud planning is disabled. Task planning and synthesis run locally."
-                  : "云端规划已关闭，任务规划与综合分析在本地运行。"));
+            : (T.s("settings.cloud_planning_is_disabled_task_planni", en)));
     }
 
     void promptCloudModelConfig() {
@@ -232,15 +231,13 @@ final class SettingsPanel {
 
         new AlertDialog.Builder(host)
             .setTitle(T.s("settingspanel.33", en))
-            .setMessage(en ? "Saving this configuration sends no task. For each task, select memories, preview the exact endpoint and payload, then approve one planning request or keep the task local. Pattern redaction can miss sensitive information. Failed requests are not resent automatically; later execution observations stay local."
-                           : "保存配置不会发送任务。每次任务需选择记忆、预览实际端点与请求内容，再决定仅允许本次规划或保持本地。规则脱敏可能遗漏敏感信息；请求失败不自动重发，后续执行观察保持本地。")
+            .setMessage(T.s("settings.saving_this_configuration_sends_no_tas", en))
             .setView(fields)
             .setNegativeButton(T.s("settingspanel.34", en), null)
             .setPositiveButton(T.s("settingspanel.35", en), (dialog, which) -> {
                 String endpointUrl = urlInput.getText().toString();
                 if (enabledCheck.isChecked() && !CloudModelClient.isAllowedEndpointUrl(endpointUrl)) {
-                    host.toast(en ? "Use HTTPS for cloud endpoints; HTTP is allowed only on this device."
-                        : "云端端点必须使用 HTTPS；仅允许本机回环地址使用 HTTP。");
+                    host.toast(T.s("settings.use_https_for_cloud_endpoints_http_is", en));
                     return;
                 }
                 CloudModelConfig updated = new CloudModelConfig(
@@ -252,8 +249,7 @@ final class SettingsPanel {
                     CloudModelConfig.DEFAULT_TEMPERATURE
                 );
                 if (!updated.save(host)) {
-                    host.toast(en ? "Could not protect the API key with Android Keystore; configuration was not saved."
-                        : "无法使用 Android Keyhost.storeRef() 加密 API Key，配置未保存。");
+                    host.toast(T.s("settings.could_not_protect_the_api_key_with_and", en));
                     return;
                 }
                 refreshCloud();

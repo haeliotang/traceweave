@@ -206,9 +206,8 @@ public final class TaskCenterActivity extends Activity {
                 else if ("pause".equals(action)) change(task.id, AgentStore.PAUSED);
                 else if ("resume".equals(action)) change(task.id, AgentStore.ACTIVE);
                 else if ("cancel".equals(action)) new AlertDialog.Builder(this)
-                    .setMessage(en ? "Cancel this task? A dispatched external effect cannot be undone here."
-                                   : "取消此任务？已发出的外部动作无法在此撤回。")
-                    .setNegativeButton(en ? "Keep" : "保留", null)
+                    .setMessage(T.s("taskcenter.cancel_this_task_a_dispatched_external", en))
+                    .setNegativeButton(T.s("taskcenter.keep", en), null)
                     .setPositiveButton(T.s("taskcenter.cancel", en), (confirm, ignored) -> change(task.id, AgentStore.CANCELLED))
                     .show();
             })

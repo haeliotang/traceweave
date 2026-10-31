@@ -111,8 +111,7 @@ final class MemoryDetailPanel {
         boolean en = host.english();
         new AlertDialog.Builder(host)
             .setTitle(T.s("memorydetailpanel.20", en))
-            .setMessage(en ? "A tombstone prevents old archives from restoring this record. Historical task snapshots and generated files retain their copies; delete those separately. You can review task references first."
-                : "删除标记会随加密档案迁移，旧档案不能恢复这条记忆。历史任务快照和已生成文件中的副本仍保留，需要分别删除。可先查看任务引用。")
+            .setMessage(T.s("memorydetail.a_tombstone_prevents_old_archives_from", en))
             .setNegativeButton(T.s("memorydetailpanel.21", en), null)
             .setPositiveButton(T.s("memorydetailpanel.22", en), (dialog, which) -> {
                 try {
@@ -133,8 +132,7 @@ final class MemoryDetailPanel {
         if (WorkflowTemplate.isTemplate(memory)) input.setEnabled(false);
         panel.addView(input);
         TextView help = new TextView(host);
-        help.setText(en ? "Expiration excludes this memory from new task selections; existing task snapshots remain."
-            : "到期后不再用于新任务选择；已有任务快照仍保留。工作流模板内容请在工作流界面管理。");
+        help.setText(T.s("memorydetail.expiration_excludes_this_memory_from_n", en));
         panel.addView(help);
         Spinner expiry = new Spinner(host); expiry.setAdapter(new ArrayAdapter<>(host, android.R.layout.simple_spinner_dropdown_item,
             en ? new String[]{"Keep current expiration", "No expiration", "Expire in 7 days", "Expire in 30 days", "Expire in 90 days"}
@@ -167,8 +165,7 @@ final class MemoryDetailPanel {
                         selected.add(memory);
                     }
                     String message = (T.s("memorydetailpanel.27", en)) + selected.size() + (T.s("memorydetailpanel.28", en)) + labels[which]
-                        + (en ? ". Workflow templates in this source are included. Existing task snapshots and files remain. Changes since this preview are rejected."
-                            : " 的记录（包括此来源的工作流模板）。已有任务快照和文件仍保留。预览后发生变化的记录将拒绝删除。");
+                        + (T.s("memorydetail.workflow_templates_in_this_source_are", en));
                     new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.29", en)).setMessage(message)
                         .setNegativeButton(T.s("memorydetailpanel.30", en), null)
                         .setPositiveButton(T.s("memorydetailpanel.31", en), (confirm, button) -> {
