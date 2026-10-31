@@ -47,7 +47,7 @@ public final class ProofVerifier {
     }
 
     private static JSONObject verifySnapshot(Context context, File publicPackage, String trustedKeyHash) throws Exception {
-        File executable = new File(context.getApplicationInfo().nativeLibraryDir, "libtraceform_zk_verify.so");
+        File executable = new File(context.getApplicationInfo().nativeLibraryDir, "libtraceweave_zk_verify.so");
         File ledger = new File(context.getFilesDir(), "zk_sessions.bin");
         Process process = new ProcessBuilder(executable.getAbsolutePath(), publicPackage.getAbsolutePath(),
             trustedKeyHash, ledger.getAbsolutePath()).redirectErrorStream(true).start();

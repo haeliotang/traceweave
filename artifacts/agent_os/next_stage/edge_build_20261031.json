@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-31",
+  "goal": "build and install a renamed Edge APK and restore the cross-app provider",
+  "build_script_fixes": [
+    "scripts/build_native_android.py: jdeps regex now matches com.inceptless.traceweave.edge, native library renamed to libtraceweave.so, packaged paths and benchmark names updated, --key-alias/--password-env added so the production keystore can sign"
+  ],
+  "edge_fixes": [
+    "System.loadLibrary(\"traceweave\") and the two sidecar library names",
+    "app label Traceform -> Traceweave",
+    "manifest package com.inceptless.traceweave.edge (from the earlier rename)"
+  ],
+  "agent_os_fixes": [
+    "<queries> package and the two signature permissions still said com.inceptless.edge (a half-applied rename) so the provider was never visible",
+    "EDGE_CERT_SHA256 pinned to the production certificate 9effee32…, since both apps now ship under one identity"
+  ],
+  "built": {
+    "apk": "/tmp/.edgebuild-signed/traceweave.apk",
+    "package": "com.inceptless.traceweave.edge",
+    "version": "0.2-hardened (versionCode 3)",
+    "signer": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db"
+  },
+  "device": {
+    "installed": true,
+    "provider_dialog": "启用可选 Traceweave Provider？ appeared, then the button flipped to 停用 Traceweave Provider",
+    "screenshot": "artifacts/agent_os/next_stage/ui/traceweave_provider_enabled_20261031.png"
+  },
+  "meaning": "the Binder integration works again: Agent OS found the Edge service, verified its certificate, and enabled the capability path"
+}

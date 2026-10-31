@@ -22,7 +22,7 @@ def build_sdk_jar(classes, destination, android_jar):
     analysis = subprocess.run(['jdeps', '-verbose:class', '-filter:none', '--class-path',
                                str(android_jar), str(classes)], check=True, capture_output=True, text=True)
     dependencies = {}
-    for source, target in re.findall(r'^\s*(org\.traceform\.edge\.[\w$]+)\s+->\s+(org\.traceform\.edge\.[\w$]+)',
+    for source, target in re.findall(r'^\s*(com\.inceptless\.traceweave\.edge\.[\w$]+)\s+->\s+(com\.inceptless\.traceweave\.edge\.[\w$]+)',
                                      analysis.stdout, re.MULTILINE):
         dependencies.setdefault(source, set()).add(target)
     retained, pending = set(), ['com.inceptless.traceweave.edge.' + name for name in exports]
@@ -49,7 +49,7 @@ def prepare_signing_key(build, supplied):
         return supplied
     key = build / "development.keystore"
     if not key.exists():
-        subprocess.run(["keytool", "-genkeypair", "-keystore", str(key), "-storepass", "traceform-local", "-keypass", "traceform-local", "-alias", "traceform", "-dname", "CN=Traceform Local Development", "-keyalg", "RSA", "-validity", "3650"], check=True, capture_output=True)
+        subprocess.run(["keytool", "-genkeypair", "-keystore", str(key), "-storepass", "traceform-local", "-keypass", "traceform-local", "-alias", "traceform", "-dname", "CN=Traceweave Local Development", "-keyalg", "RSA", "-validity", "3650"], check=True, capture_output=True)
     return key
 
 
@@ -62,6 +62,8 @@ def main():
     parser.add_argument("--zk-verifier", type=Path, help="Optional ARM64 public-only proof verifier executable")
     parser.add_argument("--private-participant", type=Path, help="Optional ARM64 TLS private-computation participant executable")
     parser.add_argument("--keystore", type=Path, help="Existing local development signing key; required to preserve installed-app upgrade identity across output directories")
+    parser.add_argument("--key-alias", default="traceform", help="Alias inside the supplied keystore")
+    parser.add_argument("--password-env", help="Environment variable holding the keystore password")
     parser.add_argument("--manifest", type=Path, help="Optional manifest for an isolated validation build")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
@@ -78,10 +80,10 @@ def main():
     classes, dex, libraries, assets = [build / name for name in ("classes", "dex", "lib/arm64-v8a", "assets")]
     for directory in (classes, dex, libraries, assets): directory.mkdir(parents=True, exist_ok=True)
     compiler = args.ndk_root / "toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++"
-    library = libraries / "libtraceform.so"
+    library = libraries / "libtraceweave.so"
     subprocess.run([str(compiler), "-std=c++17", "-O3", "-ffp-contract=off", "-shared", "-fPIC", "-static-libstdc++", "-Wl,-z,max-page-size=16384", "-Wl,--build-id=sha1", "-Wl,--gc-sections",
                     str(root / "native/traceform_core.cpp"), str(root / "native/traceform_jni.cpp"), str(root / "native/periodic_spectrum.cpp"), str(root / "native/periodic_spectrum_jni.cpp"), "-o", str(library)], check=True)
-    benchmark = build / "traceform-core-benchmark"
+    benchmark = build / "traceweave-core-benchmark"
     subprocess.run([str(compiler), "-std=c++17", "-O3", "-ffp-contract=off", "-static-libstdc++",
                     str(root / "native/traceform_core.cpp"), str(root / "native/traceform_benchmark.cpp"), "-o", str(benchmark)], check=True)
     java = sorted((root / "android/src").rglob("*.java"))
@@ -109,21 +111,26 @@ def main():
                       "expected_state": model.nodes[index].state_token, "expected_distance": energies[index],
                       "expected_grid_coord": list(model.nodes[index].grid_coord)})
     (assets / "parity.json").write_text(json.dumps({"cases": cases}))
-    unsigned = build / "traceform-unsigned.apk"
+    unsigned = build / "traceweave-unsigned.apk"
     subprocess.run([str(args.build_tools / "aapt2"), "link", "-I", str(args.android_jar), "--manifest", str(manifest), "-A", str(assets), "-o", str(unsigned)], check=True)
     with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(dex / "classes.dex", "classes.dex")
-        archive.write(library, "lib/arm64-v8a/libtraceform.so")
+        archive.write(library, "lib/arm64-v8a/libtraceweave.so")
         if args.zk_verifier:
-            archive.write(args.zk_verifier, "lib/arm64-v8a/libtraceform_zk_verify.so")
+            archive.write(args.zk_verifier, "lib/arm64-v8a/libtraceweave_zk_verify.so")
         if args.private_participant:
-            archive.write(args.private_participant, "lib/arm64-v8a/libtraceform_private_participant.so")
-    aligned = build / "traceform-aligned.apk"
+            archive.write(args.private_participant, "lib/arm64-v8a/libtraceweave_private_participant.so")
+    aligned = build / "traceweave-aligned.apk"
     subprocess.run([str(args.build_tools / "zipalign"), "-f", "-p", "4", str(unsigned), str(aligned)], check=True)
-    apk = build / "traceform.apk"
-    subprocess.run([str(args.build_tools / "apksigner"), "sign", "--ks", str(key), "--ks-pass", "pass:traceform-local", "--out", str(apk), str(aligned)], check=True)
+    apk = build / "traceweave.apk"
+    password = os.environ.get(args.password_env) if args.password_env else None
+    sign = [str(args.build_tools / "apksigner"), "sign", "--ks", str(key), "--ks-pass",
+            ("pass:" + password) if password else "pass:traceform-local", "--key-pass",
+            ("pass:" + password) if password else "pass:traceform-local", "--ks-key-alias", args.key_alias,
+            "--out", str(apk), str(aligned)]
+    subprocess.run(sign, check=True)
     subprocess.run([str(args.build_tools / "apksigner"), "verify", "--verbose", str(apk)], check=True)
-    sdk_classes = build_sdk_jar(classes, build / "traceform-sdk.jar", args.android_jar)
+    sdk_classes = build_sdk_jar(classes, build / "traceweave-sdk.jar", args.android_jar)
     sources = [Path(__file__).resolve(), manifest, root / "native/traceform_core.h", root / "native/traceform_core.cpp", root / "native/traceform_jni.cpp", root / "native/traceform_benchmark.cpp", root / "native/periodic_spectrum.h", root / "native/periodic_spectrum.cpp", root / "native/periodic_spectrum_jni.cpp", *java]
     report = {"apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(), "apk_bytes": apk.stat().st_size,
               "library_bytes": library.stat().st_size, "abi": "arm64-v8a", "signing": "local_development_only",

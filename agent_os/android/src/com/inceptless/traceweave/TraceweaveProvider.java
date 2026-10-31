@@ -26,7 +26,9 @@ final class TraceweaveProvider implements CapabilityProvider {
     private static final String SERVICE = "com.inceptless.traceweave.edge.EdgeService";
     private static final String SUMMARY_SERVICE = "com.inceptless.traceweave.edge.HistorySummaryService";
     private static final String SUMMARY_PERMISSION = "com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY";
-    private static final String EDGE_CERT_SHA256 = "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c";
+    // Both apps ship under the same signing identity, so the trusted-provider check
+    // pins that one certificate instead of a separate Edge key.
+    private static final String EDGE_CERT_SHA256 = "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db";
     private static final String PERMISSION = "com.inceptless.traceweave.edge.CANONICAL_INPUT";
     private static final String PREFERENCES = "agent_os_provider_preferences";
     private static final String ENABLED = "traceform_enabled";

@@ -37,7 +37,7 @@ final class ProofCancellationFixture {
                     try {
                         if (android.system.Os.stat(process.getAbsolutePath()).st_uid != android.os.Process.myUid()) continue;
                         String command = new String(Files.readAllBytes(new File(process, "cmdline").toPath()), "UTF-8");
-                        if (command.contains("libtraceform_zk_verify.so") && command.contains(root.getAbsolutePath()))
+                        if (command.contains("libtraceweave_zk_verify.so") && command.contains(root.getAbsolutePath()))
                             child = Integer.parseInt(process.getName());
                     } catch (java.io.IOException | android.system.ErrnoException unavailable) { }
                 }

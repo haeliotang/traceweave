@@ -24,7 +24,7 @@ final class PrivateParticipantFixture {
         if (approved) for (int owner = 0; owner < 2; owner++) owners[owner] = java.security.KeyFactory.getInstance("EC").generatePublic(
             new java.security.spec.X509EncodedKeySpec(OwnerAuthentication.readBounded(new File(root, "owner" + owner + ".der"), 256)));
         String executable = new File(context.getApplicationInfo().nativeLibraryDir,
-            "libtraceform_private_participant.so").getAbsolutePath();
+            "libtraceweave_private_participant.so").getAbsolutePath();
         ExecutorService workers = Executors.newFixedThreadPool(2);
         Future<String> first = null, second = null;
         try {

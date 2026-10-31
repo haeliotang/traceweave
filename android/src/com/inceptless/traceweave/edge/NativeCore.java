@@ -1,7 +1,7 @@
 package com.inceptless.traceweave.edge;
 
 public final class NativeCore {
-    static { System.loadLibrary("traceform"); }
+    static { System.loadLibrary("traceweave"); }
     private NativeCore() {}
     public static native double[] periodicCdf(double[] prior, double[] queryPhases,
         double[] observedPhases, int[] sources, int[] targets, int states);

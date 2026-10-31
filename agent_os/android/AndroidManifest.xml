@@ -18,13 +18,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="com.inceptless.edge.CANONICAL_INPUT" />
-    <uses-permission android:name="com.inceptless.edge.READ_HISTORY_SUMMARY" />
+    <uses-permission android:name="com.inceptless.traceweave.edge.CANONICAL_INPUT" />
+    <uses-permission android:name="com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY" />
     <queries>
         <intent><action android:name="android.intent.action.INSERT" /><data android:mimeType="vnd.android.cursor.dir/event" /></intent>
         <intent><action android:name="android.intent.action.SEND" /><data android:mimeType="text/plain" /></intent>
         <package android:name="com.inceptless.traceweave.validation.provider" />
-        <package android:name="com.inceptless.edge" />
+        <package android:name="com.inceptless.traceweave.edge" />
     </queries>
     <application
         android:allowBackup="false"
