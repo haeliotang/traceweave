@@ -56,7 +56,7 @@ final class MemoryConsolidator {
                 || titleLower.contains("请记住我") || titleLower.contains("记住我的偏好")
                 || titleLower.startsWith("i prefer ") || titleLower.startsWith("i like ")
                 || titleLower.startsWith("please remember ")) {
-            String content = T.format("memory.content_preference", en, title);
+            String content = T.format("memory.content_preference", en, title, title);
             items.add(new ConsolidatedItem(AgentStore.MEMORY_PREFERENCE, content));
         }
 

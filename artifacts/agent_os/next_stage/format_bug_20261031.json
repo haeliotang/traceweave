@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "bug": "T.format(\"memory.content_preference\", en, title) supplied one argument for a template with two %s, so DeviceValidation threw MissingFormatArgumentException at runtime",
+  "found_by": "device validation RUN_SUITE, not by host tests",
+  "fix": "pass the title twice (the template names it as the topic key and again in the sentence)",
+  "guard_added": "agent_os/tests/test_format_arguments.py parses every T.format call site with balanced parentheses and compares the argument count with the placeholders in both languages",
+  "device_after_fix": [
+    "RUN_SUITE => PASS action_flow checks=48",
+    "TASK_CENTER => PASS workflow checks=10"
+  ],
+  "note": "a first re-run failed because the package was rebuilt from manifest-actions.xml, which lacks WorkflowValidationActivity; rebuilding from manifest-documents.xml fixed it"
+}
