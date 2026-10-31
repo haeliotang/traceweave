@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -192,6 +192,42 @@ final class AgentStore extends SQLiteOpenHelper {
         createMemoryVersionTable(database);
         createPairingTable(database);
         createMemoryCandidateTable(database);
+        createSyncCursorTable(database);
+    }
+
+    static final class SyncCursor {
+        final String deviceId;
+        final long lastSyncedAt;
+        final String lastAddress;
+        final int lastPort;
+        final String lastResult;
+
+        SyncCursor(String deviceId, long lastSyncedAt, String lastAddress, int lastPort, String lastResult) {
+            this.deviceId = deviceId;
+            this.lastSyncedAt = lastSyncedAt;
+            this.lastAddress = lastAddress;
+            this.lastPort = lastPort;
+            this.lastResult = lastResult;
+        }
+    }
+
+    void recordSyncCursor(String deviceId, long at, String address, int port, String result) {
+        ContentValues values = new ContentValues();
+        values.put("device_id", deviceId);
+        values.put("last_synced_at", at);
+        values.put("last_address", address == null ? "" : address);
+        values.put("last_port", port);
+        values.put("last_result", result == null ? "" : result);
+        getWritableDatabase().insertWithOnConflict("sync_cursor", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    SyncCursor syncCursor(String deviceId) {
+        try (Cursor cursor = getReadableDatabase().query("sync_cursor",
+                new String[]{"device_id", "last_synced_at", "last_address", "last_port", "last_result"},
+                "device_id=?", new String[]{deviceId}, null, null, null)) {
+            if (!cursor.moveToNext()) return null;
+            return new SyncCursor(cursor.getString(0), cursor.getLong(1), cursor.getString(2), cursor.getInt(3), cursor.getString(4));
+        }
     }
 
     private static void createTaskTables(SQLiteDatabase database) {
@@ -233,6 +269,15 @@ final class AgentStore extends SQLiteOpenHelper {
             + "content_hash TEXT NOT NULL, "
             + "sealed_payload BLOB NOT NULL, "
             + "PRIMARY KEY (memory_id, clock))");
+    }
+
+    private static void createSyncCursorTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE sync_cursor ("
+            + "device_id TEXT PRIMARY KEY NOT NULL, "
+            + "last_synced_at INTEGER NOT NULL, "
+            + "last_address TEXT NOT NULL, "
+            + "last_port INTEGER NOT NULL, "
+            + "last_result TEXT NOT NULL)");
     }
 
     private static void createPairingTable(SQLiteDatabase database) {
@@ -281,6 +326,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 8) {
                 createMemoryCandidateTable(database);
                 version = 9;
+            } else if (version == 9) {
+                createSyncCursorTable(database);
+                version = 10;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -2195,6 +2243,10 @@ final class AgentStore extends SQLiteOpenHelper {
         if (PAUSED.equals(from) || WAITING_FOR_USER.equals(from) || FAILED.equals(from))
             return ACTIVE.equals(to) || CANCELLED.equals(to);
         return false;
+    }
+
+    void appendSystemAudit(String event) {
+        appendAudit(getWritableDatabase(), "system", event, System.currentTimeMillis());
     }
 
     private static void appendAudit(SQLiteDatabase database, String taskId, String event, long occurredAt) {

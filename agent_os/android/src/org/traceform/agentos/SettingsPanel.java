@@ -34,6 +34,7 @@ final class SettingsPanel {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(host.dpRef(16), host.dpRef(10), host.dpRef(16), host.dpRef(8));
         root.setBackgroundColor(Ui.background(host));
+        AutoSyncScheduler.apply(host, host.storeRef().syncAutoEnabled(), AutoSyncScheduler.DEFAULT_INTERVAL_MS);
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(host, IconFactory.IconType.SHIELD,
                 T.s("settingspanel.1", en), 0xFF334155, 16);

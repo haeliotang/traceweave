@@ -11,6 +11,20 @@ final class SyncTransport {
 
     private SyncTransport() {}
 
+    /** Device sync seed; the same hex string the UI derives. */
+    static String seed(android.content.Context context) {
+        android.content.SharedPreferences prefs = context.getSharedPreferences("agent_os_prefs", 0);
+        String seed = prefs.getString("sync_seed", "");
+        if (!seed.isEmpty()) return seed;
+        byte[] raw = new byte[32];
+        new java.security.SecureRandom().nextBytes(raw);
+        StringBuilder builder = new StringBuilder();
+        for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
+        seed = builder.toString();
+        prefs.edit().putString("sync_seed", seed).apply();
+        return seed;
+    }
+
     static synchronized boolean available() {
         if (!loaded && !failed) {
             try {

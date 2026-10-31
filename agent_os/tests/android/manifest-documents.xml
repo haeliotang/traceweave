@@ -29,6 +29,7 @@
         <activity android:name="org.traceform.agentos.TaskCenterActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.AuditActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.MemoryReviewActivity" android:exported="false" />
+        <service android:name="org.traceform.agentos.AutoSyncJobService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true" />
         <activity android:name="org.traceform.agentos.ActionFlowValidationActivity" android:exported="true" />
         <activity android:name="org.traceform.agentos.DocumentFlowValidationActivity" android:exported="true" />
