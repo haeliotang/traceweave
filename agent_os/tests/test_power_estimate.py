@@ -21,6 +21,13 @@ class PowerEstimateTests(unittest.TestCase):
         self.assertAlmostEqual(result["percent_per_hour"], 5.0, places=2)
         self.assertAlmostEqual(result["mah_per_hour"], 200.0, places=1)
 
+    def test_parse_manual_readings(self):
+        samples = MODULE.parse_readings(["18:50 96", "18:40 100"])
+        self.assertEqual(samples, [(67200, 100), (67800, 96)])
+        result = MODULE.estimate(samples, 4000)
+        self.assertEqual(result["lost_percent"], 4)
+        self.assertAlmostEqual(result["percent_per_hour"], 24.0, places=1)
+
     def test_estimate_rejects_short_series(self):
         with self.assertRaises(ValueError):
             MODULE.estimate([(0.0, 100)], 4000)

@@ -44,6 +44,19 @@ def estimate(samples, capacity_mah):
     }
 
 
+def parse_readings(values):
+    """Parse 'HH:MM level' strings into (seconds, level) samples sorted by time."""
+    from datetime import datetime
+
+    samples = []
+    for value in values:
+        clock, level = value.split()
+        moment = datetime.strptime(clock, "%H:%M")
+        samples.append((moment.hour * 3600 + moment.minute * 60, int(level)))
+    samples.sort()
+    return samples
+
+
 def sample(adb, serial):
     output = subprocess.run([adb, "-s", serial, "shell", "dumpsys", "battery"],
                             capture_output=True, text=True, check=True).stdout
@@ -53,14 +66,35 @@ def sample(adb, serial):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--adb", default="adb")
-    parser.add_argument("--serial", required=True)
+    parser.add_argument("--serial", help="Required unless --reading is used")
     parser.add_argument("--minutes", type=float, default=10)
     parser.add_argument("--interval-seconds", type=float, default=60)
     parser.add_argument("--capacity-mah", type=float, default=4410)
     parser.add_argument("--output", required=True)
     parser.add_argument("--label", default="idle")
+    parser.add_argument("--reading", action="append", dest="readings",
+                        help="Manual 'HH:MM level' reading, repeatable; skips the device")
     args = parser.parse_args()
 
+    if args.readings:
+        samples = parse_readings(args.readings)
+        result = {
+            "label": args.label,
+            "device": "manual",
+            "capacity_mah": args.capacity_mah,
+            "samples": samples,
+            "estimate": estimate(samples, args.capacity_mah),
+            "temperature_c": {"start": None, "end": None, "max": None},
+            "notes": ["computed from manually reported readings", "no temperature data"],
+        }
+        with open(args.output, "w", encoding="utf-8") as handle:
+            json.dump(result, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+        print(json.dumps(result["estimate"]))
+        return
+
+    if not args.serial:
+        parser.error("--serial is required when sampling the device")
     first = sample(args.adb, args.serial)
     if first["powered"]:
         print("device is charging; unplug it before measuring", file=sys.stderr)

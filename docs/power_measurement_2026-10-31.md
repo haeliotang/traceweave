@@ -17,6 +17,18 @@ python3 agent_os/scripts/measure_power_android.py \
 
 输出字段：样本序列、`percent_per_hour`、`mah_per_hour`、温度起止与峰值，以及固定写入的两条限制（单次运行、无功率计/热腔、屏幕与后台负载仅靠 label 标注）。
 
+## 1.1 没有 adb 连接时的手动方式
+
+拔掉电源后 USB 调试也会断开。此时可以只记录两次电量读数，交给我算：
+
+```bash
+python3 agent_os/scripts/measure_power_android.py \
+  --reading "18:40 100" --reading "18:50 96" \
+  --label auto-sync-off --output power_off.json
+```
+
+脚本会按时间排序并输出 `percent_per_hour` 与 `mah_per_hour`（温度字段为空，并注明“手动读数”）。
+
 ## 2. 需要你配合的最小协议
 
 1. 关闭自动同步，拔掉电源，静置 2 分钟让温度稳定；
