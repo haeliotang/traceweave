@@ -29,6 +29,10 @@ EXTRA_SOURCES = [
 # Self-contained cases only; UI verification cases need their SEED_* case first.
 CASES = ["RUN_SUITE", "TASK_CENTER", "RUN_DOCUMENTS"]
 
+# Order matters: VERIFY_DOCUMENT_RESTART expects the task RUN_DOCUMENTS creates,
+# and the workflow UI cases expect the fixture copied by copy_document_validation_fixture.py.
+DOCUMENT_CASES = ["RUN_DOCUMENTS", "VERIFY_DOCUMENT_RESTART", "WORKFLOW_GUARD_V4"]
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -41,6 +45,7 @@ def main():
     parser.add_argument("--sync-runtime", required=True)
     parser.add_argument("--output-dir", default="agent_os/build/device-regression")
     parser.add_argument("--case", action="append", dest="cases")
+    parser.add_argument("--suite", choices=["quick", "documents"], default="quick")
     args = parser.parse_args()
 
     output = pathlib.Path(args.output_dir)
@@ -61,7 +66,12 @@ def main():
     subprocess.run([args.adb, "-s", args.serial, "install", "-r", str(apk)], check=True,
                    stdout=subprocess.DEVNULL)
 
-    cases = args.cases or CASES
+    if args.cases:
+        cases = args.cases
+    elif args.suite == "documents":
+        cases = DOCUMENT_CASES
+    else:
+        cases = CASES
     run = [sys.executable, str(SCRIPTS / "validate_actions_android.py"),
            "--adb", args.adb, "--serial", args.serial,
            "--package", "org.traceform.agentos.actionsvalidation",

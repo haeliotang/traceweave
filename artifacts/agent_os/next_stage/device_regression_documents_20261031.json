@@ -1,0 +1,14 @@
+{
+  "apk": "agent_os/build/device-docs/agent-os.apk",
+  "cases": [
+    "RUN_DOCUMENTS",
+    "VERIFY_DOCUMENT_RESTART",
+    "WORKFLOW_GUARD_V4"
+  ],
+  "ok": true,
+  "output_tail": [
+    "RUN_DOCUMENTS => 10-31 18:28:24.515  3222  3284 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS",
+    "VERIFY_DOCUMENT_RESTART => 10-31 18:28:26.458  3378  3425 I AgentOsDocumentsValidation: PASS document_flow checks=8 mode=VERIFY_DOCUMENT_RESTART",
+    "WORKFLOW_GUARD_V4 => 10-31 18:28:27.601  3463  3494 I AgentOsDocumentsValidation: PASS document_flow checks=6 mode=WORKFLOW_GUARD_V4"
+  ]
+}
