@@ -61,6 +61,7 @@ public final class MainActivity extends Activity {
     private CapabilityBroker capabilityBroker;
     private EditText taskInput;
     private ScrollView pageScroll;
+    private LinearLayout onboardingCard;
     private TextView bottomSummary;
     private EditText memoryInput;
     private EditText memorySearch;
@@ -618,6 +619,14 @@ public final class MainActivity extends Activity {
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
         page.addView(taskList);
+        onboardingCard = createCard(page, IconFactory.IconType.BRAIN, T.s("onboarding.title", en), Ui.cardAccent(this));
+        TextView onboardingBody = new TextView(this);
+        onboardingBody.setTextSize(12);
+        onboardingBody.setTextColor(Ui.body(this));
+        onboardingBody.setText(T.s("onboarding.line1", en) + "\n"
+            + T.s("onboarding.line2", en) + "\n" + T.s("onboarding.line3", en));
+        onboardingCard.addView(onboardingBody);
+        onboardingCard.setVisibility(View.GONE);
 
         // 5. Bottom Functional Navigation Dock (3 Secondary Dialog Triggers)
         LinearLayout dockRow = new LinearLayout(this);
@@ -1060,6 +1069,7 @@ public final class MainActivity extends Activity {
             taskList.removeAllViews();
             List<AgentStore.Task> tasks = store.listTasks();
             refreshSummary();
+            refreshFirstRun();
             if (tasks.isEmpty()) {
                 addEmptyTasks(taskList, T.s("task.none_active", isEnglish()));
                 mainHandler.removeCallbacks(taskRefresh);
@@ -1158,6 +1168,18 @@ public final class MainActivity extends Activity {
         addDivider(container, null);
     }
 
+    /** The guide only makes sense before the first task or memory exists. */
+    private void refreshFirstRun() {
+        if (onboardingCard == null || store == null) return;
+        boolean empty;
+        try {
+            empty = store.listTasks().isEmpty() && store.listMemories().isEmpty();
+        } catch (Exception ignored) {
+            empty = false;
+        }
+        onboardingCard.setVisibility(empty ? View.VISIBLE : View.GONE);
+    }
+
     private void refreshSummary() {
         if (bottomSummary == null || store == null) return;
         boolean en = isEnglish();
@@ -1200,7 +1222,15 @@ public final class MainActivity extends Activity {
                     : T.s("memory.none_yet", isEnglish()));
                 return;
             }
-            for (AgentStore.Memory memory : memories) addMemoryCard(memory);
+            String query = memorySearch == null ? "" : memorySearch.getText().toString().trim();
+            String currentKind = null;
+            for (AgentStore.Memory memory : memories) {
+                if (!memory.kind.equals(currentKind)) {
+                    currentKind = memory.kind;
+                    memoryList.addView(memoryGroupHeader(currentKind, memories));
+                }
+                addMemoryCard(memory, query);
+            }
     }
 
     private void addTaskCard(AgentStore.Task task) {
@@ -1235,12 +1265,6 @@ public final class MainActivity extends Activity {
         headerRow.addView(badge);
         card.addView(headerRow);
 
-        TextView metadata = new TextView(this);
-        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(task.updatedAt)));
-        metadata.setTextSize(11);
-        metadata.setTextColor(0xFF94A3B8);
-        metadata.setPadding(0, dp(2), 0, dp(2));
-        card.addView(metadata);
 
         boolean en = isEnglish();
         int planSteps = task.plan == null ? 0 : task.plan.totalSteps();
@@ -1251,6 +1275,19 @@ public final class MainActivity extends Activity {
                     && (!step.isExternalAction() || ExternalAction.hasVerifiedEffect(step))) planDone++;
             }
         }
+        // Everything except the title, badge and one-line status lives behind the
+        // details toggle so a long task list stays scannable.
+        final LinearLayout detailContainer = new LinearLayout(this);
+        detailContainer.setOrientation(LinearLayout.VERTICAL);
+        detailContainer.setVisibility(View.GONE);
+
+        TextView metadata = new TextView(this);
+        metadata.setText(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(task.updatedAt)));
+        metadata.setTextSize(11);
+        metadata.setTextColor(0xFF94A3B8);
+        metadata.setPadding(0, dp(2), 0, dp(2));
+        detailContainer.addView(metadata);
+
         TextView summary = new TextView(this);
         String nextTitle = "";
         if (task.plan != null && task.executionStep < task.plan.steps.size())
@@ -1274,7 +1311,7 @@ public final class MainActivity extends Activity {
             LinearLayout.LayoutParams barLp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(4));
             barLp.setMargins(0, dp(2), 0, dp(2));
-            card.addView(progress, barLp);
+            detailContainer.addView(progress, barLp);
         }
 
         if (AgentStore.ACTIVE.equals(task.status) && planSteps > 0) {
@@ -1291,7 +1328,7 @@ public final class MainActivity extends Activity {
             running.setTypeface(null, android.graphics.Typeface.BOLD);
             running.setTextColor(Ui.cardAccent(this));
             running.setPadding(0, dp(2), 0, dp(2));
-            card.addView(running);
+            detailContainer.addView(running);
         }
         boolean isTerminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
             || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
@@ -1301,8 +1338,6 @@ public final class MainActivity extends Activity {
             addPageButton(card, T.s("ui.review_file_and_receipt", en), view ->
                 startActivity(new Intent(this, DocumentTaskActivity.class).putExtra(DocumentTaskActivity.EXTRA_TASK_ID, task.id)));
         }
-        final LinearLayout detailContainer = new LinearLayout(this);
-        detailContainer.setOrientation(LinearLayout.VERTICAL);
         if (task.plan != null && !task.plan.context.isEmpty()) {
             addPageButton(detailContainer, T.s("ui.review_selected_task_memories", en), view -> {
                 StringBuilder context = new StringBuilder(TaskContext.localOnly(task.plan)
@@ -1319,7 +1354,6 @@ public final class MainActivity extends Activity {
             });
         }
 
-        detailContainer.setVisibility(View.GONE);
         {
 
             LinearLayout toggleRow = new LinearLayout(this);
@@ -1359,6 +1393,7 @@ public final class MainActivity extends Activity {
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setPadding(0, dp(4), 0, 0);
+        detailContainer.addView(actions);
 
         boolean externalDraft = task.plan != null && task.executionStep < task.plan.totalSteps()
             && task.plan.steps.get(task.executionStep).isExternalAction()
@@ -1381,7 +1416,6 @@ public final class MainActivity extends Activity {
         if (!isTerminal)
             addTaskButton(actions, T.s("ui.cancel", en), task, AgentStore.CANCELLED);
         addCardActionButton(actions, T.s("ui.delete", en), view -> confirmDeleteTask(task), taskButtons);
-        detailContainer.addView(actions);
 
         if (!isTerminal && !documentPlanning) {
             // Raw grant/read/revoke rows are diagnostics; a normal task flow only
@@ -1708,7 +1742,37 @@ public final class MainActivity extends Activity {
         }
     }
 
-    private void addMemoryCard(AgentStore.Memory memory) {
+    private TextView memoryGroupHeader(String kind, List<AgentStore.Memory> memories) {
+        boolean en = isEnglish();
+        int count = 0;
+        for (AgentStore.Memory memory : memories) if (kind.equals(memory.kind)) count++;
+        TextView header = new TextView(this);
+        header.setText(T.format("memory.group_header", en, getMemoryKindLabel(kind, en), count));
+        header.setTextSize(11);
+        header.setTypeface(null, android.graphics.Typeface.BOLD);
+        header.setTextColor(Ui.muted(this));
+        header.setPadding(0, dp(10), 0, dp(2));
+        return header;
+    }
+
+    private String getMemoryKindLabel(String kind, boolean en) {
+        if (AgentStore.MEMORY_PREFERENCE.equals(kind)) return T.s("memory.kind_preference", en);
+        if (AgentStore.MEMORY_FACT.equals(kind)) return T.s("memory.kind_fact", en);
+        if (AgentStore.MEMORY_WORKFLOW.equals(kind)) return T.s("memory.kind_workflow", en);
+        return kind;
+    }
+
+    /** Marks the search term so a long list is easy to scan. */
+    private CharSequence highlightMatch(String text, String query) {
+        if (query == null || query.isEmpty()) return text;
+        int start = text.toLowerCase(java.util.Locale.ROOT).indexOf(query.toLowerCase(java.util.Locale.ROOT));
+        if (start < 0) return text;
+        android.text.SpannableString spanned = new android.text.SpannableString(text);
+        spanned.setSpan(new android.text.style.BackgroundColorSpan(0xFFFDE68A), start, start + query.length(), 0);
+        return spanned;
+    }
+
+    private void addMemoryCard(AgentStore.Memory memory, String query) {
         boolean en = isEnglish();
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -1718,7 +1782,7 @@ public final class MainActivity extends Activity {
         row.addView(getMemoryKindBadge(memory.kind));
 
         TextView content = new TextView(this);
-        content.setText(memory.content);
+        content.setText(highlightMatch(memory.content, query));
         content.setTextSize(13);
         content.setTextColor(0xFF1E293B);
         content.setMaxLines(1);

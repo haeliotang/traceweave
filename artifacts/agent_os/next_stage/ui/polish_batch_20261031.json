@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-31",
+  "items": {
+    "task_card_density": "title, badge and a one-line step summary stay visible; time, progress bar, running line, plan tree, action buttons and advanced controls all live behind the details toggle",
+    "actionable_copy": "Local Planner now says 'No model yet · tap to install' and Daemon says 'Off in this build · tap for details' instead of only describing the state",
+    "first_run_guide": "a Start here card (three steps) appears only while there is no task and no memory, and disappears as soon as either exists",
+    "memory_browsing": "memories are grouped by kind with counts, the search term is highlighted, and search now matches substrings ('Check' finds 'GroupingCheckFact') instead of whole words only"
+  },
+  "evidence": {
+    "screenshots": [
+      "artifacts/agent_os/next_stage/ui/onboarding_20261031.png",
+      "artifacts/agent_os/next_stage/ui/memory_grouped_20261031.png",
+      "artifacts/agent_os/next_stage/ui/memory_search_highlight_20261031.png"
+    ],
+    "device_regression": "RUN_SUITE 48, TASK_CENTER 10, RUN_DOCUMENTS 20 all PASS",
+    "host_tests": "web suite passes including the new memory search test"
+  },
+  "bug_found": "the first-run guide stayed visible after adding a memory because visibility was only recomputed from the task list; it now refreshes from both lists"
+}

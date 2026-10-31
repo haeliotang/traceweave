@@ -33,7 +33,7 @@ final class T {
         add("status.vision", "Vision/PTT", "视觉/PTT");
         add("status.model_missing", "Model runtime unavailable", "模型运行库不可用");
         add("status.model_present", "Model file present", "模型文件已导入");
-        add("status.daemon_off", "Off · Binder only", "已停用 · 仅 Binder");
+        add("status.daemon_off", "Off in this build · tap for details", "此版本未启用 · 点击查看说明");
         add("status.archive_local", "AES-GCM · local only", "AES-GCM · 仅本机");
         add("status.sensors_off", "Off · tap to enable", "已关闭 · 点击开启");
         add("status.vision_off", "OCR off · ring off", "OCR 关闭 · 指环未连");
@@ -492,7 +492,7 @@ final class T {
         add("externalactionactivity.end", "End: ", "结束：");
         add("hardwareperipheralservice.ble_ring_disconnected", "BLE Ring: Disconnected", "BLE指环: 未连接");
         add("localmodelstatus.rule_based_planning_nmodel_runtime_una", "Rule-based planning\nModel runtime unavailable", "规则式规划\n模型运行库不可用");
-        add("localmodelstatus.rule_based_planning_nno_model_file", "Rule-based planning\nNo model file", "规则式规划\n尚无模型文件");
+        add("localmodelstatus.rule_based_planning_nno_model_file", "Rule-based planning\nNo model yet · tap to install", "规则式规划\n尚未安装模型 · 点击安装");
         add("localmodelstatus.model_file_present", "Model file present", "模型文件存在");
         add("memoryreviewactivity.task_no_longer_exists", "Task no longer exists", "任务已不存在");
         add("memoryreviewactivity.review_memory_suggestions", "Review memory suggestions", "逐条审核候选记忆");
@@ -701,6 +701,14 @@ final class T {
         add("task.advanced_open", "Advanced capability controls ▾", "高级能力控制 ▾");
         add("task.running_step", "Running step %d/%d: %s", "正在执行第 %d/%d 步：%s");
         add("task.elapsed", "elapsed %s", "已用 %s");
+        add("onboarding.title", "Start here", "从这里开始");
+        add("onboarding.line1", "1. Describe a goal below and submit it.", "1. 在下方描述一个目标并提交。");
+        add("onboarding.line2", "2. Approve each capability the task asks for, for five minutes at a time.", "2. 任务请求的能力逐项授权，每次五分钟。");
+        add("onboarding.line3", "3. Everything stays on this device and shows up in the audit log.", "3. 所有数据留在本机，并可在审计日志中查看。");
+        add("memory.group_header", "%s (%d)", "%s（%d）");
+        add("memory.kind_preference", "Preference", "偏好");
+        add("memory.kind_fact", "Fact", "事实");
+        add("memory.kind_workflow", "Workflow", "工作流");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
