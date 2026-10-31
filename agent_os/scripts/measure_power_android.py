@@ -72,6 +72,9 @@ def main():
     parser.add_argument("--capacity-mah", type=float, default=4410)
     parser.add_argument("--output", required=True)
     parser.add_argument("--label", default="idle")
+    parser.add_argument("--wait-for-unplug", action="store_true",
+                        help="Poll until the device stops charging, then sample")
+    parser.add_argument("--wait-timeout-minutes", type=float, default=60)
     parser.add_argument("--reading", action="append", dest="readings",
                         help="Manual 'HH:MM level' reading, repeatable; skips the device")
     args = parser.parse_args()
@@ -96,6 +99,11 @@ def main():
     if not args.serial:
         parser.error("--serial is required when sampling the device")
     first = sample(args.adb, args.serial)
+    if first["powered"] and args.wait_for_unplug:
+        deadline = time.time() + args.wait_timeout_minutes * 60
+        while first["powered"] and time.time() < deadline:
+            time.sleep(5)
+            first = sample(args.adb, args.serial)
     if first["powered"]:
         print("device is charging; unplug it before measuring", file=sys.stderr)
         sys.exit(2)
