@@ -102,6 +102,15 @@ final class MemoryDetailPanel {
         heading.setTextSize(14);
         heading.setPadding(0, 0, 0, host.dpRef(4));
         body.addView(heading, 0);
+        java.util.List<AgentStore.MemoryConflict> conflicts = host.storeRef().listMemoryConflicts(memory.id);
+        if (!conflicts.isEmpty()) {
+            Button resolve = new Button(host);
+            resolve.setText(T.format("memory.conflicts_found", en, conflicts.size()));
+            resolve.setAllCaps(false);
+            resolve.setTextSize(12);
+            resolve.setOnClickListener(view -> showConflictDialog(memory, conflicts, en));
+            body.addView(resolve);
+        }
         AlertDialog detail = new AlertDialog.Builder(host)
             .setView(body)
             .setNegativeButton(T.s("memorydetailpanel.18", en), (dialog, which) -> confirmDelete(memory))
@@ -111,6 +120,44 @@ final class MemoryDetailPanel {
         Ui.themeDialog(detail, host);
     }
 
+
+    private void showConflictDialog(AgentStore.Memory memory, java.util.List<AgentStore.MemoryConflict> conflicts, boolean en) {
+        LinearLayout body = new LinearLayout(host);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
+        TextView heading = Ui.title(host, T.s("memory.conflict_title", en));
+        heading.setTextSize(14);
+        body.addView(heading);
+        for (AgentStore.MemoryConflict conflict : conflicts) {
+            TextView item = new TextView(host);
+            item.setText(conflict.content);
+            item.setTextSize(12);
+            item.setTextColor(Ui.text(host));
+            item.setPadding(0, host.dpRef(6), 0, 0);
+            body.addView(item);
+            Button use = new Button(host);
+            use.setText(T.s("memory.use_this_version", en));
+            use.setAllCaps(false);
+            use.setTextSize(12);
+            use.setOnClickListener(view -> {
+                try {
+                    host.storeRef().resolveMemoryConflict(memory.id, conflict.content, conflict.source,
+                        conflict.reference, conflict.expiresAt);
+                    host.refreshAfterSync();
+                    host.toast(T.s("memory.conflict_resolved", en));
+                } catch (Exception error) {
+                    host.failWith(error);
+                }
+            });
+            body.addView(use);
+        }
+        AlertDialog dialog = new AlertDialog.Builder(host)
+            .setView(body)
+            .setPositiveButton(T.s("common.close", en), null)
+            .create();
+        dialog.show();
+        Ui.themeDialog(dialog, host);
+    }
 
     private void confirmDelete(AgentStore.Memory memory) {
         boolean en = host.english();

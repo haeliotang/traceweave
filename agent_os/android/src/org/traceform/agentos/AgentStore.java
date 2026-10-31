@@ -1446,6 +1446,75 @@ final class AgentStore extends SQLiteOpenHelper {
         database.insertWithOnConflict("memory_candidates", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
+    static final class MemoryConflict {
+        final String clock;
+        final String content;
+        final String source;
+        final String reference;
+        final long expiresAt;
+
+        MemoryConflict(String clock, String content, String source, String reference, long expiresAt) {
+            this.clock = clock;
+            this.content = content;
+            this.source = source;
+            this.reference = reference;
+            this.expiresAt = expiresAt;
+        }
+    }
+
+    /** Conflicting versions recorded for a memory, newest first. */
+    java.util.List<MemoryConflict> listMemoryConflicts(String memoryId) {
+        java.util.ArrayList<MemoryConflict> conflicts = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("memory_candidates",
+                new String[]{"clock", "sealed_payload"}, "memory_id=?", new String[]{memoryId},
+                null, null, null)) {
+            while (cursor.moveToNext()) {
+                try {
+                    org.json.JSONObject payload = new org.json.JSONObject(new String(
+                        unseal(memoryAad(memoryId), cursor.getBlob(1)), StandardCharsets.UTF_8));
+                    conflicts.add(new MemoryConflict(cursor.getString(0), payload.getString("content"),
+                        payload.optString("source", MEMORY_SOURCE_USER), payload.optString("sourceReference", ""),
+                        payload.optLong("expiresAt", 0)));
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return conflicts;
+    }
+
+    /** Keeps the chosen version, drops the competing candidates, and writes an audit note. */
+    void resolveMemoryConflict(String memoryId, String chosenContent, String chosenSource, String chosenReference,
+                               long chosenExpiresAt) throws Exception {
+        String normalized = validateMemory(MEMORY_FACT, chosenContent);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            String hash = sha256Hex(normalized);
+            java.util.TreeMap<String, Long> clock = versionClock(memoryId, hash);
+            if (clock == null) {
+                clock = new java.util.TreeMap<>();
+                clock.put(localActor(), System.currentTimeMillis());
+            }
+            database.update("memories", memoryPayloadValues(memoryId, MEMORY_FACT, normalized,
+                chosenSource, chosenReference, chosenExpiresAt), "id=?", new String[]{memoryId});
+            replaceMemoryVersions(database, memoryId, java.util.Collections.singletonList(
+                new MemoryMerge.Version(clock, hash, false)));
+            deleteCandidates(database, memoryId);
+            appendAudit(database, memoryId, "memory_conflict_resolved", System.currentTimeMillis());
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    private ContentValues memoryPayloadValues(String id, String kind, String content, String source,
+                                              String reference, long expiresAt) throws Exception {
+        ContentValues values = new ContentValues();
+        values.put("updated_at", System.currentTimeMillis());
+        values.put("sealed_payload", seal(memoryAad(id), memoryPayload(content, source, reference, expiresAt)));
+        return values;
+    }
+
     /** True when a conflict candidate exists for this memory. */
     boolean hasMemoryCandidate(String memoryId) {
         try (Cursor cursor = getReadableDatabase().query("memory_candidates", new String[]{"memory_id"},

@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "flow": "memory detail shows '1 个冲突版本' -> dialog lists the competing content with 采用此版本 -> tap resolves",
+  "database_after_resolution": {
+    "memory": "26c667e9…",
+    "versions": 1,
+    "candidates": 0,
+    "audit": "memory_conflict_resolved"
+  },
+  "other_memories": "two other probe memories still hold 2 versions and 1 candidate each because they were never resolved",
+  "incident": "the first attempt crashed with IllegalStateException: Unknown string key: common.close; the catalog behaved as designed but the key was missing",
+  "follow_up_added": "agent_os/tests/test_string_keys.py now fails the suite when code uses a T.s/T.format key that T.java does not define",
+  "screenshot": "artifacts/agent_os/next_stage/ui/conflict_resolution.png",
+  "limitations": [
+    "resolution keeps the chosen content and drops the losing candidates; there is no undo",
+    "only the single-conflict case was exercised"
+  ]
+}
