@@ -29,16 +29,16 @@ final class MemorySelectionView extends LinearLayout {
         this.store = store; this.goal = goal; this.en = en;
         selection = new MemorySelection(store.listPlanningMemories(), restored);
         setOrientation(VERTICAL);
-        query = new EditText(context); query.setHint(en ? "Search memory text, kind or source" : "搜索记忆内容、类型或来源"); addView(query);
+        query = new EditText(context); query.setHint(T.s("memoryselectionview.search_memory_text_kind_or_source", en)); addView(query);
         source = new Spinner(context);
         source.setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
             en ? new String[]{"All sources", "User", "Traceform", "Confirmed suggestions"}
                 : new String[]{"全部来源", "你提供", "Traceform", "已确认建议"}));
         addView(source);
         Button suggest = new Button(context); suggest.setAllCaps(false);
-        suggest.setText(en ? "Show suggestions · select manually" : "显示相关建议 · 仍需手动勾选");
+        suggest.setText(T.s("memoryselectionview.show_suggestions_select_manually", en));
         suggest.setOnClickListener(v -> { suggestions = !suggestions; render(); }); addView(suggest);
-        Button clear = new Button(context); clear.setAllCaps(false); clear.setText(en ? "Clear selected memories" : "清除已选记忆");
+        Button clear = new Button(context); clear.setAllCaps(false); clear.setText(T.s("memoryselectionview.clear_selected_memories", en));
         clear.setOnClickListener(v -> { selection.clear(); render(); }); addView(clear);
         summary = new TextView(context); addView(summary);
         rows = new LinearLayout(context); rows.setOrientation(VERTICAL); addView(rows);
@@ -65,8 +65,8 @@ final class MemorySelectionView extends LinearLayout {
         updateSummary();
     }
     private void updateSummary() {
-        summary.setText((en ? "Selected: " : "已选：") + selection.ids().size() + (suggestions
-            ? (en ? " · suggestions shown; no automatic selection" : " · 正在显示建议，不会自动选中") : ""));
+        summary.setText((T.s("memoryselectionview.selected", en)) + selection.ids().size() + (suggestions
+            ? (T.s("memoryselectionview.suggestions_shown_no_automatic_selecti", en)) : ""));
     }
     ArrayList<String> selectedIds() { return selection.ids(); }
     List<AgentStore.Memory> chosen() throws Exception { return selection.chosen(store.listPlanningMemories()); }

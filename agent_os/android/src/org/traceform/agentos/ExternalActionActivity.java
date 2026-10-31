@@ -47,7 +47,7 @@ public final class ExternalActionActivity extends Activity {
                 showEditor(null, state);
             } else {
                 AgentStore.Task task = store.getTask(taskId);
-                if (task == null) throw new IllegalStateException(en ? "Task no longer exists" : "任务已不存在");
+                if (task == null) throw new IllegalStateException(T.s("externalactionactivity.task_no_longer_exists", en));
                 ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
                 if (ExecutionPlan.STEP_HANDED_OFF.equals(step.status))
                     store.recordExternalOutcome(task.id, task.executionStep,
@@ -96,7 +96,7 @@ public final class ExternalActionActivity extends Activity {
         setContentView(scroll);
         TextView heading = new TextView(this);
         heading.setTextSize(22);
-        heading.setText(en ? "Review external action" : "预览并确认外部动作");
+        heading.setText(T.s("externalactionactivity.review_external_action", en));
         root.addView(heading);
 
         ExecutionPlan.Step step = task == null ? null : task.plan.steps.get(task.executionStep);
@@ -104,18 +104,17 @@ public final class ExternalActionActivity extends Activity {
                 || !ExecutionPlan.STEP_DRAFT_READY.equals(step.status))) {
             TextView result = new TextView(this);
             result.setText(AgentStore.OUTCOME_UNKNOWN.equals(task.status)
-                ? (en ? "Handed to another app. Saving or sending could not be verified. This action will not be replayed. Check the receiving app before creating another task."
-                    : "已交给外部应用，但无法验证是否保存或发送。此动作不会自动重放；再次创建任务前请先在目标应用检查。")
-                : (en ? "Action state: " : "动作状态：") + task.status);
+                ? (T.s("externalactionactivity.handed_to_another_app_saving_or_sendin", en))
+                : (T.s("externalactionactivity.action_state", en)) + task.status);
             root.addView(result);
-            addButton(root, en ? "Back to tasks" : "返回任务", this::finish);
+            addButton(root, T.s("externalactionactivity.back_to_tasks", en), this::finish);
             return;
         }
 
         boolean calendar = step == null || LocalCalendarProvider.CAPABILITY.equals(step.capability);
         JSONObject draft = step == null ? ExternalAction.calendarDraft("", 0, 0) : new JSONObject(step.observation);
         title = new EditText(this);
-        title.setHint(en ? "Title" : "标题");
+        title.setHint(T.s("externalactionactivity.title", en));
         title.setSingleLine(true);
         title.setText(state != null ? state.getString("title", "") : draft.optString(calendar ? "title" : "subject", ""));
         root.addView(title);
@@ -127,7 +126,7 @@ public final class ExternalActionActivity extends Activity {
             updateTimeButtons();
         } else {
             content = new EditText(this);
-            content.setHint(en ? "Text to share" : "分享正文");
+            content.setHint(T.s("externalactionactivity.text_to_share", en));
             content.setMinLines(4);
             content.setText(state != null ? state.getString("content", "") : draft.optString("content", ""));
             root.addView(content);
@@ -138,13 +137,13 @@ public final class ExternalActionActivity extends Activity {
             : "下一次确认只授权本次预览内容。保存或发送由目标应用处理，返回码不能证明成功。Agent OS 不申请读取日历权限。");
         root.addView(explanation);
         if (task == null) {
-            addButton(root, en ? "Create draft and preview" : "生成日程草稿并预览", () -> {
+            addButton(root, T.s("externalactionactivity.create_draft_and_preview", en), () -> {
                 try {
                     JSONObject input = editedDraft(true);
                     ExternalAction.intent(LocalCalendarProvider.CAPABILITY, input);
                     AgentStore.Task created = store.createTask(input.getString("title"));
                     taskId = created.id;
-                    ExecutionPlan.Step calendarStep = new ExecutionPlan.Step(0, en ? "Prepare calendar event" : "准备日程",
+                    ExecutionPlan.Step calendarStep = new ExecutionPlan.Step(0, T.s("externalactionactivity.prepare_calendar_event", en),
                         LocalCalendarProvider.CAPABILITY, LocalCalendarProvider.SCOPE, input.toString(),
                         ExecutionPlan.STEP_PENDING, "", 0);
                     store.savePlan(taskId, new ExecutionPlan(taskId, created.title, Collections.singletonList(calendarStep),
@@ -156,14 +155,14 @@ public final class ExternalActionActivity extends Activity {
                 } catch (Exception error) { showFailure(error); }
             });
         } else {
-            addButton(root, calendar ? (en ? "Authorize and open calendar" : "授权并打开日历")
-                : (en ? "Authorize and open share chooser" : "授权并打开系统分享"), () -> launch(calendar, draft.optString("draftId")));
-            addButton(root, en ? "Cancel before handoff" : "取消此动作", () -> {
+            addButton(root, calendar ? (T.s("externalactionactivity.authorize_and_open_calendar", en))
+                : (T.s("externalactionactivity.authorize_and_open_share_chooser", en)), () -> launch(calendar, draft.optString("draftId")));
+            addButton(root, T.s("externalactionactivity.cancel_before_handoff", en), () -> {
                 try { store.transition(taskId, AgentStore.CANCELLED); finish(); }
                 catch (Exception error) { showFailure(error); }
             });
         }
-        addButton(root, en ? "Back" : "返回", this::finish);
+        addButton(root, T.s("externalactionactivity.back", en), this::finish);
     }
 
     private JSONObject editedDraft(boolean calendar) throws Exception {
@@ -185,8 +184,8 @@ public final class ExternalActionActivity extends Activity {
             broker.invoke(taskId, step.capability, step.scope);
             attempt = store.claimExternalAction(taskId, stepIndex, draftId, draft);
             if (intent.resolveActivity(getPackageManager()) == null)
-                throw new ActivityNotFoundException(en ? "Install a calendar or share target first" : "请先安装能处理此动作的日历或分享应用");
-            startActivityForResult(calendar ? intent : Intent.createChooser(intent, en ? "Share" : "分享"), HANDOFF_REQUEST);
+                throw new ActivityNotFoundException(T.s("externalactionactivity.install_a_calendar_or_share_target_fir", en));
+            startActivityForResult(calendar ? intent : Intent.createChooser(intent, T.s("externalactionactivity.share", en)), HANDOFF_REQUEST);
             dispatched = true;
             store.appendTaskEvent(taskId, "action_launch_accepted:step_" + (stepIndex + 1));
         } catch (Exception error) {
@@ -231,9 +230,9 @@ public final class ExternalActionActivity extends Activity {
 
     private void updateTimeButtons() {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-        start.setText((en ? "Start: " : "开始：") + (startTime == 0 ? (en ? "Choose date and time" : "选择日期与时间") : format.format(new Date(startTime)))
+        start.setText((T.s("externalactionactivity.start", en)) + (startTime == 0 ? (T.s("externalactionactivity.choose_date_and_time", en)) : format.format(new Date(startTime)))
             + " (" + TimeZone.getDefault().getID() + ")");
-        end.setText((en ? "End: " : "结束：") + (endTime == 0 ? (en ? "Choose date and time" : "选择日期与时间") : format.format(new Date(endTime))));
+        end.setText((T.s("externalactionactivity.end", en)) + (endTime == 0 ? (T.s("externalactionactivity.choose_date_and_time", en)) : format.format(new Date(endTime))));
     }
 
     private Button addButton(LinearLayout root, String label, Runnable action) {

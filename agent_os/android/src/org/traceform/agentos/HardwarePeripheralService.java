@@ -74,7 +74,7 @@ public final class HardwarePeripheralService {
             } catch (SecurityException ignored) {}
             return en ? ("BLE: " + name + " (Connected)") : ("BLE指环: 已连接 (" + name + ")");
         }
-        return en ? "BLE Ring: Disconnected" : "BLE指环: 未连接";
+        return T.s("hardwareperipheralservice.ble_ring_disconnected", en);
     }
 
     /**

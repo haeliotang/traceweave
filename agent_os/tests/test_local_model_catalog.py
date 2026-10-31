@@ -12,6 +12,7 @@ class LocalModelCatalogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="traceform-catalog-") as directory:
             sources = [ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelCatalog.java",
                        ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelStatus.java",
+                       ROOT / "agent_os/android/src/org/traceform/agentos/T.java",
                        ROOT / "agent_os/tests/android/LocalModelCatalogHostTest.java"]
             subprocess.run(["javac", "--release", "8", "-d", directory, *map(str, sources)], check=True)
             result = subprocess.run(["java", "-cp", directory, "org.traceform.agentos.LocalModelCatalogHostTest"],

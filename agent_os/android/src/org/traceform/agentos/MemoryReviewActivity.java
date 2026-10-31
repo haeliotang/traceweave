@@ -31,7 +31,7 @@ public final class MemoryReviewActivity extends Activity {
 
     private void show() throws Exception {
         AgentStore.Task task = store.getTask(taskId);
-        if (task == null || task.plan == null) throw new IllegalStateException(en ? "Task no longer exists" : "任务已不存在");
+        if (task == null || task.plan == null) throw new IllegalStateException(T.s("memoryreviewactivity.task_no_longer_exists", en));
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(32, 48, 32, 32);
@@ -43,34 +43,33 @@ public final class MemoryReviewActivity extends Activity {
             return insets;
         });
         setContentView(scroll);
-        text(root, en ? "Review memory suggestions" : "逐条审核候选记忆");
-        text(root, (en ? "Source task: " : "来源任务：") + task.title + "\n" + task.id);
-        text(root, en ? "Suggestions are not facts. Edit and accept or reject each item. Leaving a suggestion pending saves no memory."
-            : "候选建议尚不是事实。可逐条修改后确认或拒绝；未处理项不会写入记忆。");
+        text(root, T.s("memoryreviewactivity.review_memory_suggestions", en));
+        text(root, (T.s("memoryreviewactivity.source_task", en)) + task.title + "\n" + task.id);
+        text(root, T.s("memoryreviewactivity.suggestions_are_not_facts_edit_and_acc", en));
         List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
         JSONObject decisions = new JSONObject(task.plan.memoryDecisions);
         for (int index = 0; index < candidates.size(); index++) {
             final int item = index;
             MemoryConsolidator.ConsolidatedItem candidate = candidates.get(index);
-            text(root, (en ? "Suggestion " : "候选 ") + (index + 1) + " · " + candidate.kind);
+            text(root, (T.s("memoryreviewactivity.suggestion", en)) + (index + 1) + " · " + candidate.kind);
             if (decisions.has(String.valueOf(index))) {
                 JSONObject decision = decisions.getJSONObject(String.valueOf(index));
                 text(root, "accepted".equals(decision.optString("decision"))
-                    ? (en ? "Accepted: " : "已确认：") + decision.optString("content") : (en ? "Rejected" : "已拒绝"));
+                    ? (T.s("memoryreviewactivity.accepted", en)) + decision.optString("content") : (T.s("memoryreviewactivity.rejected", en)));
                 continue;
             }
             if (!"pending".equals(task.plan.memoryReview)) {
-                text(root, (en ? "Previously reviewed: " : "历史审核结果：") + task.plan.memoryReview);
+                text(root, (T.s("memoryreviewactivity.previously_reviewed", en)) + task.plan.memoryReview);
                 continue;
             }
             EditText content = new EditText(this);
             content.setMinLines(3);
             content.setText(candidate.content);
             root.addView(content);
-            button(root, en ? "Confirm this edited memory" : "确认本条修改后的记忆", () -> review(item, true, content.getText().toString()));
-            button(root, en ? "Reject this suggestion" : "拒绝本条候选", () -> review(item, false, ""));
+            button(root, T.s("memoryreviewactivity.confirm_this_edited_memory", en), () -> review(item, true, content.getText().toString()));
+            button(root, T.s("memoryreviewactivity.reject_this_suggestion", en), () -> review(item, false, ""));
         }
-        button(root, en ? "Back to tasks" : "返回任务", this::finish);
+        button(root, T.s("memoryreviewactivity.back_to_tasks", en), this::finish);
     }
 
     private void review(int index, boolean accept, String content) {

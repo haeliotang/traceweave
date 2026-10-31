@@ -11,6 +11,7 @@ class LocalModelStatusTests(unittest.TestCase):
     def test_model_status_distinguishes_file_runtime_and_verification(self):
         with tempfile.TemporaryDirectory(prefix="traceform-model-status-test-") as directory:
             sources = [ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelStatus.java",
+                       ROOT / "agent_os/android/src/org/traceform/agentos/T.java",
                        ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelCatalog.java",
                        ROOT / "agent_os/tests/android/LocalModelStatusHostTest.java"]
             subprocess.run(["javac", "--release", "8", "-d", directory, *map(str, sources)], check=True)

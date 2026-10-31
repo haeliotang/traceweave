@@ -106,22 +106,22 @@ public final class AgentFloatingService extends Service {
 
     private void updateLocaleTexts(boolean en) {
         if (statusTextView != null) {
-            statusTextView.setText(en ? " Traceform Capsule" : " Traceform 胶囊");
+            statusTextView.setText(T.s("agentfloatingservice.traceform_capsule", en));
         }
         if (collapseBtn != null) {
-            collapseBtn.setText(en ? "Collapse ▲" : "收起 ▲");
+            collapseBtn.setText(T.s("agentfloatingservice.collapse", en));
         }
         if (jitTitle != null) {
-            jitTitle.setText(en ? " Cross-App JIT Gate Request" : " 跨应用 JIT 门禁请求");
+            jitTitle.setText(T.s("agentfloatingservice.cross_app_jit_gate_request", en));
         }
         if (btnGrant != null) {
-            btnGrant.setText(en ? "Grant 5 Min" : "授权 5 分钟");
+            btnGrant.setText(T.s("agentfloatingservice.grant_5_min", en));
         }
         if (btnDeny != null) {
-            btnDeny.setText(en ? "Deny" : "拒绝");
+            btnDeny.setText(T.s("agentfloatingservice.deny", en));
         }
         if (taskDetailView != null && (pendingTaskId == null || pendingTaskId.isEmpty())) {
-            taskDetailView.setText(en ? " Core: Local rule planner ready" : " 核心运行: 本地规则规划已就绪");
+            taskDetailView.setText(T.s("agentfloatingservice.core_local_rule_planner_ready", en));
         }
         if (sensoriumDetailView != null) {
             updateSensorText(en);
@@ -131,13 +131,13 @@ public final class AgentFloatingService extends Service {
             btnVoice.setText(en ? (listening ? "Stop Audio" : "Live Audio") : (listening ? "停止拾音" : "实时拾音"));
         }
         if (btnVision != null) {
-            btnVision.setText(en ? "Vision OCR" : "真机视觉");
+            btnVision.setText(T.s("agentfloatingservice.vision_ocr", en));
         }
         if (btnPtt != null) {
-            btnPtt.setText(en ? "PTT Key" : "PTT 按键");
+            btnPtt.setText(T.s("agentfloatingservice.ptt_key", en));
         }
         if (btnOpenApp != null) {
-            btnOpenApp.setText(en ? "Traceform OS" : "主系统");
+            btnOpenApp.setText(T.s("agentfloatingservice.traceform_os", en));
         }
         if (floatingView != null) {
             floatingView.postInvalidate();
@@ -475,8 +475,8 @@ public final class AgentFloatingService extends Service {
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, iconType, dotColor, 8));
                 if (btnVoice != null) btnVoice.setText(en ? (isListening ? "Stop Audio" : "Live Audio") : (isListening ? "停止拾音" : "实时拾音"));
                 if (statusTextView != null) statusTextView.setText(isListening
-                        ? (en ? " Listening (16 kHz)" : " 拾音中 (16kHz NEON)")
-                        : (en ? " Traceform Capsule" : " Traceform 胶囊"));
+                        ? (T.s("agentfloatingservice.listening_16_khz", en))
+                        : (T.s("agentfloatingservice.traceform_capsule", en)));
             }
 
             @Override
@@ -497,7 +497,7 @@ public final class AgentFloatingService extends Service {
                 boolean en = isEnglish();
                 if (statusDotView != null) statusDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 10));
                 if (ballDotView != null) ballDotView.setImageDrawable(IconFactory.getIcon(AgentFloatingService.this, IconFactory.IconType.STATUS_DOT_AMBER, 0xFFFFB300, 8));
-                if (statusTextView != null) statusTextView.setText(en ? " Capturing speech..." : " 语音捕获中...");
+                if (statusTextView != null) statusTextView.setText(T.s("agentfloatingservice.capturing_speech", en));
             }
 
             @Override
@@ -537,9 +537,9 @@ public final class AgentFloatingService extends Service {
     private void triggerVisionInspection() {
         try {
             boolean en = isEnglish();
-            String query = en ? "New Agent Task" : "新建智能体任务";
+            String query = T.s("agentfloatingservice.new_agent_task", en);
             org.json.JSONObject target = VisionAgentManager.getInstance().locateTargetOnScreen(query);
-            Toast.makeText(this, (en ? "Vision Sense: " : "视觉感知检测: ") + (target.optBoolean("matched", false) ? (en ? "Target located" : "已定位焦点目标") : (en ? "Scanning screen" : "全屏扫描中")), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, (T.s("agentfloatingservice.vision_sense", en)) + (target.optBoolean("matched", false) ? (T.s("agentfloatingservice.target_located", en)) : (T.s("agentfloatingservice.scanning_screen", en))), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, (isEnglish() ? "Vision error: " : "视觉检测异常: ") + e.getMessage(), Toast.LENGTH_SHORT).show();
         }

@@ -9,9 +9,9 @@ final class LocalModelStatus {
     }
 
     static String describe(boolean en, boolean runtimeAvailable, boolean filePresent, LocalModelCatalog.Entry entry) {
-        if (!runtimeAvailable) return en ? "Rule-based planning\nModel runtime unavailable" : "规则式规划\n模型运行库不可用";
-        if (!filePresent) return en ? "Rule-based planning\nNo model file" : "规则式规划\n尚无模型文件";
-        String name = entry == null ? (en ? "Model file present" : "模型文件存在") : entry.display;
+        if (!runtimeAvailable) return T.s("localmodelstatus.rule_based_planning_nmodel_runtime_una", en);
+        if (!filePresent) return T.s("localmodelstatus.rule_based_planning_nno_model_file", en);
+        String name = entry == null ? (T.s("localmodelstatus.model_file_present", en)) : entry.display;
         return en ? "Rule-based planning\n" + name + "\nChecked before use"
                   : "规则式规划\n" + name + "\n使用前校验";
     }
