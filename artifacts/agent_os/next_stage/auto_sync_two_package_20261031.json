@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "packages": {
+    "A": "org.traceform.agentos.actionsvalidation (dialer, runs the job)",
+    "B": "org.traceform.agentos.documentsvalidation (serves the sync endpoint)"
+  },
+  "steps": [
+    "cleared both packages, paired A with B through the address path; both showed 已配对设备：1 and the same code 038335",
+    "enabled 应用打开时自动同步 on A, which scheduled job 4711",
+    "B tapped 等待对端 to serve the sync endpoint",
+    "force-ran job 4711 on A twice"
+  ],
+  "observed": {
+    "first_run": "auto_sync failed: no response (B was not serving yet)",
+    "second_run": "auto_sync completed with peer-5e4cca35c89b6376 applied=0",
+    "audit": ["sync_auto_completed with peer-5e4cca35c89b6376 applied=0", "sync_auto_failed: no response"],
+    "screenshot": "artifacts/agent_os/next_stage/ui/auto_sync_two_package.png"
+  },
+  "what_it_proves": [
+    "two packages on one device can pair and complete the background sync dial",
+    "the job path resolves the pairing, dials the peer and records an audit event",
+    "a failed attempt is recorded separately instead of being lost"
+  ],
+  "limitations": [
+    "applied=0: no records existed to merge, so the merge path carried no data",
+    "same-device loopback only; a real LAN peer is still unverified",
+    "the earlier silence on A's confirmation dialog was a harness artifact: with logging in place the dialog appeared with the same code as B"
+  ]
+}

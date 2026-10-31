@@ -260,15 +260,21 @@ final class SyncPanel {
 
     private void startPairDial(String address, boolean en) {
         host.toast(T.s("sync.pairing", en));
+        android.util.Log.i("AgentOsPairing", "pair_dial start address=" + address);
         host.ioRef().execute(() -> {
             String payload;
             try {
                 payload = SyncTransport.nativePairDial(syncSeed(), address, DeviceIdentity.fingerprint(), 20000L);
             } catch (Throwable error) {
                 payload = null;
+                android.util.Log.w("AgentOsPairing", "pair_dial threw " + error);
             }
+            android.util.Log.i("AgentOsPairing", "pair_dial result=" + (payload == null ? "null" : payload));
             final String json = payload;
-            host.uiRef().post(() -> { if (!host.isDestroyedRef()) showPairResult(json, en); });
+            host.uiRef().post(() -> {
+                android.util.Log.i("AgentOsPairing", "pair_dial show destroyed=" + host.isDestroyedRef() + " json=" + json);
+                if (!host.isDestroyedRef()) showPairResult(json, en);
+            });
         });
     }
 
@@ -299,6 +305,7 @@ final class SyncPanel {
 
     private void showPairResult(String json, boolean en) {
         SyncActions.Session session = SyncActions.session(json);
+        android.util.Log.i("AgentOsPairing", "show_pair_result session=" + (session == null ? "null" : session.sas));
         if (session == null) {
             String detail = SyncActions.error(json);
             host.toast((T.s("pair.failed", en)) + (detail.isEmpty() ? "" : ": " + detail));
