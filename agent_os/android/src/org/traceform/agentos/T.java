@@ -556,6 +556,9 @@ final class T {
         add("pair.sync_skipped", "Skipped", "已跳过");
         add("pair.sync_error", "Failed", "失败");
         add("memory.pending_badge", "%d pending", "%d 待定");
+        add("memory.pending_button", "Pending versions (%d)", "待定版本（%d）");
+        add("memory.pending_title", "Memories with pending versions", "有待定版本的记忆");
+        add("memory.no_pending_versions", "No pending versions", "没有待定版本");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

@@ -684,6 +684,7 @@ public final class MainActivity extends Activity {
         root.addView(saveMemoryBtn, smLp);
 
         addPageButton(root, T.s("ui.review_deletion_by_source", en), view -> memoryPanel.reviewBySource());
+        addPageButton(root, pendingLabel(en), view -> showPendingMemories());
 
         ScrollView memScroll = new ScrollView(this);
         memScroll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
@@ -1572,6 +1573,40 @@ public final class MainActivity extends Activity {
         }
 
         card.addView(planContainer);
+    }
+
+    private String pendingLabel(boolean en) {
+        int pending = 0;
+        try {
+            for (AgentStore.Memory memory : store.listMemories()) if (store.hasMemoryCandidate(memory.id)) pending++;
+        } catch (Exception ignored) {
+        }
+        return T.format("memory.pending_button", en, pending);
+    }
+
+    private void showPendingMemories() {
+        boolean en = isEnglish();
+        try {
+            java.util.List<AgentStore.Memory> pending = new java.util.ArrayList<>();
+            for (AgentStore.Memory memory : store.listMemories()) if (store.hasMemoryCandidate(memory.id)) pending.add(memory);
+            if (pending.isEmpty()) {
+                showMessage(T.s("memory.no_pending_versions", en));
+                return;
+            }
+            String[] labels = new String[pending.size()];
+            for (int index = 0; index < pending.size(); index++) {
+                AgentStore.Memory memory = pending.get(index);
+                labels[index] = memory.content + "\n" + T.format("memory.pending_badge", en,
+                    store.listMemoryConflicts(memory.id).size());
+            }
+            new AlertDialog.Builder(this)
+                .setTitle(T.s("memory.pending_title", en))
+                .setItems(labels, (dialog, which) -> memoryPanel.showConflicts(pending.get(which), en))
+                .setNegativeButton(T.s("common.close", en), null)
+                .show();
+        } catch (Exception error) {
+            showError(error);
+        }
     }
 
     private void addMemoryCard(AgentStore.Memory memory) {

@@ -121,6 +121,15 @@ final class MemoryDetailPanel {
     }
 
 
+    void showConflicts(AgentStore.Memory memory, boolean en) {
+        java.util.List<AgentStore.MemoryConflict> conflicts = host.storeRef().listMemoryConflicts(memory.id);
+        if (conflicts.isEmpty()) {
+            host.toast(T.s("memory.no_pending_versions", en));
+            return;
+        }
+        showConflictDialog(memory, conflicts, en);
+    }
+
     private void showConflictDialog(AgentStore.Memory memory, java.util.List<AgentStore.MemoryConflict> conflicts, boolean en) {
         LinearLayout body = new LinearLayout(host);
         body.setOrientation(LinearLayout.VERTICAL);
