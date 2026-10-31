@@ -75,6 +75,8 @@ AGENT_OS_KEYSTORE_PASSWORD="$PW" python3 agent_os/scripts/device_regression_andr
 1. 用 `manifest-actions.xml` 构建会缺 `WorkflowValidationActivity`，案例直接报“活动不存在”；
 2. `VERIFY_UI` 这类用例依赖前面的 `SEED_*` 用例，单独跑会 NPE，所以默认只跑自包含的三个代表案例。
 
+关于哪些用例可以自动化、哪些必须人工点，见 [interactive_validation_cases](interactive_validation_cases_2026-10-31.md)。
+
 参考结果：
 
 - 快速套件 [device_regression_20261031](../artifacts/agent_os/next_stage/device_regression_20261031.json)（48 + 10 + 20 项）；
