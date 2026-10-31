@@ -559,6 +559,16 @@ final class T {
         add("memory.pending_button", "Pending versions (%d)", "待定版本（%d）");
         add("memory.pending_title", "Memories with pending versions", "有待定版本的记忆");
         add("memory.no_pending_versions", "No pending versions", "没有待定版本");
+        add("cap.unknown", "Unknown capability", "未知能力");
+        add("cap.demo_note", "Demo note", "示例便笺");
+        add("cap.demo_status", "Device status", "设备运行状态");
+        add("cap.traceform", "Traceform local history", "Traceform 本机历史摘要");
+        add("cap.notification", "Task notifications", "系统任务通知");
+        add("cap.calendar", "Calendar draft", "系统日历待办");
+        add("cap.share", "Share export", "系统分享导出");
+        add("cap.remote_status", "Cross-app status", "跨应用状态");
+        add("task.requesting_capability", "Requesting %s (%s)", "正在请求：%s (%s)");
+        add("task.jit_banner_line", "Task \"%s\" is on step %d and requests a controlled system capability.", "任务：「%s」在步骤 %d 请求受控系统能力。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

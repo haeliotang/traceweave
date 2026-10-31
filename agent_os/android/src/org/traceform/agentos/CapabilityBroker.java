@@ -107,15 +107,16 @@ public final class CapabilityBroker {
             .hasResource(taskId);
     }
 
-    static String friendlyCapabilityName(String capability) {
-        if (DEMO_NOTE_CAPABILITY.equals(capability)) return "示例便笺";
-        if (DEMO_STATUS_CAPABILITY.equals(capability)) return "设备运行状态";
-        if (TRACEFORM_CAPABILITY.equals(capability)) return "Traceform 本机历史摘要";
-        if (NOTIFICATION_CAPABILITY.equals(capability)) return "系统任务通知";
-        if (CALENDAR_CAPABILITY.equals(capability)) return "系统日历待办";
-        if (SHARE_CAPABILITY.equals(capability)) return "系统分享导出";
-        if (AndroidRemoteStatusProvider.CAPABILITY.equals(capability)) return "跨应用状态";
-        return capability == null ? "未知能力" : capability;
+    static String friendlyCapabilityName(String capability, boolean en) {
+        if (capability == null) return T.s("cap.unknown", en);
+        if (DEMO_NOTE_CAPABILITY.equals(capability)) return T.s("cap.demo_note", en);
+        if (DEMO_STATUS_CAPABILITY.equals(capability)) return T.s("cap.demo_status", en);
+        if (TRACEFORM_CAPABILITY.equals(capability)) return T.s("cap.traceform", en);
+        if (NOTIFICATION_CAPABILITY.equals(capability)) return T.s("cap.notification", en);
+        if (CALENDAR_CAPABILITY.equals(capability)) return T.s("cap.calendar", en);
+        if (SHARE_CAPABILITY.equals(capability)) return T.s("cap.share", en);
+        if (AndroidRemoteStatusProvider.CAPABILITY.equals(capability)) return T.s("cap.remote_status", en);
+        return capability;
     }
 
     boolean isGranted(String taskId, String capability, String scope) {

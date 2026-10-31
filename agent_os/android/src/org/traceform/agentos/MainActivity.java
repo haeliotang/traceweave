@@ -1060,10 +1060,11 @@ public final class MainActivity extends Activity {
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.ALERT, "待办授权提醒（JIT 安全门禁）", 0xFFE65100, 18);
         banner.addView(titleRow);
 
-        String stepInfo = "任务：「" + task.title + "」在步骤 " + (task.executionStep + 1) + " 请求受控系统能力。";
+        boolean en = isEnglish();
+        String stepInfo = T.format("task.jit_banner_line", en, task.title, task.executionStep + 1);
         if (task.plan != null && task.executionStep >= 0 && task.executionStep < task.plan.totalSteps()) {
             ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
-            stepInfo += "\n正在请求：" + CapabilityBroker.friendlyCapabilityName(step.capability) + " (" + step.capability + ")";
+            stepInfo += "\n" + T.format("task.requesting_capability", en, CapabilityBroker.friendlyCapabilityName(step.capability, en), step.capability);
         }
         TextView desc = new TextView(this);
         desc.setText(stepInfo);
