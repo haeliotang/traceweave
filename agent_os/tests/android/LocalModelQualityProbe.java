@@ -649,6 +649,35 @@ public final class LocalModelQualityProbe extends Activity {
                     runStress3(model, getIntent().getStringExtra("phase"));
                     return;
                 }
+                if ("TRUNC".equals(getIntent().getAction())) {
+                    String grammar = grammarFor("{items:a,total:n,note:s}");
+                    String prompt = JsonText.schemaPrompt(
+                        "Return JSON with items (two short words), total and note for a synthetic list.", "", null);
+                    JSONArray rows = new JSONArray();
+                    for (int budget : new int[]{16, 32, 64, 128, 256}) {
+                        String output = "";
+                        boolean parsed = false;
+                        try {
+                            LocalModelProbe.prepare();
+                            output = new String(LocalModelProbe.generate(model.getPath(),
+                                prompt.getBytes(StandardCharsets.UTF_8), budget, grammar), StandardCharsets.UTF_8);
+                            StructuredOutput.parse(JsonText.stripThink(output));
+                            parsed = true;
+                        } catch (Exception error) {
+                            output = error.getMessage() == null ? output : output;
+                        }
+                        rows.put(new JSONObject().put("budget", budget).put("parsed", parsed)
+                            .put("output", output.length() > 300 ? output.substring(0, 300) : output)
+                            .put("bytes", output.length()));
+                    }
+                    JSONObject summary = new JSONObject().put("criterion", "does a grammar-constrained object parse at this budget")
+                        .put("rows", rows);
+                    try (java.io.FileOutputStream stream = new java.io.FileOutputStream(new File(getFilesDir(), "trunc.json"))) {
+                        stream.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+                    Log.i("AgentOsModelQuality", "TRUNC_DONE");
+                    return;
+                }
                 if ("GRAMMARTEST".equals(getIntent().getAction())) {
                     String base = grammarFor("{title:s,steps:a,meta:{author:s,count:n}}");
                     String[] variants = {
