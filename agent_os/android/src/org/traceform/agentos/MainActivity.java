@@ -1807,9 +1807,9 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmDeleteTask(AgentStore.Task task) {
-        new AlertDialog.Builder(this)
-            .setTitle("删除任务记录？")
-            .setMessage("删除会清除任务和对应的本机审计记录，并保存一个删除标记，阻止旧档案重新导入这条任务。")
+        AlertDialog deleteTaskDialog = new AlertDialog.Builder(this)
+            .setView(Ui.dialogBody(this, "删除任务记录？",
+                "删除会清除任务和对应的本机审计记录，并保存一个删除标记，阻止旧档案重新导入这条任务。", 13))
             .setNegativeButton("保留", null)
             .setPositiveButton("删除", (dialog, which) -> {
                 try {
@@ -1822,7 +1822,9 @@ public final class MainActivity extends Activity {
                     showError(error);
                 }
             })
-            .show();
+            .create();
+        deleteTaskDialog.show();
+        Ui.themeDialog(deleteTaskDialog, this);
     }
 
     void promptExportPassphrase() {
