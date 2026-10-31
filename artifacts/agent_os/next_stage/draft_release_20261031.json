@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "tag": "v0.6.14",
+  "draft": true,
+  "assets": [
+    "build_report.json",
+    "release_manifest.json",
+    "RELEASE_NOTES.md",
+    "release_verification.json",
+    "SHA256SUMS",
+    "traceform-agent-os-0.6.14.apk"
+  ],
+  "digest_mismatch": [],
+  "local_sums": {
+    "RELEASE_NOTES.md": "e5fb28318d2dbd74ba7c900cce063100c62faf0fd89cb692eb88a0339bafa00e",
+    "build_report.json": "4a7b203b6d9cd154d87d1737f2d79bc7948119a2fe7c4df64f4832480ce92aac",
+    "release_manifest.json": "dd39be574a7042e3b1860937ae6f5d57a1ecfa4fb8eff4762866e7e1f4797d0f",
+    "release_verification.json": "4117918d249ca19c8743872713f58f931e4ce82b4f9642a28c29c4d7a778b428",
+    "traceform-agent-os-0.6.14.apk": "0432b9fc7ed9ec325c5d751953a5bce0332b925021a27310cf74032aa72eec4d"
+  },
+  "url": "https://github.com/haeliotang/traceform/releases/tag/untagged-edc5e60cb45dbc8432cb",
+  "tooling_bug_found_and_fixed": "release_manifest.json was written after SHA256SUMS, so its own checksum was not covered; the script now writes the manifest first",
+  "note": "the release is a draft; publishing waits for the operator"
+}

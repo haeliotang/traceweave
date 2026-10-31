@@ -57,20 +57,22 @@ def main():
             text = notes.read_text().replace("- （未填写）", "\n".join(f"- {line.split(' ', 1)[-1]}" for line in lines))
             notes.write_text(text)
 
+    # The manifest is written first so the checksum file covers it.
+    manifest = {
+        "version": args.version,
+        "apk": apk_target.name,
+        "files": {path.name: sha256(path) for path in sorted(target.iterdir())
+                  if path.name not in ("SHA256SUMS", "release_manifest.json")},
+        "preflight_ok": True,
+    }
+    (target / "release_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+
     entries = []
     for path in sorted(target.iterdir()):
         if path.name == "SHA256SUMS":
             continue
         entries.append(f"{sha256(path)}  {path.name}")
     (target / "SHA256SUMS").write_text("\n".join(entries) + "\n")
-
-    manifest = {
-        "version": args.version,
-        "apk": apk_target.name,
-        "files": {path.name: sha256(path) for path in sorted(target.iterdir()) if path.name != "SHA256SUMS"},
-        "preflight_ok": True,
-    }
-    (target / "release_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({"release_dir": str(target), "files": list(manifest["files"])}))
 
 

@@ -43,7 +43,7 @@ gh release create v0.6.14 \
   --notes-file agent_os/build/release-0.6.14/RELEASE_NOTES.md \
   --draft
 
-# 3) 复核草稿无误后发布
+# 3) 复核草稿无误后发布（草稿已建好：见下方“当前状态”）
 gh release edit v0.6.14 --draft=false
 ```
 
@@ -71,3 +71,9 @@ gh release edit v0.6.14 --draft=false
 - 自动更新：GitHub Releases 不带自动更新，用户需手动下载新包覆盖安装；
 - 签名托管：密钥仍在开发机 Keychain，发布密钥的归属需要你决定；
 - 商店渠道：Play 需要无障碍/悬浮窗用途申报，留待后续。
+
+## 6. 当前状态（2026-10-31）
+
+- 标签 `v0.6.14` 已推送；
+- 草稿发布已创建，含 6 个资产，远端 digest 与本地 `SHA256SUMS` 全部一致；
+- 尚未公开：等你复核发布说明与签名指纹后执行 `gh release edit v0.6.14 --draft=false`。
