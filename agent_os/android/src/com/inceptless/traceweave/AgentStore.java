@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 13;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -248,6 +248,11 @@ final class AgentStore extends SQLiteOpenHelper {
             + "event TEXT NOT NULL, "
             + "prev_hash TEXT NOT NULL DEFAULT '', "
             + "hash TEXT NOT NULL DEFAULT '')");
+        database.execSQL("CREATE TABLE audit_anchors ("
+            + "idx INTEGER PRIMARY KEY NOT NULL, "
+            + "hash TEXT NOT NULL, "
+            + "anchored_at INTEGER NOT NULL, "
+            + "mac TEXT NOT NULL)");
     }
 
     private static void createMemoryTables(SQLiteDatabase database) {
@@ -367,9 +372,56 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 11) {
                 upgradeAuditChain(database);
                 version = 12;
+            } else if (version == 12) {
+                createAnchorTable(database);
+                version = 13;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
+        }
+    }
+
+    private static void createAnchorTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS audit_anchors ("
+            + "idx INTEGER PRIMARY KEY NOT NULL, "
+            + "hash TEXT NOT NULL, "
+            + "anchored_at INTEGER NOT NULL, "
+            + "mac TEXT NOT NULL)");
+        // Existing rows become verifiable anchors as soon as the device key exists.
+        java.util.ArrayList<String> hashes = new java.util.ArrayList<>();
+        java.util.ArrayList<Long> times = new java.util.ArrayList<>();
+        try (Cursor cursor = database.rawQuery("SELECT hash, occurred_at FROM audit ORDER BY rowid", null)) {
+            while (cursor.moveToNext()) {
+                hashes.add(cursor.getString(0));
+                times.add(cursor.getLong(1));
+            }
+        }
+        javax.crypto.SecretKey key = AnchorKey.get();
+        if (key == null) return;
+        for (int index = 0; index < hashes.size(); index++) {
+            ContentValues values = new ContentValues();
+            values.put("idx", index);
+            values.put("hash", hashes.get(index));
+            values.put("anchored_at", times.get(index));
+            values.put("mac", AnchorMac.compute(key, index, hashes.get(index), times.get(index)));
+            database.insertWithOnConflict("audit_anchors", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
+    /** Binds a chain head to the device key so a hand-edited database cannot re-seal it. */
+    private static void anchorHead(SQLiteDatabase database, String hash, long occurredAt) {
+        javax.crypto.SecretKey key = AnchorKey.get();
+        if (key == null) return;
+        try (Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM audit", null)) {
+            if (!cursor.moveToFirst()) return;
+            int index = cursor.getInt(0) - 1;
+            String mac = AnchorMac.compute(key, index, hash, occurredAt);
+            ContentValues values = new ContentValues();
+            values.put("idx", index);
+            values.put("hash", hash);
+            values.put("anchored_at", occurredAt);
+            values.put("mac", mac);
+            database.insertWithOnConflict("audit_anchors", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         }
     }
 
@@ -396,6 +448,30 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Rows written before the anchor table existed get their anchors on first
+     * verification, so an upgraded install is not stuck without any anchor.
+     */
+    private void ensureAnchors(java.util.List<AuditChain.Row> rows) {
+        javax.crypto.SecretKey key = AnchorKey.get();
+        if (key == null || rows.isEmpty()) return;
+        java.util.HashSet<Integer> anchored = new java.util.HashSet<>();
+        try (Cursor cursor = getReadableDatabase().rawQuery("SELECT idx FROM audit_anchors", null)) {
+            while (cursor.moveToNext()) anchored.add(cursor.getInt(0));
+        }
+        SQLiteDatabase database = getWritableDatabase();
+        for (int index = 0; index < rows.size(); index++) {
+            if (anchored.contains(index)) continue;
+            AuditChain.Row row = rows.get(index);
+            ContentValues values = new ContentValues();
+            values.put("idx", index);
+            values.put("hash", row.hash);
+            values.put("anchored_at", row.occurredAt);
+            values.put("mac", AnchorMac.compute(key, index, row.hash, row.occurredAt));
+            database.insertWithOnConflict("audit_anchors", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+    }
+
     /** Verifies the whole chain and reports the first row that does not match. */
     java.util.Map<String, Object> auditIntegrity() {
         java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
@@ -407,10 +483,28 @@ final class AgentStore extends SQLiteOpenHelper {
             }
         }
         int broken = AuditChain.firstBrokenIndex(rows);
+        java.util.ArrayList<String> hashes = new java.util.ArrayList<>();
+        for (AuditChain.Row row : rows) hashes.add(row.hash);
+
+        java.util.ArrayList<AnchorMac.Entry> anchors = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT idx, hash, anchored_at, mac FROM audit_anchors ORDER BY idx", null)) {
+            while (cursor.moveToNext()) {
+                anchors.add(new AnchorMac.Entry(cursor.getInt(0), cursor.getString(1), cursor.getLong(2), cursor.getString(3)));
+            }
+        }
+        ensureAnchors(rows);
+        javax.crypto.SecretKey key = AnchorKey.get();
+        boolean macsValid = key != null && AnchorMac.allValid(key, anchors);
+        int mismatch = AnchorMac.firstMismatched(anchors, hashes);
+
         java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
         report.put("checked", rows.size());
         report.put("brokenAt", broken);
-        report.put("ok", broken < 0);
+        report.put("anchors", anchors.size());
+        report.put("anchorMacsValid", macsValid);
+        report.put("anchorMismatchAt", mismatch);
+        report.put("ok", broken < 0 && mismatch < 0 && (anchors.isEmpty() || macsValid));
         return report;
     }
 
@@ -2480,8 +2574,10 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("occurred_at", occurredAt);
         values.put("event", event);
         values.put("prev_hash", previous);
-        values.put("hash", AuditChain.digest(previous, id, taskId, occurredAt, event));
+        String hash = AuditChain.digest(previous, id, taskId, occurredAt, event);
+        values.put("hash", hash);
         database.insertOrThrow("audit", null, values);
+        anchorHead(database, hash, occurredAt);
     }
 
     public static boolean initVault(String vaultPath, String passphrase) {

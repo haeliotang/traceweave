@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-31",
+  "what": "audit chain heads are anchored to a device-held HMAC key",
+  "design": {
+    "table": "audit_anchors(idx, hash, anchored_at, mac), schema 12 -> 13",
+    "mac": "hmac-sha256(keystore key, idx|hash|anchored_at); the key is generated in AndroidKeyStore with purpose SIGN|VERIFY and digest SHA256 and is not exportable",
+    "append": "every audit append anchors its own row",
+    "migration": "rows written before the anchor table are anchored on first verification (ensureAnchors)"
+  },
+  "result": "audit page reads 'chain intact across 14 events; 14 heads anchored to the device key'",
+  "honest_limits": [
+    "this is device-key anchoring, not remote timestamping: someone who extracts or replaces the device key can still forge anchors",
+    "a truncated tail still verifies as a shorter chain",
+    "anchoring to a third party (or to an exported archive the user keeps elsewhere) would be the next step"
+  ],
+  "bugs_found": [
+    "first version exported the Keystore key with getEncoded(), which is null by design for non-exportable keys, so no anchors were ever written; signing now happens with the Key object",
+    "an install already at schema 13 never re-ran the backfill, so missing anchors are now created lazily during verification"
+  ],
+  "verification": "host suite OK (new anchor test); RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}

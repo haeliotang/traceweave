@@ -136,9 +136,16 @@ public final class AuditActivity extends Activity {
             java.util.Map<String, Object> report = store.auditIntegrity();
             boolean ok = Boolean.TRUE.equals(report.get("ok"));
             int checked = ((Number) report.get("checked")).intValue();
-            integrityLine.setText(ok
-                ? T.format("audit.integrity_ok", en, checked)
-                : T.format("audit.integrity_broken", en, ((Number) report.get("brokenAt")).intValue() + 1));
+            int anchors = report.get("anchors") == null ? 0 : ((Number) report.get("anchors")).intValue();
+            boolean macsValid = !Boolean.FALSE.equals(report.get("anchorMacsValid"));
+            if (!ok) {
+                integrityLine.setText(T.format("audit.integrity_broken", en,
+                    ((Number) report.get("brokenAt")).intValue() + 1));
+            } else if (anchors > 0 && macsValid) {
+                integrityLine.setText(T.format("audit.integrity_anchored", en, checked, anchors));
+            } else {
+                integrityLine.setText(T.format("audit.integrity_ok", en, checked));
+            }
             integrityLine.setTextColor(ok ? 0xFF15803D : 0xFFB91C1C);
         } catch (Exception error) {
             integrityLine.setText(T.s("audit.integrity_unknown", en));
