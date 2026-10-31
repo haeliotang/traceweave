@@ -616,6 +616,7 @@ public final class MainActivity extends Activity {
         pageScroll.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
         pageScroll.setFillViewport(true);
         pageScroll.addView(page);
+        CrashLog.install(this);
         setContentView(pageScroll);
     }
 

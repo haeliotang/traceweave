@@ -138,6 +138,8 @@ public final class AuditActivity extends Activity {
                 events.put(new org.json.JSONObject().put("at", event.occurredAt).put("event", event.event));
             }
             report.put("recent_events", events);
+            String crash = CrashLog.read(this);
+            report.put("last_crash", crash.isEmpty() ? org.json.JSONObject.NULL : crash);
             report.put("note", "No memory contents, task texts or device identifiers are included.");
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
