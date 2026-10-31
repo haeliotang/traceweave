@@ -273,10 +273,20 @@ final class SyncPanel {
         final String sas = session.sas;
         final String remoteFingerprint = session.fingerprint;
         final String peerId = session.peerId;
-        new AlertDialog.Builder(host)
-            .setTitle(T.s("pair.compare", en))
-            .setMessage((T.s("sync.code", en)) + sas + "\n"
-                + (T.s("pair.same_code", en)))
+        LinearLayout body = new LinearLayout(host);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
+        TextView heading = Ui.title(host, T.s("pair.compare", en));
+        heading.setTextSize(14);
+        body.addView(heading);
+        TextView message = new TextView(host);
+        message.setText(T.s("sync.code", en) + sas + "\n" + T.s("pair.same_code", en));
+        message.setTextSize(12);
+        message.setTextColor(Ui.text(host));
+        message.setPadding(0, host.dpRef(4), 0, 0);
+        body.addView(message);
+        AlertDialog result = new AlertDialog.Builder(host)
+            .setView(body)
             .setNegativeButton(T.s("common.cancel", en), null)
             .setPositiveButton(T.s("pair.confirm", en), (dialog, which) -> {
                 try {
@@ -286,7 +296,9 @@ final class SyncPanel {
                     host.toast(T.s("pair.done", en));
                 } catch (Exception error) { host.failWith(error); }
             })
-            .show();
+            .create();
+        result.show();
+        Ui.themeDialog(result, host);
     }
 
     private void startSyncServe(boolean en) {

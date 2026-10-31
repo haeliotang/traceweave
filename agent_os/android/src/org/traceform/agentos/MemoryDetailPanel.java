@@ -27,7 +27,7 @@ final class MemoryDetailPanel {
         TextView content = new TextView(host);
         content.setText(memory.content);
         content.setTextSize(13);
-        content.setTextColor(0xFF1E293B);
+        content.setTextColor(Ui.text(host));
         content.setTextIsSelectable(true);
         body.addView(content);
 
@@ -98,18 +98,23 @@ final class MemoryDetailPanel {
         refLp.setMargins(0, host.dpRef(4), 0, 0);
         body.addView(references, refLp);
 
-        new AlertDialog.Builder(host)
-            .setTitle(T.s("memorydetailpanel.17", en))
+        TextView heading = Ui.title(host, T.s("memorydetailpanel.17", en));
+        heading.setTextSize(14);
+        heading.setPadding(0, 0, 0, host.dpRef(4));
+        body.addView(heading, 0);
+        AlertDialog detail = new AlertDialog.Builder(host)
             .setView(body)
             .setNegativeButton(T.s("memorydetailpanel.18", en), (dialog, which) -> confirmDelete(memory))
             .setPositiveButton(T.s("memorydetailpanel.19", en), null)
-            .show();
+            .create();
+        detail.show();
+        Ui.themeDialog(detail, host);
     }
 
 
     private void confirmDelete(AgentStore.Memory memory) {
         boolean en = host.english();
-        new AlertDialog.Builder(host)
+        AlertDialog confirm = new AlertDialog.Builder(host)
             .setTitle(T.s("memorydetailpanel.20", en))
             .setMessage(T.s("memorydetail.a_tombstone_prevents_old_archives_from", en))
             .setNegativeButton(T.s("memorydetailpanel.21", en), null)
@@ -121,7 +126,9 @@ final class MemoryDetailPanel {
                     host.failWith(error);
                 }
             })
-            .show();
+            .create();
+        confirm.show();
+        Ui.themeDialog(confirm, host);
     }
 
 

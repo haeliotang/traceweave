@@ -40,6 +40,22 @@ final class Ui {
     static int muted(Context context) { return dark(context) ? 0xFF94A3B8 : COLOR_MUTED; }
     static int stroke(Context context) { return dark(context) ? 0xFF334155 : COLOR_STROKE; }
 
+    /** Dark-mode dialog surface: window, title, message and action buttons. */
+    static void themeDialog(android.app.AlertDialog dialog, Context context) {
+        if (dialog == null || !dark(context) || dialog.getWindow() == null) return;
+        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(background(context)));
+        TextView title = dialog.findViewById(android.R.id.title);
+        if (title != null) title.setTextColor(text(context));
+        TextView message = dialog.findViewById(android.R.id.message);
+        if (message != null) message.setTextColor(text(context));
+        int[] buttons = {android.app.AlertDialog.BUTTON_POSITIVE, android.app.AlertDialog.BUTTON_NEGATIVE,
+            android.app.AlertDialog.BUTTON_NEUTRAL};
+        for (int which : buttons) {
+            android.widget.Button button = dialog.getButton(which);
+            if (button != null) button.setTextColor(0xFF7DD3FC);
+        }
+    }
+
     static int dp(Context context, int value) {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
             context.getResources().getDisplayMetrics()));

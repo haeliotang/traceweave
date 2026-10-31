@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：弹窗深色（部分完成）——记忆详情与配对结果改为自绘标题/正文并套用深色背景，文字可读（[memory_detail_dark_themed](artifacts/agent_os/next_stage/ui/memory_detail_dark_themed.png)）；修改记忆等系统文案弹窗仍保持浅色。新增 `check_a11y_android.py`：主屏 10、设置 10、审计 3、任务中心 2 个可点击语音类控件，未标注数均为 0。
 - 2026-10-31：TalkBack 可启用（`com.android.talkback` 存在，服务可被系统识别），但在 TalkBack 开启后 `uiautomator` 只抓到 13 个节点、仅 3 个带标签，无法据此验证朗读；已恢复关闭。无障碍结论仍限于“控件带文本 + 触控 48dp”。
 - 2026-10-31：无障碍初检——`uiautomator` 导出的主屏 10 个按钮全部带可读文本，无纯图标无标签控件；动作网格触控 48dp。深色模式下系统 AlertDialog 仍为浅色（把窗口改成深色会导致标题/正文黑底黑字，已回滚，见 [memory_detail_dark_light_dialog](artifacts/agent_os/next_stage/ui/memory_detail_dark_light_dialog.png)）。
 - 2026-10-31：深色模式第一版——`Ui.dark/background/card/text/muted/stroke` 跟随系统 `uiMode`；主屏、设置弹窗、审计页、任务中心、模型页改为深色配色，设置弹窗的按钮栏也按主题着色。设备上 `cmd uimode night yes/no` 双向验证，截图 [main_dark_zh](artifacts/agent_os/next_stage/ui/main_dark_zh.png)、[settings_dark_zh](artifacts/agent_os/next_stage/ui/settings_dark_zh.png)、[audit_dark_zh](artifacts/agent_os/next_stage/ui/audit_dark_zh.png)。同时把动作网格触控高度提到 48dp、给任务中心的“⋯”补了 `contentDescription`。
