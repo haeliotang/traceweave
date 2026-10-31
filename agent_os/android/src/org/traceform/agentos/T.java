@@ -549,6 +549,7 @@ final class T {
         add("export.continue", "Continue", "继续");
         add("audit.tsv_scope", "%d events from %s will be written.", "将写入 %d 条事件，时间范围 %s。");
         add("audit.tsv_scope_title", "Export audit log?", "导出审计日志？");
+        add("pair.never_synced", "Never synced", "尚未同步");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

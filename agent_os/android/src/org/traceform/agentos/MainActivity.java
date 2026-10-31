@@ -710,7 +710,12 @@ public final class MainActivity extends Activity {
             final String[] labels = new String[active.size()];
             for (int index = 0; index < active.size(); index++) {
                 AgentStore.Pairing pairing = active.get(index);
-                labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…";
+                AgentStore.SyncCursor cursor = store.syncCursor(pairing.deviceId);
+                String last = cursor == null || cursor.lastSyncedAt == 0
+                    ? T.s("pair.never_synced", en)
+                    : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                        .format(new Date(cursor.lastSyncedAt)) + " · " + cursor.lastResult;
+                labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…\n" + last;
             }
             new AlertDialog.Builder(this)
                 .setTitle(T.s("ui.paired_devices", en))
