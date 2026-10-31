@@ -8,15 +8,15 @@
 
 ## 一、 原生内核架构与模块构成
 
-Crate 位于 [`agent_os/core/`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core)：
+Crate 位于 [`agent_os/core/`](../agent_os/core)：
 
 | 模块 | 文件路径 | 职责与技术特性 |
 |---|---|---|
-| **脱敏门禁** | [`src/redactor.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/redactor.rs) | 5 类 PII（手机号、邮箱、API 密钥、身份证、银行卡）极速掩码；单次匹配零 GC，耗时 **4.9 μs**。 |
-| **量化推演** | [`src/slm.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/slm.rs) | 64 维 INT8 结构化正交投影矩阵，SIMD 自动向量化；6 分类复合意图识别；单次推演耗时 **3.8 μs**。 |
-| **自适应记忆** | [`src/memory.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/memory.rs) | 7 天时间指数衰减 + CJK 2-gram 词汇 Jaccard 重合度；任务完成自动抽取与原地更新去重。 |
-| **计划契约** | [`src/plan.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/plan.rs) | `ExecutionPlan` 与 `Step` 结构体，支持 `serde` JSON 序列化与跨语言传输。 |
-| **C-ABI 导出** | [`src/c_api.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/c_api.rs) | 导出 `agent_os_redact`、`agent_os_slm_infer`、`agent_os_plan`、`agent_os_string_free` 标准 C 函数。 |
+| **脱敏门禁** | [`src/redactor.rs`](../agent_os/core/src/redactor.rs) | 5 类 PII（手机号、邮箱、API 密钥、身份证、银行卡）极速掩码；单次匹配零 GC，耗时 **4.9 μs**。 |
+| **量化推演** | [`src/slm.rs`](../agent_os/core/src/slm.rs) | 64 维 INT8 结构化正交投影矩阵，SIMD 自动向量化；6 分类复合意图识别；单次推演耗时 **3.8 μs**。 |
+| **自适应记忆** | [`src/memory.rs`](../agent_os/core/src/memory.rs) | 7 天时间指数衰减 + CJK 2-gram 词汇 Jaccard 重合度；任务完成自动抽取与原地更新去重。 |
+| **计划契约** | [`src/plan.rs`](../agent_os/core/src/plan.rs) | `ExecutionPlan` 与 `Step` 结构体，支持 `serde` JSON 序列化与跨语言传输。 |
+| **C-ABI 导出** | [`src/c_api.rs`](../agent_os/core/src/c_api.rs) | 导出 `agent_os_redact`、`agent_os_slm_infer`、`agent_os_plan`、`agent_os_string_free` 标准 C 函数。 |
 
 ---
 

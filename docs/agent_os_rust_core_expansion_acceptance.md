@@ -8,15 +8,15 @@
 
 ## 一、 原生拓展模块与设计职责
 
-代码位于 [`agent_os/core/`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core)：
+代码位于 [`agent_os/core/`](../agent_os/core)：
 
 | 拓展模块 | 文件路径 | 职责与技术特性 |
 |---|---|---|
-| **任务状态机** | [`src/task.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/task.rs) | 严格合法状态流转校验（Queued $\to$ Active $\to$ WaitingForUser / Completed / Cancelled）；步骤检查点快照与流水审计日志。 |
-| **受控中介** | [`src/broker.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/broker.rs) | 5 分钟时间限制动态 JIT 授权；精确数据范围（Scope）隔离；授权、调用、拒绝、撤销四大安全审计流水闭环。 |
-| **动态执行器** | [`src/executor.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/executor.rs) | 多步任务推进引擎；未授权自动挂起为 `WaitingForUser`；授权后断点无缝恢复；完成后驱动综合推演。 |
-| **MCP 工具协议** | [`src/mcp.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/mcp.rs) | 完整遵循 Anthropic Model Context Protocol（`tools/list` 与 `tools/call` JSON-RPC 2.0）；为 **TypeScript 动态插件** 提供工业级接入桥梁。 |
-| **C 接口导出** | [`src/c_api.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/c_api.rs) | 扩展导出 `agent_os_task_create`、`agent_os_task_free`、`agent_os_task_get_status` 等 C-ABI 句柄函数。 |
+| **任务状态机** | [`src/task.rs`](../agent_os/core/src/task.rs) | 严格合法状态流转校验（Queued $\to$ Active $\to$ WaitingForUser / Completed / Cancelled）；步骤检查点快照与流水审计日志。 |
+| **受控中介** | [`src/broker.rs`](../agent_os/core/src/broker.rs) | 5 分钟时间限制动态 JIT 授权；精确数据范围（Scope）隔离；授权、调用、拒绝、撤销四大安全审计流水闭环。 |
+| **动态执行器** | [`src/executor.rs`](../agent_os/core/src/executor.rs) | 多步任务推进引擎；未授权自动挂起为 `WaitingForUser`；授权后断点无缝恢复；完成后驱动综合推演。 |
+| **MCP 工具协议** | [`src/mcp.rs`](../agent_os/core/src/mcp.rs) | 完整遵循 Anthropic Model Context Protocol（`tools/list` 与 `tools/call` JSON-RPC 2.0）；为 **TypeScript 动态插件** 提供工业级接入桥梁。 |
+| **C 接口导出** | [`src/c_api.rs`](../agent_os/core/src/c_api.rs) | 扩展导出 `agent_os_task_create`、`agent_os_task_free`、`agent_os_task_get_status` 等 C-ABI 句柄函数。 |
 
 ---
 
@@ -59,7 +59,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 ## 三、 TypeScript 外部插件接入规范（基于 MCP）
 
-通过新增的 [`src/mcp.rs`](（内部文档，未随仓库发布）/Documents/traceform/agent_os/core/src/mcp.rs)，外部 TypeScript 开发者可以按业界标准编写自定义 Agent 插件。
+通过新增的 [`src/mcp.rs`](../agent_os/core/src/mcp.rs)，外部 TypeScript 开发者可以按业界标准编写自定义 Agent 插件。
 
 ### 示例：外部 TypeScript 工具接入
 ```typescript
