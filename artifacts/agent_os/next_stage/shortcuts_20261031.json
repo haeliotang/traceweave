@@ -13,8 +13,8 @@
   },
   "correction": "the first attempt showed no shortcuts because the installed production APK predated the manifest change; after installing the preflight build they appeared",
   "limitations": [
-    "only the audit shortcut was activated; the new-task shortcut was not tapped",
     "verified on the production package only"
   ],
-  "verified": true
+  "verified": true,
+  "new_task_shortcut": "tapping 从系统入口新建任务 opened org.traceform.agentos/.MainActivity"
 }

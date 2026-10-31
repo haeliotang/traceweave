@@ -1,111 +1,102 @@
 #!/usr/bin/env python3
-"""Measure a controlled idle baseline and a synthetic workload on one device.
+"""Sample battery level and temperature on an unplugged device and estimate drain.
 
-Requires the device to be unplugged, awake and unlocked. Refuses to run while
-charging, because charging masks battery drain. Synthetic workload only.
+Refuses to run while the device is charging, because charging samples cannot be
+used to estimate consumption.
 """
 import argparse
 import json
 import re
 import subprocess
+import sys
 import time
-from datetime import datetime, timezone
-from pathlib import Path
+
+FIELD = re.compile(r"^[ \t]*([A-Za-z ]+):[ \t]*(.+)$", re.MULTILINE)
+
+
+def parse_battery(text):
+    fields = {key.lower(): value.strip() for key, value in FIELD.findall(text)}
+    powered = any(fields.get(name) == "true" for name in ("ac powered", "usb powered", "wireless powered"))
+    level = fields.get("level")
+    temperature = fields.get("temperature")
+    return {
+        "powered": powered,
+        "level": int(level) if level and level.isdigit() else None,
+        "temperature_c": (int(temperature) / 10.0) if temperature and temperature.lstrip("-").isdigit() else None,
+    }
+
+
+def estimate(samples, capacity_mah):
+    """Consumption estimate from (seconds, level) samples."""
+    if len(samples) < 2:
+        raise ValueError("at least two samples are required")
+    (first_seconds, first_level), (last_seconds, last_level) = samples[0], samples[-1]
+    hours = (last_seconds - first_seconds) / 3600.0
+    if hours <= 0:
+        raise ValueError("samples must span a positive interval")
+    lost_percent = first_level - last_level
+    percent_per_hour = lost_percent / hours
+    return {
+        "hours": round(hours, 3),
+        "lost_percent": lost_percent,
+        "percent_per_hour": round(percent_per_hour, 2),
+        "mah_per_hour": round(percent_per_hour / 100.0 * capacity_mah, 1),
+    }
+
+
+def sample(adb, serial):
+    output = subprocess.run([adb, "-s", serial, "shell", "dumpsys", "battery"],
+                            capture_output=True, text=True, check=True).stdout
+    return parse_battery(output)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--adb', default='adb')
-    parser.add_argument('--serial', required=True)
-    parser.add_argument('--baseline-minutes', type=float, default=5.0)
-    parser.add_argument('--workload-minutes', type=float, default=10.0)
-    parser.add_argument('--package', action='append', default=[])
-    parser.add_argument('--model', default='qwen15')
-    parser.add_argument('--workload-action', default='QUALITY50')
-    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument("--adb", default="adb")
+    parser.add_argument("--serial", required=True)
+    parser.add_argument("--minutes", type=float, default=10)
+    parser.add_argument("--interval-seconds", type=float, default=60)
+    parser.add_argument("--capacity-mah", type=float, default=4410)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--label", default="idle")
     args = parser.parse_args()
-    adb = [args.adb, '-s', args.serial]
 
-    def shell(*arguments):
-        return subprocess.run(adb + ['shell'] + list(arguments), capture_output=True, text=True, check=True).stdout
+    first = sample(args.adb, args.serial)
+    if first["powered"]:
+        print("device is charging; unplug it before measuring", file=sys.stderr)
+        sys.exit(2)
 
-    battery = shell('dumpsys', 'battery')
-    if 'AC powered: true' in battery or 'USB powered: true' in battery:
-        raise SystemExit('Unplug the device before measuring battery drain')
-    if 'level:' not in battery:
-        raise SystemExit('Battery level is unavailable')
+    started = time.time()
+    samples = [(0.0, first["level"])]
+    temperatures = [first["temperature_c"]]
+    while time.time() - started < args.minutes * 60:
+        time.sleep(args.interval_seconds)
+        current = sample(args.adb, args.serial)
+        samples.append((time.time() - started, current["level"]))
+        if current["temperature_c"] is not None:
+            temperatures.append(current["temperature_c"])
 
-    def level():
-        match = re.search(r'level: (\d+)', shell('dumpsys', 'battery'))
-        return int(match.group(1)) if match else -1
-
-    def temperature():
-        match = re.search(r'temperature: (\d+)', shell('dumpsys', 'battery'))
-        return int(match.group(1)) if match else -1
-
-    def thermal():
-        output = shell('dumpsys', 'thermalservice')
-        match = re.search(r'Thermal Status: (\w+)', output)
-        return match.group(1) if match else 'unknown'
-
-    def charge_counter():
-        match = re.search(r'Charge counter: (\d+)', shell('dumpsys', 'battery'))
-        return int(match.group(1)) if match else -1
-
-    def sample():
-        return {'battery_level': level(), 'battery_temperature_tenths_c': temperature(),
-                'charge_counter_uah': charge_counter(), 'thermal_status': thermal(),
-                'recorded_at': datetime.now(timezone.utc).isoformat()}
-
-    shell('dumpsys', 'batterystats', '--reset')
-    start = sample()
-    time.sleep(args.baseline_minutes * 60)
-    after_baseline = sample()
-    workload_started = time.time()
-    if args.package:
-        for package in args.package:
-            shell('am', 'force-stop', package)
-            shell('am', 'start', '-W', '-n', package + '/org.traceform.agentos.LocalModelQualityProbe',
-                  '-a', args.workload_action, '--es', 'model', args.model)
-            deadline = time.time() + args.workload_minutes * 60
-            while time.time() < deadline:
-                logs = shell('logcat', '-d', '-s', 'AgentOsModelQuality:I', '*:S')
-                if args.workload_action + '_DONE' in logs:
-                    break
-                time.sleep(10)
-    remaining = args.workload_minutes * 60 - (time.time() - workload_started)
-    if remaining > 0:
-        time.sleep(remaining)
-    end = sample()
-    stats = shell('dumpsys', 'batterystats', '--charged')
-    uids = [line.strip() for line in stats.splitlines() if 'org.traceform' in line or 'Estimated power use' in line]
-    receipt = {
-        'device_serial': args.serial,
-        'synthetic_workload_only': True,
-        'baseline_minutes': args.baseline_minutes,
-        'workload_minutes': args.workload_minutes,
-        'samples': {'start': start, 'after_baseline': after_baseline, 'end': end},
-        'baseline_drain_percent_per_hour': round((start['battery_level'] - after_baseline['battery_level'])
-                                                 / max(args.baseline_minutes, 1) * 60, 2),
-        'workload_drain_percent_per_hour': round((after_baseline['battery_level'] - end['battery_level'])
-                                                 / max(args.workload_minutes, 1) * 60, 2),
-        'temperature_delta_tenths_c': end['battery_temperature_tenths_c'] - start['battery_temperature_tenths_c'],
-        'baseline_charge_mah': round((start['charge_counter_uah'] - after_baseline['charge_counter_uah']) / 1000.0, 1),
-        'workload_charge_mah': round((after_baseline['charge_counter_uah'] - end['charge_counter_uah']) / 1000.0, 1),
-        'batterystats_excerpt': uids[:40],
-        'limitations': [
-            'System battery statistics only; not an external power meter',
-            'No controlled cooling, fixed ambient temperature or flight mode',
-            'One run per configuration; background activity is not fully controlled',
-            'Drain percentages are coarse because the battery level is reported in whole percent',
+    result = {
+        "label": args.label,
+        "device": args.serial,
+        "capacity_mah": args.capacity_mah,
+        "samples": samples,
+        "estimate": estimate(samples, args.capacity_mah),
+        "temperature_c": {
+            "start": temperatures[0],
+            "end": temperatures[-1],
+            "max": max(value for value in temperatures if value is not None),
+        },
+        "notes": [
+            "single run; no thermal chamber or power meter",
+            "screen state and background load were not controlled beyond the label",
         ],
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(receipt, indent=2) + '\n')
-    print('baseline %/h:', receipt['baseline_drain_percent_per_hour'],
-          'workload %/h:', receipt['workload_drain_percent_per_hour'],
-          'temp delta:', receipt['temperature_delta_tenths_c'])
+    with open(args.output, "w", encoding="utf-8") as handle:
+        json.dump(result, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+    print(json.dumps(result["estimate"]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

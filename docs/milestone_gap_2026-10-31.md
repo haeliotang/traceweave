@@ -36,7 +36,7 @@
 | 8 | **系统级能力仍是实验** | 与 L4 的距离 | 悬浮窗、无障碍、传感器均标实验；通知/分享/文件选择已稳定 | 清点见 [system_capability_inventory](system_capability_inventory_2026-10-31.md)；建议先做零权限的静态快捷方式 |
 | 9 | **Rust daemon 与 IPC 停用** | 长期架构未闭合 | 代码中 `run_tcp_server` 直接返回“disabled pending authenticated IPC” | 评估已写：[daemon_ipc_assessment](daemon_ipc_assessment_2026-10-31.md)；结论是短期不启用 |
 | 10 | **无遥测、无崩溃上报** | 现场问题难复现 | 本地崩溃捕获已实现（`last_crash.txt`，随导出诊断携带）；**不自动上传**；方案见 [crash_reporting](crash_reporting_2026-10-31.md) | 自动上报需要用户同意与接收端，未做 |
-| 11 | **功耗只有单次点测** | 续航结论缺失 | 240/588 mAh/h、+2.6 °C | 功率计与控温环境 |
+| 11 | **功耗只有单次点测** | 续航结论缺失 | 240/588 mAh/h、+2.6 °C，且未覆盖“自动同步开启” | 工具与协议已就绪：[power_measurement](power_measurement_2026-10-31.md)；需要设备拔电后采样 |
 | 12 | **CI 长期不可用** | 证据链依赖本地 | 2026-10-31 检查：Actions 报 “recent account payments have failed or your spending limit needs to be increased”（run 41194259269），三项作业均未启动 | 等 11 月 1 日额度恢复后补跑；恢复后接入 [release_runbook](release_runbook_2026-10-31.md) 第 1 节命令 |
 
 ## 3.1 审计建议的落实进度（2026-10-31）
