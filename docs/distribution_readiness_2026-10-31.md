@@ -47,7 +47,19 @@
 5. 设备冒烟：主屏、任务、记忆、同步、审计各开一次；
 6. 发布说明写明：数据格式版本、已知限制（跨设备未验证、模型 token 上限）。
 
-## 4. 更新说明模板（供以后复用）
+## 4. 自动生成发布说明
+
+`agent_os/scripts/release_notes_android.py` 从构建报告与发布校验直接生成说明，避免手工抄错：
+
+```
+python3 agent_os/scripts/release_notes_android.py \
+  --report <build_report.json> --verification <release_verification.json> \
+  --output notes.md [--changes changes.md]
+```
+
+它会写入版本、versionCode、包名、签名指纹、数据库 schema、同步/模型运行库是否包含、测试组件是否剔除，并固定列出已知限制。样例：[release_notes_0.6.14](../artifacts/agent_os/next_stage/release_notes_0.6.14.md)。
+
+## 4.1 更新说明模板（供以后复用）
 
 ```
 版本：0.6.x（versionCode N）
