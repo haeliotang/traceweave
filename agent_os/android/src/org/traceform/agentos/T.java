@@ -684,6 +684,9 @@ final class T {
         add("sensor.stop", "Stop sensing", "停止感知");
         add("sensor.start", "Enable sensing", "启用感知");
         add("common.operation_failed", "Operation failed", "操作失败");
+        add("ui.thermal_detail", "100%% offloaded to CPU NEON (%d ops, GPU=%d, TPU=%d) · shed delay %d ms", "100%% 卸载至 CPU NEON (%d ops, GPU=%d, TPU=%d) · 避险延迟 %d ms");
+        add("cap.step_line_remaining", "Capability: %s · Grant remaining ~%d min", "能力标识：%s · 授权剩余约 %d 分钟");
+        add("cap.step_line_none", "Capability: %s · Not granted", "能力标识：%s · 尚未授权");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

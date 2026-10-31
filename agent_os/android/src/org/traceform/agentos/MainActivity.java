@@ -967,8 +967,8 @@ public final class MainActivity extends Activity {
                 int gpu = breakdown.optInt("GPU_VULKAN", 0);
                 int tpu = breakdown.optInt("EDGE_TPU", 0);
                 long delay = resObj.optLong("pacing_delay_ms", 0);
-                Toast.makeText(this, (T.s("ui.thermal_throttling", en))
-                        + "100% 卸载至 CPU NEON (" + cpu + " ops, GPU=" + gpu + ", TPU=" + tpu + ") · 避险延迟 " + delay + "ms", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, T.s("ui.thermal_throttling", en)
+                        + T.format("ui.thermal_detail", en, cpu, gpu, tpu, delay), Toast.LENGTH_LONG).show();
             } catch (Exception ex) {
                 Toast.makeText(this, "Thermal shed error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -1533,13 +1533,9 @@ public final class MainActivity extends Activity {
                 } else if (!isStepDone) {
                     long grantRemaining = capabilityBroker.remainingMillis(task.id, step.capability, step.scope);
                     TextView capView = new TextView(this);
-                    capView.setText(en
-                        ? "Capability: " + step.capability + (grantRemaining > 0
-                            ? " · Grant remaining ~" + ((grantRemaining + 59_999) / 60_000) + " min"
-                            : " · Not granted")
-                        : "能力标识：" + step.capability + (grantRemaining > 0
-                            ? " · 授权剩余约 " + ((grantRemaining + 59_999) / 60_000) + " 分钟"
-                            : " · 尚未授权"));
+                    capView.setText(grantRemaining > 0
+                        ? T.format("cap.step_line_remaining", en, step.capability, (grantRemaining + 59_999) / 60_000)
+                        : T.format("cap.step_line_none", en, step.capability));
                     capView.setTextSize(12);
                     capView.setTextColor(grantRemaining > 0 ? 0xFF1B5E20 : 0xFF777777);
                     capView.setPadding(dp(16), dp(2), 0, 0);

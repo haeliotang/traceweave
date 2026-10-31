@@ -198,6 +198,8 @@ The repository contains the following experimental components. Their presence in
 
 ## 6.3 Current Verification Status
 
+A short policy for which strings belong in the bilingual catalog is in [docs/i18n_policy_2026-10-31.md](docs/i18n_policy_2026-10-31.md).
+
 A one-page capability and limits overview is in [docs/capability_overview_2026-10-31.md](docs/capability_overview_2026-10-31.md).
 
 The six follow-up optimizations (documentation alignment, sync packaging, SAS pairing, model reliability, code/structure split, audit and dark mode) are summarized in [docs/optimization_round_2026-10-31.md](docs/optimization_round_2026-10-31.md).
