@@ -773,6 +773,8 @@ final class T {
         add("audit.integrity_broken", "Tamper check: row %d does not match its hash chain", "防篡改校验：第 %d 条与哈希链不一致");
         add("audit.integrity_unknown", "Tamper check unavailable", "无法执行防篡改校验");
         add("audit.integrity_anchored", "Tamper check: chain intact across %d events; %d heads anchored to the device key", "防篡改校验：%d 条事件链完整，%d 个链头已用设备密钥锚定");
+        add("archive.audit_mismatch", "The archive's audit rows do not match its declared chain head; the file was altered.", "档案内的审计记录与其声明的链头不一致，文件可能被改动过。");
+        add("archive.export_head", "Audit head at export: %s (%d events). Keep it somewhere outside this device to prove the history later.", "导出时的审计链头：%s（共 %d 条）。把它保存在本机之外，日后可用于证明历史未被改写。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

@@ -1865,6 +1865,16 @@ public final class MainActivity extends Activity implements MemoryHost {
         Ui.themeDialog(deleteTaskDialog, this);
     }
 
+    private void showExportHead() {
+        try {
+            String head = store.auditHead();
+            if (head == null || head.isEmpty()) return;
+            showMessage(T.format("archive.export_head", isEnglish(),
+                head.substring(0, Math.min(16, head.length())), store.listRecentAuditEvents(1000).size()));
+        } catch (Exception ignored) {
+        }
+    }
+
     void confirmExportScope() {
         if (busy) return;
         try {
@@ -2020,6 +2030,7 @@ public final class MainActivity extends Activity implements MemoryHost {
             mainHandler.post(() -> {
                 if (destroyed) return;
                 setBusy(false, T.s(result == null ? "archive.saved" : "archive.export_failed", isEnglish()));
+                if (result == null) showExportHead();
                 if (result != null) showError(result);
             });
         });

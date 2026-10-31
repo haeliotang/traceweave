@@ -45,6 +45,9 @@ final class MemoryArchive {
         final ArrayList<AgentStore.AuditEvent> audit = new ArrayList<>();
         final ArrayList<AgentStore.Tombstone> tombstones = new ArrayList<>();
         long exportedAt;
+        /** Chain head of the audit rows inside this archive, so an outside copy can be checked. */
+        String auditHead = "";
+        int auditCount;
     }
 
     private MemoryArchive() {}
@@ -225,6 +228,8 @@ final class MemoryArchive {
                 .put("entityId", tombstone.entityId).put("deletedAt", tombstone.deletedAt));
         }
         root.put("tombstones", tombstones);
+        root.put("auditHead", data.auditHead == null ? "" : data.auditHead);
+        root.put("auditCount", data.auditCount);
         return root.toString();
     }
 
@@ -240,6 +245,8 @@ final class MemoryArchive {
         JSONArray memories = root.getJSONArray("memories");
         JSONArray audit = root.getJSONArray("audit");
         JSONArray tombstones = root.getJSONArray("tombstones");
+        data.auditHead = root.optString("auditHead", "");
+        data.auditCount = root.optInt("auditCount", 0);
         long total = (long) tasks.length() + memories.length() + audit.length() + tombstones.length();
         if (total > MAX_RECORDS) throw new IOException("The archive contains too many records");
 

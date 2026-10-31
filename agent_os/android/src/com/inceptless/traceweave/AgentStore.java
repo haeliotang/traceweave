@@ -2196,6 +2196,13 @@ final class AgentStore extends SQLiteOpenHelper {
                     data.audit.add(new AuditEvent(cursor.getString(0), cursor.getString(1), cursor.getLong(2), cursor.getString(3)));
                 }
             }
+            try (Cursor cursor = database.rawQuery(
+                    "SELECT hash FROM audit ORDER BY rowid DESC LIMIT 1", null)) {
+                if (cursor.moveToFirst()) data.auditHead = cursor.getString(0);
+            }
+            try (Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM audit", null)) {
+                if (cursor.moveToFirst()) data.auditCount = cursor.getInt(0);
+            }
             try (Cursor cursor = database.query("tombstones", new String[]{"entity_type", "entity_id", "deleted_at"},
                     null, null, null, null, "deleted_at ASC")) {
                 while (cursor.moveToNext()) {
@@ -2241,6 +2248,7 @@ final class AgentStore extends SQLiteOpenHelper {
 
     ArchiveReview reviewArchive(java.io.InputStream input, char[] passphrase) throws Exception {
         MemoryArchive.Data data = MemoryArchive.decrypt(input, passphrase);
+        verifyArchiveAudit(data);
         SQLiteDatabase database = getReadableDatabase();
         database.beginTransactionNonExclusive();
         try {
@@ -2262,6 +2270,28 @@ final class AgentStore extends SQLiteOpenHelper {
         if (!snapshot.keySet().equals(review.conflicts.keySet()) || snapshot.containsValue(null))
             throw new IllegalArgumentException("A choice for every reviewed conflict is required");
         return importArchiveData(review.data, false, review, snapshot);
+    }
+
+    /**
+     * The archive declares the head of its own audit rows; recomputing the chain over
+     * those rows catches an edit that did not also update the declared head.
+     */
+    private void verifyArchiveAudit(MemoryArchive.Data data) throws Exception {
+        if (data.auditHead == null || data.auditHead.isEmpty()) return;
+        java.util.ArrayList<ArchiveAudit.Row> rows = new java.util.ArrayList<>();
+        for (AgentStore.AuditEvent event : data.audit) {
+            rows.add(new ArchiveAudit.Row(event.id, event.taskId, event.occurredAt, event.event));
+        }
+        if (!ArchiveAudit.matches(data.auditHead, rows))
+            throw new java.io.IOException(T.s("archive.audit_mismatch", false));
+    }
+
+    /** Head of the live audit chain, for display next to an export. */
+    String auditHead() {
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT hash FROM audit ORDER BY rowid DESC LIMIT 1", null)) {
+            return cursor.moveToFirst() ? cursor.getString(0) : "";
+        }
     }
 
     private Map<String, ArchiveConflict> archiveConflicts(SQLiteDatabase database, MemoryArchive.Data data) throws Exception {

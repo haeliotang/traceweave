@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-31",
+  "what": "an exported archive now carries the chain head of the audit rows it contains, so a copy kept off-device can later prove the history was not rewritten",
+  "format": {
+    "fields": "auditHead (sha256 of the last audit row) and auditCount",
+    "export": "filled from the live chain at export time; the app shows the first 16 hex characters after a successful export so the user can note it",
+    "import": "the app recomputes the chain over the archive's own audit rows and rejects the file when it no longer matches the declared head"
+  },
+  "evidence": {
+    "real_export": "agent-os-memory-20261031 (1).taos, 4706 bytes, auditCount 14, auditHead dba7c8b73eb21701…",
+    "offline_check": "recomputed chain over the 14 archived rows equals the declared head; changing one archived event no longer matches"
+  },
+  "limits": [
+    "the head lives inside the archive, so an attacker who edits the rows can also edit the head; the protection comes from the user keeping the exported head separately",
+    "anchoring to a third party or a public log remains the only way to remove that trust assumption"
+  ],
+  "verification": "host suite OK (new archive audit test); RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}
