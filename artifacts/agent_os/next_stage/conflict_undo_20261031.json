@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "change": "resolving a memory conflict no longer deletes the replaced version: it is saved as a candidate first, and the label changed from 冲突版本 to 待定版本",
+  "steps_verified": [
+    "probe created a conflict (base vs remote) and the detail showed 1 个待定版本",
+    "adopting the remote version changed the memory content to 'conflict remote value'",
+    "the detail then still offered 1 个待定版本 whose content was 'conflict base value'",
+    "adopting that switched the content back to 'conflict base value'"
+  ],
+  "evidence": {
+    "audit": "3 memory_conflict_resolved events after the runs",
+    "screenshot": "artifacts/agent_os/next_stage/ui/conflict_undo.png"
+  },
+  "limitations": [
+    "each switch appends an audit event; there is no distinct undo action",
+    "candidate list order is by clock string, not by recency"
+  ]
+}

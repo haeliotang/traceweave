@@ -1495,11 +1495,23 @@ final class AgentStore extends SQLiteOpenHelper {
                 clock = new java.util.TreeMap<>();
                 clock.put(localActor(), System.currentTimeMillis());
             }
+            // Keep the version that is about to be replaced so the choice can be undone.
+            for (Memory current : listMemories()) {
+                if (!current.id.equals(memoryId) || current.content.equals(normalized)) continue;
+                java.util.TreeMap<String, Long> previousClock = versionClock(memoryId, sha256Hex(current.content));
+                if (previousClock == null) {
+                    previousClock = new java.util.TreeMap<>();
+                    previousClock.put(localActor(), System.currentTimeMillis() - 1);
+                }
+                saveCandidate(database, memoryId,
+                    new MemoryMerge.Version(previousClock, sha256Hex(current.content), false),
+                    current.content, current.source, current.sourceReference, current.expiresAt);
+            }
             database.update("memories", memoryPayloadValues(memoryId, MEMORY_FACT, normalized,
                 chosenSource, chosenReference, chosenExpiresAt), "id=?", new String[]{memoryId});
             replaceMemoryVersions(database, memoryId, java.util.Collections.singletonList(
                 new MemoryMerge.Version(clock, hash, false)));
-            deleteCandidates(database, memoryId);
+            deleteCandidateByClock(database, memoryId, encodeClock(clock));
             appendAudit(database, memoryId, "memory_conflict_resolved", System.currentTimeMillis());
             database.setTransactionSuccessful();
         } finally {
@@ -1529,6 +1541,10 @@ final class AgentStore extends SQLiteOpenHelper {
             if (!cursor.moveToFirst()) return null;
             return new org.json.JSONObject(new String(unseal(memoryAad(memoryId), cursor.getBlob(0)), StandardCharsets.UTF_8));
         }
+    }
+
+    private void deleteCandidateByClock(SQLiteDatabase database, String memoryId, String clock) {
+        database.delete("memory_candidates", "memory_id=? AND clock=?", new String[]{memoryId, clock});
     }
 
     private void deleteCandidates(SQLiteDatabase database, String memoryId) {
