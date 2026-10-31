@@ -18,5 +18,13 @@
     "the 10 -> 11 backfill never ran on a real upgrade: the test package was reinstalled to ship the logging build, which wiped the pre-fix data",
     "no merge-conflict case was exercised"
   ],
-  "note": "the missing version is also why the earlier end-to-end 'completed' run carried no data"
+  "note": "the missing version is also why the earlier end-to-end 'completed' run carried no data",
+  "backfill_verification": {
+    "date": "2026-10-31",
+    "method": "took a package that already held two memories, deleted memory_versions, set user_version=10, pushed the file back, then started the schema-11 build",
+    "first_attempt": "schema moved to 11 but memory_versions stayed 0; logcat showed 'backfill skip ...: getDatabase called recursively'",
+    "cause": "the backfill called instance helpers that reopen the database inside onUpgrade",
+    "fix": "listMemoryVersions now has a static overload that takes the database handle already open during the migration",
+    "second_attempt": "schema 11, memories 2, memory_versions 2"
+  }
 }

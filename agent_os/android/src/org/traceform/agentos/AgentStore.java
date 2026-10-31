@@ -280,7 +280,7 @@ final class AgentStore extends SQLiteOpenHelper {
             while (cursor.moveToNext()) rows.add(new String[]{cursor.getString(0), String.valueOf(cursor.getLong(1))});
             for (String[] row : rows) {
                 try {
-                    if (!listMemoryVersions(row[0]).isEmpty()) continue;
+                    if (!listMemoryVersions(database, row[0]).isEmpty()) continue;
                     String content = new org.json.JSONObject(new String(unseal(memoryAad(row[0]),
                         sealedPayload(database, row[0])), StandardCharsets.UTF_8)).getString("content");
                     java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
@@ -1586,8 +1586,12 @@ final class AgentStore extends SQLiteOpenHelper {
 
     /** Versions known for one memory id, as persisted by merge or resolve. */
     List<MemoryMerge.Version> listMemoryVersions(String memoryId) {
+        return listMemoryVersions(getReadableDatabase(), memoryId);
+    }
+
+    private static ArrayList<MemoryMerge.Version> listMemoryVersions(SQLiteDatabase database, String memoryId) {
         ArrayList<MemoryMerge.Version> versions = new ArrayList<>();
-        try (Cursor cursor = getReadableDatabase().query("memory_versions",
+        try (Cursor cursor = database.query("memory_versions",
                 new String[]{"clock", "content_hash", "tombstone"}, "memory_id=?", new String[]{memoryId},
                 null, null, "clock")) {
             while (cursor.moveToNext()) {
