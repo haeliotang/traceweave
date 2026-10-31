@@ -147,18 +147,15 @@ public final class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_RECORD_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "麦克风录音权限已授予", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, T.s("voice.mic_granted", isEnglish()), Toast.LENGTH_SHORT).show();
                 startContinuousVoice();
             } else {
-                Toast.makeText(this, "需要麦克风权限以启用实时 VAD 拾音", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, T.s("voice.mic_required", isEnglish()), Toast.LENGTH_LONG).show();
             }
         } else if (requestCode == REQ_NOTIFICATIONS) {
             boolean granted = grantResults.length > 0
                 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
-            showMessage(granted
-                ? (isEnglish() ? "Notifications enabled" : "通知已启用")
-                : (isEnglish() ? "Notifications denied; enable them in system settings to use the notification capability"
-                                : "通知权限被拒绝；需在系统设置中开启后通知能力才可用"));
+            showMessage(T.s(granted ? "notify.enabled" : "notify.denied", isEnglish()));
         }
     }
 
@@ -170,7 +167,7 @@ public final class MainActivity extends Activity {
 
     void maybeRequestNotificationPermission(boolean userInitiated) {
         if (notificationsGranted()) {
-            if (userInitiated) showMessage(isEnglish() ? "Notifications are already enabled" : "通知权限已授予");
+            if (userInitiated) showMessage(T.s("notify.already", isEnglish()));
             return;
         }
         android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
@@ -191,11 +188,11 @@ public final class MainActivity extends Activity {
         if (vim.isListening()) {
             vim.stopListening();
             if (btnToggleVoice != null) {
-                btnToggleVoice.setText("实时拾音");
+                btnToggleVoice.setText(T.s("voice.live", isEnglish()));
                 btnToggleVoice.setTextColor(0xFF0284C7);
             }
             if (vadLiveStatus != null) {
-                vadLiveStatus.setText("拾音已停止 · 16kHz NEON SIMD 待命");
+                vadLiveStatus.setText(T.s("voice.stopped_ready", isEnglish()));
             }
         } else {
             if (!checkAudioPermission()) {
@@ -214,11 +211,11 @@ public final class MainActivity extends Activity {
             @Override
             public void onListeningStateChanged(boolean isListening) {
                 if (btnToggleVoice != null) {
-                    btnToggleVoice.setText(isListening ? "停止拾音" : "实时拾音");
+                    btnToggleVoice.setText(T.s(isListening ? "voice.stop" : "voice.live", isEnglish()));
                     btnToggleVoice.setTextColor(isListening ? 0xFFE11D48 : 0xFF0284C7);
                 }
                 if (vadLiveStatus != null) {
-                    vadLiveStatus.setText(isListening ? "实时拾音中 · 16kHz NEON 持续监听" : "拾音已停止");
+                    vadLiveStatus.setText(T.s(isListening ? "voice.listening" : "voice.stopped", isEnglish()));
                 }
             }
 
@@ -226,14 +223,11 @@ public final class MainActivity extends Activity {
             public void onVoiceMetrics(float energyRms, float zcr, boolean isSpeech, boolean isGated) {
                 if (vadLiveStatus != null) {
                     if (isGated) {
-                        vadLiveStatus.setText(String.format(java.util.Locale.US,
-                                "RMS: %.3f | 口袋静音保护 (遮挡防误触)", energyRms));
+                        vadLiveStatus.setText(T.format("voice.rms_pocket", isEnglish(), energyRms));
                     } else if (isSpeech) {
-                        vadLiveStatus.setText(String.format(java.util.Locale.US,
-                                "RMS: %.3f | ZCR: %.3f [检测到语音]", energyRms, zcr));
+                        vadLiveStatus.setText(T.format("voice.rms_speech", isEnglish(), energyRms, zcr));
                     } else {
-                        vadLiveStatus.setText(String.format(java.util.Locale.US,
-                                "RMS: %.3f | 环境底噪静音 (ZCR: %.3f)", energyRms, zcr));
+                        vadLiveStatus.setText(T.format("voice.rms_noise", isEnglish(), energyRms, zcr));
                     }
                 }
             }
@@ -241,23 +235,22 @@ public final class MainActivity extends Activity {
             @Override
             public void onSpeechStart() {
                 if (vadLiveStatus != null) {
-                    vadLiveStatus.setText("正在讲话 · 正在捕获语音片段...");
+                    vadLiveStatus.setText(T.s("voice.capturing", isEnglish()));
                 }
             }
 
             @Override
             public void onSpeechEnd(short[] speechAudio, String classifiedIntent) {
                 if (vadLiveStatus != null) {
-                    vadLiveStatus.setText(String.format(java.util.Locale.US,
-                            "语音结束 (%d 采样) · 识别意图: %s", speechAudio.length, classifiedIntent));
+                    vadLiveStatus.setText(T.format("voice.segment_done", isEnglish(), speechAudio.length, classifiedIntent));
                 }
-                Toast.makeText(MainActivity.this, "识别语音意图: " + classifiedIntent, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, T.format("voice.intent", isEnglish(), classifiedIntent), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onError(String message) {
                 if (vadLiveStatus != null) {
-                    vadLiveStatus.setText("拾音错误: " + message);
+                    vadLiveStatus.setText(T.format("voice.error", isEnglish(), message));
                 }
             }
         });
@@ -271,7 +264,7 @@ public final class MainActivity extends Activity {
             pendingExportPassphrase = null;
             if (resultCode != RESULT_OK || data == null || data.getData() == null) {
                 clear(passphrase);
-                setBusy(false, "导出已取消");
+                setBusy(false, T.s("archive.export_cancelled", isEnglish()));
                 return;
             }
             writeArchive(data.getData(), passphrase);
@@ -279,7 +272,7 @@ public final class MainActivity extends Activity {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 promptImportPassphrase(data.getData());
             } else {
-                setBusy(false, "导入已取消");
+                setBusy(false, T.s("archive.import_cancelled", isEnglish()));
             }
         } else if (requestCode == SELECT_REMOTE_STATUS_REQUEST) {
             String taskId = pendingRemoteStatusTaskId;
