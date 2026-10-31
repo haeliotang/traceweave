@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-31",
+  "after_measurement_cleanup": {
+    "keeper_loop": "stopped (was sending KEYCODE_WAKEUP every 20 s)",
+    "screen_off_timeout": "restored to 30000 ms",
+    "deviceidle": "re-enabled (light idle)",
+    "auto_sync": "left ENABLED on the production package; the device had locked to a PIN screen, so the toggle could not be flipped back over adb"
+  },
+  "action_for_user": "if you do not want automatic sync on, open Settings and untick 应用打开时自动同步 (one tap). With no paired device each attempt exits immediately (logs show skipped: no paired device).",
+  "note": "production builds are not debuggable, so run-as cannot edit the preference directly"
+}
