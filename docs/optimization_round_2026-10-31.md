@@ -45,9 +45,13 @@
 ## 6. 审计查看器、深色模式与无障碍
 
 - 审计页（`AuditActivity`）：只读展示最近事件，导出 TSV；设备上生成任务后看到 `task_created / local_rule_planning_started / plan_generated`，导出 5 行并核对。
-- 深色模式：`Ui.dark/background/card/text/muted/stroke` 跟随系统；主屏、设置、审计、任务中心、模型页已适配，系统弹窗保持浅色（改深色会导致黑底黑字，已回滚）。
-- 无障碍：动作网格 48dp、任务中心“⋯”补 `contentDescription`；`uiautomator` 检查主屏 10 个按钮全部带文本。
-- 限制：TalkBack 全流程未验证；弹窗深色未做。
+- 深色模式：`Ui.dark/background/card/text/muted/stroke` 跟随系统；主屏、设置、审计、任务中心、模型页已适配；记忆详情与配对结果改为自绘标题/正文后也支持深色（[截图](../artifacts/agent_os/next_stage/ui/memory_detail_dark_themed.png)）。使用系统 `setMessage` 的弹窗仍保持浅色，因为强行改深色会导致黑底黑字。
+- 无障碍：动作网格 48dp、任务中心“⋯”补 `contentDescription`；新增 `agent_os/scripts/check_a11y_android.py`，检查可点击且会朗读的控件是否带 `text`/`content-desc`。实测：主屏 10、设置 10、审计 3、任务中心 2，未标注均为 0。
+- 限制：TalkBack 朗读效果未验证（开启后 `uiautomator` 只抓到 13 个节点，无法据此断言）；系统文案弹窗深色未做。
+
+## 结论
+
+六项都已交付并有设备或宿主证据；每项的限制在上文各自列明。仍属未完成或外部依赖的部分集中在下节，不随本轮的完成声明一起结案。
 
 ## 未完成 / 外部依赖
 
