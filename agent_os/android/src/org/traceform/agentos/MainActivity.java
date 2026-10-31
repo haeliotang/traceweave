@@ -1216,8 +1216,12 @@ public final class MainActivity extends Activity {
                     : (T.s("ui.cloud_planning_requires_a_fresh_single", en)));
                 for (AgentStore.Memory memory : TaskContext.memories(task.plan))
                     context.append(memory.content).append("\n").append(memory.source).append(" · ").append(memory.id).append("\n\n");
-                new AlertDialog.Builder(this).setTitle(T.s("ui.selected_memory_snapshots", en))
-                    .setMessage(context.toString()).setPositiveButton(T.s("ui.close", en), null).show();
+                AlertDialog contextDialog = new AlertDialog.Builder(this)
+                    .setView(Ui.dialogBody(this, T.s("ui.selected_memory_snapshots", en), context.toString(), 13))
+                    .setPositiveButton(T.s("ui.close", en), null)
+                    .create();
+                contextDialog.show();
+                Ui.themeDialog(contextDialog, this);
             });
         }
 
@@ -1310,12 +1314,14 @@ public final class MainActivity extends Activity {
             for (MemoryConsolidator.ConsolidatedItem item : candidates)
                 preview.append(item.kind).append(": ").append(item.content).append("\n\n");
             preview.append(T.s("ui.source_task", en)).append(task.id);
-            new AlertDialog.Builder(this).setTitle(T.s("ui.confirm_long_term_memory", en))
-                .setMessage(preview.toString())
+            AlertDialog suggestionDialog = new AlertDialog.Builder(this)
+                .setView(Ui.dialogBody(this, T.s("ui.confirm_long_term_memory", en), preview.toString(), 13))
                 .setNegativeButton(T.s("ui.later", en), null)
                 .setNeutralButton(T.s("ui.reject_all", en), (dialog, which) -> reviewMemoryCandidates(task.id, false))
                 .setPositiveButton(T.s("ui.confirm_and_save_all", en), (dialog, which) -> reviewMemoryCandidates(task.id, true))
-                .show();
+                .create();
+            suggestionDialog.show();
+            Ui.themeDialog(suggestionDialog, this);
         }, taskButtons);
         card.addView(actions);
     }
@@ -1988,10 +1994,10 @@ public final class MainActivity extends Activity {
         }
         String id = ids.get(index);
         AgentStore.ArchiveConflict conflict = review.conflicts.get(id);
-        new AlertDialog.Builder(this)
-            .setTitle((T.s("ui.memory_conflict", en)) + (index + 1) + "/" + ids.size())
-            .setMessage((T.s("ui.on_this_device_n", en)) + archiveMemoryDescription(conflict.local, en)
-                + (T.s("ui.n_nin_the_archive_n", en)) + archiveMemoryDescription(conflict.incoming, en))
+        AlertDialog conflictDialog = new AlertDialog.Builder(this)
+            .setView(Ui.dialogBody(this, (T.s("ui.memory_conflict", en)) + (index + 1) + "/" + ids.size(),
+                (T.s("ui.on_this_device_n", en)) + archiveMemoryDescription(conflict.local, en)
+                    + (T.s("ui.n_nin_the_archive_n", en)) + archiveMemoryDescription(conflict.incoming, en), 12))
             .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
             .setNeutralButton(T.s("ui.use_archive", en), (dialog, which) -> {
                 choices.put(id, true); reviewArchiveConflict(review, ids, index + 1, choices);
@@ -2000,7 +2006,9 @@ public final class MainActivity extends Activity {
                 choices.put(id, false); reviewArchiveConflict(review, ids, index + 1, choices);
             })
             .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
-            .show();
+            .create();
+        conflictDialog.show();
+        Ui.themeDialog(conflictDialog, this);
     }
 
     private String archiveMemoryDescription(AgentStore.Memory memory, boolean en) {
