@@ -715,9 +715,9 @@ public final class MainActivity extends Activity {
                 .setTitle(T.s("ui.paired_devices", en))
                 .setItems(labels, (dialog, which) -> {
                     final AgentStore.Pairing pairing = active.get(which);
-                    new AlertDialog.Builder(this)
-                        .setTitle(T.s("ui.revoke_pairing", en))
-                        .setMessage(T.format("pair.revoke_message", en, pairing.deviceId))
+                    AlertDialog revokeDialog = new AlertDialog.Builder(this)
+                        .setView(Ui.dialogBody(this, T.s("ui.revoke_pairing", en),
+                            T.format("pair.revoke_message", en, pairing.deviceId), 13))
                         .setNegativeButton(T.s("ui.cancel", en), null)
                         .setPositiveButton(T.s("ui.revoke", en), (inner, ignored) -> {
                             try {
@@ -726,7 +726,9 @@ public final class MainActivity extends Activity {
                             } catch (Exception error) {
                                 showError(error);
                             }
-                        }).show();
+                        }).create();
+                    revokeDialog.show();
+                    Ui.themeDialog(revokeDialog, this);
                 })
                 .setNegativeButton(T.s("ui.close", en), null)
                 .show();
