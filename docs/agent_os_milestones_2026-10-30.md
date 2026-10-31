@@ -400,6 +400,7 @@
 - 2026-10-31：系统弹窗深色（记忆相关）——记忆详情、删除确认、配对结果改为自绘标题/正文，深色下可读（[memory_delete_dark_themed](artifacts/agent_os/next_stage/ui/memory_delete_dark_themed.png)）；能力授权、云配置等系统文案弹窗仍为浅色。
 - 2026-10-31：TalkBack 全流程走查（完成）——用“点按聚焦 + KEYCODE_ENTER 激活”代替不稳定的双触，依次走通主屏 → 任务中心 → 返回 → 设置 → 配对设备 → 取消 → 控制台 → 审计日志；焦点框与节点标签均有截图。收据 [talkback_walkthrough_20261031](artifacts/agent_os/next_stage/talkback_walkthrough_20261031.json)。
 - 2026-10-31：TalkBack 走查（部分）——服务确认启用，焦点框在主屏标题、配对弹窗指纹文本与同步 ID 输入框上可见，节点树 65 项均有标签，双触一次成功从主屏进入任务中心；脚本化双触不稳定，未完成全流程。收据 [talkback_walkthrough_20261031](artifacts/agent_os/next_stage/talkback_walkthrough_20261031.json)，截图 ui/talkback_focus_*.png。
+- 2026-10-31：把修复回路接进应用——文稿重试时会把上次的校验失败原因写回提示（`strictPrompt(goal, memories, previousFailure)`），不再只是“再说一次”。
 - 2026-10-31：内容质量实验（严格提示 vs 修复回路）——同一 10 例、grammar + 512 token：基线内容 **5/10**，加“不要复述示例/用真实日期/类型匹配”的严格提示升到 **6/10**，再加一轮“把失败项写回提示重生成”的修复后升到 **10/10**（4 例被修复）。结论：**校验 + 定向重生成**比单纯加强提示有效得多。数据 [json7_strict_prompt](artifacts/agent_os/next_stage/json7_strict_prompt_20261031.json)、[json8_repair](artifacts/agent_os/next_stage/json8_repair_20261031.json)。
 - 2026-10-31：静态快捷方式（零权限）——清单声明 `android.app.shortcuts`，提供“审计日志”和“新建任务”两个入口；APK 内已确认 meta-data 与 `xml/shortcuts` 资源存在；**未做**：桌面长按菜单的实际显示（需人工长按确认）。收据 [shortcuts_20261031](artifacts/agent_os/next_stage/shortcuts_20261031.json)。
 - 2026-10-31：自动同步频率可选——设置页新增“每 N”按钮，在 15 分钟 / 1 小时 / 6 小时之间轮换，写入 `sync_auto_interval_ms` 并立即重排任务（截图 [auto_sync_interval](artifacts/agent_os/next_stage/ui/auto_sync_interval.png)）。
