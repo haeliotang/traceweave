@@ -19,6 +19,10 @@ final class MemoryConsolidator {
     }
 
     static List<ConsolidatedItem> extractItems(AgentStore.Task task) {
+        return extractItems(task, false);
+    }
+
+    static List<ConsolidatedItem> extractItems(AgentStore.Task task, boolean en) {
         List<ConsolidatedItem> items = new ArrayList<>();
         if (task == null || !AgentStore.COMPLETED.equals(task.status) || task.plan == null || !task.plan.isComplete()) return items;
         for (ExecutionPlan.Step step : task.plan.steps)
@@ -36,11 +40,11 @@ final class MemoryConsolidator {
                         JSONObject cal = new JSONObject(step.observation);
                         if (!"created".equals(cal.optString("status"))
                                 || !"provider_readback".equals(cal.optString("verification"))) continue;
-                        String eventTitle = cal.optString("title", "系统日程待办");
+                        String eventTitle = cal.optString("title", T.s("memory.calendar_default_title", en));
                         String timeStr = cal.optString("formattedStart", "");
-                        String topicKey = "【日程待办 · " + eventTitle + "】";
-                        String content = topicKey + (timeStr.isEmpty() ? "" : "时间：" + timeStr + "，")
-                            + "关联任务：「" + title + "」";
+                        String content = timeStr.isEmpty()
+                            ? T.format("memory.content_calendar_plain", en, eventTitle, title)
+                            : T.format("memory.content_calendar", en, eventTitle, timeStr, title);
                         items.add(new ConsolidatedItem(AgentStore.MEMORY_FACT, content));
                     } catch (Exception ignored) {}
                 }
@@ -52,8 +56,7 @@ final class MemoryConsolidator {
                 || titleLower.contains("请记住我") || titleLower.contains("记住我的偏好")
                 || titleLower.startsWith("i prefer ") || titleLower.startsWith("i like ")
                 || titleLower.startsWith("please remember ")) {
-            String topicKey = "【用户偏好 · " + title + "】";
-            String content = topicKey + "用户倾向于执行任务时遵循意向：「" + title + "」";
+            String content = T.format("memory.content_preference", en, title);
             items.add(new ConsolidatedItem(AgentStore.MEMORY_PREFERENCE, content));
         }
 
@@ -70,8 +73,7 @@ final class MemoryConsolidator {
                 }
             }
             if (count >= 2) {
-                String topicKey = "【工作流 · " + stepsSummary.toString() + "】";
-                String content = topicKey + "针对「" + title + "」的端侧流程链路。";
+                String content = T.format("memory.content_workflow", en, stepsSummary.toString(), title);
                 items.add(new ConsolidatedItem(AgentStore.MEMORY_WORKFLOW, content));
             }
         }

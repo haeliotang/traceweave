@@ -46,7 +46,8 @@ public final class MemoryReviewActivity extends Activity {
         text(root, T.s("memoryreviewactivity.review_memory_suggestions", en));
         text(root, (T.s("memoryreviewactivity.source_task", en)) + task.title + "\n" + task.id);
         text(root, T.s("memoryreviewactivity.suggestions_are_not_facts_edit_and_acc", en));
-        List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
+        boolean en = "en".equals(getSharedPreferences("agent_os_prefs", 0).getString("app_lang", "zh"));
+        List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task, en);
         JSONObject decisions = new JSONObject(task.plan.memoryDecisions);
         for (int index = 0; index < candidates.size(); index++) {
             final int item = index;

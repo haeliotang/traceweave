@@ -569,6 +569,11 @@ final class T {
         add("cap.remote_status", "Cross-app status", "跨应用状态");
         add("task.requesting_capability", "Requesting %s (%s)", "正在请求：%s (%s)");
         add("task.jit_banner_line", "Task \"%s\" is on step %d and requests a controlled system capability.", "任务：「%s」在步骤 %d 请求受控系统能力。");
+        add("memory.calendar_default_title", "System schedule", "系统日程待办");
+        add("memory.content_calendar", "【Schedule · %s】Time: %s. Related task: 「%s」", "【日程待办 · %s】时间：%s，关联任务：「%s」");
+        add("memory.content_calendar_plain", "【Schedule · %s】Related task: 「%s」", "【日程待办 · %s】关联任务：「%s」");
+        add("memory.content_preference", "【Preference · %s】The user tends to follow this intent when running tasks: 「%s」", "【用户偏好 · %s】用户倾向于执行任务时遵循意向：「%s」");
+        add("memory.content_workflow", "【Workflow · %s】On-device pipeline for 「%s」.", "【工作流 · %s】针对「%s」的端侧流程链路。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

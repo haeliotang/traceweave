@@ -1311,7 +1311,7 @@ public final class MainActivity extends Activity {
 
     private void addMemoryCandidateControls(LinearLayout card, AgentStore.Task task) {
         if (task.plan == null || !"pending".equals(task.plan.memoryReview)) return;
-        List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task);
+        List<MemoryConsolidator.ConsolidatedItem> candidates = MemoryConsolidator.extractItems(task, isEnglish());
         if (candidates.isEmpty()) return;
         boolean en = isEnglish();
         LinearLayout actions = new LinearLayout(this);
