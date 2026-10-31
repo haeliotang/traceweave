@@ -1017,7 +1017,7 @@ public final class MainActivity extends Activity {
             taskList.removeAllViews();
             List<AgentStore.Task> tasks = store.listTasks();
             if (tasks.isEmpty()) {
-                addEmptyMessage(taskList, isEnglish() ? "No active tasks" : "还没有任务");
+                addEmptyMessage(taskList, T.s("task.none_active", isEnglish()));
                 mainHandler.removeCallbacks(taskRefresh);
                 return;
             }
@@ -1050,7 +1050,7 @@ public final class MainActivity extends Activity {
         banner.setPadding(dp(16), dp(14), dp(16), dp(14));
         banner.setBackgroundColor(0xFFFFF8E1); // Soft amber accent
 
-        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.ALERT, "待办授权提醒（JIT 安全门禁）", 0xFFE65100, 18);
+        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.ALERT, T.s("task.jit_title", isEnglish()), 0xFFE65100, 18);
         banner.addView(titleRow);
 
         boolean en = isEnglish();
@@ -1072,7 +1072,7 @@ public final class MainActivity extends Activity {
         if (task.plan != null && task.executionStep >= 0 && task.executionStep < task.plan.totalSteps()) {
             ExecutionPlan.Step step = task.plan.steps.get(task.executionStep);
             Button grantBtn = new Button(this);
-            grantBtn.setText("一键授权 5 分钟并继续");
+            grantBtn.setText(T.s("task.jit_grant_all", isEnglish()));
             grantBtn.setOnClickListener(v -> {
                 try {
                     capabilityBroker.grant(task.id, step.capability, step.scope);
@@ -1097,7 +1097,7 @@ public final class MainActivity extends Activity {
         }
 
         Button rejectBtn = new Button(this);
-        rejectBtn.setText("拒绝并取消任务");
+        rejectBtn.setText(T.s("task.jit_reject", isEnglish()));
         rejectBtn.setOnClickListener(v -> {
             try {
                 store.transition(task.id, AgentStore.CANCELLED);
@@ -1133,8 +1133,8 @@ public final class MainActivity extends Activity {
         memoryList.removeAllViews();
             if (memories.isEmpty()) {
                 addEmptyMessage(memoryList, memorySearch != null && memorySearch.length() > 0
-                    ? (isEnglish() ? "No matching memories" : "没有匹配的记忆")
-                    : (isEnglish() ? "No memories yet" : "还没有记忆"));
+                    ? T.s("memory.none_matching", isEnglish())
+                    : T.s("memory.none_yet", isEnglish()));
                 return;
             }
             for (AgentStore.Memory memory : memories) addMemoryCard(memory);
@@ -1167,7 +1167,7 @@ public final class MainActivity extends Activity {
         headerRow.addView(description, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         TextView badge = DocumentAction.locallyVerified(task)
-            ? IconFactory.createBadge(this, isEnglish() ? "Verified" : "已验证", 0xFFDCFCE7, 0xFF166534)
+            ? IconFactory.createBadge(this, T.s("task.verified", isEnglish()), 0xFFDCFCE7, 0xFF166534)
             : getStatusBadge(task.status);
         headerRow.addView(badge);
         card.addView(headerRow);
@@ -1696,7 +1696,7 @@ public final class MainActivity extends Activity {
             startActivityForResult(intent, SELECT_REMOTE_STATUS_REQUEST);
         } catch (ActivityNotFoundException error) {
             pendingRemoteStatusTaskId = null;
-            showMessage(isEnglish() ? "No synthesis source available" : "没有可用的合成内容来源");
+            showMessage(T.s("task.no_synthesis_source", isEnglish()));
         }
     }
 
@@ -2282,25 +2282,6 @@ public final class MainActivity extends Activity {
 
     private static void clear(char[] value) {
         if (value != null) Arrays.fill(value, '\0');
-    }
-
-    private String memoryKindLabel(String kind) {
-        if (AgentStore.MEMORY_PREFERENCE.equals(kind)) return "偏好";
-        if (AgentStore.MEMORY_FACT.equals(kind)) return "事实";
-        if (AgentStore.MEMORY_WORKFLOW.equals(kind)) return "工作流";
-        return "未知类型";
-    }
-
-    private String statusLabel(String status) {
-        if (AgentStore.QUEUED.equals(status)) return "待处理";
-        if (AgentStore.ACTIVE.equals(status)) return "执行中";
-        if (AgentStore.PAUSED.equals(status)) return "已暂停";
-        if (AgentStore.WAITING_FOR_USER.equals(status)) return "等待用户";
-        if (AgentStore.OUTCOME_UNKNOWN.equals(status)) return "结果未知";
-        if (AgentStore.FAILED.equals(status)) return "执行失败";
-        if (AgentStore.COMPLETED.equals(status)) return "已完成";
-        if (AgentStore.CANCELLED.equals(status)) return "已取消";
-        return "未知状态";
     }
 
     private void showError(Exception error) {

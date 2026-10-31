@@ -638,6 +638,14 @@ final class T {
         add("voice.error", "Capture error: %s", "拾音错误: %s");
         add("archive.export_cancelled", "Export cancelled", "导出已取消");
         add("archive.import_cancelled", "Import cancelled", "导入已取消");
+        add("task.none_active", "No active tasks", "还没有任务");
+        add("task.jit_title", "Pending approval (JIT gate)", "待办授权提醒（JIT 安全门禁）");
+        add("task.jit_grant_all", "Grant 5 minutes and continue", "一键授权 5 分钟并继续");
+        add("task.jit_reject", "Reject and cancel task", "拒绝并取消任务");
+        add("memory.none_matching", "No matching memories", "没有匹配的记忆");
+        add("memory.none_yet", "No memories yet", "还没有记忆");
+        add("task.verified", "Verified", "已验证");
+        add("task.no_synthesis_source", "No synthesis source available", "没有可用的合成内容来源");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
