@@ -36,7 +36,7 @@ def main():
         sys.exit(2)
 
     apk_source = source / "agent-os.apk"
-    apk_target = target / f"traceform-agent-os-{args.version}.apk"
+    apk_target = target / f"traceweave-{args.version}.apk"
     shutil.copy2(apk_source, apk_target)
     for name, destination in [
         ("build_report.json", "build_report.json"),

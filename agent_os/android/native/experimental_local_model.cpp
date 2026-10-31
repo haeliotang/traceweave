@@ -30,7 +30,7 @@ void require(bool condition, const char *message) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_org_traceform_agentos_LocalModelProbe_prepare(JNIEnv *env, jclass) {
+Java_com_inceptless_traceweave_LocalModelProbe_prepare(JNIEnv *env, jclass) {
     std::unique_lock<std::mutex> lock(run_mutex, std::try_to_lock);
     if (!lock.owns_lock()) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), "Another local model request is running");
@@ -41,12 +41,12 @@ Java_org_traceform_agentos_LocalModelProbe_prepare(JNIEnv *env, jclass) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_org_traceform_agentos_LocalModelProbe_cancel(JNIEnv *, jclass) {
+Java_com_inceptless_traceweave_LocalModelProbe_cancel(JNIEnv *, jclass) {
     cancelled.store(true);
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring model_path,
+Java_com_inceptless_traceweave_LocalModelProbe_generate(JNIEnv *env, jclass, jstring model_path,
                                                     jbyteArray prompt_bytes, jint max_tokens,
                                                     jstring grammar_text) {
     std::unique_lock<std::mutex> lock(run_mutex, std::try_to_lock);
@@ -132,17 +132,17 @@ Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_org_traceform_agentos_LocalModelRuntime_prepare(JNIEnv *env, jclass type) {
-    Java_org_traceform_agentos_LocalModelProbe_prepare(env, type);
+Java_com_inceptless_traceweave_LocalModelRuntime_prepare(JNIEnv *env, jclass type) {
+    Java_com_inceptless_traceweave_LocalModelProbe_prepare(env, type);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_org_traceform_agentos_LocalModelRuntime_cancel(JNIEnv *env, jclass type) {
-    Java_org_traceform_agentos_LocalModelProbe_cancel(env, type);
+Java_com_inceptless_traceweave_LocalModelRuntime_cancel(JNIEnv *env, jclass type) {
+    Java_com_inceptless_traceweave_LocalModelProbe_cancel(env, type);
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_org_traceform_agentos_LocalModelRuntime_generate(JNIEnv *env, jclass type, jstring path,
+Java_com_inceptless_traceweave_LocalModelRuntime_generate(JNIEnv *env, jclass type, jstring path,
                                                     jbyteArray prompt, jint max_tokens, jstring grammar) {
-    return Java_org_traceform_agentos_LocalModelProbe_generate(env, type, path, prompt, max_tokens, grammar);
+    return Java_com_inceptless_traceweave_LocalModelProbe_generate(env, type, path, prompt, max_tokens, grammar);
 }

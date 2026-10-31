@@ -733,7 +733,7 @@ public final class DocumentFlowValidationActivity extends Activity {
             {"通知我", CapabilityBroker.NOTIFICATION_CAPABILITY},
             {"安排一个日程", CapabilityBroker.CALENDAR_CAPABILITY},
             {"分享这份内容", CapabilityBroker.SHARE_CAPABILITY},
-            {"Traceform 历史预测", CapabilityBroker.TRACEFORM_CAPABILITY},
+            {"Traceweave 历史预测", CapabilityBroker.TRACEWEAVE_CAPABILITY},
             {"跨应用读取外部状态", CapabilityBroker.DEMO_STATUS_CAPABILITY, AndroidRemoteStatusProvider.CAPABILITY},
             {"读便笺并通知我", CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.NOTIFICATION_CAPABILITY},
             {"查看状态并分享", CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.SHARE_CAPABILITY},

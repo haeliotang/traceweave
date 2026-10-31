@@ -36,7 +36,7 @@ def main():
         env['AGENT_OS_KEYSTORE_PASSWORD'] = secrets.token_urlsafe(24)
         key = base / 'ci-test-key.p12'
         run(['keytool', '-genkeypair', '-alias', 'ci-test-only', '-keyalg', 'RSA', '-keysize', '2048',
-             '-validity', '2', '-dname', 'CN=Traceform CI Test', '-storetype', 'PKCS12',
+             '-validity', '2', '-dname', 'CN=Traceweave CI Test', '-storetype', 'PKCS12',
              '-keystore', key, '-storepass:env', 'AGENT_OS_KEYSTORE_PASSWORD',
              '-keypass:env', 'AGENT_OS_KEYSTORE_PASSWORD', '-noprompt'], env)
         out = base / 'candidate'

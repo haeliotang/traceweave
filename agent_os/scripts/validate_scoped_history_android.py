@@ -63,7 +63,7 @@ def main():
             command = shlex.join(['run-as', EDGE, 'sh', '-c', 'mkdir -p databases && cat > databases/edge.sqlite'])
             with path.open('rb') as payload:
                 run('shell', command, stdin=payload)
-        activity = 'ScopedTraceformProbe' if args.case == 'summary' else 'ScopedBrokerProbe'
+        activity = 'ScopedTraceweaveProbe' if args.case == 'summary' else 'ScopedBrokerProbe'
         tag = 'AgentOsScopedProbe' if args.case == 'summary' else 'AgentOsScopedBroker'
         expected = 'PASS authorized_synthetic_history' if args.case == 'summary' else 'PASS denied_granted_summary_revoked_denied'
         run('shell', 'am', 'start', '-W', '-S', '-a', 'AVAILABLE_HISTORY', '-n',

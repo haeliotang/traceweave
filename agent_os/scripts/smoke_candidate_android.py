@@ -15,7 +15,7 @@ import time
 # Markers must be visible without scrolling: the navigation dock sits below the
 # first screen, so uiautomator does not expose it until the page is scrolled.
 MARKERS = {
-    "header": ["Traceform Agent OS"],
+    "header": ["Traceweave"],
     "status_chips": ["JAVA FALLBACK"],
     "tiles": ["本地规划", "Local planning"],
 }

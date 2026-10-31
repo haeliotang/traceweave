@@ -13,7 +13,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /** Isolated synthetic Edge service probe. No production data or components are used. */
-public final class ScopedTraceformProbe extends Activity {
+public final class ScopedTraceweaveProbe extends Activity {
     private static final String PERMISSION = "org.traceform.edge.validation.READ_HISTORY_SUMMARY";
     private static final String DESCRIPTOR = "org.traceform.edge.HistorySummary";
 
@@ -62,7 +62,7 @@ public final class ScopedTraceformProbe extends Activity {
                             output.readException();
                             JSONObject summary = new JSONObject(output.readString());
                             if ("AVAILABLE_HISTORY".equals(getIntent().getAction())) {
-                                TraceformProvider.validateScopedSummary(summary.toString());
+                                TraceweaveProvider.validateScopedSummary(summary.toString());
                                 if (!summary.getBoolean("available") || summary.getInt("history_records") != 6
                                         || summary.getInt("eligible_pairs") != 5
                                         || summary.getJSONArray("sampled_occupancy_probabilities").length() != 4

@@ -41,7 +41,7 @@ public final class ControlledProbeService extends Service {
     }
     private Notification notice(String channel, String text) {
         return new Notification.Builder(this, channel).setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setContentTitle("Traceform controlled measurement").setContentText(text).build();
+            .setContentTitle("Traceweave controlled measurement").setContentText(text).build();
     }
     @Override public void onCreate() {
         super.onCreate();

@@ -25,7 +25,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("MEMORY_LIFECYCLE".equals(getIntent().getAction())) memoryLifecycle(store);
                 else if ("DOCUMENT_CALENDAR_CHAIN".equals(getIntent().getAction())) documentCalendarChain(store);
                 else if ("DOCUMENT_SHARE_CHAIN".equals(getIntent().getAction())) documentShareChain(store);
-                else if ("SEED_TRACEFORM_APPROVAL_EN".equals(getIntent().getAction()) || "SEED_TRACEFORM_RESULT_EN".equals(getIntent().getAction())) seedTraceformApproval(store);
+                else if ("SEED_TRACEFORM_APPROVAL_EN".equals(getIntent().getAction()) || "SEED_TRACEFORM_RESULT_EN".equals(getIntent().getAction())) seedTraceweaveApproval(store);
                 else if ("MEMORY_BRANCH_SEED".equals(getIntent().getAction())) memoryBranchSeed(store);
                 else if ("MEMORY_BRANCH_TARGET_EDIT".equals(getIntent().getAction())) memoryBranchTargetEdit(store);
                 else if ("MEMORY_BRANCH_SOURCE_EDIT".equals(getIntent().getAction())) memoryBranchSourceEdit(store);
@@ -74,7 +74,7 @@ public final class WorkflowValidationActivity extends Activity {
                 else if ("SEED_WORKFLOW_UI".equals(getIntent().getAction())) {
                     reset(store); getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
                     store.createMemory(AgentStore.MEMORY_PREFERENCE, "SYNTHETIC camping preference: keep checklists concise");
-                    store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC camping Traceform fact", AgentStore.MEMORY_SOURCE_TRACEFORM, "synthetic:ui");
+                    store.createMemory(AgentStore.MEMORY_FACT, "SYNTHETIC camping Traceweave fact", AgentStore.MEMORY_SOURCE_TRACEFORM, "synthetic:ui");
                     // The UI verification needs a reusable template; seed it here so the case stands alone.
                     WorkflowTemplate recipe = new WorkflowTemplate("SYNTHETIC checklist", "Prepare a local Markdown checklist for {{input}}.");
                     store.createMemory(AgentStore.MEMORY_WORKFLOW, recipe.encode());
@@ -313,15 +313,15 @@ public final class WorkflowValidationActivity extends Activity {
             .put("eligible_pairs", 0).put("horizon_steps", 0).put("rollouts", 0)
             .put("eligible_for_intervention", false)
             .put("evidence_scope", "local_retained_history_simulation_not_validated_prediction_or_causal_effect");
-        check(new JSONObject(TraceformProvider.validateScopedSummary(value.toString())).length() == 11,
+        check(new JSONObject(TraceweaveProvider.validateScopedSummary(value.toString())).length() == 11,
             "narrow no-history response is accepted");
-        rejects(() -> TraceformProvider.validateScopedSummary(new JSONObject(value.toString()).put("raw", "synthetic").toString()),
+        rejects(() -> TraceweaveProvider.validateScopedSummary(new JSONObject(value.toString()).put("raw", "synthetic").toString()),
             "extra source data is rejected");
-        rejects(() -> TraceformProvider.validateScopedSummary(new JSONObject(value.toString()).put("eligible_for_intervention", true).toString()),
+        rejects(() -> TraceweaveProvider.validateScopedSummary(new JSONObject(value.toString()).put("eligible_for_intervention", true).toString()),
             "summary cannot claim intervention authority");
         JSONObject excessive = new JSONObject(value.toString()).put("sampled_occupancy_probabilities", new JSONArray().put(
             new JSONObject().put("step", 1).put("top_states", new JSONArray()).put("raw", "synthetic")));
-        rejects(() -> TraceformProvider.validateScopedSummary(excessive.toString()), "nested raw data is rejected");
+        rejects(() -> TraceweaveProvider.validateScopedSummary(excessive.toString()), "nested raw data is rejected");
     }
 
     private void cloudPlanGuard() throws Exception {
@@ -410,10 +410,10 @@ public final class WorkflowValidationActivity extends Activity {
         check(AgentStore.OUTCOME_UNKNOWN.equals(store.getTask(child.id).status), "escaped share task survives archive restore");
     }
 
-    private void seedTraceformApproval(AgentStore store) throws Exception {
+    private void seedTraceweaveApproval(AgentStore store) throws Exception {
         reset(store);
         getSharedPreferences("agent_os_prefs", 0).edit().putString("app_lang", "en").commit();
-        AgentStore.Task task = store.createTask("SYNTHETIC Traceform approval");
+        AgentStore.Task task = store.createTask("SYNTHETIC Traceweave approval");
         android.app.Application.ActivityLifecycleCallbacks callbacks = new android.app.Application.ActivityLifecycleCallbacks() {
             public void onActivityCreated(Activity activity, Bundle state) {}
             public void onActivityStarted(Activity activity) {}
@@ -423,12 +423,12 @@ public final class WorkflowValidationActivity extends Activity {
                 activity.getWindow().getDecorView().post(() -> {
                     try {
                         if ("SEED_TRACEFORM_RESULT_EN".equals(getIntent().getAction())) {
-                            java.lang.reflect.Method show = MainActivity.class.getDeclaredMethod("showTraceformResult", AgentStore.Task.class, String.class);
+                            java.lang.reflect.Method show = MainActivity.class.getDeclaredMethod("showTraceweaveResult", AgentStore.Task.class, String.class);
                             show.setAccessible(true); show.invoke(activity, task, "SYNTHETIC summary");
                         } else {
                             java.lang.reflect.Method show = MainActivity.class.getDeclaredMethod("confirmCapabilityGrant", AgentStore.Task.class, String.class, String.class, String.class);
                             show.setAccessible(true);
-                            show.invoke(activity, task, "Traceform Local History Summary", CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+                            show.invoke(activity, task, "Traceweave Local History Summary", CapabilityBroker.TRACEWEAVE_CAPABILITY, CapabilityBroker.TRACEWEAVE_SCOPE);
                         }
                     } catch (Exception error) { android.util.Log.e("AgentOsWorkflowValidation", "FAIL approval dialog", error); }
                 });

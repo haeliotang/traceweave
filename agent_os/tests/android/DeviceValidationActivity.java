@@ -321,8 +321,8 @@ public final class DeviceValidationActivity extends Activity {
                 "SYNTHETIC consolidated memory archive round trip", AgentStore.MEMORY_SOURCE_CONSOLIDATION,
                 "task=synthetic-consolidation");
             MemoryIndex index = new MemoryIndex(store.listMemories());
-            if (index.search("搜索来源").size() != 1 || index.search("Traceform").size() != 1
-                    || !source.id.equals(index.search("Traceform").get(0).id)) {
+            if (index.search("搜索来源").size() != 1 || index.search("Traceweave").size() != 1
+                    || !source.id.equals(index.search("Traceweave").get(0).id)) {
                 throw new IllegalStateException("The rebuilt memory index did not find Chinese content and source metadata");
             }
 
@@ -1020,14 +1020,14 @@ public final class DeviceValidationActivity extends Activity {
             if (!"builtin.synthesis".equals(notePlan.steps.get(1).capability))
                 throw new IllegalStateException("Step 1 should be builtin.synthesis");
 
-            // 2. Multi-intent (Note + Status + Traceform)
+            // 2. Multi-intent (Note + Status + Traceweave)
             ExecutionPlan multiPlan = planner.plan("task-2", "整理便笺并检查设备状态与历史预测", availableCaps, memories);
             if (multiPlan.totalSteps() != 4) throw new IllegalStateException("Expected 4 steps for multi intent, got " + multiPlan.totalSteps());
             if (!CapabilityBroker.DEMO_NOTE_CAPABILITY.equals(multiPlan.steps.get(0).capability))
                 throw new IllegalStateException("Multi step 0 mismatch");
             if (!CapabilityBroker.DEMO_STATUS_CAPABILITY.equals(multiPlan.steps.get(1).capability))
                 throw new IllegalStateException("Multi step 1 mismatch");
-            if (!CapabilityBroker.TRACEFORM_CAPABILITY.equals(multiPlan.steps.get(2).capability))
+            if (!CapabilityBroker.TRACEWEAVE_CAPABILITY.equals(multiPlan.steps.get(2).capability))
                 throw new IllegalStateException("Multi step 2 mismatch");
             if (!"builtin.synthesis".equals(multiPlan.steps.get(3).capability))
                 throw new IllegalStateException("Multi step 3 mismatch");
@@ -1373,18 +1373,18 @@ public final class DeviceValidationActivity extends Activity {
         CapabilityBroker broker = new CapabilityBroker(this, store);
         SQLiteDatabase database = store.getWritableDatabase();
         try {
-            // 1. Enable Traceform provider and verify signature match with org.traceform.edge
-            broker.setTraceformEnabled(true);
-            if (!broker.isTraceformEnabled()) {
-                throw new IllegalStateException("Traceform provider failed to enable");
+            // 1. Enable Traceweave provider and verify signature match with org.traceform.edge
+            broker.setTraceweaveEnabled(true);
+            if (!broker.isTraceweaveEnabled()) {
+                throw new IllegalStateException("Traceweave provider failed to enable");
             }
-            if (!broker.canEnableTraceform()) {
-                throw new IllegalStateException("Traceform package not signature matched");
+            if (!broker.canEnableTraceweave()) {
+                throw new IllegalStateException("Traceweave package not signature matched");
             }
 
             // 2. Formulate 4-step user goal spanning note, status, traceform forecast, and builtin synthesis
             long t0 = System.nanoTime();
-            String goal = "整理便笺并检查设备状态与Traceform历史预测";
+            String goal = "整理便笺并检查设备状态与Traceweave历史预测";
             AgentStore.Task task = store.createTask(goal);
             ReasoningEngine planner = new SemanticRulePlanner();
             ExecutionPlan plan = planner.plan(task.id, task.title, broker.listAvailableCapabilities(task.id), store.listMemories());
@@ -1401,7 +1401,7 @@ public final class DeviceValidationActivity extends Activity {
                 throw new IllegalStateException("Step 0 capability mismatch");
             if (!CapabilityBroker.DEMO_STATUS_CAPABILITY.equals(plan.steps.get(1).capability))
                 throw new IllegalStateException("Step 1 capability mismatch");
-            if (!CapabilityBroker.TRACEFORM_CAPABILITY.equals(plan.steps.get(2).capability))
+            if (!CapabilityBroker.TRACEWEAVE_CAPABILITY.equals(plan.steps.get(2).capability))
                 throw new IllegalStateException("Step 2 capability mismatch");
             if (!"builtin.synthesis".equals(plan.steps.get(3).capability))
                 throw new IllegalStateException("Step 3 capability mismatch");
@@ -1409,7 +1409,7 @@ public final class DeviceValidationActivity extends Activity {
             // 3. Grant all 3 external capabilities
             broker.grant(task.id, CapabilityBroker.DEMO_NOTE_CAPABILITY, CapabilityBroker.DEMO_NOTE_SCOPE);
             broker.grant(task.id, CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE);
-            broker.grant(task.id, CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE);
+            broker.grant(task.id, CapabilityBroker.TRACEWEAVE_CAPABILITY, CapabilityBroker.TRACEWEAVE_SCOPE);
 
             // 4. Test crash & checkpoint recovery: simulate crash right after Step 1 checkpoint
             final java.util.concurrent.atomic.AtomicInteger checkpointCount = new java.util.concurrent.atomic.AtomicInteger();
@@ -1475,7 +1475,7 @@ public final class DeviceValidationActivity extends Activity {
             int statusCount = auditEventCount(database, task.id,
                 CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.DEMO_STATUS_CAPABILITY, CapabilityBroker.DEMO_STATUS_SCOPE));
             int traceformCount = auditEventCount(database, task.id,
-                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.TRACEFORM_CAPABILITY, CapabilityBroker.TRACEFORM_SCOPE));
+                CapabilityBroker.auditEvent("capability_invoked", CapabilityBroker.TRACEWEAVE_CAPABILITY, CapabilityBroker.TRACEWEAVE_SCOPE));
             int synthesisCount = auditEventCount(database, task.id, "internal_synthesis_completed:local_inference");
 
             if (noteCount != 1 || statusCount != 1 || traceformCount != 1 || synthesisCount != 1) {
@@ -1483,10 +1483,10 @@ public final class DeviceValidationActivity extends Activity {
                     + ", traceform=" + traceformCount + ", synthesis=" + synthesisCount);
             }
 
-            // 8. Verify structured content in Traceform observation and final result
+            // 8. Verify structured content in Traceweave observation and final result
             String traceformObs = completed.plan.steps.get(2).observation;
             if (!traceformObs.contains("traceform") && !traceformObs.contains("history_records")) {
-                throw new IllegalStateException("Traceform observation unexpected content: " + traceformObs);
+                throw new IllegalStateException("Traceweave observation unexpected content: " + traceformObs);
             }
 
             if (!completed.result.contains("端侧推理分析") || !completed.result.contains("本地演示结果")) {
@@ -2762,7 +2762,7 @@ public final class DeviceValidationActivity extends Activity {
             throw new IllegalStateException("Thermal throttling load shedding failed: " + throttleJson);
         }
 
-        return "PASS: Phase 11 (Traceform Compute Engine TCE + MAX Engine Heterogeneous Graph + Thermal Shedding) verified 100% on Pixel 6a! "
+        return "PASS: Phase 11 (Traceweave Compute Engine TCE + MAX Engine Heterogeneous Graph + Thermal Shedding) verified 100% on Pixel 6a! "
             + "1_topo=Devices(NEON+Vulkan+TPU:" + (int)tpuProfile.getDouble("peak_gflops") + "GFLOPS), "
             + "2_attn=HeteroNominal(GPU:" + nomGpu + "+CPU:" + nomCpu + "@" + (int)attnNom.getDouble("total_latency_us") + "μs), "
             + "3_vision=QuantizedEdgeTPU(TPU:" + visTpu + "@" + (int)visionRes.getDouble("total_latency_us") + "μs), "

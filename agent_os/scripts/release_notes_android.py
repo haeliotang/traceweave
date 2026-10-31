@@ -36,7 +36,7 @@ def main():
         changes = pathlib.Path(args.changes).read_text().strip()
 
     notes = [
-        f"# Traceform Agent OS {version_name} (versionCode {version_code})",
+        f"# Traceweave Agent OS {version_name} (versionCode {version_code})",
         "",
         f"- 包名：{package}",
         f"- 签名指纹：{signer}",
