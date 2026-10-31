@@ -884,8 +884,7 @@ public final class MainActivity extends Activity {
                 sens.startMonitoring();
             }
             updateSensorToggleButton();
-            mainHandler.removeCallbacks(sensorRefresh);
-            mainHandler.post(sensorRefresh);
+            startSensorRefresh();
             if (!sens.isMonitoring()) {
                 Toast.makeText(this, T.s("ui.sensor_monitoring_stopped", en), Toast.LENGTH_SHORT).show();
                 return;
@@ -2152,6 +2151,11 @@ public final class MainActivity extends Activity {
         parent.addView(button, lp);
     }
 
+    private void startSensorRefresh() {
+        mainHandler.removeCallbacks(sensorRefresh);
+        mainHandler.post(sensorRefresh);
+    }
+
     private void updateSensorsCard() {
         if (sensInfo == null) return;
         sensInfo.setText(SensorContext.describe(PhysicalSensoriumManager.getInstance(this).evaluateCurrentContext(), isEnglish()));
@@ -2184,12 +2188,14 @@ public final class MainActivity extends Activity {
             builder.setNeutralButton(T.s("sensor.stop", en), (dialog, which) -> {
                 sens.stopMonitoring();
                 updateSensorsCard();
+                mainHandler.removeCallbacks(sensorRefresh);
                 Toast.makeText(this, T.s("ui.sensor_monitoring_stopped", en), Toast.LENGTH_SHORT).show();
             });
         } else {
             builder.setPositiveButton(T.s("sensor.start", en), (dialog, which) -> {
                 sens.startMonitoring();
                 updateSensorsCard();
+                startSensorRefresh();
             });
         }
         builder.show();

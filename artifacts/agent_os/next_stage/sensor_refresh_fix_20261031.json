@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "symptom": "sensors card showed 运动/光照 as 等待数据 / 不可用 even after sensing was enabled",
+  "root_cause": "the 1 s UI refresh loop (sensorRefresh) was only started by the diagnostics console toggle; enabling sensing from the card dialog started the listeners but never the refresh, so the card kept the snapshot taken before any sample arrived",
+  "not_the_cause": "the sensors themselves work: SENSOR_CONTEXT passed with 10 checks and SENSOR_LIVE_SAMPLES reported live_motion_samples=41 state=LowMotion accel_available=true gyro_available=true",
+  "fix": "startSensorRefresh() helper, called when sensing is enabled from the card dialog and from the console toggle; stop path removes the callback",
+  "device_after_fix": "运动：低运动（窗口规则估计） / 光照：35.8 Lux · 1 秒前 / 电池温度：28.1 °C",
+  "notes": [
+    "the light sensor is on-change, so its age is displayed instead of pretending it is live",
+    "the card text is refreshed every second while monitoring"
+  ]
+}
