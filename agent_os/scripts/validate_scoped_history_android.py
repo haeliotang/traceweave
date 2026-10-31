@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'agent_os/scripts'))
 from verify_release_android import apk_identity
 
-EDGE = 'org.traceform.edge.validation'
+EDGE = 'com.inceptless.traceweave.edge.validation'
 PROBE = 'com.inceptless.traceweave.actionsvalidation'
 
 

@@ -6,9 +6,9 @@
         android:shortcutShortLabel="@string/shortcut_audit_short"
         android:shortcutLongLabel="@string/shortcut_audit_long">
         <intent
-            android:action="org.traceform.agentos.OPEN_AUDIT"
-            android:targetPackage="org.traceform.agentos"
-            android:targetClass="org.traceform.agentos.MainActivity" />
+            android:action="com.inceptless.traceweave.OPEN_AUDIT"
+            android:targetPackage="com.inceptless.traceweave"
+            android:targetClass="com.inceptless.traceweave.MainActivity" />
     </shortcut>
     <shortcut
         android:shortcutId="new_task"
@@ -16,9 +16,9 @@
         android:shortcutShortLabel="@string/shortcut_task_short"
         android:shortcutLongLabel="@string/shortcut_task_long">
         <intent
-            android:action="org.traceform.agentos.NEW_TASK"
-            android:targetPackage="org.traceform.agentos"
-            android:targetClass="org.traceform.agentos.MainActivity" />
+            android:action="com.inceptless.traceweave.NEW_TASK"
+            android:targetPackage="com.inceptless.traceweave"
+            android:targetClass="com.inceptless.traceweave.MainActivity" />
     </shortcut>
     <shortcut
         android:shortcutId="task_center"
@@ -26,8 +26,8 @@
         android:shortcutShortLabel="@string/shortcut_center_short"
         android:shortcutLongLabel="@string/shortcut_center_long">
         <intent
-            android:action="org.traceform.agentos.OPEN_CENTER"
-            android:targetPackage="org.traceform.agentos"
-            android:targetClass="org.traceform.agentos.MainActivity" />
+            android:action="com.inceptless.traceweave.OPEN_CENTER"
+            android:targetPackage="com.inceptless.traceweave"
+            android:targetClass="com.inceptless.traceweave.MainActivity" />
     </shortcut>
 </shortcuts>

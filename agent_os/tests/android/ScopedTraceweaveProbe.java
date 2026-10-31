@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 
 /** Isolated synthetic Edge service probe. No production data or components are used. */
 public final class ScopedTraceweaveProbe extends Activity {
-    private static final String PERMISSION = "org.traceform.edge.validation.READ_HISTORY_SUMMARY";
-    private static final String DESCRIPTOR = "org.traceform.edge.HistorySummary";
+    private static final String PERMISSION = "com.inceptless.traceweave.edge.validation.READ_HISTORY_SUMMARY";
+    private static final String DESCRIPTOR = "com.inceptless.traceweave.edge.HistorySummary";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         new Thread(() -> {
             try {
-                Intent target = new Intent().setComponent(new ComponentName("org.traceform.edge.validation", "org.traceform.edge.HistorySummaryService"));
+                Intent target = new Intent().setComponent(new ComponentName("com.inceptless.traceweave.edge.validation", "com.inceptless.traceweave.edge.HistorySummaryService"));
                 if ("com.inceptless.traceweave.scopeduntrusted".equals(getPackageName())) {
                     if (checkSelfPermission(PERMISSION) != PackageManager.PERMISSION_DENIED)
                         throw new IllegalStateException("unknown signer received summary permission");

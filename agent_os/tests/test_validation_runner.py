@@ -25,8 +25,8 @@ class ValidationSafetyTests(unittest.TestCase):
         spec.loader.exec_module(module)
         argv = ['probe', '--adb', '/no-such-adb', '--serial', 'unused', '--edge-apk', 'edge.apk',
                 '--probe-apk', 'probe.apk', '--build-tools', 'tools']
-        for identity in ({'package': 'org.traceform.edge', 'debuggable': True},
-                         {'package': 'org.traceform.edge.validation', 'debuggable': False}):
+        for identity in ({'package': 'com.inceptless.traceweave.edge', 'debuggable': True},
+                         {'package': 'com.inceptless.traceweave.edge.validation', 'debuggable': False}):
             with self.subTest(identity=identity), mock.patch.object(sys, 'argv', argv), \
                     mock.patch.object(module, 'apk_identity', return_value=identity), \
                     mock.patch.object(module.subprocess, 'run') as adb:

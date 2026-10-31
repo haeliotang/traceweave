@@ -6,7 +6,7 @@ from verify_release_android import apk_identity
 parser=argparse.ArgumentParser(description="Validate a synthetic Edge summary through the task approval dialog")
 for name in ('adb','serial','edge-apk','probe-apk','build-tools'):parser.add_argument('--'+name,required=True)
 args=parser.parse_args()
-adb=[args.adb,'-s',args.serial];edge='org.traceform.edge.validation';probe='com.inceptless.traceweave.actionsvalidation';edge_apk=args.edge_apk;probe_apk=args.probe_apk;bt=Path(args.build_tools);installed=[]
+adb=[args.adb,'-s',args.serial];edge='com.inceptless.traceweave.edge.validation';probe='com.inceptless.traceweave.actionsvalidation';edge_apk=args.edge_apk;probe_apk=args.probe_apk;bt=Path(args.build_tools);installed=[]
 for path,pkg in ((edge_apk,edge),(probe_apk,probe)):
  identity=apk_identity(Path(path),bt)
  if identity['package']!=pkg or not identity['debuggable']:raise RuntimeError('Unexpected validation APK')

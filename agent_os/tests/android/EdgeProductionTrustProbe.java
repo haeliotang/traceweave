@@ -19,21 +19,21 @@ public final class EdgeProductionTrustProbe extends Activity {
         new Thread(() -> {
             ServiceConnection connection = null;
             try {
-                if (checkSelfPermission("org.traceform.edge.READ_HISTORY_SUMMARY") != PackageManager.PERMISSION_GRANTED)
+                if (checkSelfPermission("com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY") != PackageManager.PERMISSION_GRANTED)
                     throw new IllegalStateException("Expected known-signer permission was not granted");
                 CountDownLatch connected = new CountDownLatch(1); IBinder[] remote = new IBinder[1];
                 connection = new ServiceConnection() {
                     @Override public void onServiceConnected(ComponentName name, IBinder binder) { remote[0] = binder; connected.countDown(); }
                     @Override public void onServiceDisconnected(ComponentName name) { remote[0] = null; }
                 };
-                Intent intent = new Intent().setComponent(new ComponentName("org.traceform.edge", "org.traceform.edge.HistorySummaryService"));
+                Intent intent = new Intent().setComponent(new ComponentName("com.inceptless.traceweave.edge", "com.inceptless.traceweave.edge.HistorySummaryService"));
                 if (!bindService(intent, connection, BIND_AUTO_CREATE)) throw new IllegalStateException("Summary service was unavailable");
                 if (!connected.await(10, TimeUnit.SECONDS) || remote[0] == null) throw new IllegalStateException("Summary service did not connect");
-                if (!"org.traceform.edge.HistorySummary".equals(remote[0].getInterfaceDescriptor()))
+                if (!"com.inceptless.traceweave.edge.HistorySummary".equals(remote[0].getInterfaceDescriptor()))
                     throw new IllegalStateException("Unexpected service descriptor");
                 Parcel input = Parcel.obtain(), output = Parcel.obtain();
                 try {
-                    input.writeInterfaceToken("org.traceform.edge.HistorySummary");
+                    input.writeInterfaceToken("com.inceptless.traceweave.edge.HistorySummary");
                     boolean rejected = false;
                     try { remote[0].transact(IBinder.FIRST_CALL_TRANSACTION, input, output, 0); output.readException(); }
                     catch (SecurityException expected) { rejected = true; }

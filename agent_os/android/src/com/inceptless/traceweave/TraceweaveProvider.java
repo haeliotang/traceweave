@@ -22,15 +22,15 @@ import java.util.concurrent.TimeUnit;
 final class TraceweaveProvider implements CapabilityProvider {
     static final String CAPABILITY = "traceweave.local_history.read";
     static final String SCOPE = "traceweave.local_history_summary_v1";
-    static final String PACKAGE = "org.traceform.edge";
-    private static final String SERVICE = "org.traceform.edge.EdgeService";
-    private static final String SUMMARY_SERVICE = "org.traceform.edge.HistorySummaryService";
-    private static final String SUMMARY_PERMISSION = "org.traceform.edge.READ_HISTORY_SUMMARY";
+    static final String PACKAGE = "com.inceptless.traceweave.edge";
+    private static final String SERVICE = "com.inceptless.traceweave.edge.EdgeService";
+    private static final String SUMMARY_SERVICE = "com.inceptless.traceweave.edge.HistorySummaryService";
+    private static final String SUMMARY_PERMISSION = "com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY";
     private static final String EDGE_CERT_SHA256 = "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c";
-    private static final String PERMISSION = "org.traceform.edge.CANONICAL_INPUT";
+    private static final String PERMISSION = "com.inceptless.traceweave.edge.CANONICAL_INPUT";
     private static final String PREFERENCES = "agent_os_provider_preferences";
     private static final String ENABLED = "traceform_enabled";
-    private static final String DESCRIPTOR = "org.traceform.edge.Canonical";
+    private static final String DESCRIPTOR = "com.inceptless.traceweave.edge.Canonical";
     private static final int FORECAST_TRANSACTION = 2;
 
     private final Context context;
@@ -117,7 +117,7 @@ final class TraceweaveProvider implements CapabilityProvider {
             Parcel output = Parcel.obtain();
             try {
                 if (scoped) {
-                    input.writeInterfaceToken("org.traceform.edge.HistorySummary");
+                    input.writeInterfaceToken("com.inceptless.traceweave.edge.HistorySummary");
                     if (!binder[0].transact(IBinder.FIRST_CALL_TRANSACTION, input, output, 0))
                         throw new IllegalStateException("Traceweave summary contract unavailable");
                     output.readException();

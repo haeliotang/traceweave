@@ -1373,7 +1373,7 @@ public final class DeviceValidationActivity extends Activity {
         CapabilityBroker broker = new CapabilityBroker(this, store);
         SQLiteDatabase database = store.getWritableDatabase();
         try {
-            // 1. Enable Traceweave provider and verify signature match with org.traceform.edge
+            // 1. Enable Traceweave provider and verify signature match with com.inceptless.traceweave.edge
             broker.setTraceweaveEnabled(true);
             if (!broker.isTraceweaveEnabled()) {
                 throw new IllegalStateException("Traceweave provider failed to enable");
@@ -2268,7 +2268,7 @@ public final class DeviceValidationActivity extends Activity {
         pluginDir.mkdirs();
 
         String converterManifest = "{"
-            + "\"id\":\"org.traceform.plugin.converter\","
+            + "\"id\":\"com.inceptless.traceweave.plugin.converter\","
             + "\"name\":\"Unit Converter\","
             + "\"version\":\"1.0.0\","
             + "\"capabilities\":[{"
@@ -2288,7 +2288,7 @@ public final class DeviceValidationActivity extends Activity {
 
         String installResJson = NativeAgentCore.installPlugin(pluginDir.getAbsolutePath(), converterManifest, converterJs);
         JSONObject installObj = new JSONObject(installResJson);
-        if (!"org.traceform.plugin.converter".equals(installObj.optString("id"))) {
+        if (!"com.inceptless.traceweave.plugin.converter".equals(installObj.optString("id"))) {
             throw new IllegalStateException("Plugin installation failed: " + installResJson);
         }
 
@@ -2298,7 +2298,7 @@ public final class DeviceValidationActivity extends Activity {
             throw new IllegalStateException("Plugin list length mismatch: " + listResJson);
         }
 
-        String invokeResJson = NativeAgentCore.invokePluginTool(pluginDir.getAbsolutePath(), "org.traceform.plugin.converter", "c_to_f", "{\"celsius\": 100}");
+        String invokeResJson = NativeAgentCore.invokePluginTool(pluginDir.getAbsolutePath(), "com.inceptless.traceweave.plugin.converter", "c_to_f", "{\"celsius\": 100}");
         JSONObject invokeObj = new JSONObject(invokeResJson);
         if (invokeObj.optBoolean("isError", true)) {
             throw new IllegalStateException("Plugin invocation error: " + invokeResJson);
@@ -2309,7 +2309,7 @@ public final class DeviceValidationActivity extends Activity {
             throw new IllegalStateException("Converter result mismatch: " + convValues);
         }
 
-        boolean uninstalled = NativeAgentCore.uninstallPlugin(pluginDir.getAbsolutePath(), "org.traceform.plugin.converter");
+        boolean uninstalled = NativeAgentCore.uninstallPlugin(pluginDir.getAbsolutePath(), "com.inceptless.traceweave.plugin.converter");
         if (!uninstalled) {
             throw new IllegalStateException("Plugin uninstallation failed");
         }

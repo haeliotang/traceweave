@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-31",
+  "removed": ["org.traceform.agentos (old production package)", "org.traceform.edge (old Edge app)"],
+  "kept": ["com.inceptless.traceweave 0.1.0 (versionCode 1)"],
+  "after": "the app launches with the Traceweave header and no crash after the removal",
+  "note": "the renamed Edge app (com.inceptless.traceweave.edge) has not been built yet: its hardened-candidate script needs a debuggable baseline APK of the same package, and the baseline on disk still has the old package id",
+  "effect": "the optional trusted-summary capability is simply not offered while the Edge app is absent; nothing else changes"
+}
