@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="audit_log"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_audit_short"
+        android:shortcutLongLabel="@string/shortcut_audit_long">
+        <intent
+            android:action="org.traceform.agentos.OPEN_AUDIT"
+            android:targetPackage="org.traceform.agentos"
+            android:targetClass="org.traceform.agentos.AuditActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="new_task"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_task_short"
+        android:shortcutLongLabel="@string/shortcut_task_long">
+        <intent
+            android:action="org.traceform.agentos.NEW_TASK"
+            android:targetPackage="org.traceform.agentos"
+            android:targetClass="org.traceform.agentos.MainActivity" />
+    </shortcut>
+</shortcuts>

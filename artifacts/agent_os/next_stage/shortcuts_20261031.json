@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-31",
+  "change": "static shortcuts declared in AndroidManifest (android.app.shortcuts -> @xml/shortcuts) with two entries: audit_log (AuditActivity) and new_task (MainActivity)",
+  "verified": [
+    "aapt2 dump xmltree on the built APK shows android:name=android.app.shortcuts and android:resource=@0x7f060002 under MainActivity",
+    "aapt2 dump resources shows string/shortcut_audit_long, string/shortcut_audit_short, string/shortcut_task_long, string/shortcut_task_short, xml/shortcuts",
+    "APK builds and installs on the Pixel 6a"
+  ],
+  "not_verified": [
+    "the launcher's long-press menu was not captured, so end-user visibility is unproven",
+    "dumpsys shortcut shows no entry for the package yet, likely because the launcher has not queried it"
+  ],
+  "next": "long-press the app icon on the device to confirm both shortcuts appear and open the right screens"
+}
