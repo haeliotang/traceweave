@@ -2,25 +2,65 @@
   "date": "2026-10-31",
   "device": "Pixel 6a",
   "model": "MiniCPM5-2B Q4_K_M",
-  "change": "GBNF grammar-constrained decoding added to the pinned llama.cpp runtime (d78f40d9d), applied per JSON case with a grammar matching the required keys",
-  "result": {
-    "passed": 10,
-    "total": 10,
-    "criterion": "grammar-valid JSON containing the required keys",
-    "median_ms": 8484
+  "model_sha256": "ec2d5801640099e97d8d7e8003ad4d81f336e757811f03a26173dddf386602fd",
+  "runtime": {
+    "pinned_llama_cpp": "d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3",
+    "runtime_sha256": "c995f1f0855e2b9627197a96b90a41ec801bc6b1e9d745bcbb0279a4eee8dce5",
+    "note": "sha256 of agent_os/build/model-runtime-production-probe/libtraceform_local_model.so, recorded in its experimental_model_build.json"
   },
-  "comparison": {
-    "d2_strict_json": "0/10 — exact expected values, a stricter criterion",
-    "prompt_only_json2": "9/10 — schema prompt + parse + one retry, no grammar",
-    "grammar_json3": "10/10 — grammar forces the object shape in one pass"
+  "change": "GBNF grammar-constrained decoding added to the app's JNI wrapper (agent_os/android/native/experimental_local_model.cpp) over the pinned llama.cpp runtime d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3, opt-in per call via a grammar argument (grammar + greedy in one sampler chain).",
+  "arms": {
+    "grammar_json3": {
+      "passed": 10,
+      "total": 10,
+      "criterion": "each case returned a JSON object that parsed and contained every key listed for that case (presence only; value types and content were not scored)",
+      "note": "the grammar forces key presence and key order, so this measures that decoding ran to completion within 128 new tokens, not answer quality",
+      "attempts_per_case": 1,
+      "retry": false,
+      "max_tokens": 128
+    },
+    "prompt_only_json2": {
+      "passed": 1,
+      "total": 10,
+      "criterion": "same presence-only check, schema prompt, fence/think stripping, one retry",
+      "failure_mode": "9 of 10 cases produced no JSON at all: the model spent the 128-token budget inside a <think> block before the object",
+      "attempts_per_case": "up to 2",
+      "max_tokens": 128
+    }
   },
-  "notes": [
-    "The first two grammar attempts aborted the app because a bare grammar sampler was used; wrapping grammar + greedy in a sampler chain fixed it",
-    "Outputs are compact JSON without fences or think traces"
-  ],
+  "paired_comparison": {
+    "same_model": true,
+    "same_cases": true,
+    "same_token_budget": true,
+    "result": "10/10 with grammar vs 1/10 without, on MiniCPM5-2B",
+    "interpretation": "the gap is mostly budget allocation: the grammar prevents reasoning tokens from consuming the 128-token window, so it is not evidence of better reasoning"
+  },
+  "timing": {
+    "arm": "grammar_json3",
+    "n": 10,
+    "median_ms": 8424.5,
+    "min_ms": 7703,
+    "max_ms": 13635,
+    "note": "per-case wall clock measured from before prepare() and including a full 1.56 GB model load on every call; one run; no repeats; no thermal or background-load control"
+  },
+  "not_comparable": {
+    "d2_strict_json": "0/10 was Qwen2.5-1.5B Q4_0 on ten different single-key prompts scored by exact string match on raw fenced output with no recovery; re-parsing those recorded outputs with StructuredOutput.parse yields 10/10, so the 0/10 reflects the old parse policy and a different model, not this comparison",
+    "earlier_prompt_only_9_of_10": "that run used Qwen2.5-1.5B, not MiniCPM5-2B, so it must not be read as a baseline for the grammar number"
+  },
   "limitations": [
-    "Ten synthetic prompts only; not a content-correctness benchmark",
-    "The app document flow still passes no grammar (Markdown drafts are unconstrained)",
-    "Grammar is built per key list, so it proves shape enforcement rather than natural-language understanding"
-  ]
+    "the grammar enumerates the required keys in order and allows any value, so key presence is guaranteed by construction",
+    "the 'plan' case returned the prompt's own Example object verbatim",
+    "content is still wrong where it was wrong unconstrained: the 'schedule' case returned 2023 dates for 'tomorrow', 'summary' returned a placeholder sentence with tags [word,word]",
+    "per-key types are not enforced (the 'error' case returned a boolean although the prompt asked for a string); the grammar generator supports flat objects only",
+    "10/10 is one run of the fixed build; two earlier runs aborted the app with SIGABRT before the sampler-chain fix, and those runs are not counted here",
+    "timing includes per-case model load and prepare(); no repeats, variance, thermal or background-load control",
+    "the probe truncates each recorded output to 200 characters, which is enough to score keys but not enough to audit full content or truncation boundaries",
+    "the app's user-facing document flow still passes no grammar (LocalModelDraft.java passes null)"
+  ],
+  "sources": [
+    "build/model-quality-20261031/json3.json (per-case grammar arm)",
+    "artifacts/agent_os/next_stage/json2_minicpm_20261031.json (per-case prompt-only arm)"
+  ],
+  "apk_sha256": "ee497e6053cf731986cb9bf3034c80d34712f977b4673e8be6cd7ae5aebdb54c",
+  "command": "adb -s 25161JEGR06836 shell am start -n org.traceform.agentos.actionsvalidation/org.traceform.agentos.LocalModelQualityProbe -a JSON3|JSON2 --es model minicpm"
 }
