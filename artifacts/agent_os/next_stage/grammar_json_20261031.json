@@ -62,5 +62,40 @@
     "artifacts/agent_os/next_stage/json2_minicpm_20261031.json (per-case prompt-only arm)"
   ],
   "apk_sha256": "ee497e6053cf731986cb9bf3034c80d34712f977b4673e8be6cd7ae5aebdb54c",
-  "command": "adb -s 25161JEGR06836 shell am start -n org.traceform.agentos.actionsvalidation/org.traceform.agentos.LocalModelQualityProbe -a JSON3|JSON2 --es model minicpm"
+  "command": "adb -s 25161JEGR06836 shell am start -n org.traceform.agentos.actionsvalidation/org.traceform.agentos.LocalModelQualityProbe -a JSON3|JSON2 --es model minicpm",
+  "budget_experiment": {
+    "question": "does the 1/10 prompt-only result come from the 128-token budget rather than from an inability to emit JSON?",
+    "arms": [
+      {
+        "model": "MiniCPM5-2B",
+        "budget": 128,
+        "grammar": false,
+        "passed": 1,
+        "total": 10
+      },
+      {
+        "model": "MiniCPM5-2B",
+        "budget": 512,
+        "grammar": false,
+        "passed": 5,
+        "total": 10
+      },
+      {
+        "model": "MiniCPM5-2B",
+        "budget": 128,
+        "grammar": true,
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "model": "MiniCPM5-2B",
+        "budget": 512,
+        "grammar": true,
+        "passed": "pending",
+        "total": 10
+      }
+    ],
+    "interpretation": "raising the budget from 128 to 512 lifts the prompt-only arm from 1/10 to 5/10 while every failure at 128 was a think block that consumed the window; grammar removes the failure entirely at 128. The budget-allocation explanation is therefore supported, but prompt-only is still far from the grammar arm at 512.",
+    "artifact": "artifacts/agent_os/next_stage/json2_minicpm_512_20261031.json"
+  }
 }
