@@ -73,7 +73,6 @@ public final class MainActivity extends Activity {
     private static final int REQ_RECORD_AUDIO = 2001;
     private static final int REQ_NOTIFICATIONS = 7002;
     private static final int SYNC_PORT = 47960;
-    private static final int PAIR_PORT = 47961;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
@@ -110,7 +109,7 @@ public final class MainActivity extends Activity {
         updateSensorToggleButton();
         updateFloatPermStatus();
         expireRemoteUriGrant();
-        maybeAutoSync();
+        if (syncPanel != null) syncPanel.maybeAutoSync();
         try {
             store.recoverExternalActions();
             int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
@@ -704,242 +703,6 @@ public final class MainActivity extends Activity {
         refreshMemories();
     }
 
-    private boolean autoSyncAttempted;
-
-    private static int actionBgFor(android.content.Context context) {
-        return 0xFF1E293B;
-    }
-
-    private void startPairDiscovery(boolean en) {
-        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
-        showMessage(en ? "Searching the local network…" : "正在搜索局域网…");
-        final android.net.wifi.WifiManager.MulticastLock multicastLock = acquireMulticastLock();
-        io.execute(() -> {
-            String payload;
-            try {
-                payload = SyncTransport.nativeDiscover(syncSeed(), 6000L);
-            } catch (Throwable error) {
-                payload = null;
-            } finally {
-                if (multicastLock != null) multicastLock.release();
-            }
-            final String json = payload;
-            mainHandler.post(() -> {
-                if (destroyed) return;
-                try {
-                    org.json.JSONArray array = new org.json.JSONArray(json == null || json.isEmpty() ? "[]" : json);
-                    if (array.length() == 0) {
-                        showMessage(en ? "No device found on this network" : "局域网内没有发现设备");
-                        return;
-                    }
-                    String[] labels = new String[array.length()];
-                    String[] addresses = new String[array.length()];
-                    for (int index = 0; index < array.length(); index++) {
-                        org.json.JSONObject item = array.getJSONObject(index);
-                        addresses[index] = item.optString("addr", "");
-                        String peer = item.optString("peer", "");
-                        labels[index] = (peer.length() > 12 ? peer.substring(0, 12) : peer) + " · " + addresses[index];
-                    }
-                    new AlertDialog.Builder(this)
-                        .setTitle(en ? "Pick a device" : "选择设备")
-                        .setItems(labels, (dialog, which) -> startPairDial(addresses[which], en))
-                        .setNegativeButton(en ? "Cancel" : "取消", null)
-                        .show();
-                } catch (Exception error) {
-                    showError(error);
-                }
-            });
-        });
-    }
-
-    private android.net.wifi.WifiManager.MulticastLock acquireMulticastLock() {
-        try {
-            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager)
-                getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
-            if (wifi == null) return null;
-            android.net.wifi.WifiManager.MulticastLock lock = wifi.createMulticastLock("traceform-mdns");
-            lock.setReferenceCounted(false);
-            lock.acquire();
-            return lock;
-        } catch (Throwable error) {
-            return null;
-        }
-    }
-
-    private void startPairDialFromText(String text, boolean en) {
-        String value = text == null ? "" : text.trim();
-        int colon = value.lastIndexOf(':');
-        if (colon <= 0 || colon == value.length() - 1) {
-            showMessage(en ? "Enter host:port" : "请输入 主机:端口");
-            return;
-        }
-        String host = value.substring(0, colon);
-        String port = value.substring(colon + 1);
-        if (port.isEmpty() || !port.chars().allMatch(Character::isDigit)) {
-            showMessage(en ? "Port must be numeric" : "端口必须是数字");
-            return;
-        }
-        startPairDial("/ip4/" + host + "/tcp/" + port, en);
-    }
-
-    private void startPairDial(String address, boolean en) {
-        showMessage(en ? "Pairing…" : "正在配对…");
-        io.execute(() -> {
-            String payload;
-            try {
-                payload = SyncTransport.nativePairDial(syncSeed(), address, DeviceIdentity.fingerprint(), 20000L);
-            } catch (Throwable error) {
-                payload = null;
-            }
-            final String json = payload;
-            mainHandler.post(() -> { if (!destroyed) showPairResult(json, en); });
-        });
-    }
-
-    private void startPairServe(boolean en) {
-        showMessage(en ? "Waiting for the other device…" : "正在等待对方设备…");
-        io.execute(() -> {
-            String payload;
-            try {
-                payload = SyncTransport.nativePairServe(syncSeed(), PAIR_PORT, DeviceIdentity.fingerprint(), 60000L);
-            } catch (Throwable error) {
-                payload = null;
-            }
-            final String json = payload;
-            mainHandler.post(() -> { if (!destroyed) showPairResult(json, en); });
-        });
-    }
-
-    private void showPairResult(String json, boolean en) {
-        try {
-            if (json == null || json.isEmpty()) { showMessage(en ? "Pairing failed" : "配对失败"); return; }
-            org.json.JSONObject result = new org.json.JSONObject(json);
-            if (result.has("error")) {
-                showMessage((en ? "Pairing failed: " : "配对失败：") + result.optString("error"));
-                return;
-            }
-            final String sas = result.getString("sas");
-            final String remoteFingerprint = result.getString("peerFingerprint");
-            final String peerId = result.getString("peer");
-            new AlertDialog.Builder(this)
-                .setTitle(en ? "Compare the code" : "核对确认码")
-                .setMessage((en ? "Code: " : "确认码：") + sas + "\n"
-                    + (en ? "Both devices must show the same code." : "两台设备必须显示相同的确认码。"))
-                .setNegativeButton(en ? "Cancel" : "取消", null)
-                .setPositiveButton(en ? "Pair" : "确认配对", (dialog, which) -> {
-                    try {
-                        SyncPairing.confirm(store, DeviceIdentity.fingerprint(), remoteFingerprint,
-                            "peer-" + remoteFingerprint.substring(0, 16), peerId, sas, sas);
-                        refreshTasks();
-                        showMessage(en ? "Device paired" : "设备已配对");
-                    } catch (Exception error) { showError(error); }
-                })
-                .show();
-        } catch (Exception error) {
-            showError(error);
-        }
-    }
-
-    private String syncSeed() {
-        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
-        String seed = prefs.getString("sync_seed", "");
-        if (seed.isEmpty()) {
-            byte[] raw = new byte[32];
-            new java.security.SecureRandom().nextBytes(raw);
-            StringBuilder builder = new StringBuilder();
-            for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
-            seed = builder.toString();
-            prefs.edit().putString("sync_seed", seed).apply();
-        }
-        return seed;
-    }
-
-    private String localSyncId() {
-        if (!SyncTransport.available()) return "";
-        try {
-            String value = SyncTransport.nativePeerId(syncSeed());
-            return value == null ? "" : value;
-        } catch (Throwable error) {
-            return "";
-        }
-    }
-
-    private AgentStore.Pairing syncTarget() throws Exception {
-        for (AgentStore.Pairing pairing : store.activePairings())
-            if (pairing.peerId != null && !pairing.peerId.isEmpty()) return pairing;
-        return null;
-    }
-
-    private void maybeAutoSync() {
-        if (autoSyncAttempted || store == null) return;
-        try {
-            if (!store.syncAutoEnabled() || !SyncTransport.available()) return;
-            if (syncTarget() == null) return;
-            autoSyncAttempted = true;
-            startSyncDial();
-        } catch (Throwable ignored) {
-        }
-    }
-
-    private void startSyncServe() {
-        boolean en = isEnglish();
-        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
-        try {
-            final AgentStore.Pairing target = syncTarget();
-            if (target == null) { showMessage(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
-            showMessage(en ? "Waiting for the peer…" : "正在等待对端…");
-            io.execute(() -> {
-                String outcome;
-                try {
-                    String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
-                        request -> SyncRecords.handle(store, request));
-                    outcome = result != null && result.startsWith("OK")
-                        ? (isEnglish() ? "Peer synced" : "对端已完成同步")
-                        : (isEnglish() ? "Wait failed: " + result : "等待失败：" + result);
-                } catch (Throwable error) {
-                    outcome = (isEnglish() ? "Wait failed: " : "等待失败：") + error.getMessage();
-                }
-                final String message = outcome;
-                mainHandler.post(() -> { if (!destroyed) showMessage(message); });
-            });
-        } catch (Exception error) {
-            showError(error);
-        }
-    }
-
-    private void startSyncDial() {
-        boolean en = isEnglish();
-        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
-        try {
-            final AgentStore.Pairing target = syncTarget();
-            if (target == null) { showMessage(en ? "Pair a device and add its sync ID first" : "请先配对并填写对端同步 ID"); return; }
-            io.execute(() -> {
-                String outcome;
-                try {
-                    byte[] payload = SyncRecords.encode(store.exportSyncRecords());
-                    byte[] response = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
-                    if (response == null) {
-                        outcome = isEnglish() ? "Sync failed: no response from the peer" : "同步失败：对端没有响应";
-                    } else {
-                        int applied = SyncRecords.merge(store, response);
-                        outcome = isEnglish() ? "Synced; " + applied + " change(s) applied" : "同步完成；应用 " + applied + " 条变更";
-                    }
-                } catch (Throwable error) {
-                    outcome = (isEnglish() ? "Sync failed: " : "同步失败：") + error.getMessage();
-                }
-                final String message = outcome;
-                mainHandler.post(() -> {
-                    if (destroyed) return;
-                    showMessage(message);
-                    refreshTasks();
-                    refreshMemories();
-                });
-            });
-        } catch (Exception error) {
-            showError(error);
-        }
-    }
-
     private void showPairingList() {
         final boolean en = isEnglish();
         try {
@@ -979,77 +742,35 @@ public final class MainActivity extends Activity {
     }
 
     private void showPairingDialog() {
-        boolean en = isEnglish();
-        try {
-            DeviceIdentity.create();
-            String local = DeviceIdentity.fingerprint();
-            EditText remote = new EditText(this);
-            remote.setHint(en ? "Remote fingerprint (64 hex characters)" : "对端指纹（64 位十六进制）");
-            TextView localView = new TextView(this);
-            localView.setText((en ? "This device: " : "本机：") + local);
-            localView.setTextSize(11);
-            TextView syncView = new TextView(this);
-            String localSyncId = localSyncId();
-            syncView.setText((en ? "Sync ID: " : "同步 ID：") + (localSyncId.isEmpty() ? "—" : localSyncId));
-            syncView.setTextSize(11);
-            EditText remoteSync = new EditText(this);
-            remoteSync.setHint(en ? "Peer sync ID (hex, optional)" : "对端同步 ID（十六进制，可选）");
-            LinearLayout holder = new LinearLayout(this);
-            holder.setOrientation(LinearLayout.VERTICAL);
-            holder.setPadding(dp(24), dp(8), dp(24), 0);
-            holder.addView(localView);
-            holder.addView(syncView);
-            holder.addView(remote);
-            holder.addView(remoteSync);
-            EditText remoteAddress = new EditText(this);
-            remoteAddress.setHint(en ? "Peer address, e.g. 192.168.0.25:47961" : "对端地址，如 192.168.0.25:47961");
-            holder.addView(remoteAddress);
-            Button discoverButton = createCompactActionButton(en ? "Find on this network" : "局域网发现",
-                actionBgFor(this), 0xFFFFFFFF, view -> startPairDiscovery(en));
-            Button waitButton = createCompactActionButton(en ? "Wait for the other device" : "等待对方设备",
-                actionBgFor(this), 0xFFFFFFFF, view -> startPairServe(en));
-            Button connectButton = createCompactActionButton(en ? "Connect to address" : "连接此地址",
-                actionBgFor(this), 0xFFFFFFFF,
-                view -> startPairDialFromText(remoteAddress.getText().toString(), en));
-            holder.addView(discoverButton);
-            holder.addView(waitButton);
-            holder.addView(connectButton);
-            new AlertDialog.Builder(this)
-                .setTitle(en ? "Pair a device" : "配对新设备")
-                .setView(holder)
-                .setNegativeButton(en ? "Cancel" : "取消", null)
-                .setPositiveButton(en ? "Show code" : "生成确认码", (dialog, which) -> {
-                    String remoteValue = remote.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
-                    if (!SyncPairing.validFingerprint(remoteValue) || remoteValue.equals(local)) {
-                        showMessage(en ? "Enter the other device's fingerprint" : "请输入对端设备的指纹");
-                        return;
-                    }
-                    try {
-                        byte[] nonce = SyncPairing.pairingNonce(local, remoteValue);
-                        String code = SyncPairing.code(local, remoteValue, nonce);
-                        String deviceId = "peer-" + remoteValue.substring(0, 16);
-                        String peerId = remoteSync.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
-                        new AlertDialog.Builder(this)
-                            .setTitle(en ? "Compare this code" : "核对确认码")
-                            .setMessage((en ? "Code: " : "确认码：") + code + "\n"
-                                + (en ? "Both devices must show the same code." : "两台设备必须显示相同确认码。"))
-                            .setNegativeButton(en ? "Cancel" : "取消", null)
-                            .setPositiveButton(en ? "Pair" : "确认配对", (inner, ignored) -> {
-                                try {
-                                    SyncPairing.confirm(store, local, remoteValue, deviceId, peerId, code, code);
-                                    showMessage(en ? "Device paired" : "配对完成");
-                                } catch (Exception error) {
-                                    showError(error);
-                                }
-                            }).show();
-                    } catch (Exception error) {
-                        showError(error);
-                    }
-                }).show();
-        } catch (Exception error) {
-            showError(error);
-        }
+        syncPanel.showPairingDialog();
     }
+
+    private String syncSeed() {
+        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
+        String seed = prefs.getString("sync_seed", "");
+        if (seed.isEmpty()) {
+            byte[] raw = new byte[32];
+            new java.security.SecureRandom().nextBytes(raw);
+            StringBuilder builder = new StringBuilder();
+            for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
+            seed = builder.toString();
+            prefs.edit().putString("sync_seed", seed).apply();
+        }
+        return seed;
+    }
+
+    private final SyncPanel syncPanel = new SyncPanel(this);
+
+    AgentStore storeRef() { return store; }
+    java.util.concurrent.Executor ioRef() { return io; }
+    android.os.Handler uiRef() { return mainHandler; }
+    boolean isDestroyedRef() { return destroyed; }
+    boolean english() { return isEnglish(); }
+    int dpRef(int value) { return dp(value); }
+    void toast(String message) { showMessage(message); }
+    void failWith(Exception error) { showError(error); }
+    void refreshAfterSync() { refreshTasks(); refreshMemories(); }
+    String seedValue() { return syncSeed(); }
 
     private void showSettingsDialog() {
         boolean en = isEnglish();
@@ -1109,45 +830,7 @@ public final class MainActivity extends Activity {
         addActionButton(pairingRow, en ? "Manage" : "管理设备", view -> showPairingList());
         root.addView(pairingRow);
 
-        LinearLayout syncRow = new LinearLayout(this);
-        syncRow.setOrientation(LinearLayout.VERTICAL);
-        TextView syncState = new TextView(this);
-        int pairedNow = store.activePairings().size();
-        String mySyncId = localSyncId();
-        syncState.setText((en ? "Sync: " : "同步：") + (SyncTransport.available()
-            ? (en ? pairedNow + " paired device(s)" : pairedNow + " 台已配对设备")
-            : (en ? "runtime unavailable in this build" : "此构建不包含同步运行库"))
-            + (mySyncId.isEmpty() ? "" : (en ? " · this device " : " · 本机 ") + mySyncId.substring(0, Math.min(8, mySyncId.length()))));
-        syncState.setTextSize(11);
-        syncState.setTextColor(0xFF64748B);
-        syncState.setPadding(0, dp(6), 0, dp(2));
-        syncRow.addView(syncState);
-        LinearLayout syncButtons = new LinearLayout(this);
-        syncButtons.setOrientation(LinearLayout.HORIZONTAL);
-        addActionButton(syncButtons, en ? "Wait for peer" : "等待对端", view -> startSyncServe());
-        addActionButton(syncButtons, en ? "Sync now" : "同步现在", view -> startSyncDial());
-        syncRow.addView(syncButtons);
-        android.widget.CheckBox autoSync = new android.widget.CheckBox(this);
-        autoSync.setText(en ? "Automatic sync while the app is open" : "应用打开时自动同步");
-        autoSync.setTextSize(11);
-        autoSync.setTextColor(0xFF64748B);
-        autoSync.setChecked(store.syncAutoEnabled());
-        autoSync.setOnCheckedChangeListener((button, checked) -> {
-            if (checked) {
-                new AlertDialog.Builder(this)
-                    .setTitle(en ? "Enable automatic sync?" : "启用自动同步？")
-                    .setMessage(en ? "Only while the app is open, and only with paired devices. No background service is started."
-                                   : "仅在应用打开时、且只对已配对设备尝试；不会启动后台常驻服务。")
-                    .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> button.setChecked(false))
-                    .setPositiveButton(en ? "Enable" : "启用", (dialog, which) -> store.setSyncAutoEnabled(true))
-                    .setOnCancelListener(dialog -> button.setChecked(false))
-                    .show();
-            } else {
-                store.setSyncAutoEnabled(false);
-            }
-        });
-        syncRow.addView(autoSync);
-        root.addView(syncRow);
+        root.addView(syncPanel.settingsSection(en));
 
         root.addView(Ui.section(this, T.s("settings.section_services", en)));
 
@@ -2756,7 +2439,7 @@ public final class MainActivity extends Activity {
         });
     }
 
-    private void addActionButton(LinearLayout parent, String label, View.OnClickListener listener) {
+    void addActionButton(LinearLayout parent, String label, View.OnClickListener listener) {
         Button button = new Button(this);
         button.setText(label);
         button.setTextSize(12);
