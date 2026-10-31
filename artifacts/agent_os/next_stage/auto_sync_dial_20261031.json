@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "package": "org.traceform.agentos.actionsvalidation",
+  "method": "test-only AutoSyncProbe: seeds a pairing plus a sync_cursor, starts a libp2p server inside the same process on port 47960, then calls the production AutoSync.runOnce",
+  "observed": {
+    "logcat": "AUTO_SYNC_PROBE outcome=completed with probe-3b191927e58a5071 applied=0 cursor=127.0.0.1:47960 ok:0",
+    "what_it_proves": [
+      "AutoSync picks an active pairing and reads its sync_cursor",
+      "it dials the stored loopback address and port through SyncTransport.nativeDialOnce",
+      "it merges the response with SyncRecords.merge",
+      "it writes the result back to sync_cursor (ok:0)"
+    ]
+  },
+  "limitations": [
+    "the probe's server identity resolved to the same peer id as the app (appPeer=00240801, serverPeer=00240801), so this is a self-dial: it proves the wiring, not multi-peer semantics",
+    "applied=0 because both sides read and wrote the same store",
+    "the earlier two-package attempt failed on the 60-second pairing window, so a real cross-package transfer is still unverified"
+  ],
+  "earlier_artifacts": ["artifacts/agent_os/next_stage/auto_sync_pairing_attempt_20261031.json"]
+}

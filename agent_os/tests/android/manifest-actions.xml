@@ -9,6 +9,7 @@
     <application android:allowBackup="false" android:debuggable="true" android:label="Agent OS Action Validation"
         android:theme="@android:style/Theme.Material.Light.NoActionBar" android:usesCleartextTraffic="false">
         <service android:name="org.traceform.agentos.AgentJobService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true" />
+        <activity android:name="org.traceform.agentos.AutoSyncProbe" android:exported="true" />
         <activity android:name="org.traceform.agentos.MainActivity" android:exported="true" />
         <activity android:name="org.traceform.agentos.ExternalActionActivity" android:exported="false" />
         <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true" />

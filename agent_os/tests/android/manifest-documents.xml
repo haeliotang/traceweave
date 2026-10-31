@@ -20,6 +20,7 @@
         <service android:name="org.traceform.agentos.ControlledProbeService" android:foregroundServiceType="specialUse" android:exported="false">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-consented synthetic power measurement" />
         </service>
+        <activity android:name="org.traceform.agentos.AutoSyncProbe" android:exported="true" />
         <activity android:name="org.traceform.agentos.MainActivity" android:exported="true">
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
