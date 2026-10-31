@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -74,10 +75,24 @@ public final class LocalModelActivity extends Activity {
         supportedTitle.setTextSize(14);
         supported.addView(supportedTitle);
         for (LocalModelCatalog.Entry catalogue : LocalModelCatalog.all()) {
-            TextView row = Ui.meta(this, catalogue.display + " · " + gigabytes(catalogue.size)
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            TextView label = Ui.meta(this, catalogue.display + " · " + gigabytes(catalogue.size)
                 + " · " + T.s("model.supported_note", en));
-            row.setPadding(0, Ui.dp(this, 4), 0, 0);
-            supported.addView(row);
+            row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            Button open = new Button(this);
+            open.setText(T.s("model.open_download_page", en));
+            open.setAllCaps(false);
+            open.setTextSize(11);
+            open.setBackgroundColor(Ui.secondaryBg(this));
+            open.setTextColor(Ui.secondaryFg(this));
+            open.setOnClickListener(view -> openDownloadPage(catalogue));
+            row.addView(open, new LinearLayout.LayoutParams(Ui.dp(this, 128), Ui.dp(this, 44)));
+            LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            rowLp.setMargins(0, Ui.dp(this, 4), 0, 0);
+            supported.addView(row, rowLp);
         }
         root.addView(supported);
 
@@ -171,6 +186,17 @@ public final class LocalModelActivity extends Activity {
         if (!LocalModelRuntime.isAvailable()) status.append(T.s("localmodel.local_runtime_is_unavailable_on_this_d", en));
         if (guide != null) guide.setVisibility(verified == null && !modelFile(this).isFile() ? View.VISIBLE : View.GONE);
         if (supported != null) supported.setVisibility(verified == null ? View.VISIBLE : View.GONE);
+    }
+
+    /** Opens a search page rather than pretending to know an exact file URL. */
+    private void openDownloadPage(LocalModelCatalog.Entry entry) {
+        String query = entry == LocalModelCatalog.MINICPM ? "MiniCPM%20GGUF" : "Qwen2.5-1.5B-Instruct-GGUF";
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://huggingface.co/models?search=" + query)));
+        } catch (Exception error) {
+            status.setText(T.s("model.no_browser", en));
+        }
     }
 
     private static String gigabytes(long bytes) {

@@ -726,6 +726,8 @@ final class T {
         add("taskdetail.steps", "Steps", "执行步骤");
         add("taskdetail.audit", "Audit for this task", "本任务审计");
         add("taskdetail.no_audit", "No audit entries yet.", "还没有审计记录。");
+        add("model.open_download_page", "Open downloads", "打开下载页");
+        add("model.no_browser", "No browser available to open the download page.", "没有可用的浏览器打开下载页。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

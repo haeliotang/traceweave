@@ -19,6 +19,18 @@ public final class TaskDetailActivity extends Activity {
     private String taskId;
     private boolean en;
     private LinearLayout content;
+    private LinearLayout actions;
+    private final android.os.Handler ticker = new android.os.Handler(android.os.Looper.getMainLooper());
+    private String lastSignature = "";
+    private final Runnable refreshLoop = new Runnable() {
+        @Override public void run() {
+            renderIfChanged();
+            AgentStore.Task task = currentTask();
+            if (task != null && (AgentStore.ACTIVE.equals(task.status) || AgentStore.WAITING_FOR_USER.equals(task.status))) {
+                ticker.postDelayed(this, 1500);
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle state) {
@@ -40,6 +52,10 @@ public final class TaskDetailActivity extends Activity {
         scroller.addView(content);
         page.addView(scroller, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
+        actions = new LinearLayout(this);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+        page.addView(actions);
+
         Button back = new Button(this);
         back.setText(T.s("taskdetail.back", en));
         back.setAllCaps(false);
@@ -50,9 +66,27 @@ public final class TaskDetailActivity extends Activity {
 
         setContentView(page);
         render();
+        ticker.postDelayed(refreshLoop, 1500);
+    }
+
+    private AgentStore.Task currentTask() {
+        try {
+            return store.getTask(taskId);
+        } catch (Exception error) {
+            return null;
+        }
+    }
+
+    private void renderIfChanged() {
+        AgentStore.Task task = currentTask();
+        String signature = task == null ? "missing" : task.status + "/" + task.executionStep + "/" + task.updatedAt;
+        if (!signature.equals(lastSignature)) render();
     }
 
     private void render() {
+        AgentStore.Task snapshot = currentTask();
+        lastSignature = snapshot == null ? "missing"
+            : snapshot.status + "/" + snapshot.executionStep + "/" + snapshot.updatedAt;
         content.removeAllViews();
         AgentStore.Task task = null;
         try {
@@ -140,6 +174,62 @@ public final class TaskDetailActivity extends Activity {
         } catch (Exception ignored) {
         }
         if (shown == 0) content.addView(Ui.meta(this, T.s("taskdetail.no_audit", en)));
+        renderActions(task);
+    }
+
+    /** Start, pause, cancel and delete, so the page is not read-only. */
+    private void renderActions(AgentStore.Task task) {
+        actions.removeAllViews();
+        boolean terminal = AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
+            || AgentStore.OUTCOME_UNKNOWN.equals(task.status);
+        if (!terminal) {
+            String label = AgentStore.ACTIVE.equals(task.status) ? T.s("ui.pause", en)
+                : AgentStore.FAILED.equals(task.status) ? T.s("ui.retry", en)
+                : AgentStore.PAUSED.equals(task.status) ? T.s("ui.resume", en) : T.s("ui.start", en);
+            String target = AgentStore.ACTIVE.equals(task.status) ? AgentStore.PAUSED : AgentStore.ACTIVE;
+            addAction(label, true, () -> transition(task, target));
+            if (!AgentStore.ACTIVE.equals(task.status)) addAction(T.s("ui.cancel", en), false, () -> transition(task, AgentStore.CANCELLED));
+        }
+        addAction(T.s("ui.delete", en), false, () -> confirmDelete(task));
+    }
+
+    private void addAction(String label, boolean primary, Runnable action) {
+        Button button = new Button(this);
+        button.setText(label);
+        button.setAllCaps(false);
+        button.setTextSize(13);
+        button.setBackgroundColor(primary ? 0xFF0F172A : Ui.secondaryBg(this));
+        button.setTextColor(primary ? 0xFFFFFFFF : Ui.secondaryFg(this));
+        button.setOnClickListener(view -> action.run());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dp(48), 1f);
+        params.setMargins(0, 0, dp(6), 0);
+        actions.addView(button, params);
+    }
+
+    private void transition(AgentStore.Task task, String target) {
+        try {
+            store.transition(task.id, target);
+            if (AgentStore.ACTIVE.equals(target)) {
+                AgentScheduler.scheduleTask(this, store.getTask(task.id));
+            } else {
+                AgentScheduler.cancelTask(this, task.jobId);
+            }
+            render();
+        } catch (Exception error) {
+            android.widget.Toast.makeText(this, error.getMessage() == null ? T.s("common.operation_failed", en) : error.getMessage(),
+                android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void confirmDelete(AgentStore.Task task) {
+        new android.app.AlertDialog.Builder(this)
+            .setMessage(T.s("task.delete_body", en))
+            .setNegativeButton(T.s("task.delete_keep", en), null)
+            .setPositiveButton(T.s("task.delete_confirm", en), (dialog, which) -> {
+                store.deleteTask(task.id);
+                finish();
+            })
+            .show();
     }
 
     private String statusLabel(String status) {
@@ -151,6 +241,11 @@ public final class TaskDetailActivity extends Activity {
         if (AgentStore.PAUSED.equals(status)) return T.s("ui.paused", en);
         if (AgentStore.OUTCOME_UNKNOWN.equals(status)) return T.s("ui.outcome_unknown", en);
         return T.s("ui.pending_2", en);
+    }
+
+    @Override protected void onDestroy() {
+        ticker.removeCallbacks(refreshLoop);
+        super.onDestroy();
     }
 
     private int dp(int value) {

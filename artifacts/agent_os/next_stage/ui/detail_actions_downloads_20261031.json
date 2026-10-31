@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "task_detail_actions": "Start / Pause / Resume / Retry, Cancel and Delete are now on the detail page; Start schedules through AgentScheduler, everything else cancels the job",
+  "task_detail_live": "the page polls every 1.5 s while the task is active or waiting and re-renders only when status, step or timestamp changes",
+  "model_downloads": "each supported model row has an Open downloads button that opens a Hugging Face search for that model family; the page never claims a specific file URL",
+  "device_evidence": {
+    "start_from_detail": "pressing Start changed the header to Scheduled / active, swapped the action row to Pause + Delete and appended status_active to the audit trail",
+    "downloads": "two Open downloads buttons rendered",
+    "screenshots": ["artifacts/agent_os/next_stage/ui/task_detail_actions_20261031.png", "artifacts/agent_os/next_stage/ui/model_download_links_20261031.png"]
+  },
+  "verification": "host suite OK; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}
