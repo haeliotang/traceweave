@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "package": "org.traceform.agentos.actionsvalidation",
+  "checks": {
+    "toggle_schedules_job": {
+      "action": "设置页勾选“应用打开时自动同步”→ 确认启用",
+      "result": "dumpsys jobscheduler 出现 JOB #u0a580/4711 ... PERIODIC PERSISTED，网络约束已满足，下次执行约 59 分 51 秒后"
+    },
+    "forced_run_records_audit": {
+      "action": "cmd jobscheduler run -f org.traceform.agentos.actionsvalidation 4711",
+      "result": "logcat: auto_sync skipped: no paired device；审计页显示 sync_auto_skipped: no paired device",
+      "screenshot": "artifacts/agent_os/next_stage/ui/auto_sync_audit_event.png"
+    },
+    "toggle_off_cancels_job": {
+      "action": "取消勾选",
+      "result": "注册任务列表中不再有 4711，仅保留历史 START/STOP 记录"
+    }
+  },
+  "not_verified": [
+    "真实跨设备同步（需要第二台设备）",
+    "周期调度在 Doze/省电模式下的实际行为",
+    "电量影响未测量"
+  ]
+}
