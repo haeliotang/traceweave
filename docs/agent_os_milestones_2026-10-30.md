@@ -413,6 +413,7 @@
 - 2026-10-31：自动同步端到端尝试（未完成）——新建 B 包清单并装好两个包，A 成功与 B 配对（SAS 550893），但 B 侧配对未落库（设置仍显示 0 台），导致 B 无法启动同步服务端，A 也就没有完成一次手动同步、无法写入游标。根因是同屏双包的 60 秒配对窗口在 adb 点击节奏下太短。记录 [auto_sync_pairing_attempt_20261031](artifacts/agent_os/next_stage/auto_sync_pairing_attempt_20261031.json)。
 - 2026-10-31：把修复回路接进应用——文稿重试时会把上次的校验失败原因写回提示（`strictPrompt(goal, memories, previousFailure)`），不再只是“再说一次”。
 - 2026-10-31：内容质量实验（严格提示 vs 修复回路）——同一 10 例、grammar + 512 token：基线内容 **5/10**，加“不要复述示例/用真实日期/类型匹配”的严格提示升到 **6/10**，再加一轮“把失败项写回提示重生成”的修复后升到 **10/10**（4 例被修复）。结论：**校验 + 定向重生成**比单纯加强提示有效得多。数据 [json7_strict_prompt](artifacts/agent_os/next_stage/json7_strict_prompt_20261031.json)、[json8_repair](artifacts/agent_os/next_stage/json8_repair_20261031.json)。
+- 2026-10-31：文案迁移第四批——`SemanticRulePlanner` 的 8 个步骤标题/描述与合成报告模板迁入 `T`（`plan` 增加 `en` 重载），文件内只剩 7 处（关键词表），基线 198 → **177**。设备上中英两种界面都核对过：中文显示“读取 Traceform 本机历史摘要”，英文显示 “Read Local Note” 等。
 - 2026-10-31：文案迁移第三批——`AgentFloatingService`（悬浮窗按钮、JIT 提示、音频/视觉错误文案）从 20 处降到 **3 处**（剩余为中文输入匹配与一处条件串），基线 215 → **198**；设备冒烟正常。
 - 2026-10-31：文案迁移第二批——`MemoryConsolidator` 生成的记忆正文（日程/偏好/工作流模板）改由 `T.format` 提供，`extractItems` 增加 `en` 参数（内部调用保持中文默认），宿主测试仍全绿；基线 223 → **215**，`CapabilityBroker` 剩 9、`MemoryConsolidator` 剩 2（中文关键词匹配，属于输入识别，不应翻译）。设备冒烟：记忆可正常新增。
 - 2026-10-31：硬编码文案“棘轮”测试——扫描 `agent_os/android/src/.../*.java` 里含中文的字面量（排除 `T.java` 与注释），基线冻结 21 个文件、233 处；任何文件增加新中文硬编码或出现新文件都会让测试失败（已用临时插入验证会真的失败）。目的是止血，不强制一次性重构。基线 `agent_os/tests/data/hardcoded_cjk_baseline.json`。
