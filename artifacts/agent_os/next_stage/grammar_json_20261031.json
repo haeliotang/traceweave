@@ -179,5 +179,70 @@
       "artifacts/agent_os/next_stage/json5_unseen_20261031.json",
       "artifacts/agent_os/next_stage/json5_plain_20261031.json"
     ]
+  },
+  "repeats": {
+    "runs": [
+      {
+        "run": "json3_512_20261031",
+        "passed": 10,
+        "median_ms": 9935,
+        "min_ms": 8117,
+        "max_ms": 14130
+      },
+      {
+        "run": "json3_512_repeat_20261031",
+        "passed": 10,
+        "median_ms": 13158,
+        "min_ms": 9118,
+        "max_ms": 17230
+      },
+      {
+        "run": "json3_512_run3_20261031",
+        "passed": 10,
+        "median_ms": 13637,
+        "min_ms": 10829,
+        "max_ms": 20822
+      }
+    ],
+    "verdict": "the 10/10 result reproduced three times; the median rose 37% from the first run to the third, consistent with heat or background load, so timings are not a controlled benchmark",
+    "artifacts": [
+      "artifacts/agent_os/next_stage/json3_512_20261031.json",
+      "artifacts/agent_os/next_stage/json3_512_repeat_20261031.json",
+      "artifacts/agent_os/next_stage/json3_512_run3_20261031.json"
+    ]
+  },
+  "truncation": {
+    "date": "2026-10-31",
+    "setup": "one fixed grammar object (items/total/note) generated at budgets 16, 32, 64, 128, 256",
+    "rows": [
+      {
+        "budget": 16,
+        "parsed": false,
+        "bytes": 42,
+        "note": "cut after \"total\": with no closing brace"
+      },
+      {
+        "budget": 32,
+        "parsed": true,
+        "bytes": 68
+      },
+      {
+        "budget": 64,
+        "parsed": true,
+        "bytes": 68
+      },
+      {
+        "budget": 128,
+        "parsed": true,
+        "bytes": 68
+      },
+      {
+        "budget": 256,
+        "parsed": true,
+        "bytes": 68
+      }
+    ],
+    "verdict": "truncation produces invalid JSON rather than a silently truncated object, so a parse check is enough to detect it",
+    "artifact": "artifacts/agent_os/next_stage/json_truncation_20261031.json"
   }
 }
