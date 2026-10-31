@@ -222,10 +222,13 @@ class ClosedLoopIntervention:
 
     def observe(self, frame):
         self.drain_receipts()
-        now_epoch = time.time()
+        # Retention is evaluated against the data clock, not the wall clock: a
+        # replayed frame must not delete the trial it is about to observe, and in
+        # live operation the frame timestamp is the current time anyway.
+        instant = timestamp(frame).timestamp()
+        now_epoch = instant
         if self.last_compaction_epoch is None or now_epoch - self.last_compaction_epoch >= 3600:
             self.compact(now_epoch)
-        instant = timestamp(frame).timestamp()
         outputs = []
         for identifier, context, action, created, original_text, receipt_text in self.db.execute("SELECT id,context,action,created,frame,receipt FROM trials WHERE status='observing'").fetchall():
             original = json.loads(original_text)
