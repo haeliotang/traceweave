@@ -532,6 +532,7 @@ final class T {
         add("audit.task", "Task", "任务");
         add("audit.exported", "Audit log exported", "审计日志已导出");
         add("audit.open", "Audit log", "审计日志");
+        add("audit.diagnostics", "Export diagnostics", "导出诊断");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

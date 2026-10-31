@@ -44,11 +44,15 @@ public final class AuditActivity extends Activity {
         actions.setOrientation(LinearLayout.HORIZONTAL);
         Button refresh = compact(T.s("audit.refresh", en), view -> render());
         Button export = compact(T.s("audit.export", en), view -> export());
+        Button diagnosticsButton = compact(T.s("audit.diagnostics", en), view -> exportDiagnostics());
         actions.addView(refresh, new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f));
         LinearLayout.LayoutParams exportLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f);
         exportLp.setMargins(Ui.dp(this, 6), 0, 0, 0);
         actions.addView(export, exportLp);
         root.addView(actions);
+        LinearLayout.LayoutParams diagLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
+        diagLp.setMargins(0, Ui.dp(this, 4), 0, 0);
+        root.addView(diagnosticsButton, diagLp);
 
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.VERTICAL);
@@ -111,6 +115,35 @@ public final class AuditActivity extends Activity {
                 .setType("text/tab-separated-values")
                 .putExtra(Intent.EXTRA_TITLE, "traceform-audit-" + System.currentTimeMillis() + ".tsv");
             pendingExport = out.toString();
+            startActivityForResult(intent, REQUEST_EXPORT);
+        } catch (Exception error) {
+            android.widget.Toast.makeText(this, error.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void exportDiagnostics() {
+        try {
+            org.json.JSONObject report = new org.json.JSONObject();
+            report.put("app", getPackageName());
+            android.content.pm.PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            report.put("version_name", info.versionName == null ? "" : info.versionName);
+            report.put("version_code", info.getLongVersionCode());
+            report.put("android", android.os.Build.VERSION.RELEASE);
+            report.put("device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+            report.put("tasks", store.listTasks().size());
+            report.put("memories", store.listMemories().size());
+            report.put("sync_runtime", SyncTransport.available());
+            org.json.JSONArray events = new org.json.JSONArray();
+            for (AgentStore.AuditEvent event : store.listRecentAuditEvents(20)) {
+                events.put(new org.json.JSONObject().put("at", event.occurredAt).put("event", event.event));
+            }
+            report.put("recent_events", events);
+            report.put("note", "No memory contents, task texts or device identifiers are included.");
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("application/json")
+                .putExtra(Intent.EXTRA_TITLE, "traceform-diagnostics-" + System.currentTimeMillis() + ".json");
+            pendingExport = report.toString(2);
             startActivityForResult(intent, REQUEST_EXPORT);
         } catch (Exception error) {
             android.widget.Toast.makeText(this, error.getMessage(), android.widget.Toast.LENGTH_LONG).show();

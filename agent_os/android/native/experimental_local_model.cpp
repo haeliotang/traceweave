@@ -54,7 +54,7 @@ Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring
         require(lock.owns_lock(), "Another local model request is running");
         require(prepared.exchange(false), "Prepare the local model request first");
         require(!cancelled.load(), "Local model request cancelled");
-        require(model_path && prompt_bytes && max_tokens > 0 && max_tokens <= 128, "Invalid local model request");
+        require(model_path && prompt_bytes && max_tokens > 0 && max_tokens <= 512, "Invalid local model request");
         jsize length = env->GetArrayLength(prompt_bytes);
         require(length > 0 && length <= 4096, "Local model input exceeds the limit");
         std::vector<jbyte> input(static_cast<size_t>(length));
@@ -79,12 +79,12 @@ Java_org_traceform_agentos_LocalModelProbe_generate(JNIEnv *env, jclass, jstring
         require(model != nullptr, cancelled.load() ? "Local model request cancelled" : "Local model could not be loaded");
         const llama_vocab *vocab = llama_model_get_vocab(model.get());
         int count = -llama_tokenize(vocab, prompt.data(), static_cast<int32_t>(prompt.size()), nullptr, 0, true, true);
-        require(count > 0 && count <= 768 && count + max_tokens <= 1024, "Local model prompt exceeds the context limit");
+        require(count > 0 && count <= 1536 && count + max_tokens <= 2048, "Local model prompt exceeds the context limit");
         std::vector<llama_token> tokens(static_cast<size_t>(count));
         require(llama_tokenize(vocab, prompt.data(), static_cast<int32_t>(prompt.size()), tokens.data(), count, true, true) == count,
                 "Local model tokenization failed");
         llama_context_params params = llama_context_default_params();
-        params.n_ctx = 1024; params.n_batch = static_cast<uint32_t>(count); params.n_ubatch = 128;
+        params.n_ctx = 2048; params.n_batch = static_cast<uint32_t>(count); params.n_ubatch = 128;
         params.n_threads = 4; params.n_threads_batch = 4;
         params.abort_callback = abort_decoding;
         std::unique_ptr<llama_context, decltype(&llama_free)> context(llama_init_from_model(model.get(), params), llama_free);
