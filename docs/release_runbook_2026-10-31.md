@@ -58,6 +58,25 @@ PY
 把生成的旧包传给 `--previous-apk`，`release_verification.json` 里应出现 `previous_same_signer_upgrade_checked: true`。
 反向验证：把当前版本当“上一版”传进去必须失败，否则说明检查失效。
 
+## 3.5 改文案或界面后必须跑一次设备回归
+
+```bash
+PW=$(security find-generic-password -s com.inceptless.traceform.agentos.signing -a agent-os-rotation-20261025 -w)
+AGENT_OS_KEYSTORE_PASSWORD="$PW" python3 agent_os/scripts/device_regression_android.py \
+  --serial <serial> --android-jar ... --build-tools ... \
+  --keystore agent_os/build/agent-os-rotation-20261025.p12 --key-alias agent-os-rotation-20261025 \
+  --sync-runtime agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so
+```
+
+它会用 `manifest-documents.xml` 构建、安装、再跑 `RUN_SUITE` / `TASK_CENTER` / `RUN_DOCUMENTS`，结果写入 `device_regression.json`。
+
+两个已知坑已固化在脚本里：
+
+1. 用 `manifest-actions.xml` 构建会缺 `WorkflowValidationActivity`，案例直接报“活动不存在”；
+2. `VERIFY_UI` 这类用例依赖前面的 `SEED_*` 用例，单独跑会 NPE，所以默认只跑自包含的三个代表案例。
+
+参考结果：[device_regression_20261031](../artifacts/agent_os/next_stage/device_regression_20261031.json)（48 + 10 + 20 项全过）。
+
 ## 4. 设备安装与冒烟
 
 ```bash

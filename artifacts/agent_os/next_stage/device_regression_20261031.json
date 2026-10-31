@@ -1,0 +1,14 @@
+{
+  "apk": "agent_os/build/device-regression/agent-os.apk",
+  "cases": [
+    "RUN_SUITE",
+    "TASK_CENTER",
+    "RUN_DOCUMENTS"
+  ],
+  "ok": true,
+  "output_tail": [
+    "RUN_SUITE => 10-31 18:26:13.703  1502  1567 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE",
+    "TASK_CENTER => 10-31 18:26:15.632  1700  1784 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=TASK_CENTER",
+    "RUN_DOCUMENTS => 10-31 18:26:18.473  1862  1894 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+  ]
+}
