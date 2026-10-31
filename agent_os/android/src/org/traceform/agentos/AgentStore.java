@@ -2409,6 +2409,13 @@ final class AgentStore extends SQLiteOpenHelper {
         return false;
     }
 
+    int tombstoneCount() {
+        try (Cursor cursor = getReadableDatabase().query("tombstones", new String[]{"entity_id"},
+                null, null, null, null, null)) {
+            return cursor.getCount();
+        }
+    }
+
     void appendSystemAudit(String event) {
         appendAudit(getWritableDatabase(), "system", event, System.currentTimeMillis());
     }

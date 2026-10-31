@@ -1836,6 +1836,26 @@ public final class MainActivity extends Activity {
         Ui.themeDialog(deleteTaskDialog, this);
     }
 
+    void confirmExportScope() {
+        if (busy) return;
+        try {
+            int memories = store.listMemories().size();
+            int tasks = store.listTasks().size();
+            int tombstones = store.tombstoneCount();
+            String message = T.format("export.scope", isEnglish(), memories, tasks, tombstones)
+                + "\n" + T.s("export.scope_note", isEnglish());
+            AlertDialog scopeDialog = new AlertDialog.Builder(this)
+                .setView(Ui.dialogBody(this, T.s("export.scope_title", isEnglish()), message, 13))
+                .setNegativeButton(T.s("common.cancel", isEnglish()), null)
+                .setPositiveButton(T.s("export.continue", isEnglish()), (dialog, which) -> promptExportPassphrase())
+                .create();
+            scopeDialog.show();
+            Ui.themeDialog(scopeDialog, this);
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
     void promptExportPassphrase() {
         if (busy) return;
         LinearLayout fields = new LinearLayout(this);

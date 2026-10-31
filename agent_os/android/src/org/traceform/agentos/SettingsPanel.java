@@ -44,7 +44,7 @@ final class SettingsPanel {
         LinearLayout archiveActions = new LinearLayout(host);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
         archiveActions.setPadding(0, host.dpRef(10), 0, host.dpRef(6));
-        host.addActionButton(archiveActions, T.s("settingspanel.2", en), view -> host.promptExportPassphrase());
+        host.addActionButton(archiveActions, T.s("settingspanel.2", en), view -> host.confirmExportScope());
         host.addActionButton(archiveActions, T.s("settingspanel.3", en), view -> host.chooseArchiveToImport());
         root.addView(archiveActions);
 

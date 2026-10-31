@@ -543,6 +543,10 @@ final class T {
         add("audit.diagnostics_fields", "Fields: %s", "包含字段：%s");
         add("audit.no_crash", "No crash recorded", "没有崩溃记录");
         add("audit.choose_location", "Choose location", "选择位置");
+        add("export.scope", "Archive will contain %d memories, %d tasks and %d deletion markers.", "档案将包含 %d 条记忆、%d 个任务和 %d 条删除标记。");
+        add("export.scope_note", "Deletion markers travel with the archive; the destination needs the same or newer schema.", "删除标记会随档案迁移；接收方需要相同或更新的数据格式。");
+        add("export.scope_title", "Export encrypted archive?", "导出加密档案？");
+        add("export.continue", "Continue", "继续");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
