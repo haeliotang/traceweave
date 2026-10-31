@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-31",
+  "changes": [
+    "home cards use a single accent (Ui.cardAccent: slate-700 in light, slate-300 in dark) instead of six competing colours",
+    "the three dock buttons share the same slate tone",
+    "the title is now  Traceweave Agent OS  with the prototype word removed; the catalog key is ui.app_title and it is allowed to read the same in both languages"
+  ],
+  "screenshots": ["ui/ui_mono_light_20261031.png", "ui/ui_mono_dark_20261031.png"],
+  "verification": "host suite passes; the app was reinstalled and both themes captured on the device"
+}

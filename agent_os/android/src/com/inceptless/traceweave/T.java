@@ -108,7 +108,7 @@ final class T {
         add("memorydetailpanel.30", "Cancel", "取消");
         add("memorydetailpanel.31", "Delete selected records", "删除选中记录");
         add("memorydetailpanel.32", "Cancel", "取消");
-        add("ui.traceweave_agent_os_prototype", "Traceweave Agent OS Prototype", "Traceweave Agent OS 原型");
+        add("ui.app_title", "Traceweave Agent OS", "Traceweave Agent OS");
         add("ui.en", "EN / 中", "中 / EN");
         add("ui.hardware", "Hardware", "硬件常驻");
         add("ui.tensor_g1_pixel_6a_nsynthetic_profile", "Tensor G1 · Pixel 6a\nSynthetic profile", "Tensor G1 · Pixel 6a\n模拟数据");
@@ -747,7 +747,7 @@ final class T {
 
     /** Proper nouns that are legitimately identical in both languages. */
     private static final java.util.Set<String> SAME_IN_BOTH = new java.util.HashSet<>(
-        java.util.Arrays.asList("memory.source_traceweave"));
+        java.util.Arrays.asList("memory.source_traceweave", "ui.app_title"));
 
     /** Keys whose two languages are identical or empty; used by the host test. */
     static Map<String, String> audit() {

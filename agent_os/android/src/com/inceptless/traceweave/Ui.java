@@ -40,6 +40,8 @@ final class Ui {
     static int muted(Context context) { return dark(context) ? 0xFF94A3B8 : COLOR_MUTED; }
     static int stroke(Context context) { return dark(context) ? 0xFF334155 : COLOR_STROKE; }
     /** Body text inside cards; the light value is too dark against a dark card. */
+    /** Single accent for the home cards: one hue instead of six competing ones. */
+    static int cardAccent(Context context) { return dark(context) ? 0xFFCBD5E1 : 0xFF334155; }
     static int body(Context context) { return dark(context) ? 0xFFCBD5E1 : 0xFF475569; }
     /** Secondary (outlined) buttons keep a light chip in light mode and a dark one in dark mode. */
     static int secondaryBg(Context context) { return dark(context) ? 0xFF1E293B : 0xFFF1F5F9; }

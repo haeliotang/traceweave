@@ -382,7 +382,7 @@ public final class MainActivity extends Activity {
         topHeaderRow.setLayoutParams(topHeaderLp);
 
         TextView title = new TextView(this);
-        title.setText(T.s("ui.traceweave_agent_os_prototype", en));
+        title.setText(T.s("ui.app_title", en));
         title.setTextSize(20);
         title.setTextColor(Ui.text(this));
         title.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -449,7 +449,7 @@ public final class MainActivity extends Activity {
 
         // 3. Telemetry 6 Cards (2 Rows x 3 Columns)
         LinearLayout gridRow1 = createGridRow(page);
-        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, T.s("ui.hardware", en), 0xFF1565C0);
+        LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, T.s("ui.hardware", en), Ui.cardAccent(this));
         TextView hwInfo = new TextView(this);
         hwInfo.setText(T.s("ui.tensor_g1_pixel_6a_nsynthetic_profile", en));
         hwInfo.setTextSize(12);
@@ -479,7 +479,7 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), 0xFF6A1B9A);
+        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), Ui.cardAccent(this));
         slmInfo = new TextView(this);
         updateLocalModelStatus();
         slmInfo.setTextSize(12);
@@ -490,7 +490,7 @@ public final class MainActivity extends Activity {
 
         slmCard.setOnClickListener(v -> startActivity(new Intent(this, LocalModelActivity.class)));
 
-        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, T.s("ui.daemon", en), 0xFFD84315);
+        LinearLayout daemonCard = createGridCard(gridRow1, IconFactory.IconType.SERVER, T.s("ui.daemon", en), Ui.cardAccent(this));
         TextView daemonInfo = new TextView(this);
         daemonInfo.setText(T.s("status.daemon_off", en));
         daemonInfo.setTextSize(12);
@@ -502,7 +502,7 @@ public final class MainActivity extends Activity {
             T.s("ui.daemon_disabled_body", isEnglish())));
 
         LinearLayout gridRow2 = createGridRow(page);
-        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, T.s("ui.encrypted_archive", en), 0xFF2E7D32);
+        LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, T.s("ui.encrypted_archive", en), Ui.cardAccent(this));
         TextView syncInfo = new TextView(this);
         syncInfo.setText(T.s("status.archive_local", en));
         syncInfo.setTextSize(12);
@@ -522,7 +522,7 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), 0xFF0277BD);
+        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), Ui.cardAccent(this));
         sensInfo = new TextView(this);
         sensInfo.setText(T.s("status.sensors_off", en));
         sensInfo.setTextSize(12);
@@ -533,7 +533,7 @@ public final class MainActivity extends Activity {
 
         sensCard.setOnClickListener(v -> showSensorsDialog(sensInfo));
 
-        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, T.s("ui.vision_ptt", en), 0xFF4527A0);
+        LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, T.s("ui.vision_ptt", en), Ui.cardAccent(this));
         TextView visionInfo = new TextView(this);
         String bleStatus = HardwarePeripheralService.getInstance().getPeripheralStatus(en);
         visionInfo.setText((T.s("ui.accessibility_ocr_n", en))
@@ -624,7 +624,7 @@ public final class MainActivity extends Activity {
         dockRow.setOrientation(LinearLayout.HORIZONTAL);
         dockRow.setPadding(0, dp(8), 0, 0);
 
-        Button btnMemDialog = createCompactActionButton(T.s("nav.memory", en), 0xFF7C3AED, 0xFFFFFFFF, v -> showMemoryDialog());
+        Button btnMemDialog = createCompactActionButton(T.s("nav.memory", en), 0xFF334155, 0xFFFFFFFF, v -> showMemoryDialog());
         btnMemDialog.setTypeface(null, android.graphics.Typeface.BOLD);
         dockRow.addView(btnMemDialog, new LinearLayout.LayoutParams(0, dp(48), 1.0f));
 
@@ -634,13 +634,13 @@ public final class MainActivity extends Activity {
         setLp.setMargins(dp(6), 0, dp(6), 0);
         dockRow.addView(btnSettingsDialog, setLp);
 
-        Button btnConsoleDialog = createCompactActionButton(T.s("nav.console", en), 0xFF00695C, 0xFFFFFFFF, v -> showConsoleDialog());
+        Button btnConsoleDialog = createCompactActionButton(T.s("nav.console", en), 0xFF334155, 0xFFFFFFFF, v -> showConsoleDialog());
         btnConsoleDialog.setTypeface(null, android.graphics.Typeface.BOLD);
         dockRow.addView(btnConsoleDialog, new LinearLayout.LayoutParams(0, dp(48), 1.0f));
 
         page.addView(dockRow);
 
-        LinearLayout summaryCard = createCard(page, IconFactory.IconType.SHIELD, T.s("ui.status", en), 0xFF475569);
+        LinearLayout summaryCard = createCard(page, IconFactory.IconType.SHIELD, T.s("ui.status", en), Ui.cardAccent(this));
         bottomSummary = new TextView(this);
         bottomSummary.setTextSize(12);
         bottomSummary.setLineSpacing(dp(2), 1.0f);
