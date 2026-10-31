@@ -53,7 +53,7 @@ final class SettingsPanel {
         TextView notificationState = new TextView(host);
         notificationState.setText(T.s(notificationGranted ? "settings.notify_on" : "settings.notify_off", en));
         notificationState.setTextSize(11);
-        notificationState.setTextColor(0xFF64748B);
+        notificationState.setTextColor(Ui.muted(host));
         notificationState.setPadding(0, host.dpRef(6), host.dpRef(8), host.dpRef(6));
         notificationRow.addView(notificationState);
         if (!notificationGranted) {
@@ -64,7 +64,7 @@ final class SettingsPanel {
         activityStatus = new TextView(host);
         activityStatus.setText(T.s("settings.note_export", en));
         activityStatus.setTextSize(10);
-        activityStatus.setTextColor(0xFF64748B);
+        activityStatus.setTextColor(Ui.muted(host));
         activityStatus.setPadding(0, host.dpRef(2), 0, 0);
         root.addView(activityStatus);
 
@@ -77,7 +77,7 @@ final class SettingsPanel {
         int paired = host.storeRef().listPairings().size();
         pairingState.setText(T.format("settings.paired_count", en, paired));
         pairingState.setTextSize(11);
-        pairingState.setTextColor(0xFF64748B);
+        pairingState.setTextColor(Ui.muted(host));
         pairingState.setPadding(0, host.dpRef(6), host.dpRef(8), host.dpRef(6));
         pairingRow.addView(pairingState);
         host.addActionButton(pairingRow, T.s("settingspanel.5", en), view -> host.showPairingDialog());
