@@ -555,6 +555,7 @@ final class T {
         add("pair.peer_offline", "Peer offline", "对端不在线");
         add("pair.sync_skipped", "Skipped", "已跳过");
         add("pair.sync_error", "Failed", "失败");
+        add("memory.pending_badge", "%d pending", "%d 待定");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

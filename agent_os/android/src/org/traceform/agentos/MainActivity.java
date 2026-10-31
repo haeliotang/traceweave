@@ -1593,7 +1593,9 @@ public final class MainActivity extends Activity {
         row.addView(content, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView stamp = new TextView(this);
-        stamp.setText(new java.text.SimpleDateFormat("MM-dd", java.util.Locale.ROOT).format(new java.util.Date(memory.updatedAt)));
+        String stampText = new java.text.SimpleDateFormat("MM-dd", java.util.Locale.ROOT).format(new java.util.Date(memory.updatedAt));
+        if (store.hasMemoryCandidate(memory.id)) stampText = stampText + " · " + T.format("memory.pending_badge", en, store.listMemoryConflicts(memory.id).size());
+        stamp.setText(stampText);
         stamp.setTextSize(10);
         stamp.setTextColor(0xFF94A3B8);
         row.addView(stamp);
