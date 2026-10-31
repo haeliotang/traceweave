@@ -1,6 +1,6 @@
 # 配对体验：局域网发现 + 6 位确认码（第 3 项设计）
 
-状态：**进行中**（2026-10-31：SAS 与一次性配对话路已实现并通过两进程回环验证；mdns 发现与 UI 未接）。
+状态：**基本完成**（2026-10-31：SAS、配对话路、JNI 与配对 UI 已接入；同机双安装走“地址直连”通过，mDNS 同机双应用不通，跨设备未验证）。
 
 ## 1. 为什么不能只靠短码
 
@@ -43,9 +43,15 @@
 | 1 | Rust：`pairing` 模块（SAS 推导 + offer 编解码），纯函数单测 | 已通过：15 项 Rust 单测，含双向一致、篡改敏感、offer 往返 |
 | 2 | Rust：一次性配对话路（Noise 上交换 offer，超时） | 已通过：两进程回环，双方 SAS 同为 `683172`，各自看到对端指纹 |
 | 2b | Rust：mdns 发现 | 未开始（libp2p-mdns 0.49 已在离线缓存中） |
-| 3 | JNI：`nativeDiscover`、`nativePair`（返回 SAS 与 PeerId） | 真机双安装调用 |
-| 4 | UI：配对页展示候选设备、SAS 比对与确认 | 真机双安装，两张截图 |
-| 5 | 文档与限制：发现失败的兜底、跨网段不可用、NFC/二维码暂不做 | 更新本文状态 |
+| 3 | JNI：`nativeDiscover`、`nativePairServe`、`nativePairDial` | 已接入；发现返回候选 JSON，配对返回 SAS/对端 PeerId |
+| 4 | UI：等待对方 / 局域网发现 / 地址直连 / SAS 比对 | 已接入；同机双安装用地址直连通过，双方 SAS 均为 `045675`，两边 pairing 记录 active |
+| 5 | 文档与限制 | 见 [pairing_sas_20261031](../artifacts/agent_os/next_stage/pairing_sas_20261031.json) |
+
+## 6. 实测结论与限制
+
+- 同机双安装：mDNS 在 6 秒内没有发现对端（两个应用沙箱之间的多播未互通），改用地址直连 `127.0.0.1:47961`；双方显示同一确认码 `045675`，确认后两边都写入 active 配对，peer_id 为 76 位十六进制（multihash）。
+- 宿主两进程：mDNS 发现可用，pair-server 与 pair-client 各自看到对方。
+- 跨两台真机：未验证（缺第二台设备）。
 
 ## 5. 明确不做
 

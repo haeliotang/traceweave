@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "two isolated installs on one phone; SAS pairing over loopback; synthetic identities only",
+  "flow": [
+    "A: 等待对方设备 (pair_serve on 47961)",
+    "B: 连接此地址 127.0.0.1:47961 (pair_dial)",
+    "both showed SAS 045675",
+    "both confirmed"
+  ],
+  "checks": {
+    "sas_matched_on_both": true,
+    "pairing_rows_active": true,
+    "a_row": "peer-7ae51786444388f0 active, peer_id 76 hex chars",
+    "b_row": "peer-54f79e9377f23ea1 active, peer_id 76 hex chars",
+    "peer_id_is_hex_multihash": true
+  },
+  "mdns_result": "two apps on the same phone did not see each other through mDNS within 6 s (multicast between app sandboxes); host two-process discovery does work",
+  "limitations": [
+    "Discovery across two physical devices is untested (no second device)",
+    "Loopback address entry is the fallback path used for this run",
+    "Screenshots were not captured; the SAS dialog text is recorded from the UI dump"
+  ]
+}

@@ -73,6 +73,7 @@ public final class MainActivity extends Activity {
     private static final int REQ_RECORD_AUDIO = 2001;
     private static final int REQ_NOTIFICATIONS = 7002;
     private static final int SYNC_PORT = 47960;
+    private static final int PAIR_PORT = 47961;
     private Button traceformToggleButton;
     private TextView cloudModelStatus;
     private Button cloudModelConfigButton;
@@ -705,6 +706,140 @@ public final class MainActivity extends Activity {
 
     private boolean autoSyncAttempted;
 
+    private static int actionBgFor(android.content.Context context) {
+        return 0xFF1E293B;
+    }
+
+    private void startPairDiscovery(boolean en) {
+        if (!SyncTransport.available()) { showMessage(en ? "Sync runtime is not in this build" : "此构建不包含同步运行库"); return; }
+        showMessage(en ? "Searching the local network…" : "正在搜索局域网…");
+        final android.net.wifi.WifiManager.MulticastLock multicastLock = acquireMulticastLock();
+        io.execute(() -> {
+            String payload;
+            try {
+                payload = SyncTransport.nativeDiscover(syncSeed(), 6000L);
+            } catch (Throwable error) {
+                payload = null;
+            } finally {
+                if (multicastLock != null) multicastLock.release();
+            }
+            final String json = payload;
+            mainHandler.post(() -> {
+                if (destroyed) return;
+                try {
+                    org.json.JSONArray array = new org.json.JSONArray(json == null || json.isEmpty() ? "[]" : json);
+                    if (array.length() == 0) {
+                        showMessage(en ? "No device found on this network" : "局域网内没有发现设备");
+                        return;
+                    }
+                    String[] labels = new String[array.length()];
+                    String[] addresses = new String[array.length()];
+                    for (int index = 0; index < array.length(); index++) {
+                        org.json.JSONObject item = array.getJSONObject(index);
+                        addresses[index] = item.optString("addr", "");
+                        String peer = item.optString("peer", "");
+                        labels[index] = (peer.length() > 12 ? peer.substring(0, 12) : peer) + " · " + addresses[index];
+                    }
+                    new AlertDialog.Builder(this)
+                        .setTitle(en ? "Pick a device" : "选择设备")
+                        .setItems(labels, (dialog, which) -> startPairDial(addresses[which], en))
+                        .setNegativeButton(en ? "Cancel" : "取消", null)
+                        .show();
+                } catch (Exception error) {
+                    showError(error);
+                }
+            });
+        });
+    }
+
+    private android.net.wifi.WifiManager.MulticastLock acquireMulticastLock() {
+        try {
+            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager)
+                getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+            if (wifi == null) return null;
+            android.net.wifi.WifiManager.MulticastLock lock = wifi.createMulticastLock("traceform-mdns");
+            lock.setReferenceCounted(false);
+            lock.acquire();
+            return lock;
+        } catch (Throwable error) {
+            return null;
+        }
+    }
+
+    private void startPairDialFromText(String text, boolean en) {
+        String value = text == null ? "" : text.trim();
+        int colon = value.lastIndexOf(':');
+        if (colon <= 0 || colon == value.length() - 1) {
+            showMessage(en ? "Enter host:port" : "请输入 主机:端口");
+            return;
+        }
+        String host = value.substring(0, colon);
+        String port = value.substring(colon + 1);
+        if (port.isEmpty() || !port.chars().allMatch(Character::isDigit)) {
+            showMessage(en ? "Port must be numeric" : "端口必须是数字");
+            return;
+        }
+        startPairDial("/ip4/" + host + "/tcp/" + port, en);
+    }
+
+    private void startPairDial(String address, boolean en) {
+        showMessage(en ? "Pairing…" : "正在配对…");
+        io.execute(() -> {
+            String payload;
+            try {
+                payload = SyncTransport.nativePairDial(syncSeed(), address, DeviceIdentity.fingerprint(), 20000L);
+            } catch (Throwable error) {
+                payload = null;
+            }
+            final String json = payload;
+            mainHandler.post(() -> { if (!destroyed) showPairResult(json, en); });
+        });
+    }
+
+    private void startPairServe(boolean en) {
+        showMessage(en ? "Waiting for the other device…" : "正在等待对方设备…");
+        io.execute(() -> {
+            String payload;
+            try {
+                payload = SyncTransport.nativePairServe(syncSeed(), PAIR_PORT, DeviceIdentity.fingerprint(), 60000L);
+            } catch (Throwable error) {
+                payload = null;
+            }
+            final String json = payload;
+            mainHandler.post(() -> { if (!destroyed) showPairResult(json, en); });
+        });
+    }
+
+    private void showPairResult(String json, boolean en) {
+        try {
+            if (json == null || json.isEmpty()) { showMessage(en ? "Pairing failed" : "配对失败"); return; }
+            org.json.JSONObject result = new org.json.JSONObject(json);
+            if (result.has("error")) {
+                showMessage((en ? "Pairing failed: " : "配对失败：") + result.optString("error"));
+                return;
+            }
+            final String sas = result.getString("sas");
+            final String remoteFingerprint = result.getString("peerFingerprint");
+            final String peerId = result.getString("peer");
+            new AlertDialog.Builder(this)
+                .setTitle(en ? "Compare the code" : "核对确认码")
+                .setMessage((en ? "Code: " : "确认码：") + sas + "\n"
+                    + (en ? "Both devices must show the same code." : "两台设备必须显示相同的确认码。"))
+                .setNegativeButton(en ? "Cancel" : "取消", null)
+                .setPositiveButton(en ? "Pair" : "确认配对", (dialog, which) -> {
+                    try {
+                        SyncPairing.confirm(store, DeviceIdentity.fingerprint(), remoteFingerprint,
+                            "peer-" + remoteFingerprint.substring(0, 16), peerId, sas, sas);
+                        refreshTasks();
+                        showMessage(en ? "Device paired" : "设备已配对");
+                    } catch (Exception error) { showError(error); }
+                })
+                .show();
+        } catch (Exception error) {
+            showError(error);
+        }
+    }
+
     private String syncSeed() {
         android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
         String seed = prefs.getString("sync_seed", "");
@@ -866,6 +1001,19 @@ public final class MainActivity extends Activity {
             holder.addView(syncView);
             holder.addView(remote);
             holder.addView(remoteSync);
+            EditText remoteAddress = new EditText(this);
+            remoteAddress.setHint(en ? "Peer address, e.g. 192.168.0.25:47961" : "对端地址，如 192.168.0.25:47961");
+            holder.addView(remoteAddress);
+            Button discoverButton = createCompactActionButton(en ? "Find on this network" : "局域网发现",
+                actionBgFor(this), 0xFFFFFFFF, view -> startPairDiscovery(en));
+            Button waitButton = createCompactActionButton(en ? "Wait for the other device" : "等待对方设备",
+                actionBgFor(this), 0xFFFFFFFF, view -> startPairServe(en));
+            Button connectButton = createCompactActionButton(en ? "Connect to address" : "连接此地址",
+                actionBgFor(this), 0xFFFFFFFF,
+                view -> startPairDialFromText(remoteAddress.getText().toString(), en));
+            holder.addView(discoverButton);
+            holder.addView(waitButton);
+            holder.addView(connectButton);
             new AlertDialog.Builder(this)
                 .setTitle(en ? "Pair a device" : "配对新设备")
                 .setView(holder)

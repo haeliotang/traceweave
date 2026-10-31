@@ -5,6 +5,7 @@
 
 use std::time::Duration;
 use traceform_sync::identity::DeviceIdentity;
+use traceform_sync::discovery::discover;
 use traceform_sync::pairing_session::{pair_dial, pair_serve};
 use traceform_sync::transport::{dial, loopback, serve, Ed25519BindingVerifier};
 use sha2::{Digest, Sha256};
@@ -19,8 +20,8 @@ async fn main() {
     let args: Vec<String> = std::env::args().collect();
     let role = args.get(1).map(String::as_str).unwrap_or("");
     let port: u16 = args.get(2).and_then(|value| value.parse().ok()).unwrap_or(0);
-    if port == 0 {
-        eprintln!("usage: sync-probe <server|client> <port>");
+    if port == 0 && !matches!(role, "discover") {
+        eprintln!("usage: sync-probe <server|client|pair-server|pair-client> <port> | sync-probe discover");
         std::process::exit(2);
     }
     if role == "server" {
@@ -61,6 +62,17 @@ async fn main() {
         match pair_serve(identity, loopback(port), &local, Duration::from_secs(20)).await {
             Ok(session) => println!("PASS pair-server sas={} peer={} offer={}", session.sas, session.peer, session.peer_offer.fingerprint),
             Err(error) => { println!("FAIL pair-server {error}"); std::process::exit(1); }
+        }
+    } else if role == "discover" {
+        let identity = DeviceIdentity::from_seed(9);
+        match discover(identity, Duration::from_secs(6)).await {
+            Ok(candidates) if !candidates.is_empty() => {
+                for candidate in &candidates {
+                    println!("PASS discover peer={} addrs={}", candidate.peer, candidate.addresses.len());
+                }
+            }
+            Ok(_) => { println!("FAIL discover no peers"); std::process::exit(1); }
+            Err(error) => { println!("FAIL discover {error}"); std::process::exit(1); }
         }
     } else if role == "pair-client" {
         let identity = DeviceIdentity::from_seed(2);

@@ -28,4 +28,10 @@ final class SyncTransport {
     static native String nativeServeOnce(String seedHex, int port, String allowedCsv, Handler handler);
 
     static native byte[] nativeDialOnce(String seedHex, int port, String expectedPeerHex, byte[] payload);
+
+    static native String nativeDiscover(String seedHex, long timeoutMs);
+
+    static native String nativePairServe(String seedHex, int port, String fingerprint, long timeoutMs);
+
+    static native String nativePairDial(String seedHex, String address, String fingerprint, long timeoutMs);
 }

@@ -6,6 +6,7 @@
 
 pub mod binding;
 pub mod frame;
+pub mod discovery;
 pub mod identity;
 pub mod pairing;
 pub mod pairing_session;

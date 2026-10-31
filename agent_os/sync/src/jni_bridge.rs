@@ -7,7 +7,7 @@ use crate::binding::transcript;
 use crate::identity::DeviceIdentity;
 use crate::transport::{dial, dial_payload, loopback, serve, serve_with, Ed25519BindingVerifier, SessionHandler, TransportError};
 use jni::objects::{GlobalRef, JByteArray, JClass, JObject, JString};
-use jni::sys::{jboolean, jint, jstring, JNI_FALSE, JNI_TRUE};
+use jni::sys::{jboolean, jint, jlong, jstring, JNI_FALSE, JNI_TRUE};
 use jni::{JNIEnv, JavaVM};
 use libp2p::PeerId;
 use std::time::Duration;
@@ -346,4 +346,135 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialOnce(
     payload: JByteArray<'_>,
 ) -> jni::sys::jbyteArray {
     Java_org_traceform_agentos_SyncProbe_nativeDialOnce(env, class, seed, port, expected_peer, payload)
+}
+
+fn runtime() -> Result<tokio::runtime::Runtime, String> {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .map_err(|error| format!("runtime: {error}"))
+}
+
+fn hex_bytes(bytes: &[u8]) -> String {
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        out.push_str(&format!("{:02x}", byte));
+    }
+    out
+}
+
+fn from_hex_local(value: &str) -> Option<Vec<u8>> {
+    if value.len() % 2 != 0 {
+        return None;
+    }
+    (0..value.len() / 2)
+        .map(|index| u8::from_str_radix(&value[index * 2..index * 2 + 2], 16).ok())
+        .collect()
+}
+
+fn session_json(session: &crate::pairing_session::PairSession) -> String {
+    format!(
+        "{{\"peer\":\"{}\",\"sas\":\"{}\",\"peerFingerprint\":\"{}\",\"localFingerprint\":\"{}\"}}",
+        hex_bytes(&session.peer.to_bytes()), session.sas, session.peer_offer.fingerprint, session.local_offer.fingerprint
+    )
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDiscover(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+    timeout_ms: jlong,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Some(bytes) = from_hex_local(&seed) else {
+        return std::ptr::null_mut();
+    };
+    let Ok(seed_bytes): Result<[u8; 32], _> = bytes.try_into() else {
+        return std::ptr::null_mut();
+    };
+    let identity = DeviceIdentity::from_bytes(seed_bytes);
+    let Ok(runtime) = runtime() else {
+        return std::ptr::null_mut();
+    };
+    let result = runtime.block_on(crate::discovery::discover(identity, Duration::from_millis(timeout_ms.max(500) as u64)));
+    let text = match result {
+        Ok(candidates) => {
+            let items: Vec<String> = candidates
+                .iter()
+                .map(|candidate| format!(
+                    "{{\"peer\":\"{}\",\"addr\":\"{}\"}}",
+                    candidate.peer,
+                    candidate.addresses.first().map(|a| a.to_string()).unwrap_or_default()
+                ))
+                .collect();
+            format!("[{}]", items.join(","))
+        }
+        Err(error) => format!("{{\"error\":\"{error}\"}}"),
+    };
+    match env.new_string(text) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePairServe(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+    port: jint,
+    fingerprint: JString,
+    timeout_ms: jlong,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };
+    let fingerprint: String = match env.get_string(&fingerprint) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };
+    let Some(bytes) = from_hex_local(&seed) else { return std::ptr::null_mut() };
+    let Ok(seed_bytes): Result<[u8; 32], _> = bytes.try_into() else { return std::ptr::null_mut() };
+    let identity = DeviceIdentity::from_bytes(seed_bytes);
+    let Ok(runtime) = runtime() else { return std::ptr::null_mut() };
+    let result = runtime.block_on(crate::pairing_session::pair_serve(
+        identity,
+        loopback(port as u16),
+        &fingerprint,
+        Duration::from_millis(timeout_ms.max(1000) as u64),
+    ));
+    let text = match result {
+        Ok(session) => session_json(&session),
+        Err(error) => format!("{{\"error\":\"{error}\"}}"),
+    };
+    match env.new_string(text) { Ok(value) => value.into_raw(), Err(_) => std::ptr::null_mut() }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePairDial(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+    address: JString,
+    fingerprint: JString,
+    timeout_ms: jlong,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };
+    let address_text: String = match env.get_string(&address) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };
+    let fingerprint: String = match env.get_string(&fingerprint) { Ok(value) => value.into(), Err(_) => return std::ptr::null_mut() };
+    let Some(bytes) = from_hex_local(&seed) else { return std::ptr::null_mut() };
+    let Ok(seed_bytes): Result<[u8; 32], _> = bytes.try_into() else { return std::ptr::null_mut() };
+    let identity = DeviceIdentity::from_bytes(seed_bytes);
+    let Ok(address) = address_text.parse::<libp2p::Multiaddr>() else { return std::ptr::null_mut() };
+    let Ok(runtime) = runtime() else { return std::ptr::null_mut() };
+    let result = runtime.block_on(crate::pairing_session::pair_dial(
+        identity,
+        address,
+        &fingerprint,
+        Duration::from_millis(timeout_ms.max(1000) as u64),
+    ));
+    let text = match result {
+        Ok(session) => session_json(&session),
+        Err(error) => format!("{{\"error\":\"{error}\"}}"),
+    };
+    match env.new_string(text) { Ok(value) => value.into_raw(), Err(_) => std::ptr::null_mut() }
 }

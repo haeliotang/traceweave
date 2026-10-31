@@ -20,6 +20,7 @@ pub const PAIR_PROTOCOL: &str = "/traceform/pair/1";
 
 #[derive(NetworkBehaviour)]
 struct PairBehaviour {
+    mdns: libp2p::mdns::tokio::Behaviour,
     message: cbor::Behaviour<Vec<u8>, Vec<u8>>,
 }
 
@@ -38,7 +39,10 @@ fn new_swarm(identity: &DeviceIdentity) -> Result<libp2p::Swarm<PairBehaviour>, 
         .with_tcp(tcp::Config::default(), noise::Config::new, yamux::Config::default)
         .map_err(|error| TransportError::Io(error.to_string()))?
         .with_behaviour(|_| {
+            let mdns = libp2p::mdns::tokio::Behaviour::new(libp2p::mdns::Config::default(), PeerId::random())
+                .expect("mdns behaviour");
             PairBehaviour {
+                mdns,
                 message: cbor::Behaviour::new(
                     [(StreamProtocol::new(PAIR_PROTOCOL), ProtocolSupport::Full)],
                     request_response::Config::default(),
@@ -68,6 +72,8 @@ pub async fn pair_serve(
 ) -> Result<PairSession, TransportError> {
     let mut swarm = new_swarm(&identity)?;
     swarm.listen_on(listen).map_err(|error| TransportError::Connect(error.to_string()))?;
+    swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse().map_err(|_| TransportError::Protocol("bad listen address"))?)
+        .map_err(|error| TransportError::Connect(error.to_string()))?;
     tokio::time::timeout(timeout, async {
         loop {
             if let SwarmEvent::Behaviour(PairBehaviourEvent::Message(request_response::Event::Message {
