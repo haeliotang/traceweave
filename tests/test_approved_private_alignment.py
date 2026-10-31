@@ -15,7 +15,7 @@ class TestApprovedPrivateAlignment(unittest.TestCase):
             script = Path(directory, 'child.py')
             script.write_text("import sys\nfrom pathlib import Path\nassert sys.stdin.read() == '101\\n'\nPath(sys.argv[3]).write_text('launched')\nprint('PUBLIC_OUTPUT=' + '1' + '0'*848)\n")
             harness = Path(directory, 'ApprovedTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 import java.security.*;
@@ -81,8 +81,8 @@ public final class ApprovedTest {
 }''')
             sources = ['PrivateAlignmentOutput', 'PrivateParticipant', 'OwnerAuthentication', 'ApprovedPrivateAlignment']
             subprocess.run(['javac', '--release', '8', '-d', directory,
-                *(str(root / f'android/src/org/traceform/edge/{name}.java') for name in sources), str(harness)],
+                *(str(root / f'android/src/com/inceptless/traceweave/edge/{name}.java') for name in sources), str(harness)],
                 check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ApprovedTest',
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ApprovedTest',
                 sys.executable, str(script), directory], capture_output=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

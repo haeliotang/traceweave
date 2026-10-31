@@ -12,7 +12,7 @@ class TestNativeShadowComparison(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "ShadowTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,5 +44,5 @@ public final class ShadowTest {
         if (published.get()!=1) throw new AssertionError("publication after close");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/ShadowComparisonWorker.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.ShadowTest"], check=True, capture_output=True, timeout=20)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/ShadowComparisonWorker.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.ShadowTest"], check=True, capture_output=True, timeout=20)

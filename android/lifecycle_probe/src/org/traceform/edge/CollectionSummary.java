@@ -1,4 +1,4 @@
-package org.traceform.edge;
+package com.inceptless.traceweave.edge;
 
 import android.content.Context;
 import android.database.Cursor;

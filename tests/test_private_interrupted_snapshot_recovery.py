@@ -12,7 +12,7 @@ class TestPrivateInterruptedSnapshotRecovery(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory, 'RecoveryTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 public final class RecoveryTest {
@@ -53,9 +53,9 @@ public final class RecoveryTest {
             names = ('PrivateParticipant', 'PrivateAlignmentOutput', 'AlignmentQueryLease',
                      'UniformPrivateAlignment', 'OwnerAuthentication', 'ComputationSessions')
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                *[str(root / 'android/src/org/traceform/edge' / (name + '.java')) for name in names],
+                *[str(root / 'android/src/com/inceptless/traceweave/edge' / (name + '.java')) for name in names],
                 str(manager), str(context), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.RecoveryTest', directory],
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.RecoveryTest', directory],
                                     capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

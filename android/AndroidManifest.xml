@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.traceform.edge" android:versionCode="3" android:versionName="0.2-hardened">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.inceptless.traceweave.edge" android:versionCode="3" android:versionName="0.2-hardened">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -9,10 +9,10 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <permission android:name="org.traceform.edge.CANONICAL_INPUT" android:protectionLevel="signature" />
-    <permission android:name="org.traceform.edge.READ_HISTORY_SUMMARY" android:protectionLevel="signature|knownSigner"
+    <permission android:name="com.inceptless.traceweave.edge.CANONICAL_INPUT" android:protectionLevel="signature" />
+    <permission android:name="com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY" android:protectionLevel="signature|knownSigner"
         android:knownCerts="9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db" />
-    <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
+    <uses-permission android:name="com.inceptless.traceweave.edge.CANONICAL_INPUT" />
     <application android:label="Traceform" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:extractNativeLibs="true">
         <receiver android:name=".NativeVerificationReceiver" android:exported="true" android:permission="android.permission.DUMP" />
         <service android:name=".NativeVerificationJob" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
@@ -22,10 +22,10 @@
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity>
-        <service android:name=".EdgeService" android:exported="true" android:process=":edge" android:permission="org.traceform.edge.CANONICAL_INPUT" android:foregroundServiceType="specialUse">
+        <service android:name=".EdgeService" android:exported="true" android:process=":edge" android:permission="com.inceptless.traceweave.edge.CANONICAL_INPUT" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-started continuous on-device sensor trajectory research" />
         </service>
         <service android:name=".HistorySummaryService" android:exported="true" android:process=":edge"
-            android:permission="org.traceform.edge.READ_HISTORY_SUMMARY" />
+            android:permission="com.inceptless.traceweave.edge.READ_HISTORY_SUMMARY" />
     </application>
 </manifest>

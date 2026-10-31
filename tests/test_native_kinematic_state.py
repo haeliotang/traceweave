@@ -12,7 +12,7 @@ class TestNativeKinematicState(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "KinematicTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class KinematicTest {
     public static void main(String[] args) {
         KinematicState state = new KinematicState();
@@ -29,5 +29,5 @@ public final class KinematicTest {
         if (state.update(new double[]{1}, new boolean[]{true}, 2000000000L, 0.5, 5000).continuous) throw new AssertionError("wall clock jump");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/KinematicState.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.KinematicTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/KinematicState.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.KinematicTest"], check=True, capture_output=True)

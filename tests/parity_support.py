@@ -6,7 +6,7 @@ two outputs are compared frame by frame. Sequences cover absent fields, direct
 override fields, odd timestamps and gaps, continuity resets and hostile leaf values,
 because a port that only matches on tidy input is not a faithful port.
 
-A Java group class lives in ``android/src/org/traceform/edge`` and exposes a
+A Java group class lives in ``android/src/com/inceptless/traceweave/edge`` and exposes a
 package-visible ``static final String[] NAMES``, ``void reset()`` and
 ``double[] extract(Map<String,Object> obs)``.
 """
@@ -27,9 +27,9 @@ from traceform.representation.feature_dataflow import analyze_source
 from traceform.representation.normalizer import MultimodalNormalizer
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA_SOURCE = ROOT / 'android/src/org/traceform/edge'
+JAVA_SOURCE = ROOT / 'android/src/com/inceptless/traceweave/edge'
 PARITY_JAVA = ROOT / 'tests/java_parity'
-HARNESS_CLASS = 'org.traceform.edge.ParityHarness'
+HARNESS_CLASS = 'com.inceptless.traceweave.edge.ParityHarness'
 
 _DATAFLOW = analyze_source((ROOT / 'research/traceform/representation/normalizer.py').read_text())
 
@@ -225,7 +225,7 @@ def run_java(class_name: str, java_files: Sequence[str], sequence: Path, workdir
         if compiled.returncode != 0:
             raise RuntimeError('javac failed:\n' + compiled.stderr)
     result = subprocess.run(['java', '-cp', str(classes), HARNESS_CLASS, str(sequence),
-                             f'org.traceform.edge.{class_name}'], capture_output=True, text=True, timeout=300)
+                             f'com.inceptless.traceweave.edge.{class_name}'], capture_output=True, text=True, timeout=300)
     if result.returncode != 0:
         raise RuntimeError('java failed:\n' + result.stderr)
     lines = result.stdout.splitlines()

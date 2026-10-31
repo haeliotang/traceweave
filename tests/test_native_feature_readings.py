@@ -12,7 +12,7 @@ class TestNativeFeatureReadings(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "ReadingsTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class ReadingsTest {
     public static void main(String[] args) {
         FeatureReadings readings = new FeatureReadings();
@@ -241,8 +241,8 @@ public final class ReadingsTest {
         if (higher.get("kinematic_pop_metric", 10000000000L) != null) throw new AssertionError("higher derivative invalid reset");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.ReadingsTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/FeatureReadings.java"), str(root / "android/src/com/inceptless/traceweave/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.ReadingsTest"], check=True, capture_output=True)
 
     def test_collection_reset_discards_values_and_derivative_history(self):
         if not shutil.which("javac") or not shutil.which("java"):
@@ -250,7 +250,7 @@ public final class ReadingsTest {
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "ResetReadingsTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class ResetReadingsTest {
     public static void main(String[] args) {
         FeatureReadings r = new FeatureReadings();
@@ -280,8 +280,8 @@ public final class ResetReadingsTest {
             if(r.get(name,11000000000L)!=null) throw new AssertionError("cross-collection history: "+name);
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
-            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.ResetReadingsTest"], capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/FeatureReadings.java"), str(root / "android/src/com/inceptless/traceweave/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.ResetReadingsTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
     def test_pressure_derivative_refreshes_from_new_samples_between_anchor_rotations(self):
@@ -290,7 +290,7 @@ public final class ResetReadingsTest {
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "PressureRefreshTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class PressureRefreshTest {
     public static void main(String[] args) {
         FeatureReadings r = new FeatureReadings();
@@ -316,8 +316,8 @@ public final class PressureRefreshTest {
         if(r.get("barometric_vertical_velocity",701000000000L)!=null) throw new AssertionError("collection reset clears anchors");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
-            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.PressureRefreshTest"], capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/FeatureReadings.java"), str(root / "android/src/com/inceptless/traceweave/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.PressureRefreshTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
     def test_battery_stress_proxy_requires_all_valid_fresh_inputs(self):
@@ -326,7 +326,7 @@ public final class PressureRefreshTest {
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "BatteryStressTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class BatteryStressTest {
     public static void main(String[] args) {
         FeatureReadings r = new FeatureReadings();
@@ -354,6 +354,6 @@ public final class BatteryStressTest {
         if(r.get(name,303000000000L)!=null) throw new AssertionError("restart reuse");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeatureReadings.java"), str(root / "android/src/org/traceform/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
-            result = subprocess.run(["java", "-cp", directory, "org.traceform.edge.BatteryStressTest"], capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/FeatureReadings.java"), str(root / "android/src/com/inceptless/traceweave/edge/PyRuntime.java"), str(harness)], check=True, capture_output=True)
+            result = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.BatteryStressTest"], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

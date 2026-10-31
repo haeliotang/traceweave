@@ -32,7 +32,7 @@ public class Context {
             executable.write_text(f'#!{sys.executable}\nimport os,sys,time\nfrom pathlib import Path\nPath(sys.argv[1], "verifier.pid").write_text(str(os.getpid()))\ntime.sleep(30)\n')
             executable.chmod(0o755)
             harness = base / 'ProofProcessTest.java'
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 public final class ProofProcessTest {
     public static void main(String[] args) throws Exception {
@@ -59,12 +59,12 @@ public final class ProofProcessTest {
 }''')
             sources = ['ProofVerifier', 'PrivateAlignmentOutput', 'PrivateParticipant', 'OwnerAuthentication', 'ApprovedPrivateAlignment', 'AlignmentQueryLease']
             subprocess.run(['javac', '--release', '8', '-d', directory,
-                *(str(root / f'android/src/org/traceform/edge/{name}.java') for name in sources),
+                *(str(root / f'android/src/com/inceptless/traceweave/edge/{name}.java') for name in sources),
                 *(str(base / name) for name in ['Context.java', 'ApplicationInfo.java', 'JSONObject.java']), str(harness)],
                 check=True, capture_output=True)
             pid = None
             try:
-                result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ProofProcessTest', directory],
+                result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ProofProcessTest', directory],
                     capture_output=True, timeout=15)
                 pid = int((base / 'verifier.pid').read_text())
                 try:

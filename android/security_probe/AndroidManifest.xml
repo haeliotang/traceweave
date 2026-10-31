@@ -1,7 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.traceform.sdkprobe" android:versionCode="1" android:versionName="0.1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.inceptless.traceweave.sdkprobe" android:versionCode="1" android:versionName="0.1">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
-    <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
-    <queries><package android:name="org.traceform.edge" /></queries>
+    <uses-permission android:name="com.inceptless.traceweave.edge.CANONICAL_INPUT" />
+    <queries><package android:name="com.inceptless.traceweave.edge" /></queries>
     <application android:label="Traceform SDK permission check" android:allowBackup="false" android:debuggable="true">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>

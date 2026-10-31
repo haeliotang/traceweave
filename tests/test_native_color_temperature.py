@@ -12,7 +12,7 @@ class TestNativeColorTemperature(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "ColorTest.java"
-            harness.write_text("""package org.traceform.edge;
+            harness.write_text("""package com.inceptless.traceweave.edge;
 public final class ColorTest {
     static final class Fake implements ColorTemperatureAdjustment.Control {
         int value = 3000, writes, reads, mode;
@@ -94,7 +94,7 @@ public final class ColorTest {
         }
     }
 }""")
-            compiled = subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/ColorTemperatureAdjustment.java"), str(harness)], capture_output=True, text=True)
+            compiled = subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/ColorTemperatureAdjustment.java"), str(harness)], capture_output=True, text=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
-            executed = subprocess.run(["java", "-cp", directory, "org.traceform.edge.ColorTest"], capture_output=True, text=True)
+            executed = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.ColorTest"], capture_output=True, text=True)
             self.assertEqual(executed.returncode, 0, executed.stderr)

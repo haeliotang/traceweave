@@ -12,7 +12,7 @@ class TestNativeSampleClock(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "ClockTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class ClockTest {
     public static void main(String[] args) {
         SampleClock clock = new SampleClock(1000);
@@ -22,5 +22,5 @@ public final class ClockTest {
         if (clock.next(7000) != 8000) throw new AssertionError("cutoff equality");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/SampleClock.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.ClockTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/SampleClock.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.ClockTest"], check=True, capture_output=True)

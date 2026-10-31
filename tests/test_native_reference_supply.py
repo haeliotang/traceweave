@@ -22,7 +22,7 @@ import parity_support as parity
 from traceform.representation.normalizer import MultimodalNormalizer
 
 ROOT = Path(__file__).resolve().parents[1]
-EDGE = ROOT / 'android/src/org/traceform/edge'
+EDGE = ROOT / 'android/src/com/inceptless/traceweave/edge'
 JAR = Path(os.environ.get('TRACEFORM_ANDROID_JAR', '/private/tmp/traceform-android-tools/platform/android-35/android.jar'))
 SOURCES = ['PyRuntime.java', 'FeatureReadings.java', 'NativeUsageSource.java', 'ReferenceDigitalProbe.java',
            'ReferenceUsageFeatures.java', 'ReferenceSignalFeatures.java', 'ReferenceDynamicsFeatures.java',
@@ -78,7 +78,7 @@ def run_java(frames, directory):
         raise RuntimeError(compiled.stderr)
     path = Path(directory) / 'native.jsonl'
     parity.write_sequence(frames, path)
-    result = subprocess.run(['java', '-cp', f'{classes}{os.pathsep}{JAR}', 'org.traceform.edge.NativeSupplyHarness', str(path)],
+    result = subprocess.run(['java', '-cp', f'{classes}{os.pathsep}{JAR}', 'com.inceptless.traceweave.edge.NativeSupplyHarness', str(path)],
                             capture_output=True, text=True, timeout=300)
     if result.returncode != 0:
         raise RuntimeError(result.stderr)

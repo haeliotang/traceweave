@@ -25,7 +25,7 @@ def build_sdk_jar(classes, destination, android_jar):
     for source, target in re.findall(r'^\s*(org\.traceform\.edge\.[\w$]+)\s+->\s+(org\.traceform\.edge\.[\w$]+)',
                                      analysis.stdout, re.MULTILINE):
         dependencies.setdefault(source, set()).add(target)
-    retained, pending = set(), ['org.traceform.edge.' + name for name in exports]
+    retained, pending = set(), ['com.inceptless.traceweave.edge.' + name for name in exports]
     while pending:
         name = pending.pop()
         if name in retained:

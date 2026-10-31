@@ -9,7 +9,7 @@ class TestNativeCalibrationGate(unittest.TestCase):
     def test_distance_coverage_topology_and_finite_boundaries(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class GateTest {
     public static void main(String[] args) {
         if(!CalibrationGate.accepts(1,0.94,3,2,2,2)) throw new AssertionError("valid improvement");
@@ -32,5 +32,5 @@ public final class GateTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'GateTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/CalibrationGate.java'), str(source)], check=True, capture_output=True)
-            subprocess.run(['java', '-cp', directory, 'org.traceform.edge.GateTest'], check=True, capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/CalibrationGate.java'), str(source)], check=True, capture_output=True)
+            subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.GateTest'], check=True, capture_output=True)

@@ -35,7 +35,7 @@ class TestNativeGraphPotential(unittest.TestCase):
                                  potential['edge_residual_rms'], potential['conservative_fraction'], 12])
                 inputs.append(' '.join(map(str, [dimension, *[value for center in centers for value in center],
                                                   *[value for start, end, seconds in pairs for value in [*start, *end, seconds]]])))
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class PotentialTest {
     public static void main(String[] args) throws Exception {
         java.util.Scanner input = new java.util.Scanner(System.in).useLocale(java.util.Locale.ROOT);
@@ -74,8 +74,8 @@ public final class PotentialTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'PotentialTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/EmpiricalGraphPotential.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.PotentialTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/EmpiricalGraphPotential.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.PotentialTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
         self.assertEqual(len(result.stdout.splitlines()), len(expected))
         for line, reference in zip(result.stdout.splitlines(), expected):
             actual = list(map(float, line.split()))

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HARNESS = '''package org.traceform.edge;
+HARNESS = '''package com.inceptless.traceweave.edge;
 public class MetricsTest {
   static void check(boolean ok, String what) { if (!ok) throw new AssertionError(what); }
   public static void main(String[] args) {
@@ -53,10 +53,10 @@ class TestServiceMetrics(unittest.TestCase):
             harness = Path(directory) / 'MetricsTest.java'
             harness.write_text(HARNESS)
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                                       str(ROOT / 'android/src/org/traceform/edge/ServiceMetrics.java'), str(harness)],
+                                       str(ROOT / 'android/src/com/inceptless/traceweave/edge/ServiceMetrics.java'), str(harness)],
                                       capture_output=True, text=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.MetricsTest'],
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.MetricsTest'],
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
 

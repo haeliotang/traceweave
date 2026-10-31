@@ -12,7 +12,7 @@ class TestPrivateComputationApproval(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory, 'ComputationApprovalTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 import java.security.*;
@@ -65,8 +65,8 @@ public final class ComputationApprovalTest {
     }
 }''')
             result = subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/OwnerAuthentication.java'), str(harness)], capture_output=True)
+                str(root / 'android/src/com/inceptless/traceweave/edge/OwnerAuthentication.java'), str(harness)], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ComputationApprovalTest', directory],
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ComputationApprovalTest', directory],
                                     capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

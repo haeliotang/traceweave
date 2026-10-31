@@ -13,10 +13,10 @@ def node(tag, **attrs):
 
 class HardenedManifestTests(unittest.TestCase):
     def setUp(self):
-        self.old = [node('manifest', package='org.traceform.edge', versionCode='2', versionName='0.2'),
+        self.old = [node('manifest', package='com.inceptless.traceweave.edge', versionCode='2', versionName='0.2'),
                     node('application', debuggable='true', allowBackup='false'),
                     node('service', name='.EdgeService', exported='true', permission='signature')]
-        self.new = [node('manifest', package='org.traceform.edge', versionCode='3', versionName='0.3'),
+        self.new = [node('manifest', package='com.inceptless.traceweave.edge', versionCode='3', versionName='0.3'),
                     node('application', allowBackup='false'), self.old[2]]
 
     def test_only_version_and_debug_removal_are_permitted(self):

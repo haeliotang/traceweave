@@ -34,7 +34,7 @@ else:
  if case == 'duplicate': print('PUBLIC_OUTPUT=' + bits)
 ''')
             harness = Path(directory, 'ParticipantTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class ParticipantTest {
     public static void main(String[] args) throws Exception {
         byte[] inputs = new byte[224];
@@ -109,10 +109,10 @@ public final class ParticipantTest {
     }
 }''')
             subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/PrivateAlignmentOutput.java'),
-                str(root / 'android/src/org/traceform/edge/PrivateParticipant.java'), str(harness)],
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateAlignmentOutput.java'),
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateParticipant.java'), str(harness)],
                 check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ParticipantTest',
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ParticipantTest',
                 sys.executable, str(script)], capture_output=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
             pid = int(Path(str(script) + '.pid').read_text())

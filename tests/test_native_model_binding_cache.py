@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 import unittest
 
-HARNESS = r'''package org.traceform.edge;
+HARNESS = r'''package com.inceptless.traceweave.edge;
 public class H {
     static void check(boolean ok, String what) { if (!ok) { System.out.println("FAIL " + what); System.exit(1); } }
     public static void main(String[] a) throws Exception {
@@ -43,13 +43,13 @@ class TestModelBindingCache(unittest.TestCase):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
         root = Path(__file__).resolve().parents[1]
-        source = (root / 'android/src/org/traceform/edge/ModelBindingCache.java').read_text()
+        source = (root / 'android/src/com/inceptless/traceweave/edge/ModelBindingCache.java').read_text()
         if mutate:
             source = mutate(source)
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             files = {'org/json/JSONObject.java': JSON, 'org/json/JSONException.java': EXC,
-                     'org/traceform/edge/ModelBindingCache.java': source, 'org/traceform/edge/H.java': HARNESS}
+                     'com/inceptless/traceweave/edge/ModelBindingCache.java': source, 'com/inceptless/traceweave/edge/H.java': HARNESS}
             for name, text in files.items():
                 path = base / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -57,7 +57,7 @@ class TestModelBindingCache(unittest.TestCase):
             out = base / 'out'
             out.mkdir()
             subprocess.run(['javac', '-d', str(out)] + [str(base / n) for n in files], check=True, capture_output=True)
-            return subprocess.run(['java', '-cp', str(out), 'org.traceform.edge.H'], capture_output=True, text=True)
+            return subprocess.run(['java', '-cp', str(out), 'com.inceptless.traceweave.edge.H'], capture_output=True, text=True)
 
     def test_cache_skips_only_the_parse_and_never_serves_a_changed_bundle(self):
         result = self.run_java()
@@ -77,7 +77,7 @@ class TestModelBindingCache(unittest.TestCase):
 
     def test_production_check_still_compares_the_model_hash_on_every_frame(self):
         root = Path(__file__).resolve().parents[1]
-        source = (root / 'android/src/org/traceform/edge/ColdTrajectory.java').read_text()
+        source = (root / 'android/src/com/inceptless/traceweave/edge/ColdTrajectory.java').read_text()
         self.assertIn('frame.getString("model_sha256").equals(BINDINGS.modelSha256(binding.getString(1)))', source)
         self.assertNotIn('new JSONObject(binding.getString(1)).getString("model_sha256")', source)
 

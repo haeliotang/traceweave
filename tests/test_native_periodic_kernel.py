@@ -37,7 +37,7 @@ class TestNativePeriodicKernel(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "KernelTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class KernelTest {
     public static void main(String[] args) {
         long[] epochs = new long[]{EPOCHS};
@@ -73,8 +73,8 @@ public final class KernelTest {
                 .replace("CONTINUOUS", ",".join(str(row["continuous_from_previous"]).lower() for row in records))
                 .replace("ELIGIBLE", str(eligible))
                 .replace("QUERIES", ",".join(str(int(query.timestamp() * 1000)) + "L" for query in queries)))
-            subprocess.run(["javac", "--release", "8", "-d", directory, str(root / "android/src/org/traceform/edge/PeriodicTransitionKernel.java"), str(root / "android/src/org/traceform/edge/NativeCore.java"), str(root / "android/src/org/traceform/edge/FittedPeriodicSpectrum.java"), str(harness)], check=True, capture_output=True)
-            output = subprocess.run(["java", "-cp", directory, "org.traceform.edge.KernelTest"], check=True, capture_output=True, text=True)
+            subprocess.run(["javac", "--release", "8", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/PeriodicTransitionKernel.java"), str(root / "android/src/com/inceptless/traceweave/edge/NativeCore.java"), str(root / "android/src/com/inceptless/traceweave/edge/FittedPeriodicSpectrum.java"), str(harness)], check=True, capture_output=True)
+            output = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.KernelTest"], check=True, capture_output=True, text=True)
         actual = [float(line) for line in output.stdout.splitlines()]
         expected = []
         for zone in ["UTC", "Asia/Kathmandu", "America/New_York", "Australia/Lord_Howe"]:

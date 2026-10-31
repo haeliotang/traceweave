@@ -9,7 +9,7 @@ class TestNativeWifiReadings(unittest.TestCase):
     def test_transport_selection_and_legacy_api_guard(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        source = Path(__file__).resolve().parents[1] / 'android/src/org/traceform/edge/NativeWifiSource.java'
+        source = Path(__file__).resolve().parents[1] / 'android/src/com/inceptless/traceweave/edge/NativeWifiSource.java'
         stubs = {
             'android/os/Build.java': 'package android.os; public class Build { public static class VERSION { public static int SDK_INT=35; } }',
             'android/net/Network.java': 'package android.net; public class Network { public int index; public Network(int i){index=i;} }',
@@ -23,7 +23,7 @@ class TestNativeWifiReadings(unittest.TestCase):
                 public boolean hasTransport(int t){return wifi;}
                 public Object getTransportInfo(){if(android.os.Build.VERSION.SDK_INT<29)throw new AssertionError("legacy API called");return info;} }''',
             'android/net/wifi/WifiInfo.java': 'package android.net.wifi; public class WifiInfo { int rssi; public WifiInfo(int r){rssi=r;} public int getRssi(){return rssi;} }',
-            'WifiSourceTest.java': '''package org.traceform.edge;
+            'WifiSourceTest.java': '''package com.inceptless.traceweave.edge;
                 import android.net.*;import android.net.wifi.WifiInfo;
                 public class WifiSourceTest { public static void main(String[] args){
                     ConnectivityManager manager=new ConnectivityManager(null,new NetworkCapabilities(false,new WifiInfo(-20)),
@@ -48,15 +48,15 @@ class TestNativeWifiReadings(unittest.TestCase):
                 path.write_text(text)
                 paths.append(str(path))
             subprocess.run(['javac', '-d', directory, str(source), *paths], check=True, capture_output=True)
-            subprocess.run(['java', '-cp', directory, 'org.traceform.edge.WifiSourceTest'], check=True, capture_output=True)
+            subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.WifiSourceTest'], check=True, capture_output=True)
 
     def test_rssi_scaling_invalid_samples_and_expiry(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        source = Path(__file__).resolve().parents[1] / 'android/src/org/traceform/edge/FeatureReadings.java'
+        source = Path(__file__).resolve().parents[1] / 'android/src/com/inceptless/traceweave/edge/FeatureReadings.java'
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory, 'WifiReadingsTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class WifiReadingsTest {
     public static void main(String[] args) {
         FeatureReadings readings = new FeatureReadings();
@@ -78,5 +78,5 @@ public final class WifiReadingsTest {
 }''')
             compiled = subprocess.run(['javac', '-d', directory, str(source), str(source.with_name('PyRuntime.java')), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.WifiReadingsTest'], capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.WifiReadingsTest'], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

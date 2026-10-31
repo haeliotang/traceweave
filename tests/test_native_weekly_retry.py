@@ -29,7 +29,7 @@ class TestNativeWeeklyRetry(unittest.TestCase):
                 'android/util/Log.java': 'package android.util; public class Log { public static int e(String t,String m,Throwable e){return 0;} }',
                 'android/util/AtomicFile.java': '''package android.util; public class AtomicFile { private java.io.File file; public AtomicFile(java.io.File f){file=f;} public java.io.File getBaseFile(){return file;} public java.io.FileInputStream openRead()throws Exception{return new java.io.FileInputStream(file);} }''',
                 'org/json/JSONObject.java': '''package org.json; public class JSONObject { public JSONObject(){} public JSONObject(String s){} private final java.util.Map<String,Object> values=new java.util.HashMap<>(); public JSONObject put(String k,Object v){values.put(k,v);return this;} public Object remove(String k){return values.remove(k);} public String optString(String k,String d){return values.containsKey(k)?String.valueOf(values.get(k)):d;} public boolean has(String k){return values.containsKey(k);} public boolean getBoolean(String k){return Boolean.TRUE.equals(values.get(k));} }''',
-                'org/traceform/edge/RetryTest.java': '''package org.traceform.edge;
+                'com/inceptless/traceweave/edge/RetryTest.java': '''package com.inceptless.traceweave.edge;
 import java.io.*; import java.util.concurrent.*;
 public class RetryTest {
     static RuntimeException failure, activationFailure;
@@ -99,8 +99,8 @@ class NativeVerificationJob { static void write(File f,org.json.JSONObject r){Re
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(source)
                 paths.append(str(path))
-            paths += [str(root / 'android/src/org/traceform/edge' / name) for name in ['WeeklyMaintenanceJob.java', 'AlignmentQueryLease.java']]
+            paths += [str(root / 'android/src/com/inceptless/traceweave/edge' / name) for name in ['WeeklyMaintenanceJob.java', 'AlignmentQueryLease.java']]
             compile_result = subprocess.run(['javac', '-d', directory, *paths], capture_output=True, text=True)
             self.assertEqual(compile_result.returncode, 0, compile_result.stderr)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.RetryTest', directory], capture_output=True, text=True, timeout=15)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.RetryTest', directory], capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)

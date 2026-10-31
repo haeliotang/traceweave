@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.verify_guarded_private_sdk_usb import prepare_case, wait_terminal
 from scripts.preflight_private_computation_fixture import APPROVED_CIRCUIT, approval_bits
 
-PACKAGE = 'org.traceform.edge.synthetic'
+PACKAGE = 'com.inceptless.traceweave.edge.synthetic'
 ROOT = 'files/private_uniform16'
 
 
@@ -97,7 +97,7 @@ def main():
         if controlled:
             shell(['am', 'force-stop', PACKAGE])
         nonce = str(uuid.uuid4())
-        shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticLmkRecoveryReceiver',
+        shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticLmkRecoveryReceiver',
                '--ei', 'old_pid', str(old_pid), '--el', 'prepared_epoch_ms', str(prepared['prepared_epoch_ms']),
                '--es', 'nonce', nonce])
         recovered = receipt('files/lmk_recovery.json', nonce)
@@ -118,7 +118,7 @@ def main():
         subprocess.run(adb + ['forward', 'tcp:24885', 'tcp:24885'], check=True, capture_output=True)
         try:
             shell(['am', 'set-standby-bucket', PACKAGE, 'active'])
-            shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticPrivateAlignmentReceiver'])
+            shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticPrivateAlignmentReceiver'])
             dispatch = json.loads(shell(['run-as', PACKAGE, 'cat', 'files/private_dispatch.json']))
             command = [str(base / 'host_phase_participant'), '2', '24885', str(base / 'guarded.txt'),
                        str(identities / '2.pem'), str(identities / '2.key'), str(identities / '1.pem'),
@@ -167,7 +167,7 @@ def main():
             upload(name, (identities / name).read_bytes())
         upload('circuit.txt', circuit.read_bytes()); prepare(0)
         nonce = str(uuid.uuid4())
-        shell(['am', 'start', '-n', PACKAGE + '/org.traceform.edge.SyntheticLmkActivity', '--es', 'nonce', nonce])
+        shell(['am', 'start', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticLmkActivity', '--es', 'nonce', nonce])
         report['prepared'] = prepared = receipt('files/lmk_prepared.json', nonce)
     else:
         prepared = report['prepared']

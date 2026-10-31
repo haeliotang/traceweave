@@ -12,7 +12,7 @@ class TestNativeContextualPolicy(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "PolicyTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class PolicyTest {
     public static void main(String[] args) {
         long[] counts = {0,10,0,0}, rewards = {0,10,0,0};
@@ -35,5 +35,5 @@ public final class PolicyTest {
         if(!rejected)throw new AssertionError("impossible rewards");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/ContextualPolicy.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.PolicyTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/ContextualPolicy.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.PolicyTest"], check=True, capture_output=True)

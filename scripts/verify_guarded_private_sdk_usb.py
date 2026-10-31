@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Isolated synthetic guarded MPC, CPU abort and discovered-proof USB validation.
 
-Requires the rebuilt probe installed in org.traceform.edge.synthetic. All keys
+Requires the rebuilt probe installed in com.inceptless.traceweave.edge.synthetic. All keys
 and witnesses are fake and stay in the ignored runtime directory. Never uses
 the primary collector, enrolled owners, or device models.
 """
@@ -23,7 +23,7 @@ from scripts.preflight_private_computation_fixture import APPROVED_CIRCUIT, appr
 from scripts.verify_uniform_private_sdk_usb import statement_bytes
 from traceform.dynamics.integer_transport import optimize_quantized_uniform_permutation
 
-PACKAGE = 'org.traceform.edge.synthetic'
+PACKAGE = 'com.inceptless.traceweave.edge.synthetic'
 ROOT = 'files/private_uniform16'
 
 
@@ -220,7 +220,7 @@ def main():
             upload('fixture.json', json.dumps({'case': label, 'expected_valid': case['valid'],
                                                'approved_computation': True, 'lifecycle': lifecycle}).encode())
             shell(['run-as', PACKAGE, 'rm', '-f', ROOT + '/withdraw.signal'])
-            shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticPrivateAlignmentReceiver'])
+            shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticPrivateAlignmentReceiver'])
             dispatch = json.loads(shell(['run-as', PACKAGE, 'cat', 'files/private_dispatch.json']))
             started = time.monotonic()
             peer, observation = run_peer(case, lifecycle)
@@ -263,7 +263,7 @@ def main():
                 upload(f'owner{owner}.sig', signature, 'files/proof_v2')
             upload('fixture.json', json.dumps({'case': label, 'trusted_key_hash': key_hash,
                                                'bind_discovered': True}).encode(), 'files/proof_v2')
-            shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticProofReceiver'])
+            shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticProofReceiver'])
             dispatch = json.loads(shell(['run-as', PACKAGE, 'cat', 'files/proof_dispatch.json']))
             device = receipt('files/proof_v2.json', dispatch['nonce']); wait_terminal(adb, 34717)
             report['proof_cases'].append(device); save()

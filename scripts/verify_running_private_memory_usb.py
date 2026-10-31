@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.verify_guarded_private_sdk_usb import prepare_case, wait_terminal
 from scripts.preflight_private_computation_fixture import APPROVED_CIRCUIT, approval_bits
 
-PACKAGE = 'org.traceform.edge.synthetic'
+PACKAGE = 'com.inceptless.traceweave.edge.synthetic'
 ROOT = 'files/private_uniform16'
 
 
@@ -179,7 +179,7 @@ def main():
     try:
         if not args.resume_recovery:
             shell(['am', 'set-standby-bucket', PACKAGE, 'active'])
-            shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticPrivateAlignmentReceiver'])
+            shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticPrivateAlignmentReceiver'])
             dispatch = json.loads(shell(['run-as', PACKAGE, 'cat', 'files/private_dispatch.json']))
             peer_result, signaled = run_peer(case, report, True)
             report['device'] = device = receipt('files/private_uniform16.json', dispatch['nonce'])
@@ -192,7 +192,7 @@ def main():
             report['app_pid_before_restart'] = int(pid_before)
             shell(['am', 'force-stop', PACKAGE])
             nonce = uuid.uuid4().hex
-            shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticComputationRestartReceiver',
+            shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticComputationRestartReceiver',
                    '--es', 'phase', 'aborted_replay', '--es', 'nonce', nonce])
             replay = receipt('files/computation_restart.json', nonce)
             ledger_after = shell(['run-as', PACKAGE, 'cat', 'files/computation_sessions.bin'])
@@ -209,7 +209,7 @@ def main():
         recovery_case = prepare_case('different_scale', 1, report['run_tag'])
         approve_case(recovery_case, '')
         shell(['am', 'set-standby-bucket', PACKAGE, 'active'])
-        shell(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticPrivateAlignmentReceiver'])
+        shell(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticPrivateAlignmentReceiver'])
         recovery_dispatch = json.loads(shell(['run-as', PACKAGE, 'cat', 'files/private_dispatch.json']))
         report['fresh_session_recovery'] = recovery = {}
         recovered_peer, _ = run_peer(recovery_case, recovery, False)

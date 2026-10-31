@@ -8,12 +8,12 @@ import re
 import zipfile
 from build_scoped_edge_update import ROOT, apk_identity, digest, run
 
-PACKAGE = 'org.traceform.edge.applicationvalidation'
+PACKAGE = 'com.inceptless.traceweave.edge.applicationvalidation'
 
 
 def verify_probe_classes(descriptors):
-    if descriptors != {'Lorg/traceform/edge/EdgeApplicationRecoveryProbe;',
-                       'Lorg/traceform/edge/EdgeApplicationRecoveryProbe$$ExternalSyntheticLambda0;'}:
+    if descriptors != {'Lcom/inceptless/traceweave/edge/EdgeApplicationRecoveryProbe;',
+                       'Lcom/inceptless/traceweave/edge/EdgeApplicationRecoveryProbe$$ExternalSyntheticLambda0;'}:
         raise ValueError('Unexpected test DEX classes')
 
 
@@ -35,13 +35,13 @@ def main():
     if not os.environ.get(a.password_env):p.error('Set the signing password environment variable')
     if not baseline.is_file() or baseline.is_relative_to(out):p.error('Keep a separate baseline APK')
     identity=apk_identity(baseline,tools);baseline_hash=digest(baseline.read_bytes())
-    if (identity['package']!='org.traceform.edge' or identity['signer_sha256']!=a.expected_signer.lower()
+    if (identity['package']!='com.inceptless.traceweave.edge' or identity['signer_sha256']!=a.expected_signer.lower()
             or baseline_hash!=a.expected_baseline_sha256.lower()):raise ValueError('Untrusted Edge baseline')
     out.mkdir(parents=True,exist_ok=True)
     source=ROOT/'agent_os/tests/android/EdgeApplicationRecoveryProbe.java'
     source_hash=digest(source.read_bytes());classes=out/'classes';dex=out/'dex';classes.mkdir(exist_ok=True);dex.mkdir(exist_ok=True)
     run(['javac','--release','8','-classpath',str(a.android_jar.resolve())+os.pathsep+str(a.compiled_classes.resolve()),'-d',classes,source])
-    compiled=classes/'org/traceform/edge/EdgeApplicationRecoveryProbe.class'
+    compiled=classes/'com/inceptless/traceweave/edge/EdgeApplicationRecoveryProbe.class'
     run([tools/'d8','--min-api','26','--lib',a.android_jar,'--classpath',a.compiled_classes,'--output',dex,compiled])
     dump=run([tools/'dexdump','-f',dex/'classes.dex'],capture_output=True,text=True).stdout
     verify_probe_classes(set(re.findall(r"Class descriptor\s+: '([^']+)'",dump)))
@@ -49,7 +49,7 @@ def main():
     for version in (1,2,3,4):
         manifest=out/f'manifest-{version}.xml'
         debug=' android:debuggable="true"' if probe_debuggable(version) else ''
-        manifest.write_text(f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="{PACKAGE}" android:versionCode="{version}" android:versionName="{version}.0"><uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35"/><application android:label="Isolated Edge application recovery" android:allowBackup="false" android:extractNativeLibs="true"{debug}><activity android:name="org.traceform.edge.EdgeApplicationRecoveryProbe" android:exported="true"/></application></manifest>''')
+        manifest.write_text(f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="{PACKAGE}" android:versionCode="{version}" android:versionName="{version}.0"><uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35"/><application android:label="Isolated Edge application recovery" android:allowBackup="false" android:extractNativeLibs="true"{debug}><activity android:name="com.inceptless.traceweave.edge.EdgeApplicationRecoveryProbe" android:exported="true"/></application></manifest>''')
         unsigned=out/f'unsigned-{version}.apk';aligned=out/f'aligned-{version}.apk';apk=out/f'probe-{version}.apk'
         run([tools/'aapt2','link','-I',a.android_jar,'--manifest',manifest,'-o',unsigned])
         with zipfile.ZipFile(baseline) as original,zipfile.ZipFile(unsigned,'a',compression=zipfile.ZIP_DEFLATED) as target:

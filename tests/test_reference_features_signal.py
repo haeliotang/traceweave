@@ -44,7 +44,7 @@ JAVA_FILES = ['ReferenceSignalFeatures.java']
 ORIGINAL_GENERATE = parity.generate_sequence
 
 # Runs the legacy version-1 extractor (falsy direct values fall through) against a no-argument Java wrapper.
-V1_WRAPPER = '''package org.traceform.edge;
+V1_WRAPPER = '''package com.inceptless.traceweave.edge;
 
 import java.util.Map;
 

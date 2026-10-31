@@ -68,7 +68,7 @@ public class SQLiteDatabase implements AutoCloseable {
         return sql.contains("cold_models")?new android.database.Cursor("v","n","model"):new android.database.Cursor(0L,instant,"frame",count);
     }
 }''',
-                'org/traceform/edge/WarmSqlTest.java': '''package org.traceform.edge;
+                'com/inceptless/traceweave/edge/WarmSqlTest.java': '''package com.inceptless.traceweave.edge;
 public class WarmSqlTest {
     public static void main(String[]args)throws Exception {
         android.database.sqlite.SQLiteDatabase db=new android.database.sqlite.SQLiteDatabase();
@@ -105,8 +105,8 @@ class WarmTrajectory {static void append(android.database.sqlite.SQLiteDatabase 
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(source)
                 paths.append(str(path))
-            paths += [str(root / 'android/src/org/traceform/edge' / name) for name in ['NativeWarmAudit.java', 'HexDigest.java']]
+            paths += [str(root / 'android/src/com/inceptless/traceweave/edge' / name) for name in ['NativeWarmAudit.java', 'HexDigest.java']]
             result = subprocess.run(['javac', '-d', directory, *paths], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.WarmSqlTest'], capture_output=True, text=True, timeout=15)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.WarmSqlTest'], capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)

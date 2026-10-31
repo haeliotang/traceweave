@@ -12,7 +12,7 @@ class TestNativeFeedbackWindow(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "FeedbackTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class FeedbackTest {
     static FeedbackWindow.Frame frame(long time,String identity,String token,boolean continuous) {
         return new FeedbackWindow.Frame(1700000000000L+time,time,identity,token,continuous);
@@ -39,5 +39,5 @@ public final class FeedbackTest {
             throw new AssertionError("fifteen minute equality");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/FeedbackWindow.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.FeedbackTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/FeedbackWindow.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.FeedbackTest"], check=True, capture_output=True)

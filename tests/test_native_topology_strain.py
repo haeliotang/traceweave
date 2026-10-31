@@ -31,7 +31,7 @@ class TestNativeTopologyStrain(unittest.TestCase):
                 for node in nodes:
                     values.extend([*node.grid_coord, *node.center_x, *node.center_v])
                 samples.append(' '.join(map(str, values)))
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class StrainTest {
     public static void main(String[] args) {
         java.util.Scanner input = new java.util.Scanner(System.in).useLocale(java.util.Locale.ROOT);
@@ -64,8 +64,8 @@ public final class StrainTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'StrainTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/TopologyStrain.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.StrainTest'], input='\n'.join(samples), text=True, check=True, capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/TopologyStrain.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.StrainTest'], input='\n'.join(samples), text=True, check=True, capture_output=True)
         for line, reference in zip(result.stdout.splitlines(), expected):
             first, second, energy, nonadjacent = line.split()
             self.assertEqual((int(first), int(second), nonadjacent == 'true'), (reference[0], reference[1], reference[3]))

@@ -15,12 +15,12 @@ def node(tag, **attrs):
 
 class ScopedEdgeManifestTests(unittest.TestCase):
     def setUp(self):
-        self.old = [node("manifest", package="org.traceform.edge", versionCode="1", versionName="0.1"),
+        self.old = [node("manifest", package="com.inceptless.traceweave.edge", versionCode="1", versionName="0.1"),
                     node("application", debuggable="true", allowBackup="false"),
-                    node("service", name=".EdgeService", permission="org.traceform.edge.CANONICAL_INPUT")]
+                    node("service", name=".EdgeService", permission="com.inceptless.traceweave.edge.CANONICAL_INPUT")]
         self.permission = node("permission", name=builder.NEW_PERMISSION, protectionLevel="0x08000002", knownCerts=builder.TRUSTED_SIGNER)
         self.service = node("service", name=builder.NEW_SERVICE, permission=builder.NEW_PERMISSION, exported="true", process=":edge")
-        self.new = [node("manifest", package="org.traceform.edge", versionCode="2", versionName="0.2"),
+        self.new = [node("manifest", package="com.inceptless.traceweave.edge", versionCode="2", versionName="0.2"),
                     self.permission, self.old[1], self.old[2], self.service]
 
     def test_only_expected_additions_are_allowed(self):

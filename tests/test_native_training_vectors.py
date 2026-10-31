@@ -9,7 +9,7 @@ class TestNativeTrainingVectors(unittest.TestCase):
     def test_spooled_six_epoch_fit_matches_direct_vectors_and_rejects_corruption(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class SpoolTest {
     public static void main(String[] args) throws Exception {
         java.io.File directory=new java.io.File(args[0]);
@@ -65,6 +65,6 @@ public final class SpoolTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'SpoolTest.java'
             source.write_text(harness)
-            classes = root / 'android/src/org/traceform/edge'
+            classes = root / 'android/src/com/inceptless/traceweave/edge'
             subprocess.run(['javac', '-d', directory, *[str(classes / name) for name in ('TrainingVectors.java', 'TopologyStrain.java', 'IncrementalManifoldFit.java')], str(source)], check=True, capture_output=True)
-            subprocess.run(['java', '-cp', directory, 'org.traceform.edge.SpoolTest', directory], check=True, capture_output=True)
+            subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.SpoolTest', directory], check=True, capture_output=True)

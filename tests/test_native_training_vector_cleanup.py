@@ -9,7 +9,7 @@ class TestNativeTrainingVectorCleanup(unittest.TestCase):
     def test_process_exit_orphan_is_reclaimed_and_live_spool_is_preserved(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class CleanupTest {
     public static void main(String[] args) throws Exception {
         java.io.File directory=new java.io.File(args[0]); String digest=String.format("%064d",1);
@@ -20,7 +20,7 @@ public final class CleanupTest {
             if(args[1].equals("live")) System.in.read();
             Runtime.getRuntime().halt(0);
         }
-        Process child=new ProcessBuilder("java","-cp",System.getProperty("java.class.path"),"org.traceform.edge.CleanupTest",args[0],"crash").start();
+        Process child=new ProcessBuilder("java","-cp",System.getProperty("java.class.path"),"com.inceptless.traceweave.edge.CleanupTest",args[0],"crash").start();
         String path=new java.io.BufferedReader(new java.io.InputStreamReader(child.getInputStream())).readLine();
         if(child.waitFor()!=0 || path==null) throw new AssertionError("orphan process did not exit");
         java.io.File orphan=new java.io.File(path);
@@ -32,7 +32,7 @@ public final class CleanupTest {
                 if(!first.path.exists() || first.read(0,1000).position[0]!=2) throw new AssertionError("active spool removed");
             }
         }
-        Process live=new ProcessBuilder("java","-cp",System.getProperty("java.class.path"),"org.traceform.edge.CleanupTest",args[0],"live").start();
+        Process live=new ProcessBuilder("java","-cp",System.getProperty("java.class.path"),"com.inceptless.traceweave.edge.CleanupTest",args[0],"live").start();
         try {
             String activePath=new java.io.BufferedReader(new java.io.InputStreamReader(live.getInputStream())).readLine();
             if(activePath==null || !live.isAlive()) throw new AssertionError("live owner missing");
@@ -51,6 +51,6 @@ public final class CleanupTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'CleanupTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/TrainingVectors.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.CleanupTest', directory], capture_output=True, text=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/TrainingVectors.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.CleanupTest', directory], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)

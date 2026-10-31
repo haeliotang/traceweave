@@ -22,7 +22,7 @@ if sys.argv[1] == 'sleep':
 print('PUBLIC_OUTPUT='+'1'+'0'*848)
 ''')
             harness = Path(directory, 'ResourceTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 public final class ResourceTest {
@@ -79,11 +79,11 @@ public final class ResourceTest {
     }
 }''')
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/PrivateAlignmentOutput.java'),
-                str(root / 'android/src/org/traceform/edge/PrivateParticipant.java'), str(harness)],
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateAlignmentOutput.java'),
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateParticipant.java'), str(harness)],
                 capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ResourceTest',
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ResourceTest',
                 sys.executable, str(script)], capture_output=True, timeout=20)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
             pid = int(Path(str(script) + '.pid').read_text())
@@ -114,7 +114,7 @@ public class Context {
     public java.io.File getFilesDir() { return cache; }
 }''')
             harness = base / 'AdmissionTest.java'
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public class AdmissionTest {
     public static void main(String[] args) throws Exception {
         android.content.Context context = new android.content.Context();
@@ -202,9 +202,9 @@ public class AdmissionTest {
 }''')
             sources = ['PrivateAlignmentOutput', 'PrivateParticipant', 'UniformPrivateAlignment', 'OwnerAuthentication', 'AlignmentQueryLease', 'ComputationSessions']
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                *[str(root / 'android/src/org/traceform/edge' / (name + '.java')) for name in sources],
+                *[str(root / 'android/src/com/inceptless/traceweave/edge' / (name + '.java')) for name in sources],
                 str(manager), str(context), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.AdmissionTest',
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.AdmissionTest',
                 directory], capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

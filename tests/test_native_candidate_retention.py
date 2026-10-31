@@ -40,11 +40,11 @@ public final class JSONObject {
         throw new IllegalArgumentException("fixture protocol");
     }
 }''')
-            (base / 'ModelEngine.java').write_text('''package org.traceform.edge;
+            (base / 'ModelEngine.java').write_text('''package com.inceptless.traceweave.edge;
 public final class ModelEngine {
     org.json.JSONObject candidateBundle(org.json.JSONObject report) { return report; }
 }''')
-            (base / 'RetentionTest.java').write_text('''package org.traceform.edge;
+            (base / 'RetentionTest.java').write_text('''package com.inceptless.traceweave.edge;
 import java.io.*;
 import java.nio.file.*;
 import org.json.JSONObject;
@@ -75,7 +75,7 @@ public final class RetentionTest {
         if (!rejected || !damaged.exists()) throw new AssertionError("corrupt candidate silently reclaimed");
     }
 }''')
-            sources = [root / 'android/src/org/traceform/edge' / name for name in ['NativeCandidateStore.java', 'AlignmentQueryLease.java', 'HexDigest.java']]
+            sources = [root / 'android/src/com/inceptless/traceweave/edge' / name for name in ['NativeCandidateStore.java', 'AlignmentQueryLease.java', 'HexDigest.java']]
             subprocess.run(['javac', '-d', directory, *map(str, sources), *map(str, base.glob('*.java'))], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.RetentionTest', directory], capture_output=True, text=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.RetentionTest', directory], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)

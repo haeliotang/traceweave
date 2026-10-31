@@ -22,7 +22,7 @@ class TestPrivateSdkUsbStatement(unittest.TestCase):
             (base / 'statement.bin').write_bytes(statement_bytes(bits, True))
             (base / 'rejected.bin').write_bytes(statement_bytes('0' * 849, False))
             harness = base / 'StatementTest.java'
-            harness.write_text('''import org.traceform.edge.PrivateAlignmentOutput;
+            harness.write_text('''import com.inceptless.traceweave.edge.PrivateAlignmentOutput;
 import java.nio.file.*;
 public class StatementTest {
     public static void main(String[] args) throws Exception {
@@ -50,7 +50,7 @@ public class StatementTest {
     }
 }''')
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/PrivateAlignmentOutput.java'), str(harness)], capture_output=True)
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateAlignmentOutput.java'), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
             result = subprocess.run(['java', '-cp', directory, 'StatementTest', directory], capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

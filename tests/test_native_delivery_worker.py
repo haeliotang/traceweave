@@ -12,7 +12,7 @@ class TestNativeDeliveryWorker(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "DeliveryTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,5 +32,5 @@ public final class DeliveryTest {
         worker.close();if(worker.submit(() -> "closed",x -> calls.incrementAndGet()))throw new AssertionError("closed accepted");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/NativeDeliveryWorker.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.DeliveryTest"], check=True, capture_output=True, timeout=20)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/NativeDeliveryWorker.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.DeliveryTest"], check=True, capture_output=True, timeout=20)

@@ -1,4 +1,4 @@
-package org.traceform.edge;
+package com.inceptless.traceweave.edge;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

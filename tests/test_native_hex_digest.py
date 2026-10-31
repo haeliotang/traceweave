@@ -13,7 +13,7 @@ class TestNativeHexDigest(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "HexTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class HexTest {
     public static void main(String[] args) throws Exception {
         byte[] all = new byte[256];
@@ -24,8 +24,8 @@ public final class HexTest {
     }
 }''')
             subprocess.run(["javac", "--release", "8", "-d", directory,
-                            str(root / "android/src/org/traceform/edge/HexDigest.java"), str(harness)],
+                            str(root / "android/src/com/inceptless/traceweave/edge/HexDigest.java"), str(harness)],
                            check=True, capture_output=True)
-            output = subprocess.run(["java", "-cp", directory, "org.traceform.edge.HexTest"],
+            output = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.HexTest"],
                                     check=True, capture_output=True, text=True)
             self.assertEqual(output.stdout.splitlines(), [bytes(range(256)).hex(), hashlib.sha256(bytes(range(256))).hexdigest()])

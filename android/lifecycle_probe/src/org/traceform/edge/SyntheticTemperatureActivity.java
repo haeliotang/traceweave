@@ -1,4 +1,4 @@
-package org.traceform.edge;
+package com.inceptless.traceweave.edge;
 
 /** Temporary foreground identity for a bounded callback test; no collection service starts. */
 public final class SyntheticTemperatureActivity extends android.app.Activity {

@@ -37,7 +37,7 @@ class TestNativeGridAdaptation(unittest.TestCase):
                              *[tokens.index(token) for swap in report['coordinate_swaps'] for token in swap]])
             inputs.append(' '.join(map(str, [states, *tokens, *[value for coord in coordinates for value in coord],
                                                *[value for row in pairs for value in row]])))
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class GridTest {
     public static void main(String[] args) throws Exception {
         java.util.Scanner input = new java.util.Scanner(System.in);
@@ -70,7 +70,7 @@ public final class GridTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'GridTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/GridAdaptation.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.GridTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/GridAdaptation.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.GridTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
         self.assertEqual([list(map(int, line.split())) for line in result.stdout.splitlines()], expected)
         self.assertTrue(any(row[1] < row[0] for row in expected))

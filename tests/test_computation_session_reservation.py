@@ -13,7 +13,7 @@ class TestComputationSessionReservation(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             harness = base / 'ReservationTest.java'
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 public class ReservationTest {
@@ -52,10 +52,10 @@ public class ReservationTest {
     }
 }''')
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                *[str(root / 'android/src/org/traceform/edge' / (name + '.java')) for name in
+                *[str(root / 'android/src/com/inceptless/traceweave/edge' / (name + '.java')) for name in
                   ['AlignmentQueryLease', 'OwnerAuthentication', 'ComputationSessions']], str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
             for phase in ['first', 'restart']:
-                result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ReservationTest', directory, phase],
+                result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ReservationTest', directory, phase],
                                         capture_output=True, timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr.decode())

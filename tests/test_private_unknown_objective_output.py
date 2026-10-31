@@ -23,7 +23,7 @@ class TestPrivateUnknownObjectiveOutput(unittest.TestCase):
                     (base / 'approved.bin').write_bytes(statement_bytes(bits, True)[32:])
                     (base / 'zero.bin').write_bytes(statement_bytes(bits, True))
             harness = base / 'UnknownOutputTest.java'
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.nio.file.*;
 import java.util.Arrays;
 public final class UnknownOutputTest {
@@ -73,8 +73,8 @@ public final class UnknownOutputTest {
     }
 }''')
             compiled = subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/PrivateAlignmentOutput.java'), str(harness)], capture_output=True)
+                str(root / 'android/src/com/inceptless/traceweave/edge/PrivateAlignmentOutput.java'), str(harness)], capture_output=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.UnknownOutputTest', directory],
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.UnknownOutputTest', directory],
                                     capture_output=True, timeout=10)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

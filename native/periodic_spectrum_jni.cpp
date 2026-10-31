@@ -23,7 +23,7 @@ static void reject(JNIEnv* env, const char* message) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_org_traceform_edge_NativeCore_fitSpectrum(JNIEnv* env, jclass, jint states,
+Java_com_inceptless_traceweave_edge_NativeCore_fitSpectrum(JNIEnv* env, jclass, jint states,
         jdoubleArray phases, jintArray sources, jintArray targets) {
     if (!phases || !sources || !targets || states < 1 || states > 16) {
         reject(env, "spectrum arrays and 1..16 states required"); return 0;
@@ -59,7 +59,7 @@ Java_org_traceform_edge_NativeCore_fitSpectrum(JNIEnv* env, jclass, jint states,
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_spectrumCdf(JNIEnv* env, jclass, jlong handle,
+Java_com_inceptless_traceweave_edge_NativeCore_spectrumCdf(JNIEnv* env, jclass, jlong handle,
         jdoubleArray prior, jdoubleArray phases) {
     auto entered = std::chrono::steady_clock::now();
     std::lock_guard<std::mutex> lock(spectrum_mutex);
@@ -103,12 +103,12 @@ Java_org_traceform_edge_NativeCore_spectrumCdf(JNIEnv* env, jclass, jlong handle
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_org_traceform_edge_NativeCore_closeSpectrum(JNIEnv*, jclass, jlong handle) {
+Java_com_inceptless_traceweave_edge_NativeCore_closeSpectrum(JNIEnv*, jclass, jlong handle) {
     std::lock_guard<std::mutex> lock(spectrum_mutex); spectra.erase(handle);
 }
 
 extern "C" JNIEXPORT jlongArray JNICALL
-Java_org_traceform_edge_NativeCore_spectrumRollouts(JNIEnv* env, jclass, jlong handle,
+Java_com_inceptless_traceweave_edge_NativeCore_spectrumRollouts(JNIEnv* env, jclass, jlong handle,
         jdoubleArray prior, jdoubleArray phases, jint runs, jint initial, jdoubleArray draws) {
     std::lock_guard<std::mutex> lock(spectrum_mutex);
     auto found = spectra.find(handle);
@@ -146,7 +146,7 @@ Java_org_traceform_edge_NativeCore_spectrumRollouts(JNIEnv* env, jclass, jlong h
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_spectrumTimings(JNIEnv* env, jclass, jlong handle) {
+Java_com_inceptless_traceweave_edge_NativeCore_spectrumTimings(JNIEnv* env, jclass, jlong handle) {
     std::lock_guard<std::mutex> lock(spectrum_mutex);
     auto found = spectra.find(handle);
     if (found == spectra.end()) { reject(env, "unknown or closed spectrum handle"); return nullptr; }

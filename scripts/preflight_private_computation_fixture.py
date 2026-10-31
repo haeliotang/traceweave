@@ -61,7 +61,7 @@ def verify_fixture(directory, circuit):
     root = Path(__file__).resolve().parents[1]
     with tempfile.TemporaryDirectory() as temporary:
         harness = Path(temporary, 'FixtureApproval.java')
-        harness.write_text('''package org.traceform.edge;
+        harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;import java.security.*;import java.security.spec.X509EncodedKeySpec;
 public final class FixtureApproval {
     public static void main(String[] args) throws Exception {
@@ -72,9 +72,9 @@ public final class FixtureApproval {
     }
 }''')
         subprocess.run(['javac', '--release', '8', '-d', temporary,
-                        str(root / 'android/src/org/traceform/edge/OwnerAuthentication.java'), str(harness)],
+                        str(root / 'android/src/com/inceptless/traceweave/edge/OwnerAuthentication.java'), str(harness)],
                        check=True, capture_output=True, timeout=30)
-        subprocess.run(['java', '-cp', temporary, 'org.traceform.edge.FixtureApproval',
+        subprocess.run(['java', '-cp', temporary, 'com.inceptless.traceweave.edge.FixtureApproval',
                         str(directory.resolve()), APPROVED_CIRCUIT], check=True, capture_output=True, timeout=10)
     return approvals
 

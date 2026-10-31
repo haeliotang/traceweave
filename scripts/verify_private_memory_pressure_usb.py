@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     adb = [str(args.adb), '-s', args.serial]
-    package = 'org.traceform.edge.synthetic'
+    package = 'com.inceptless.traceweave.edge.synthetic'
 
     def shell(command):
         return subprocess.run(adb + ['shell', shlex.join(command)], capture_output=True,
@@ -26,7 +26,7 @@ def main():
     # Use the device clock, so stale receipts cannot pass if host clocks differ.
     started = int(shell(['date', '+%s'])) * 1000
     shell(['am', 'set-standby-bucket', package, 'active'])
-    shell(['am', 'broadcast', '-n', package + '/org.traceform.edge.SyntheticMemoryPressureReceiver'])
+    shell(['am', 'broadcast', '-n', package + '/com.inceptless.traceweave.edge.SyntheticMemoryPressureReceiver'])
     shell(['cmd', 'jobscheduler', 'run', '-f', package, '34718'])
     deadline = time.monotonic() + 165
     while time.monotonic() < deadline:

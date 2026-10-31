@@ -26,7 +26,7 @@ score=42
 print('PUBLIC_OUTPUT='+'1'+format(score,'080b')[::-1]+'0'*768)
 ''')
             harness = base / 'ApprovedUnknownTest.java'
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 import java.nio.file.Files;
 import java.security.*;
@@ -98,8 +98,8 @@ public final class ApprovedUnknownTest {
 }''')
             names = ['OwnerAuthentication', 'PrivateAlignmentOutput', 'PrivateParticipant', 'AlignmentQueryLease', 'ComputationSessions']
             result = subprocess.run(['javac', '--release', '8', '-d', directory,
-                *[str(root / 'android/src/org/traceform/edge' / (name + '.java')) for name in names], str(harness)], capture_output=True)
+                *[str(root / 'android/src/com/inceptless/traceweave/edge' / (name + '.java')) for name in names], str(harness)], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ApprovedUnknownTest', directory,
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ApprovedUnknownTest', directory,
                                      sys.executable, str(script)], capture_output=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr.decode())

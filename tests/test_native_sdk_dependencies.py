@@ -26,7 +26,7 @@ class TestNativeSdkDependencies(unittest.TestCase):
             sdk = base / 'traceform-sdk.jar'
             build.build_sdk_jar(classes, sdk, android_jar)
             client = base / 'UnknownScoreClient.java'
-            client.write_text('''import org.traceform.edge.UniformPrivateAlignment;
+            client.write_text('''import com.inceptless.traceweave.edge.UniformPrivateAlignment;
 public final class UnknownScoreClient {
     public static String compute(android.content.Context context, String[] command,
         java.io.File circuit, java.io.File request, java.security.PublicKey[] owners,

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'native/private_ali
 from verify_uniform_permutation import fixtures, encode
 
 
-PACKAGE = 'org.traceform.edge.synthetic'
+PACKAGE = 'com.inceptless.traceweave.edge.synthetic'
 ROOT = 'files/private_uniform16'
 
 
@@ -80,7 +80,7 @@ def main():
         upload('own.bits', bits[6224:].encode())
         upload('public_inputs.bin', statement_bytes(expected, valid))
         upload('fixture.json', json.dumps({'case': label, 'expected_valid': valid}).encode())
-        shell(shlex.join(['am', 'broadcast', '-n', PACKAGE + '/org.traceform.edge.SyntheticPrivateAlignmentReceiver']))
+        shell(shlex.join(['am', 'broadcast', '-n', PACKAGE + '/com.inceptless.traceweave.edge.SyntheticPrivateAlignmentReceiver']))
         dispatch = json.loads(shell(shlex.join(['run-as', PACKAGE, 'cat', 'files/private_dispatch.json'])))
         print(json.dumps({'case': label, 'nonce': dispatch['nonce'], 'state': 'dispatched'}), flush=True)
         environment = os.environ.copy()

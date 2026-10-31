@@ -19,7 +19,7 @@ class TestAlignmentQueryLease(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory, 'LeaseTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.io.File;
 public final class LeaseTest {
     static AlignmentQueryLease acquire(File root, String purpose) throws Exception {
@@ -44,9 +44,9 @@ public final class LeaseTest {
     }
 }''')
             subprocess.run(['javac', '--release', '8', '-d', directory,
-                str(root / 'android/src/org/traceform/edge/AlignmentQueryLease.java'), str(harness)],
+                str(root / 'android/src/com/inceptless/traceweave/edge/AlignmentQueryLease.java'), str(harness)],
                 check=True, capture_output=True)
-            base = ['java', '-cp', directory, 'org.traceform.edge.LeaseTest', directory]
+            base = ['java', '-cp', directory, 'com.inceptless.traceweave.edge.LeaseTest', directory]
             holder = subprocess.Popen(base + ['hold', purpose], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
                 self.assertTrue(select.select([holder.stdout], [], [], 5)[0], 'holder did not become ready')

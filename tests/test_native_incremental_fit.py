@@ -39,7 +39,7 @@ class TestNativeIncrementalFit(unittest.TestCase):
                             node.center_x[index] += weight * (position[index] - node.center_x[index])
                             node.center_v[index] += weight * (velocity[index] - node.center_v[index])
             expected.append([value for node in model.nodes for value in node.center_x + node.center_v])
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class FitTest {
     public static void main(String[] args) {
         java.util.Scanner input=new java.util.Scanner(System.in).useLocale(java.util.Locale.ROOT);
@@ -77,8 +77,8 @@ public final class FitTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'FitTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/TopologyStrain.java'), str(root / 'android/src/org/traceform/edge/IncrementalManifoldFit.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.FitTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/TopologyStrain.java'), str(root / 'android/src/com/inceptless/traceweave/edge/IncrementalManifoldFit.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.FitTest'], input='\n'.join(inputs), text=True, check=True, capture_output=True)
         self.assertEqual(len(result.stdout.splitlines()), 2)
         for line, reference in zip(result.stdout.splitlines(), expected):
             actual = list(map(float, line.split()))

@@ -11,7 +11,7 @@ STUBS = {
     'android/content/Context.java': 'package android.content; public class Context {public <T> T getSystemService(Class<T> type){return null;} public String getPackageName(){return "fixture";}}',
     'android/app/usage/UsageStatsManager.java': 'package android.app.usage; public class UsageStatsManager {public UsageEvents queryEvents(long b,long e){return new UsageEvents();}}',
     'android/app/usage/UsageEvents.java': 'package android.app.usage; public class UsageEvents {public boolean hasNextEvent(){return false;} public boolean getNextEvent(Event e){return false;} public static class Event {public static final int ACTIVITY_RESUMED=1,SCREEN_INTERACTIVE=15,KEYGUARD_HIDDEN=18; public long getTimeStamp(){return 0;} public int getEventType(){return 0;} public String getPackageName(){return null;}}}',
-    'org/traceform/edge/UsageDigitalTest.java': '''package org.traceform.edge;
+    'com/inceptless/traceweave/edge/UsageDigitalTest.java': '''package com.inceptless.traceweave.edge;
 import java.util.Map;
 public class UsageDigitalTest {
   static void check(boolean ok, String what) { if (!ok) throw new AssertionError(what); }
@@ -53,12 +53,12 @@ class TestNativeUsageDigital(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(content)
                 paths.append(str(path))
-            edge = ROOT / 'android/src/org/traceform/edge'
+            edge = ROOT / 'android/src/com/inceptless/traceweave/edge'
             compiled = subprocess.run(['javac', '-d', directory, str(edge / 'NativeUsageSource.java'),
                                        str(edge / 'ReferenceDigitalProbe.java'), str(edge / 'PyRuntime.java'), *paths],
                                       capture_output=True, text=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.UsageDigitalTest'],
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.UsageDigitalTest'],
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
 

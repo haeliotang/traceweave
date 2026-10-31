@@ -38,7 +38,7 @@ class TestNativeCsd(unittest.TestCase):
                              daemon.ar1_history[-1] if daemon.ar1_history else 0))
             samples.append(f'{token} {u!r} {v!r} {str(index > 0 and index != 400).lower()}')
         self.assertGreater(alerts, 0)
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class CsdTest {
     public static void main(String[] args) {
         CriticalSlowingDetector detector = new CriticalSlowingDetector();
@@ -60,8 +60,8 @@ public final class CsdTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'CsdTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/CriticalSlowingDetector.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.CsdTest'],
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/CriticalSlowingDetector.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.CsdTest'],
                                     input='\n'.join(samples), text=True, check=True, capture_output=True)
         actual = result.stdout.splitlines()
         self.assertEqual(len(actual), len(expected))
@@ -96,7 +96,7 @@ public final class CsdTest {
                              daemon.ar1_history[-1] if daemon.ar1_history else 0))
             samples.append(f'{index} {value!r} {str(index > 0 and index != 750).lower()}')
         self.assertGreater(alerts, 0)
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class ContinuousCsdTest {
     public static void main(String[] args) {
         CriticalSlowingDetector detector = new CriticalSlowingDetector();
@@ -124,9 +124,9 @@ public final class ContinuousCsdTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'ContinuousCsdTest.java'
             source.write_text(harness)
-            compiled = subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/CriticalSlowingDetector.java'), str(source)], capture_output=True, text=True)
+            compiled = subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/CriticalSlowingDetector.java'), str(source)], capture_output=True, text=True)
             self.assertEqual(compiled.returncode, 0, compiled.stderr)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.ContinuousCsdTest'], input='\n'.join(samples), text=True, check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.ContinuousCsdTest'], input='\n'.join(samples), text=True, check=True, capture_output=True)
         self.assertEqual(len(result.stdout.splitlines()), len(expected))
         for line, (dwell, tipping, variance, lag1) in zip(result.stdout.splitlines(), expected):
             fields = line.split()

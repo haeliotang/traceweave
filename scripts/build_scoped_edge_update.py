@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "agent_os/scripts"))
 from verify_release_android import apk_identity, tree_nodes
 
-PACKAGE = "org.traceform.edge"
+PACKAGE = "com.inceptless.traceweave.edge"
 NEW_PERMISSION = PACKAGE + ".READ_HISTORY_SUMMARY"
 NEW_SERVICE = ".HistorySummaryService"
 TRUSTED_SIGNER = "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db"
@@ -85,13 +85,13 @@ def main():
     old = apk_identity(baseline, tools)
     if old["package"] != PACKAGE or old["signer_sha256"] != args.expected_signer.lower():
         raise ValueError("Baseline package or signer is not the trusted Edge identity")
-    source = ROOT / "android/src/org/traceform/edge/HistorySummaryService.java"
+    source = ROOT / "android/src/com/inceptless/traceweave/edge/HistorySummaryService.java"
     manifest_source = ROOT / "android/AndroidManifest.xml"
     classes, dex = out / "classes", out / "dex"
     classes.mkdir(exist_ok=True); dex.mkdir(exist_ok=True)
     run(["javac", "--release", "8", "-classpath", str(args.android_jar.resolve()) + os.pathsep + str(args.compiled_classes.resolve()),
          "-d", classes, source])
-    files = sorted(classes.glob("org/traceform/edge/HistorySummaryService*.class"))
+    files = sorted(classes.glob("com/inceptless/traceweave/edge/HistorySummaryService*.class"))
     if {f.name for f in files} != {"HistorySummaryService.class", "HistorySummaryService$1.class"}:
         raise ValueError("Unexpected summary service classes")
     run([tools / "d8", "--min-api", "26", "--lib", args.android_jar, "--classpath", args.compiled_classes,
@@ -99,7 +99,7 @@ def main():
     dexdump = run([tools / "dexdump", "-f", dex / "classes.dex"], capture_output=True, text=True).stdout
     import re
     descriptors = set(re.findall(r"Class descriptor\s+: '([^']+)'", dexdump))
-    if descriptors != {"Lorg/traceform/edge/HistorySummaryService;", "Lorg/traceform/edge/HistorySummaryService$1;"}:
+    if descriptors != {"Lcom/inceptless/traceweave/edge/HistorySummaryService;", "Lcom/inceptless/traceweave/edge/HistorySummaryService$1;"}:
         raise ValueError("Unexpected code in added DEX")
     ET.register_namespace("android", ANDROID[1:-1])
     tree = ET.parse(manifest_source)

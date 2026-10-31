@@ -28,7 +28,7 @@ def verify_candidate(baseline, candidate, report, tools):
         raise ValueError("Invalid candidate report")
     if sha256(baseline.read_bytes()) != report.get("baseline_sha256") or sha256(candidate.read_bytes()) != report.get("candidate_sha256"):
         raise ValueError("Candidate or baseline digest changed")
-    source = ROOT / "android/src/org/traceform/edge/HistorySummaryService.java"
+    source = ROOT / "android/src/com/inceptless/traceweave/edge/HistorySummaryService.java"
     manifest = ROOT / "android/AndroidManifest.xml"
     if sha256(source.read_bytes()) != report.get("summary_source_sha256") or sha256(manifest.read_bytes()) != report.get("manifest_source_sha256"):
         raise ValueError("Candidate source changed after build")

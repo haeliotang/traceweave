@@ -12,7 +12,7 @@ class TestNativeVolumeAdjustment(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
             harness = Path(directory) / "VolumeTest.java"
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 public final class VolumeTest {
     static class Fake implements VolumeAdjustment.Control {
         int value=5,writes;boolean ignore,failRestore,external,interrupt,failSet;
@@ -44,5 +44,5 @@ public final class VolumeTest {
         if(r.restored||f.writes!=0||f.value!=3)throw new AssertionError("recovery external ownership");
     }
 }''')
-            subprocess.run(["javac", "-d", directory, str(root / "android/src/org/traceform/edge/VolumeAdjustment.java"), str(harness)], check=True, capture_output=True)
-            subprocess.run(["java", "-cp", directory, "org.traceform.edge.VolumeTest"], check=True, capture_output=True)
+            subprocess.run(["javac", "-d", directory, str(root / "android/src/com/inceptless/traceweave/edge/VolumeAdjustment.java"), str(harness)], check=True, capture_output=True)
+            subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.edge.VolumeTest"], check=True, capture_output=True)

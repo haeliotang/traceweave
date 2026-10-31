@@ -1,4 +1,4 @@
-package org.traceform.edge;
+package com.inceptless.traceweave.edge;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

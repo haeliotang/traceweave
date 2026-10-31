@@ -21,7 +21,7 @@ class TestNativePrivateAlignmentOutput(unittest.TestCase):
             Path(directory, 'bits.txt').write_text(bits)
             Path(directory, 'inputs.bin').write_bytes(statement)
             harness = Path(directory, 'PrivateOutputTest.java')
-            harness.write_text('''package org.traceform.edge;
+            harness.write_text('''package com.inceptless.traceweave.edge;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 public final class PrivateOutputTest {
@@ -54,7 +54,7 @@ public final class PrivateOutputTest {
     }
 }''')
             subprocess.run(['javac', '--release', '8', '-d', directory,
-                            str(root / 'android/src/org/traceform/edge/PrivateAlignmentOutput.java'),
+                            str(root / 'android/src/com/inceptless/traceweave/edge/PrivateAlignmentOutput.java'),
                             str(harness)], check=True, capture_output=True)
-            subprocess.run(['java', '-cp', directory, 'org.traceform.edge.PrivateOutputTest', directory],
+            subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.PrivateOutputTest', directory],
                            check=True, capture_output=True)

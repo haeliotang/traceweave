@@ -16,7 +16,7 @@ static std::vector<double> values(JNIEnv* environment, jdoubleArray array) {
 }
 
 extern "C" JNIEXPORT jlongArray JNICALL
-Java_org_traceform_edge_NativeCore_counterfactual(JNIEnv* environment, jclass,
+Java_com_inceptless_traceweave_edge_NativeCore_counterfactual(JNIEnv* environment, jclass,
         jdoubleArray cdf_array, jdoubleArray prior_array, jint states, jint horizon,
         jint runs, jint initial, jint max_dwell, jdoubleArray baseline_array, jdoubleArray scenario_array) {
     if (!cdf_array || !prior_array || !baseline_array || !scenario_array || states < 1 || states > 128 ||
@@ -52,7 +52,7 @@ Java_org_traceform_edge_NativeCore_counterfactual(JNIEnv* environment, jclass,
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_randomDraws(JNIEnv* environment, jclass, jlong seed, jint count) {
+Java_com_inceptless_traceweave_edge_NativeCore_randomDraws(JNIEnv* environment, jclass, jlong seed, jint count) {
     if (count < 0 || count > 1000000) {
         invalid(environment, "bounded nonnegative draw count required"); return nullptr;
     }
@@ -76,7 +76,7 @@ Java_org_traceform_edge_NativeCore_randomDraws(JNIEnv* environment, jclass, jlon
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_periodicCdf(JNIEnv* environment, jclass,
+Java_com_inceptless_traceweave_edge_NativeCore_periodicCdf(JNIEnv* environment, jclass,
         jdoubleArray prior_array, jdoubleArray query_array, jdoubleArray observed_array,
         jintArray sources_array, jintArray targets_array, jint states) {
     if (!prior_array || !query_array || !observed_array || !sources_array || !targets_array ||
@@ -105,7 +105,7 @@ Java_org_traceform_edge_NativeCore_periodicCdf(JNIEnv* environment, jclass,
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_normalize(JNIEnv* environment, jclass,
+Java_com_inceptless_traceweave_edge_NativeCore_normalize(JNIEnv* environment, jclass,
                                             jdoubleArray raw_array, jdoubleArray median_array,
                                             jdoubleArray iqr_array) {
     if (!raw_array || !median_array || !iqr_array) { invalid(environment, "arrays required"); return nullptr; }
@@ -123,7 +123,7 @@ Java_org_traceform_edge_NativeCore_normalize(JNIEnv* environment, jclass,
 }
 
 extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_org_traceform_edge_NativeCore_quantize(JNIEnv* environment, jclass,
+Java_com_inceptless_traceweave_edge_NativeCore_quantize(JNIEnv* environment, jclass,
                                            jdoubleArray position_array, jdoubleArray velocity_array,
                                            jdoubleArray centers_array, jdoubleArray center_velocity_array,
                                            jint nodes, jdouble beta) {
@@ -144,7 +144,7 @@ Java_org_traceform_edge_NativeCore_quantize(JNIEnv* environment, jclass,
 }
 
 extern "C" JNIEXPORT jlongArray JNICALL
-Java_org_traceform_edge_NativeCore_rollouts(JNIEnv* environment, jclass,
+Java_com_inceptless_traceweave_edge_NativeCore_rollouts(JNIEnv* environment, jclass,
                                            jdoubleArray cdf_array, jint states,
                                            jint horizon, jint runs, jint initial,
                                            jdoubleArray draws_array) {

@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from traceform.representation.feature_dataflow import analyze_source
 
-EDGE = ROOT / 'android/src/org/traceform/edge'
+EDGE = ROOT / 'android/src/com/inceptless/traceweave/edge'
 TARGET = EDGE / 'ReferenceFeatureKinds.java'
 UNOBSERVABLE_TARGET = EDGE / 'StaticallyUnobservableFeatures.java'
 PRODUCER_ROOTS = ('pixel_physical', 'research/traceform/streaming', 'research/traceform/probes')
@@ -40,7 +40,7 @@ def render() -> str:
         if not inputs <= supplied:
             proxies.append(name)
     lines = ',\n        '.join('"%s"' % name for name in proxies)
-    return f'''package org.traceform.edge;
+    return f'''package com.inceptless.traceweave.edge;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,7 +74,7 @@ def render_unobservable() -> str:
     names = [entry['feature'] for entry in registry['features']
              if entry['basis'] == 'static_no_producer' and entry['feature'] not in ported]
     lines = ',\n        '.join('"%s"' % name for name in names)
-    return f'''package org.traceform.edge;
+    return f'''package com.inceptless.traceweave.edge;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -192,7 +192,7 @@ def run_java_probe(samples):
             raise RuntimeError('javac failed:\n' + compiled.stderr)
         sample_path = workdir / 'samples.tsv'
         sample_path.write_text(sample_file_text(samples), encoding='utf-8')
-        result = subprocess.run(['java', '-cp', str(classes), 'org.traceform.edge.DigitalProbeRunner',
+        result = subprocess.run(['java', '-cp', str(classes), 'com.inceptless.traceweave.edge.DigitalProbeRunner',
                                  str(sample_path)], capture_output=True, text=True, timeout=300)
         if result.returncode != 0:
             raise RuntimeError('java failed:\n' + result.stderr)

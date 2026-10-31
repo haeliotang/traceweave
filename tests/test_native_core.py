@@ -90,7 +90,7 @@ class TestNativeCore(unittest.TestCase):
     def test_counterfactual_decision_thresholds(self):
         if not shutil.which('javac') or not shutil.which('java'):
             self.skipTest('Java compiler/runtime unavailable')
-        harness = '''package org.traceform.edge;
+        harness = '''package com.inceptless.traceweave.edge;
 public final class DecisionTest {
     public static void main(String[] args) {
         CounterfactualDecision.Result positive = CounterfactualDecision.compare(new long[]{100,0,100,0,100,0,0,100}, 2,2,100,new boolean[]{true,false});
@@ -110,8 +110,8 @@ public final class DecisionTest {
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'DecisionTest.java'
             source.write_text(harness)
-            subprocess.run(['javac', '-d', directory, str(root / 'android/src/org/traceform/edge/CounterfactualDecision.java'), str(source)], check=True, capture_output=True)
-            result = subprocess.run(['java', '-cp', directory, 'org.traceform.edge.DecisionTest'], capture_output=True)
+            subprocess.run(['javac', '-d', directory, str(root / 'android/src/com/inceptless/traceweave/edge/CounterfactualDecision.java'), str(source)], check=True, capture_output=True)
+            result = subprocess.run(['java', '-cp', directory, 'com.inceptless.traceweave.edge.DecisionTest'], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr.decode())
 
     def test_normalization_128d_and_energy_parity(self):
