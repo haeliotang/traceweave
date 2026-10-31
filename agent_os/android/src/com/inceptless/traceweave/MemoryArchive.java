@@ -26,7 +26,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 final class MemoryArchive {
-    private static final String FORMAT = "com.inceptless.traceweave.memory";
+    private static final String FORMAT = ArchiveCompat.FORMAT;
     private static final int SCHEMA_VERSION = 6;
     private static final int ENCRYPTION_VERSION = 3;
     private static final int PBKDF2_ITERATIONS = 600000;
@@ -230,7 +230,7 @@ final class MemoryArchive {
 
     private static Data fromJson(String json) throws Exception {
         JSONObject root = new JSONObject(json);
-        if (!FORMAT.equals(root.getString("format"))) throw new IOException("Unknown Agent OS archive format");
+        if (!ArchiveCompat.isFormatAccepted(root.getString("format"))) throw new IOException("Unknown Agent OS archive format");
         int schemaVersion = root.getInt("schemaVersion");
         if (schemaVersion < 1 || schemaVersion > SCHEMA_VERSION)
             throw new IOException("Unsupported archive data version");
@@ -276,7 +276,9 @@ final class MemoryArchive {
                 if (AgentStore.COMPLETED.equals(status) && result.isEmpty())
                     throw new IOException("The archive contains an inconsistent task checkpoint");
             }
-            JSONObject planJson = item.has("plan") ? item.getJSONObject("plan") : null;
+            JSONObject planJson = item.has("plan")
+                ? new JSONObject(ArchiveCompat.normalizePlanJson(item.getJSONObject("plan").toString()))
+                : null;
             if (planJson != null && planJson.getJSONArray("steps").length() > AgentStore.MAX_DYNAMIC_STEPS)
                 throw new IOException("The archive contains an execution plan with too many steps");
             ExecutionPlan plan = planJson == null ? null : ExecutionPlan.fromJson(planJson);
@@ -294,7 +296,8 @@ final class MemoryArchive {
             String id = validId(item.getString("id"));
             String kind = item.getString("kind");
             String content = item.getString("content");
-            String source = schemaVersion >= 3 ? item.optString("source", AgentStore.MEMORY_SOURCE_USER)
+            String source = schemaVersion >= 3
+                ? ArchiveCompat.normalizeSource(item.optString("source", AgentStore.MEMORY_SOURCE_USER))
                 : AgentStore.MEMORY_SOURCE_USER;
             String sourceReference = schemaVersion >= 3 ? item.optString("sourceReference", "") : "";
             long createdAt = nonNegative(item.getLong("createdAt"), "memory.createdAt");

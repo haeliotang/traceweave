@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-31",
+  "goal": "prove that a real archive exported by the pre-rename build still imports into Traceweave",
+  "steps": [
+    "installed org.traceform.agentos 0.6.14 (old package) next to the new app",
+    "created one synthetic memory (MigrationCanaryPreference) through its UI",
+    "exported it with the app's encrypted export to Downloads (agent-os-memory-20261031.taos, 416 bytes)",
+    "pulled the archive and kept it as agent_os/tests/data/legacy-0.6.14-memory.taos",
+    "uninstalled the old package",
+    "installed the new build with ArchiveCompat and imported the same archive"
+  ],
+  "archive_facts": {
+    "magic": "TAOS",
+    "encryption_version": 3,
+    "iterations": 600000,
+    "format_field": "org.traceform.agentos.memory",
+    "schema_version": 6,
+    "memories": 1
+  },
+  "result": "the new app accepted the legacy archive, showed the review step, imported it, and the memory MigrationCanaryPreference is visible in the vault",
+  "bug_found_on_the_way": "the import passphrase dialog used a horizontal LinearLayout, so the passphrase field had zero width and a user could not type anything; fixed by setting the holder to VERTICAL",
+  "screenshot": "artifacts/agent_os/migration/import_verified_20261031.png"
+}

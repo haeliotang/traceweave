@@ -1978,6 +1978,9 @@ public final class MainActivity extends Activity {
         boolean en = isEnglish();
         EditText input = passwordField(T.s("ui.archive_passphrase", en));
         LinearLayout holder = new LinearLayout(this);
+        // Default LinearLayout is horizontal; without this the passphrase field is
+        // squeezed to zero width and the import dialog cannot be used.
+        holder.setOrientation(LinearLayout.VERTICAL);
         holder.setPadding(dp(24), dp(8), dp(24), 0);
         holder.addView(input);
         holder.addView(Ui.title(this, T.s("ui.unlock_archive", en)), 0);
