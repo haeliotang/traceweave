@@ -29,23 +29,45 @@ final class LocalModelDraft {
                 || !TaskContext.localOnly(task.plan)) throw new SecurityException("A local-only document task is required");
         byte[] input = prompt(task.title, TaskContext.memories(task.plan));
         synchronized (LocalModelFiles.class) {
-            if (!LocalModelFiles.verifyQwen15(model, cancelled)) throw new IllegalStateException("Local model is missing or failed verification");
+            LocalModelCatalog.Entry entry = LocalModelFiles.verifySupported(model, cancelled);
+            if (entry == null) throw new IllegalStateException("Local model is missing or failed verification");
             try {
-                synchronized (cancelled) {
+                Exception lastFailure = null;
+                for (int attempt = 0; attempt < 2; attempt++) {
+                    byte[] attemptInput = attempt == 0 ? input : strictPrompt(task.title, TaskContext.memories(task.plan));
+                    synchronized (cancelled) {
+                        if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
+                        synchronized (ACTIVE_LOCK) { activeRequest = cancelled; }
+                        LocalModelRuntime.prepare();
+                    }
+                    byte[] output = LocalModelRuntime.generate(model.getPath(), attemptInput, entry.maxTokens);
                     if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
-                    synchronized (ACTIVE_LOCK) { activeRequest = cancelled; }
-                    LocalModelRuntime.prepare();
+                    String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
+                        .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();
+                    text = JsonText.stripThink(text);
+                    try {
+                        DocumentAction.validateContent(text);
+                        return text;
+                    } catch (Exception invalid) {
+                        lastFailure = invalid;
+                    }
                 }
-                byte[] output = LocalModelRuntime.generate(model.getPath(), input, 128);
-                if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
-                String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();
-                DocumentAction.validateContent(text);
-                return text;
+                throw new IllegalStateException("The on-device model did not produce a usable draft"
+                    + (lastFailure == null ? "" : ": " + lastFailure.getMessage()));
             } finally {
                 synchronized (ACTIVE_LOCK) { if (activeRequest == cancelled) activeRequest = null; }
             }
         }
+    }
+
+    private static byte[] strictPrompt(String goal, List<AgentStore.Memory> memories) {
+        StringBuilder text = new StringBuilder("Output only the Markdown document body. No preamble, no explanation, no code fences.\nGoal: ")
+            .append(goal).append("\nSelected memories:\n");
+        for (AgentStore.Memory memory : memories) text.append("- ").append(memory.content).append("\n");
+        if (memories.isEmpty()) text.append("(none)\n");
+        byte[] bytes = text.toString().getBytes(StandardCharsets.UTF_8);
+        if (bytes.length > 4096) throw new IllegalArgumentException("Selected goal and memories exceed the local model input limit");
+        return bytes;
     }
 
     static void cancel(AtomicBoolean cancelled) {

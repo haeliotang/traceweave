@@ -72,7 +72,11 @@ final class TaskContext {
     static List<AgentStore.Memory> memories(Object plan) { return Collections.emptyList(); }
 }
 final class DocumentAction { static void validateContent(String text) {} }
-final class LocalModelFiles { static boolean verifyQwen15(File file, AtomicBoolean token) { return !token.get(); } }
+final class LocalModelFiles {
+    static LocalModelCatalog.Entry verifySupported(File file, AtomicBoolean token) {
+        return token.get() ? null : LocalModelCatalog.QWEN;
+    }
+}
 final class LocalModelRuntime {
     static CountDownLatch entered = new CountDownLatch(1);
     static CountDownLatch release = new CountDownLatch(1);

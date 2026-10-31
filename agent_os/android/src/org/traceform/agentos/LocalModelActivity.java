@@ -40,8 +40,8 @@ public final class LocalModelActivity extends Activity {
         title.setTextSize(15);
         root.addView(title);
         TextView explanation = Ui.meta(this, en
-            ? "Choose Qwen2.5-1.5B-Instruct Q4_0 GGUF (about 1 GB). It stays on this device; drafts still need review and a separate save confirmation."
-            : "选择 Qwen2.5-1.5B-Instruct Q4_0 GGUF（约 1 GB），文件保存在本机。草稿仍需你审核，并单独确认保存。");
+            ? "Supported: Qwen2.5-1.5B Q4_0 (~1.1 GB, faster) or MiniCPM5-2B Q4_K_M (~1.6 GB, stronger). The file stays on this device; drafts still need review and a separate save confirmation."
+            : "支持两种模型：Qwen2.5-1.5B Q4_0（约 1.1 GB，更快）或 MiniCPM5-2B Q4_K_M（约 1.6 GB，更强）。文件保存在本机；草稿仍需你审核，并单独确认保存。");
         explanation.setPadding(0, Ui.dp(this, 2), 0, 0);
         root.addView(explanation);
 
@@ -91,7 +91,7 @@ public final class LocalModelActivity extends Activity {
                 File model = modelFile(this);
                 if (!model.getParentFile().isDirectory() && !model.getParentFile().mkdirs()) throw new java.io.IOException("Model directory unavailable");
                 try (InputStream input = getContentResolver().openInputStream(uri)) {
-                    LocalModelFiles.installQwen15(input, model, token);
+                    LocalModelFiles.installSupported(input, model, token);
                 }
             } catch (Exception error) { failure = error; }
             Exception resultError = failure;
@@ -127,7 +127,16 @@ public final class LocalModelActivity extends Activity {
 
     private void refresh() {
         select.setEnabled(!busy); delete.setEnabled(!busy && modelFile(this).isFile()); cancel.setEnabled(busy && cancelled != null);
-        status.setText(modelFile(this).isFile() ? (en ? "Model file present." : "本机已有模型文件。")
+        LocalModelCatalog.Entry entry = null;
+        try {
+            if (modelFile(this).isFile() && !busy)
+                entry = LocalModelFiles.verifySupported(modelFile(this), new AtomicBoolean());
+        } catch (Exception ignored) {
+        }
+        final LocalModelCatalog.Entry verified = entry;
+        status.setText(verified != null
+            ? (en ? verified.display + " verified on this device." : "本机已校验：" + verified.display + "。")
+            : modelFile(this).isFile() ? (en ? "Model file present." : "本机已有模型文件。")
             : (en ? "No model installed." : "尚未导入模型。"));
         if (!LocalModelRuntime.isAvailable()) status.append(en ? " Local runtime is unavailable on this device or build." : " 此设备或构建上的端侧运行库不可用。");
     }

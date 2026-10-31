@@ -22,6 +22,52 @@ final class LocalModelFiles {
         installChecked(source, destination, QWEN_15_SIZE, QWEN_15_SHA, cancelled);
     }
 
+    /** Installs whichever catalog model the stream contains, rejecting anything else. */
+    static LocalModelCatalog.Entry installSupported(InputStream source, File destination, AtomicBoolean cancelled) throws Exception {
+        if (source == null) throw new IllegalArgumentException("Invalid model import");
+        File parent = destination.getParentFile();
+        if (parent == null || !parent.isDirectory()) throw new IOException("Model directory is unavailable");
+        cleanInterruptedImports(parent);
+        File temporary = File.createTempFile("model-import-", ".tmp", parent);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            long size = 0;
+            long limit = 0;
+            for (LocalModelCatalog.Entry entry : LocalModelCatalog.all()) limit = Math.max(limit, entry.size);
+            try (FileOutputStream output = new FileOutputStream(temporary)) {
+                byte[] buffer = new byte[65536];
+                int count;
+                while ((count = source.read(buffer)) != -1) {
+                    if (cancelled.get()) throw new IOException("Model import cancelled");
+                    if (count == 0) throw new IOException("Model source made no progress");
+                    size += count;
+                    if (size > limit) throw new IOException("Model file is larger than any supported model");
+                    output.write(buffer, 0, count);
+                    digest.update(buffer, 0, count);
+                }
+                output.getFD().sync();
+            }
+            LocalModelCatalog.Entry entry = LocalModelCatalog.bySize(size);
+            if (entry == null || !entry.sha256.equals(hex(digest.digest())))
+                throw new IOException("Model file failed integrity verification");
+            synchronized (cancelled) {
+                if (cancelled.get()) throw new IOException("Model import cancelled");
+                Files.move(temporary.toPath(), destination.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            }
+            return entry;
+        } finally {
+            Files.deleteIfExists(temporary.toPath());
+        }
+    }
+
+    /** Returns the catalog entry for a verified file, or null. */
+    static LocalModelCatalog.Entry verifySupported(File model, AtomicBoolean cancelled) throws Exception {
+        if (!model.isFile()) return null;
+        LocalModelCatalog.Entry entry = LocalModelCatalog.bySize(model.length());
+        if (entry == null) return null;
+        return verifyChecked(model, entry.size, entry.sha256, cancelled) ? entry : null;
+    }
+
     static boolean verifyQwen15(File model, AtomicBoolean cancelled) throws Exception {
         return verifyChecked(model, QWEN_15_SIZE, QWEN_15_SHA, cancelled);
     }
