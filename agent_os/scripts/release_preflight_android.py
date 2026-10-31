@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--model-runtime")
     parser.add_argument("--sync-runtime")
+    parser.add_argument("--previous-apk", help="Earlier same-signer APK for the upgrade check")
     parser.add_argument("--skip-tests", action="store_true")
     args = parser.parse_args()
 
@@ -71,6 +72,8 @@ def main():
                       "--build-tools", args.build_tools,
                       "--expected-signer", args.expected_signer,
                       "--output", str(verification)]
+    if args.previous_apk:
+        verify_command += ["--previous-apk", args.previous_apk]
     if args.model_runtime:
         verify_command.append("--require-model-runtime")
     if args.sync_runtime:
@@ -99,7 +102,8 @@ def main():
         "preflight": "release",
         "ok": all(step.get("ok") for step in steps),
         "output_dir": str(output),
-        "skipped": ["upgrade_from_previous_apk (needs --previous-apk)"] + (["host_tests"] if args.skip_tests else []),
+        "skipped": ([] if args.previous_apk else ["upgrade_from_previous_apk (needs --previous-apk)"])
+            + (["host_tests"] if args.skip_tests else []),
         "steps": steps,
     }
     (output / "preflight.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n")

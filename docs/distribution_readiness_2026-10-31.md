@@ -50,7 +50,11 @@ python3 agent_os/scripts/release_preflight_android.py \
 
 依次执行：构建 → 发布校验 → 宿主测试（用本次构建报告作为溯源输入）→ 生成发布说明，最后写 `preflight.json`。任一步失败则整体退出码非零。
 
-0.6.14 的实跑结果：[preflight_20261031](../artifacts/agent_os/next_stage/preflight_20261031.json)（4 步全部通过，升级校验因缺上一版 APK 标为 skipped）。
+0.6.14 的实跑结果：
+
+- 无上一版 APK：[preflight_20261031](../artifacts/agent_os/next_stage/preflight_20261031.json)，4 步通过，升级校验标为 skipped；
+- 带上一版（0.6.13 / versionCode 22）：[preflight_upgrade_20261031](../artifacts/agent_os/next_stage/preflight_upgrade_20261031.json)，**skipped 为空**，`previous_same_signer_upgrade_checked=true`；
+- 反向验证：把当前 0.6.14 当作“上一版”会失败并返回非零退出码，说明这项检查有效，不是走过场。
 
 ## 3.1 发布前检查清单（本地可执行）
 

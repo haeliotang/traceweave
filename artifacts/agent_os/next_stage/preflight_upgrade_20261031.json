@@ -1,0 +1,61 @@
+{
+  "preflight": "release",
+  "ok": true,
+  "output_dir": "agent_os/build/preflight-20261031b",
+  "skipped": [],
+  "steps": [
+    {
+      "name": "build",
+      "command": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Documents/traceform/agent_os/scripts/build_android.py --android-jar Library/Android/sdk/platforms/android-35/android.jar --build-tools Library/Android/sdk/build-tools/35.0.0 --keystore agent_os/build/agent-os-rotation-20261025.p12 --key-alias agent-os-rotation-20261025 --output-dir agent_os/build/preflight-20261031b --native-lib agent_os/build/model-runtime-production-probe/libtraceform_local_model.so --native-lib agent_os/sync/target/aarch64-linux-android/release/libtraceform_sync.so",
+      "ok": true,
+      "seconds": 4.3,
+      "stdout_tail": [
+        "Verified for SourceStamp: false",
+        "Number of signers: 1",
+        "{\"apk\": \"Documents/traceform/agent_os/build/preflight-20261031b/agent-os.apk\", \"apk_bytes\": 3908714}"
+      ],
+      "stderr_tail": [
+        "注: 某些输入文件使用或覆盖了已过时的 API。",
+        "注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。"
+      ]
+    },
+    {
+      "name": "verify",
+      "command": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Documents/traceform/agent_os/scripts/verify_release_android.py --apk agent_os/build/preflight-20261031b/agent-os.apk --report agent_os/build/preflight-20261031b/build_report.json --build-tools Library/Android/sdk/build-tools/35.0.0 --expected-signer 9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db --output agent_os/build/preflight-20261031b/release_verification.json --previous-apk agent_os/build/previous-0.6.13/agent-os.apk --require-model-runtime --require-sync-runtime",
+      "ok": true,
+      "seconds": 0.4,
+      "stdout_tail": [
+        "Local release candidate verified: 0.6.14"
+      ],
+      "stderr_tail": []
+    },
+    {
+      "name": "host_tests",
+      "command": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 -m unittest discover -s agent_os/tests -p test_*.py",
+      "ok": true,
+      "seconds": 4.3,
+      "stdout_tail": [
+        "PASS memory_merge checks=7"
+      ],
+      "stderr_tail": [
+        "Ran 38 tests in 4.158s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "release_notes",
+      "command": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Documents/traceform/agent_os/scripts/release_notes_android.py --report agent_os/build/preflight-20261031b/build_report.json --verification agent_os/build/preflight-20261031b/release_verification.json --output agent_os/build/preflight-20261031b/release_notes.md",
+      "ok": true,
+      "seconds": 0.0,
+      "stdout_tail": [
+        "release notes written to agent_os/build/preflight-20261031b/release_notes.md"
+      ],
+      "stderr_tail": []
+    }
+  ],
+  "upgrade_check": {
+    "positive": "previous 0.6.13 (versionCode 22) -> verify reports previous_same_signer_upgrade_checked=true and preflight skips nothing",
+    "negative": "giving the current 0.6.14 APK as --previous-apk fails with 'Previous APK must be the same signer/package and a lower version', and preflight exits non-zero"
+  }
+}

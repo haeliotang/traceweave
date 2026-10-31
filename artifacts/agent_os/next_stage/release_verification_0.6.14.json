@@ -1,0 +1,17 @@
+{
+  "package": "org.traceform.agentos",
+  "version_code": 23,
+  "version": "0.6.14",
+  "debuggable": false,
+  "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+  "apk_sha256": "45204e464ecf148dc582a12af15ac20c1200b3148ae4ef67cbfac4fcb1097871",
+  "input_count": 98,
+  "packaged_manifest_checked": true,
+  "packaged_network_policy_checked": true,
+  "test_components_excluded": true,
+  "model_runtime_included": true,
+  "sync_runtime_included": true,
+  "previous_same_signer_upgrade_checked": true,
+  "verifier_sha256": "115430a67e9f542d1d336e028eea71de402a88f4d81d741a936e45727e1fb8e4",
+  "scope": "local_candidate_only_not_store_release_or_os_ota"
+}
