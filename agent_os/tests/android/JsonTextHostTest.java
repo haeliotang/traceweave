@@ -10,6 +10,9 @@ public final class JsonTextHostTest {
         if (!JsonText.dropTrailingCommas("[1,2,]").equals("[1,2]")) throw new AssertionError("array trailing comma");
         if (!JsonText.schemaPrompt("t", "s", "e").contains("only compact JSON")) throw new AssertionError("prompt");
         if (!JsonText.firstJsonObject("no json here").isEmpty()) throw new AssertionError("empty when absent");
+        if (!JsonText.stripThink("<think>plan</think>\nREADY").equals("READY")) throw new AssertionError("think stripped");
+        if (!JsonText.stripThink("READY").equals("READY")) throw new AssertionError("plain kept");
+        if (!JsonText.stripThink("<think>unterminated").isEmpty()) throw new AssertionError("unterminated think");
         System.out.println("JSONTEXT_OK");
     }
 

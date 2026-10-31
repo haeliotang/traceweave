@@ -55,6 +55,16 @@ final class JsonText {
         return out.toString();
     }
 
+    /** Drops leading reasoning blocks that some models emit before the answer. */
+    static String stripThink(String raw) {
+        if (raw == null) return "";
+        String text = raw;
+        int closing = text.lastIndexOf("</think>");
+        if (closing >= 0) text = text.substring(closing + "</think>".length());
+        else if (text.trim().startsWith("<think")) return "";
+        return text.trim();
+    }
+
     static String schemaPrompt(String task, String schema, String example) {
         return "You output only compact JSON. No prose, no markdown fences.\n"
             + "Schema: " + schema + "\n"

@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "candidates": {
+    "qwen2.5-1.5b-instruct-q4_0": {
+      "bytes": 1066227232,
+      "result": "26/50",
+      "median_ms": 2700,
+      "source": "D2 receipt"
+    },
+    "minicpm5-2b-q4_k_m": {
+      "bytes": 1561318368,
+      "sha256": "ec2d5801640099e97d8d7e8003ad4d81f336e757811f03a26173dddf386602fd",
+      "result": "47/50",
+      "by_category": {
+        "english_exact": "10/10",
+        "chinese_exact": "10/10",
+        "arithmetic_exact": "10/10",
+        "strict_json": "7/10",
+        "list_three": "10/10"
+      },
+      "median_ms": 14952.5,
+      "min_ms": 5710,
+      "max_ms": 26018,
+      "source": "on-device run with the pinned runtime, think blocks stripped before scoring"
+    }
+  },
+  "key_finding": "without stripping the <think> block MiniCPM scores 0/50; with stripping it scores 47/50",
+  "json_failures": "3 strict-JSON cases spent the 96-token budget on the think block, so no answer survived stripping",
+  "tradeoff": "quality +21 cases for roughly 5.5x median latency and +0.5 GB of model file",
+  "limitations": [
+    "Same prompts and scoring as D2, but D2 was a different day and the app was a different build",
+    "Only one run per model; no repetition or thermal control",
+    "maxTokens stayed at 96 for these cases, which penalises models that emit reasoning traces"
+  ]
+}
