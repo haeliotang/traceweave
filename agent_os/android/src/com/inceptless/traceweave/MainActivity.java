@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -61,6 +62,8 @@ public final class MainActivity extends Activity implements MemoryHost {
     private EditText taskInput;
     private ScrollView pageScroll;
     private LinearLayout onboardingCard;
+    private String taskFilter = "all";
+    private String taskQuery = "";
     private TextView bottomSummary;
     private LinearLayout taskList;
     private TextView floatPermStatus;
@@ -622,6 +625,51 @@ public final class MainActivity extends Activity implements MemoryHost {
         gridLp.setMargins(0, dp(2), 0, 0);
         taskInputCard.addView(actionGrid, gridLp);
 
+        LinearLayout filterRow = new LinearLayout(this);
+        filterRow.setOrientation(LinearLayout.HORIZONTAL);
+        filterRow.setPadding(0, dp(4), 0, dp(2));
+        String[][] filters = {
+            {"all", T.s("task.filter_all", en)},
+            {"active", T.s("task.filter_active", en)},
+            {"waiting", T.s("task.filter_waiting", en)},
+            {"done", T.s("task.filter_done", en)},
+        };
+        for (String[] entry : filters) {
+            Button chip = createCompactActionButton(entry[1], entry[0].equals(taskFilter)
+                ? Ui.cardAccent(this) : Ui.secondaryBg(this),
+                entry[0].equals(taskFilter) ? 0xFFFFFFFF : Ui.secondaryFg(this),
+                view -> { taskFilter = entry[0]; refreshTasks(); });
+            chip.setTextSize(11);
+            LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(0, dp(40), 1f);
+            chipLp.setMargins(0, 0, dp(4), 0);
+            filterRow.addView(chip, chipLp);
+        }
+        page.addView(filterRow);
+
+        EditText taskSearch = new EditText(this);
+        taskSearch.setHint(T.s("task.search_hint", en));
+        taskSearch.setTextSize(13);
+        taskSearch.setMinHeight(dp(48));
+        GradientDrawable searchBg = new GradientDrawable();
+        searchBg.setColor(Ui.dark(this) ? 0xFF0F172A : 0xFFF8FAFC);
+        searchBg.setCornerRadius(dp(8));
+        searchBg.setStroke(dp(1), Ui.stroke(this));
+        taskSearch.setBackground(searchBg);
+        taskSearch.setTextColor(Ui.text(this));
+        taskSearch.setHintTextColor(Ui.muted(this));
+        taskSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                taskQuery = text.toString().trim().toLowerCase(java.util.Locale.ROOT);
+                refreshTasks();
+            }
+            @Override public void afterTextChanged(android.text.Editable text) {}
+        });
+        LinearLayout.LayoutParams searchLp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(48));
+        searchLp.setMargins(0, dp(2), 0, dp(6));
+        page.addView(taskSearch, searchLp);
+
         taskList = new LinearLayout(this);
         taskList.setOrientation(LinearLayout.VERTICAL);
         page.addView(taskList);
@@ -980,11 +1028,17 @@ public final class MainActivity extends Activity implements MemoryHost {
         try {
             taskButtons.clear();
             taskList.removeAllViews();
-            List<AgentStore.Task> tasks = store.listTasks();
+            List<AgentStore.Task> tasks = new ArrayList<>();
+            for (AgentStore.Task task : store.listTasks()) {
+                if (!matchesTaskFilter(task)) continue;
+                tasks.add(task);
+            }
             refreshSummary();
             refreshFirstRun();
             if (tasks.isEmpty()) {
-                addEmptyTasks(taskList, T.s("task.none_active", isEnglish()));
+                boolean filtered = !"all".equals(taskFilter) || (taskQuery != null && !taskQuery.isEmpty());
+                if (filtered) addEmptyMessage(taskList, T.s("task.none_matching", isEnglish()));
+                else addEmptyTasks(taskList, T.s("task.none_active", isEnglish()));
                 mainHandler.removeCallbacks(taskRefresh);
                 return;
             }
@@ -1117,6 +1171,21 @@ public final class MainActivity extends Activity implements MemoryHost {
         refreshFirstRun();
     }
 
+
+    private boolean matchesTaskFilter(AgentStore.Task task) {
+        if (taskQuery != null && !taskQuery.isEmpty()
+            && !task.title.toLowerCase(java.util.Locale.ROOT).contains(taskQuery)) return false;
+        if ("active".equals(taskFilter)) {
+            return AgentStore.ACTIVE.equals(task.status) || AgentStore.QUEUED.equals(task.status)
+                || AgentStore.PAUSED.equals(task.status);
+        }
+        if ("waiting".equals(taskFilter)) return AgentStore.WAITING_FOR_USER.equals(task.status);
+        if ("done".equals(taskFilter)) {
+            return AgentStore.COMPLETED.equals(task.status) || AgentStore.CANCELLED.equals(task.status)
+                || AgentStore.OUTCOME_UNKNOWN.equals(task.status) || AgentStore.FAILED.equals(task.status);
+        }
+        return true;
+    }
 
     private void addTaskCard(AgentStore.Task task) {
         LinearLayout card = new LinearLayout(this);

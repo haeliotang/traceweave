@@ -709,6 +709,12 @@ final class T {
         add("memory.kind_preference", "Preference", "偏好");
         add("memory.kind_fact", "Fact", "事实");
         add("memory.kind_workflow", "Workflow", "工作流");
+        add("task.filter_all", "All", "全部");
+        add("task.filter_active", "Active", "进行中");
+        add("task.filter_waiting", "Waiting", "待授权");
+        add("task.filter_done", "Done", "已结束");
+        add("task.search_hint", "Search tasks...", "搜索任务...");
+        add("task.none_matching", "No matching tasks", "没有匹配的任务");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

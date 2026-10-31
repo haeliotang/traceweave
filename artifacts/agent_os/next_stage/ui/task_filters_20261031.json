@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-31",
+  "change": "task list got status filters (All / Active / Waiting / Done) and a title search box",
+  "behaviour": {
+    "filter": "the selected filter hides non-matching tasks and shows 没有匹配的任务 instead of the first-run empty state",
+    "search": "typing filters by task title, case-insensitive",
+    "empty_state": "the guide action only appears when no filter is active"
+  },
+  "device_evidence": {
+    "created": "FilterDemoTask planned locally and visible under All",
+    "filtered": "switching to Done hides it and shows No matching tasks",
+    "screenshot": "artifacts/agent_os/next_stage/ui/task_filters_20261031.png"
+  },
+  "verification": "host suite OK; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}
