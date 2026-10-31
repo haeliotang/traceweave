@@ -173,7 +173,7 @@ public final class AuditActivity extends Activity {
             if (!(child instanceof Button)) continue;
             Button chip = (Button) child;
             boolean selected = category.equals(chip.getTag());
-            chip.setBackgroundColor(selected ? 0xFF334155 : Ui.secondaryBg(this));
+            chip.setBackgroundColor(selected ? 0xFF0F172A : Ui.secondaryBg(this));
             chip.setTextColor(selected ? 0xFFFFFFFF : Ui.secondaryFg(this));
         }
     }

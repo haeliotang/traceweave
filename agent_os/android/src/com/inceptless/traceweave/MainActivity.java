@@ -638,7 +638,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         };
         for (String[] entry : filters) {
             Button chip = createCompactActionButton(entry[1], entry[0].equals(taskFilter)
-                ? Ui.cardAccent(this) : Ui.secondaryBg(this),
+                ? 0xFF0F172A : Ui.secondaryBg(this),
                 entry[0].equals(taskFilter) ? 0xFFFFFFFF : Ui.secondaryFg(this),
                 view -> { taskFilter = entry[0]; refreshTasks(); });
             chip.setTextSize(11);
