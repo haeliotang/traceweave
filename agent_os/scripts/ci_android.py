@@ -55,6 +55,14 @@ def main():
         result = verify(apk, json.loads((out / 'build_report.json').read_text()), args.build_tools, identity['signer_sha256'],
                         require_model_runtime=bool(args.model_runtime))
         print('CI test APK passed package, inputs, signing and manifest gates:', result['version'])
+        verification_path = out / 'release_verification.json'
+        verification_path.write_text(json.dumps(result, indent=2) + '\n')
+        notes = out / 'release_notes.md'
+        run([sys.executable, 'agent_os/scripts/release_notes_android.py',
+             '--report', str(out / 'build_report.json'),
+             '--verification', str(verification_path),
+             '--output', str(notes)], env)
+        print('Release notes generated:', notes.name)
         print('Disposable CI signer is not the production signing identity; no device or update is tested here.')
 
 

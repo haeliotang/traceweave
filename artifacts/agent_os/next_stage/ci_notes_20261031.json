@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-31",
+  "change": "ci_android.py now writes the verification JSON and runs release_notes_android.py, so the hosted job exercises the release-notes tooling too",
+  "local_run": {
+    "result": "CI test APK passed package, inputs, signing and manifest gates: 0.6.14",
+    "notes": "Release notes generated: release_notes.md",
+    "signer": "disposable CI signer, not the production identity"
+  },
+  "why": "when the billing block clears, the hosted pipeline covers build, verify, host tests and release notes in one job"
+}
