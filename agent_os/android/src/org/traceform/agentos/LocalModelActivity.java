@@ -135,7 +135,7 @@ public final class LocalModelActivity extends Activity {
         }
         final LocalModelCatalog.Entry verified = entry;
         status.setText(verified != null
-            ? (en ? verified.display + " verified on this device." : "本机已校验：" + verified.display + "。")
+            ? T.format("model.verified_on", en, verified.display)
             : modelFile(this).isFile() ? (T.s("localmodel.model_file_present", en))
             : (T.s("localmodel.no_model_installed", en)));
         if (!LocalModelRuntime.isAvailable()) status.append(T.s("localmodel.local_runtime_is_unavailable_on_this_d", en));

@@ -26,7 +26,7 @@ final class SyncPanel {
         int pairedNow = host.storeRef().activePairings().size();
         String mySyncId = localSyncId();
         syncState.setText((T.s("sync.sync", en)) + (SyncTransport.available()
-            ? (en ? pairedNow + " paired device(s)" : pairedNow + " 台已配对设备")
+            ? T.format("sync.paired_devices", en, pairedNow)
             : (T.s("sync.runtime_unavailable_in_this_build", en)))
             + (mySyncId.isEmpty() ? "" : (T.s("sync.this_device", en)) + mySyncId.substring(0, Math.min(8, mySyncId.length()))));
         syncState.setTextSize(11);
@@ -302,7 +302,7 @@ final class SyncPanel {
                         request -> SyncRecords.handle(host.storeRef(), request));
                     outcome = result != null && result.startsWith("OK")
                         ? (T.s("sync.peer_synced", en))
-                        : (en ? "Wait failed: " + result : "等待失败：" + result);
+                        : T.format("sync.wait_failed", en, result);
                 } catch (Throwable error) {
                     outcome = (T.s("sync.wait_failed", en)) + error.getMessage();
                 }
@@ -328,7 +328,7 @@ final class SyncPanel {
                         outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);
                     } else {
                         int applied = SyncRecords.merge(host.storeRef(), response);
-                        outcome = en ? "Synced; " + applied + " change(s) applied" : "同步完成；应用 " + applied + " 条变更";
+                        outcome = T.format("sync.changes_applied", en, applied);
                     }
                 } catch (Throwable error) {
                     outcome = (T.s("sync.sync_failed", en)) + error.getMessage();

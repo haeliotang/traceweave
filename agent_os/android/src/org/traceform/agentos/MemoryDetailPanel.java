@@ -135,8 +135,8 @@ final class MemoryDetailPanel {
         help.setText(T.s("memorydetail.expiration_excludes_this_memory_from_n", en));
         panel.addView(help);
         Spinner expiry = new Spinner(host); expiry.setAdapter(new ArrayAdapter<>(host, android.R.layout.simple_spinner_dropdown_item,
-            en ? new String[]{"Keep current expiration", "No expiration", "Expire in 7 days", "Expire in 30 days", "Expire in 90 days"}
-                : new String[]{"保持当前有效期", "不设到期时间", "7 天后到期", "30 天后到期", "90 天后到期"}));
+            new String[]{T.s("memory.keep_expiration", en), T.s("memory.no_expiration", en),
+                T.s("memory.expire_7", en), T.s("memory.expire_30", en), T.s("memory.expire_90", en)}));
         panel.addView(expiry);
         new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.23", en)).setView(panel)
             .setNegativeButton(T.s("memorydetailpanel.24", en), null)
@@ -154,8 +154,8 @@ final class MemoryDetailPanel {
 
     void reviewBySource() {
         boolean en = host.english();
-        String[] labels = en ? new String[]{"User-provided", "Traceform", "All confirmed / inferred suggestions (including sensor)", "Sensor observations only"}
-            : new String[]{"你提供", "Traceform", "全部 Agent 建议（含感知）", "仅感知观察"};
+        String[] labels = new String[]{T.s("memory.source_user", en), T.s("memory.source_traceform", en),
+            T.s("memory.source_suggestions", en), T.s("memory.source_sensor", en)};
         new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.26", en))
             .setItems(labels, (dialog, which) -> {
                 try {

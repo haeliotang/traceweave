@@ -50,8 +50,7 @@ final class SettingsPanel {
         notificationRow.setOrientation(LinearLayout.HORIZONTAL);
         boolean notificationGranted = host.notificationsGranted();
         TextView notificationState = new TextView(host);
-        notificationState.setText(en ? (notificationGranted ? "Notifications: enabled" : "Notifications: not enabled")
-                                     : (notificationGranted ? "通知权限：已启用" : "通知权限：未启用"));
+        notificationState.setText(T.s(notificationGranted ? "settings.notify_on" : "settings.notify_off", en));
         notificationState.setTextSize(11);
         notificationState.setTextColor(0xFF64748B);
         notificationState.setPadding(0, host.dpRef(6), host.dpRef(8), host.dpRef(6));
@@ -75,7 +74,7 @@ final class SettingsPanel {
         pairingRow.setOrientation(LinearLayout.HORIZONTAL);
         TextView pairingState = new TextView(host);
         int paired = host.storeRef().listPairings().size();
-        pairingState.setText(en ? "Paired devices: " + paired : "已配对设备：" + paired);
+        pairingState.setText(T.format("settings.paired_count", en, paired));
         pairingState.setTextSize(11);
         pairingState.setTextColor(0xFF64748B);
         pairingState.setPadding(0, host.dpRef(6), host.dpRef(8), host.dpRef(6));
@@ -175,8 +174,7 @@ final class SettingsPanel {
             ? (T.s("settingspanel.24", en))
             : (T.s("settingspanel.25", en)));
         cloudModelStatus.setText(config.enabled
-            ? (en ? "Configured (Model: " + config.modelName + ") · Each planning request needs its own preview and approval; execution observations stay local."
-                  : "已配置（模型：" + config.modelName + "） · 每次规划请求仍需预览并单独授权；执行观察保持本地。")
+            ? T.format("settings.cloud_configured", en, config.modelName)
             : (T.s("settings.cloud_planning_is_disabled_task_planni", en)));
     }
 

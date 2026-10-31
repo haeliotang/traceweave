@@ -636,7 +636,7 @@ public final class MainActivity extends Activity {
 
         memoryKind = new Spinner(this);
         memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                en ? new String[]{"Preference", "Fact", "Workflow"} : new String[]{"偏好", "事实", "工作流"}));
+                new String[]{T.s("kind.preference", en), T.s("kind.fact", en), T.s("kind.workflow", en)}));
         memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(150), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         memorySearch = new EditText(this);
@@ -716,8 +716,7 @@ public final class MainActivity extends Activity {
                     final AgentStore.Pairing pairing = active.get(which);
                     new AlertDialog.Builder(this)
                         .setTitle(T.s("ui.revoke_pairing", en))
-                        .setMessage(en ? "Revoke access for " + pairing.deviceId + "? It must pair again."
-                                       : "撤销 " + pairing.deviceId + " 的访问？它必须重新配对。")
+                        .setMessage(T.format("pair.revoke_message", en, pairing.deviceId))
                         .setNegativeButton(T.s("ui.cancel", en), null)
                         .setPositiveButton(T.s("ui.revoke", en), (inner, ignored) -> {
                             try {
@@ -1232,7 +1231,7 @@ public final class MainActivity extends Activity {
                     : AgentStore.OUTCOME_UNKNOWN.equals(task.status) ? (T.s("ui.outcome_unknown", en))
                     : AgentStore.CANCELLED.equals(task.status) ? (T.s("ui.cancelled", en))
                     : (T.s("ui.details", en));
-            toggleBtn.setText(statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
+            toggleBtn.setText(statusText + T.format("task.expand_steps", en, stepCount));
             toggleBtn.setTextSize(12);
             toggleBtn.setTextColor(0xFF0284C7);
             toggleRow.addView(toggleBtn);
@@ -1241,8 +1240,8 @@ public final class MainActivity extends Activity {
                 boolean willExpand = detailContainer.getVisibility() != View.VISIBLE;
                 detailContainer.setVisibility(willExpand ? View.VISIBLE : View.GONE);
                 toggleBtn.setText(willExpand
-                    ? statusText + (en ? " (" + stepCount + " steps) · Click to collapse ▲" : "（共 " + stepCount + " 步） · 点击收起详细内容 ▲")
-                    : statusText + (en ? " (" + stepCount + " steps) · Click to expand ▼" : "（共 " + stepCount + " 步） · 点击展开详细内容 ▼"));
+                    ? statusText + T.format("task.collapse_steps", en, stepCount)
+                    : statusText + T.format("task.expand_steps", en, stepCount));
             };
             toggleRow.setOnClickListener(toggleClick);
             toggleBtn.setOnClickListener(toggleClick);
@@ -1301,8 +1300,7 @@ public final class MainActivity extends Activity {
         LinearLayout actions = new LinearLayout(this);
         addCardActionButton(actions, T.s("ui.edit_and_review_suggestions_individually", en), view ->
             startActivity(new Intent(this, MemoryReviewActivity.class).putExtra(MemoryReviewActivity.EXTRA_TASK_ID, task.id)), taskButtons);
-        addCardActionButton(actions, en ? "Review memory suggestions (" + candidates.size() + ")"
-            : "审核候选记忆（" + candidates.size() + "）", view -> {
+        addCardActionButton(actions, T.format("task.review_suggestions", en, candidates.size()), view -> {
             StringBuilder preview = new StringBuilder(T.s("ui.these_are_suggestions_not_established", en));
             for (MemoryConsolidator.ConsolidatedItem item : candidates)
                 preview.append(item.kind).append(": ").append(item.content).append("\n\n");
@@ -1541,8 +1539,7 @@ public final class MainActivity extends Activity {
                         authRow.setPadding(dp(16), dp(4), 0, 0);
 
                         if (grantRemaining <= 0) {
-                            String btnLabel = en ? (isStepWaiting ? "Grant for this step" : "Pre-grant for this step")
-                                                 : (isStepWaiting ? "为此步骤授权" : "预先授权此步骤");
+                            String btnLabel = T.s(isStepWaiting ? "task.grant_step" : "task.pregrant_step", en);
                             addCardActionButton(authRow, btnLabel, view ->
                                 confirmCapabilityGrant(task, step.title, step.capability, step.scope), taskButtons);
                         } else {
@@ -1972,10 +1969,7 @@ public final class MainActivity extends Activity {
         if (index == ids.size()) {
             new AlertDialog.Builder(this)
                 .setTitle(T.s("ui.confirm_archive_import", en))
-                .setMessage(en ? "Import the archive with the reviewed choices? Deletion markers take priority and will remove "
-                    + review.localMemoryDeletions + " local memories and " + review.localTaskDeletions + " local tasks."
-                    : "按已审核的选择导入档案？删除标记优先，将删除本机 " + review.localMemoryDeletions
-                        + " 条记忆和 " + review.localTaskDeletions + " 个任务。")
+                .setMessage(T.format("archive.import_confirm", en, review.localMemoryDeletions, review.localTaskDeletions))
                 .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
                 .setPositiveButton(T.s("ui.import", en), (dialog, which) -> importReviewedArchive(review, choices))
                 .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
@@ -2029,13 +2023,9 @@ public final class MainActivity extends Activity {
                 } else {
                     refreshTasks();
                     refreshMemories();
-                    showMessage(en ? "Imported tasks: " + importResult.tasksImported + "; memories: " + importResult.memoriesImported
-                        + "; deletions: " + importResult.tombstonesApplied + "; conflicts: " + importResult.memoryConflicts
-                        + "; archive choices: " + importResult.memoriesReplaced + "; skipped: " + importResult.recordsSkipped
-                        : "导入完成：任务 " + importResult.tasksImported + " 条，记忆 "
-                            + importResult.memoriesImported + " 条，删除标记 " + importResult.tombstonesApplied
-                            + " 条；记忆冲突 " + importResult.memoryConflicts + " 条，采用档案 "
-                            + importResult.memoriesReplaced + " 条；跳过 " + importResult.recordsSkipped + " 条");
+                    showMessage(T.format("archive.imported", en, importResult.tasksImported, importResult.memoriesImported,
+                        importResult.tombstonesApplied, importResult.memoryConflicts, importResult.memoriesReplaced,
+                        importResult.recordsSkipped));
                 }
             });
         });
@@ -2097,7 +2087,7 @@ public final class MainActivity extends Activity {
             text.setText((T.s("ui.sensor_estimate_changed_from", en)) + from + (T.s("ui.to", en)) + to);
             content.addView(text);
             Spinner expiry = new Spinner(this); expiry.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                en ? new String[]{"Expire in 7 days", "Expire in 30 days", "No expiration"} : new String[]{"7 天后到期", "30 天后到期", "不设到期时间"}));
+                new String[]{T.s("memory.expire_7", en), T.s("memory.expire_30", en), T.s("memory.no_expiration", en)}));
             content.addView(expiry);
             new AlertDialog.Builder(this).setTitle(T.s("ui.review_before_saving_memory", en))
                 .setView(content).setNegativeButton(T.s("ui.discard", en), null)

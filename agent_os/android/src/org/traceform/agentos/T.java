@@ -412,6 +412,44 @@ final class T {
         add("cap.denied", "Denied %s", "已拒绝%s");
         add("cap.allowed", "Allowed this task to read %s", "已授权此任务读取%s");
         add("task.steps_progress", "%d/%d steps", "%d/%d 步");
+        add("task.expand_steps", " (%d steps) · Click to expand ▼", "（共 %d 步） · 点击展开详细内容 ▼");
+        add("task.collapse_steps", " (%d steps) · Click to collapse ▲", "（共 %d 步） · 点击收起详细内容 ▲");
+        add("task.review_suggestions", "Review memory suggestions (%d)", "审核候选记忆（%d）");
+        add("task.grant_step", "Grant for this step", "为此步骤授权");
+        add("task.pregrant_step", "Pre-grant for this step", "预先授权此步骤");
+        add("archive.import_confirm", "Import the archive with the reviewed choices? Deletion markers take priority and will remove %d local memories and %d local tasks.", "按已审核的选择导入档案？删除标记优先，将删除本机 %d 条记忆和 %d 个任务。");
+        add("archive.imported", "Imported tasks: %d; memories: %d; deletions: %d; conflicts: %d; archive choices: %d; skipped: %d", "导入完成：任务 %d 条，记忆 %d 条，删除标记 %d 条；记忆冲突 %d 条，采用档案 %d 条；跳过 %d 条");
+        add("kind.preference", "Preference", "偏好");
+        add("kind.fact", "Fact", "事实");
+        add("kind.workflow", "Workflow", "工作流");
+        add("pair.revoke_message", "Revoke access for %s? It must pair again.", "撤销 %s 的访问？它必须重新配对。");
+        add("memory.expire_7", "Expire in 7 days", "7 天后到期");
+        add("memory.expire_30", "Expire in 30 days", "30 天后到期");
+        add("memory.no_expiration", "No expiration", "不设到期时间");
+        add("settings.notify_on", "Notifications: enabled", "通知权限：已启用");
+        add("settings.notify_off", "Notifications: not enabled", "通知权限：未启用");
+        add("settings.paired_count", "Paired devices: %d", "已配对设备：%d");
+        add("settings.cloud_configured", "Configured (Model: %s) · Each planning request needs its own preview and approval; execution observations stay local.", "已配置（模型：%s）· 每次规划请求仍需单独预览与授权；执行观察保持本地。");
+        add("sync.paired_devices", "%d paired device(s)", "%d 台已配对设备");
+        add("sync.wait_failed", "Wait failed: %s", "等待失败：%s");
+        add("sync.changes_applied", "Synced; %d change(s) applied", "同步完成；应用 %d 条变更");
+        add("sync.searching", "Searching the local network…", "正在搜索局域网…");
+        add("sync.none_found", "No device found on this network", "局域网内没有发现设备");
+        add("sync.pick_device", "Pick a device", "选择设备");
+        add("sync.pairing", "Pairing…", "正在配对…");
+        add("sync.waiting_other", "Waiting for the other device…", "正在等待对方设备…");
+        add("sync.waiting_peer", "Waiting for the peer…", "正在等待对端…");
+        add("sync.peer_synced", "Peer synced", "对端已完成同步");
+        add("sync.failed_no_response", "Sync failed: no response from the peer", "同步失败：对端没有响应");
+        add("sync.need_pair", "Pair a device and add its sync ID first", "请先配对并填写对端同步 ID");
+        add("sync.no_runtime", "Sync runtime is not in this build", "此构建不包含同步运行库");
+        add("memory.expire_90", "Expire in 90 days", "90 天后到期");
+        add("memory.keep_expiration", "Keep current expiration", "保持当前有效期");
+        add("memory.source_user", "User-provided", "你提供");
+        add("memory.source_traceform", "Traceform", "Traceform");
+        add("memory.source_suggestions", "All confirmed / inferred suggestions (including sensor)", "全部 Agent 建议（含感知）");
+        add("memory.source_sensor", "Sensor observations only", "仅感知观察");
+        add("model.verified_on", "%s verified on this device.", "本机已校验：%s。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
@@ -460,12 +498,17 @@ final class T {
         return pair[english ? 0 : 1];
     }
 
+    /** Proper nouns that are legitimately identical in both languages. */
+    private static final java.util.Set<String> SAME_IN_BOTH = new java.util.HashSet<>(
+        java.util.Arrays.asList("memory.source_traceform"));
+
     /** Keys whose two languages are identical or empty; used by the host test. */
     static Map<String, String> audit() {
         Map<String, String> problems = new LinkedHashMap<>();
         for (Map.Entry<String, String[]> entry : STRINGS.entrySet()) {
             String[] pair = entry.getValue();
-            if (pair[0].isEmpty() || pair[1].isEmpty() || pair[0].equals(pair[1]))
+            if (pair[0].isEmpty() || pair[1].isEmpty()
+                || (pair[0].equals(pair[1]) && !SAME_IN_BOTH.contains(entry.getKey())))
                 problems.put(entry.getKey(), pair[0] + " / " + pair[1]);
         }
         return problems;
