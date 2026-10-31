@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-31",
+  "what": "installed and launched the 0.6.14 candidate produced by release_preflight_android.py",
+  "checks": {
+    "version": "versionName 0.6.14 / versionCode 23",
+    "launch": "MainActivity resumed",
+    "sync_section": "settings shows 同步 with 配对设备 / 管理设备 / 等待对端 / 同步现在",
+    "auto_sync_interval": "每 1 h button present",
+    "screenshot": "artifacts/agent_os/next_stage/ui/release_candidate_settings.png"
+  },
+  "meaning": "the artifact that passed the preflight also runs on the device with the sync runtime included",
+  "not_verified": [
+    "no pairing or sync was performed with this production build",
+    "the production package still has no paired device"
+  ]
+}
