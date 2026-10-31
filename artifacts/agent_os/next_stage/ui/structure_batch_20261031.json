@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "items": {
+    "memory_vault_page": "the memory vault is now a full-screen Activity (MemoryVaultActivity) instead of a dialog: status-bar inset, Close button, kind picker, search, add field, pending entry, grouped list that opens MemoryDetailPanel on tap",
+    "host_interface": "MemoryDetailPanel no longer depends on MainActivity; it takes a MemoryHost interface implemented by both screens",
+    "step_highlight": "the step a running or waiting task is on gets a tinted row in the plan tree",
+    "home_cards": "only Local Planner and Sensors stay on the page; Hardware, Daemon, Archive and Vision moved into the Diagnostics panel"
+  },
+  "device_evidence": {
+    "vault": "topResumedActivity = com.inceptless.traceweave/.MemoryVaultActivity",
+    "home": "page shows Diagnostics, Local Planner, Sensors, then tasks",
+    "screenshots": [
+      "artifacts/agent_os/next_stage/ui/memory_vault_page_20261031.png",
+      "artifacts/agent_os/next_stage/ui/home_two_cards_20261031.png"
+    ]
+  },
+  "verification": {
+    "host_tests": "all passing",
+    "device_regression": "RUN_SUITE 48, TASK_CENTER 10, RUN_DOCUMENTS 20 all PASS"
+  },
+  "note": "the step highlight cannot be photographed for local tasks because both steps finish in under a second"
+}

@@ -38,7 +38,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends Activity implements MemoryHost {
     private static final int CREATE_ARCHIVE_REQUEST = 1;
     private static final int OPEN_ARCHIVE_REQUEST = 2;
     private static final int SELECT_REMOTE_STATUS_REQUEST = 3;
@@ -446,10 +446,21 @@ public final class MainActivity extends Activity {
         devLp.setMargins(dp(6), 0, 0, 0);
         statusRow.addView(deviceBadge, devLp);
 
-        page.addView(statusRow);
+        // 3. Two everyday cards on the page; the rest live under Diagnostics.
+        LinearLayout diagnosticsPanel = new LinearLayout(this);
+        diagnosticsPanel.setOrientation(LinearLayout.VERTICAL);
+        diagnosticsPanel.setVisibility(View.GONE);
+        diagnosticsToggle.setOnClickListener(v -> {
+            boolean showing = diagnosticsPanel.getVisibility() == View.VISIBLE;
+            diagnosticsPanel.setVisibility(showing ? View.GONE : View.VISIBLE);
+            statusRow.setVisibility(showing ? View.GONE : View.VISIBLE);
+            diagnosticsToggle.setText(T.s(showing ? "ui.diagnostics_closed" : "ui.diagnostics_open", en));
+        });
 
-        // 3. Telemetry 6 Cards (2 Rows x 3 Columns)
-        LinearLayout gridRow1 = createGridRow(page);
+        page.addView(statusRow);
+        page.addView(diagnosticsPanel);
+
+        LinearLayout gridRow1 = createGridRow(diagnosticsPanel);
         LinearLayout hwCard = createGridCard(gridRow1, IconFactory.IconType.CHIP, T.s("ui.hardware", en), Ui.cardAccent(this));
         TextView hwInfo = new TextView(this);
         hwInfo.setText(T.s("ui.tensor_g1_pixel_6a_nsynthetic_profile", en));
@@ -480,7 +491,8 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout slmCard = createGridCard(gridRow1, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), Ui.cardAccent(this));
+        LinearLayout primaryRow = createGridRow(page);
+        LinearLayout slmCard = createGridCard(primaryRow, IconFactory.IconType.BRAIN, T.s("ui.local_planner", en), Ui.cardAccent(this));
         slmInfo = new TextView(this);
         updateLocalModelStatus();
         slmInfo.setTextSize(12);
@@ -502,7 +514,7 @@ public final class MainActivity extends Activity {
         daemonCard.setOnClickListener(v -> showInfoCard(T.s("ui.daemon", isEnglish()),
             T.s("ui.daemon_disabled_body", isEnglish())));
 
-        LinearLayout gridRow2 = createGridRow(page);
+        LinearLayout gridRow2 = createGridRow(diagnosticsPanel);
         LinearLayout syncCard = createGridCard(gridRow2, IconFactory.IconType.SHIELD, T.s("ui.encrypted_archive", en), Ui.cardAccent(this));
         TextView syncInfo = new TextView(this);
         syncInfo.setText(T.s("status.archive_local", en));
@@ -523,7 +535,7 @@ public final class MainActivity extends Activity {
             }
         });
 
-        LinearLayout sensCard = createGridCard(gridRow2, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), Ui.cardAccent(this));
+        LinearLayout sensCard = createGridCard(primaryRow, IconFactory.IconType.SENSOR, T.s("ui.sensors", en), Ui.cardAccent(this));
         sensInfo = new TextView(this);
         sensInfo.setText(T.s("status.sensors_off", en));
         sensInfo.setTextSize(12);
@@ -667,83 +679,7 @@ public final class MainActivity extends Activity {
     }
 
     private void showMemoryDialog() {
-        boolean en = isEnglish();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(16), dp(20), dp(12));
-
-        LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.BRAIN,
-                T.s("ui.encrypted_memory_vault", en), 0xFF7C3AED, 16);
-        root.addView(titleRow);
-
-        LinearLayout memControlsRow = new LinearLayout(this);
-        memControlsRow.setOrientation(LinearLayout.HORIZONTAL);
-        memControlsRow.setGravity(Gravity.CENTER_VERTICAL);
-        memControlsRow.setPadding(0, dp(10), 0, dp(6));
-
-        memoryKind = new Spinner(this);
-        memoryKind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                new String[]{T.s("kind.preference", en), T.s("kind.fact", en), T.s("kind.workflow", en)}));
-        memControlsRow.addView(memoryKind, new LinearLayout.LayoutParams(dp(150), LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        memorySearch = new EditText(this);
-        memorySearch.setHint(T.s("ui.search_memories", en));
-        memorySearch.setTextSize(12);
-        GradientDrawable searchBg = new GradientDrawable();
-        searchBg.setColor(0xFFF8FAFC);
-        searchBg.setCornerRadius(dp(8));
-        searchBg.setStroke(dp(1), 0xFFE2E8F0);
-        memorySearch.setBackground(searchBg);
-        memorySearch.setPadding(dp(8), dp(4), dp(8), dp(4));
-        memorySearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
-                if (memoryIndex != null) renderMemories(memoryIndex.search(text.toString()));
-            }
-            @Override public void afterTextChanged(Editable text) {}
-        });
-        LinearLayout.LayoutParams msLp = new LinearLayout.LayoutParams(0, dp(34), 1.0f);
-        msLp.setMargins(dp(6), 0, 0, 0);
-        memControlsRow.addView(memorySearch, msLp);
-        root.addView(memControlsRow);
-
-        memoryInput = new EditText(this);
-        memoryInput.setHint(T.s("ui.record_a_user_preference_fact_or_workflo", en));
-        memoryInput.setTextSize(13);
-        memoryInput.setMinLines(2);
-        memoryInput.setMaxLines(3);
-        GradientDrawable memInBg = new GradientDrawable();
-        memInBg.setColor(0xFFF8FAFC);
-        memInBg.setCornerRadius(dp(8));
-        memInBg.setStroke(dp(1), 0xFFE2E8F0);
-        memoryInput.setBackground(memInBg);
-        memoryInput.setPadding(dp(10), dp(8), dp(10), dp(8));
-        LinearLayout.LayoutParams miLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        miLp.setMargins(0, dp(6), 0, dp(6));
-        root.addView(memoryInput, miLp);
-
-        Button saveMemoryBtn = createCompactActionButton(T.s("ui.save_encrypted_memory", en), 0xFF6D28D9, 0xFFFFFFFF, view -> createMemory());
-        saveMemoryBtn.setTypeface(null, android.graphics.Typeface.BOLD);
-        persistentButtons.add(saveMemoryBtn);
-        LinearLayout.LayoutParams smLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36));
-        root.addView(saveMemoryBtn, smLp);
-
-        addPageButton(root, T.s("ui.review_deletion_by_source", en), view -> memoryPanel.reviewBySource());
-        addPageButton(root, pendingLabel(en), view -> showPendingMemories());
-
-        ScrollView memScroll = new ScrollView(this);
-        memScroll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
-        memoryList = new LinearLayout(this);
-        memoryList.setOrientation(LinearLayout.VERTICAL);
-        memScroll.addView(memoryList);
-        root.addView(memScroll);
-
-        builder.setView(root);
-        builder.setPositiveButton(T.s("ui.close", en), null);
-        AlertDialog dlg = builder.create();
-        dlg.show();
-        refreshMemories();
+        startActivity(new android.content.Intent(this, MemoryVaultActivity.class));
     }
 
     void showPairingList() {
@@ -812,18 +748,18 @@ public final class MainActivity extends Activity {
     private final MemoryDetailPanel memoryPanel = new MemoryDetailPanel(this);
     private final SettingsPanel settingsPanel = new SettingsPanel(this);
 
-    AgentStore storeRef() { return store; }
+    public AgentStore storeRef() { return store; }
     SyncPanel syncPanelRef() { return syncPanel; }
     CapabilityBroker capabilityBrokerRef() { return capabilityBroker; }
     TextView memoryKindBadge(String kind) { return getMemoryKindBadge(kind); }
     java.util.concurrent.Executor ioRef() { return io; }
     android.os.Handler uiRef() { return mainHandler; }
     boolean isDestroyedRef() { return destroyed; }
-    boolean english() { return isEnglish(); }
-    int dpRef(int value) { return dp(value); }
-    void toast(String message) { showMessage(message); }
-    void failWith(Exception error) { showError(error); }
-    void refreshAfterSync() { refreshTasks(); refreshMemories(); }
+    public boolean english() { return isEnglish(); }
+    public int dpRef(int value) { return dp(value); }
+    public void toast(String message) { showMessage(message); }
+    public void failWith(Exception error) { showError(error); }
+    public void refreshAfterSync() { refreshTasks(); refreshMemories(); }
     String seedValue() { return syncSeed(); }
 
     private void showSettingsDialog() {
@@ -1702,6 +1638,14 @@ public final class MainActivity extends Activity {
                 }
             }
 
+            if ((AgentStore.ACTIVE.equals(task.status) || AgentStore.WAITING_FOR_USER.equals(task.status))
+                    && step.index == task.executionStep) {
+                GradientDrawable focus = new GradientDrawable();
+                focus.setColor(Ui.dark(this) ? 0xFF1E293B : 0xFFE2E8F0);
+                focus.setCornerRadius(dp(6));
+                stepRow.setBackground(focus);
+                stepRow.setPadding(dp(6), dp(4), dp(6), dp(4));
+            }
             planContainer.addView(stepRow);
         }
 

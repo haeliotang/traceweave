@@ -12,22 +12,26 @@ import java.util.Date;
 
 /** Memory detail, edit, delete and source review dialogs, extracted from MainActivity. */
 final class MemoryDetailPanel {
-    private final MainActivity host;
+    private final MemoryHost host;
 
-    MemoryDetailPanel(MainActivity host) {
+    MemoryDetailPanel(MemoryHost host) {
         this.host = host;
+    }
+
+    private android.content.Context context() {
+        return context();
     }
 
     void showDetail(AgentStore.Memory memory) {
         boolean en = host.english();
-        LinearLayout body = new LinearLayout(host);
+        LinearLayout body = new LinearLayout(context());
         body.setOrientation(LinearLayout.VERTICAL);
         body.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
 
-        TextView content = new TextView(host);
+        TextView content = new TextView(context());
         content.setText(memory.content);
         content.setTextSize(13);
-        content.setTextColor(Ui.text(host));
+        content.setTextColor(Ui.text(context()));
         content.setTextIsSelectable(true);
         body.addView(content);
 
@@ -41,11 +45,11 @@ final class MemoryDetailPanel {
         } else {
             source = T.s("memorydetailpanel.3", en);
         }
-        TextView meta = Ui.meta(host, source + " · " + memory.kind);
+        TextView meta = Ui.meta(context(), source + " · " + memory.kind);
         meta.setPadding(0, host.dpRef(4), 0, host.dpRef(6));
         body.addView(meta);
 
-        TextView metadata = Ui.meta(host, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+        TextView metadata = Ui.meta(context(), DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
             .format(new Date(memory.updatedAt)));
         if (memory.userEdited) metadata.append(T.s("memorydetailpanel.4", en));
         if (memory.expiresAt > 0) metadata.append((memory.isExpired(System.currentTimeMillis())
@@ -53,7 +57,7 @@ final class MemoryDetailPanel {
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.expiresAt)));
         body.addView(metadata);
 
-        Button edit = new Button(host);
+        Button edit = new Button(context());
         edit.setText(T.s("memorydetailpanel.7", en));
         edit.setAllCaps(false);
         edit.setTextSize(12);
@@ -63,11 +67,11 @@ final class MemoryDetailPanel {
         body.addView(edit, lp);
 
         if (AgentStore.MEMORY_SOURCE_CONSOLIDATION.equals(memory.source) && !memory.sourceReference.startsWith("confirmed:")) {
-            Button review = new Button(host);
+            Button review = new Button(context());
             review.setText(T.s("memorydetailpanel.8", en));
             review.setAllCaps(false);
             review.setTextSize(12);
-            review.setOnClickListener(view -> new AlertDialog.Builder(host)
+            review.setOnClickListener(view -> new AlertDialog.Builder(context())
                 .setTitle(T.s("memorydetailpanel.9", en))
                 .setMessage(memory.content + "\n\n" + (T.s("memorydetailpanel.10", en)) + memory.sourceReference)
                 .setNegativeButton(T.s("memorydetailpanel.11", en), null)
@@ -80,7 +84,7 @@ final class MemoryDetailPanel {
             body.addView(review, reviewLp);
         }
 
-        Button references = new Button(host);
+        Button references = new Button(context());
         references.setText(T.s("memorydetailpanel.13", en));
         references.setAllCaps(false);
         references.setTextSize(12);
@@ -89,7 +93,7 @@ final class MemoryDetailPanel {
                 StringBuilder text = new StringBuilder();
                 for (AgentStore.Task task : host.storeRef().memoryReferences(memory.id))
                     text.append(task.title).append(" · ").append(task.status).append("\n");
-                new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.14", en))
+                new AlertDialog.Builder(context()).setTitle(T.s("memorydetailpanel.14", en))
                     .setMessage(text.length() == 0 ? (T.s("memorydetailpanel.15", en)) : text.toString())
                     .setPositiveButton(T.s("memorydetailpanel.16", en), null).show();
             } catch (Exception error) { host.failWith(error); }
@@ -98,26 +102,26 @@ final class MemoryDetailPanel {
         refLp.setMargins(0, host.dpRef(4), 0, 0);
         body.addView(references, refLp);
 
-        TextView heading = Ui.title(host, T.s("memorydetailpanel.17", en));
+        TextView heading = Ui.title(context(), T.s("memorydetailpanel.17", en));
         heading.setTextSize(14);
         heading.setPadding(0, 0, 0, host.dpRef(4));
         body.addView(heading, 0);
         java.util.List<AgentStore.MemoryConflict> conflicts = host.storeRef().listMemoryConflicts(memory.id);
         if (!conflicts.isEmpty()) {
-            Button resolve = new Button(host);
+            Button resolve = new Button(context());
             resolve.setText(T.format("memory.conflicts_found", en, conflicts.size()));
             resolve.setAllCaps(false);
             resolve.setTextSize(12);
             resolve.setOnClickListener(view -> showConflictDialog(memory, conflicts, en));
             body.addView(resolve);
         }
-        AlertDialog detail = new AlertDialog.Builder(host)
+        AlertDialog detail = new AlertDialog.Builder(context())
             .setView(body)
             .setNegativeButton(T.s("memorydetailpanel.18", en), (dialog, which) -> confirmDelete(memory))
             .setPositiveButton(T.s("memorydetailpanel.19", en), null)
             .create();
         detail.show();
-        Ui.themeDialog(detail, host);
+        Ui.themeDialog(detail, context());
     }
 
 
@@ -131,20 +135,20 @@ final class MemoryDetailPanel {
     }
 
     private void showConflictDialog(AgentStore.Memory memory, java.util.List<AgentStore.MemoryConflict> conflicts, boolean en) {
-        LinearLayout body = new LinearLayout(host);
+        LinearLayout body = new LinearLayout(context());
         body.setOrientation(LinearLayout.VERTICAL);
         body.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
-        TextView heading = Ui.title(host, T.s("memory.conflict_title", en));
+        TextView heading = Ui.title(context(), T.s("memory.conflict_title", en));
         heading.setTextSize(14);
         body.addView(heading);
         for (AgentStore.MemoryConflict conflict : conflicts) {
-            TextView item = new TextView(host);
+            TextView item = new TextView(context());
             item.setText(conflict.content);
             item.setTextSize(12);
-            item.setTextColor(Ui.text(host));
+            item.setTextColor(Ui.text(context()));
             item.setPadding(0, host.dpRef(6), 0, 0);
             body.addView(item);
-            Button use = new Button(host);
+            Button use = new Button(context());
             use.setText(T.s("memory.use_this_version", en));
             use.setAllCaps(false);
             use.setTextSize(12);
@@ -160,29 +164,29 @@ final class MemoryDetailPanel {
             });
             body.addView(use);
         }
-        AlertDialog dialog = new AlertDialog.Builder(host)
+        AlertDialog dialog = new AlertDialog.Builder(context())
             .setView(body)
             .setPositiveButton(T.s("common.close", en), null)
             .create();
         dialog.show();
-        Ui.themeDialog(dialog, host);
+        Ui.themeDialog(dialog, context());
     }
 
     private void confirmDelete(AgentStore.Memory memory) {
         boolean en = host.english();
-        LinearLayout confirmBody = new LinearLayout(host);
+        LinearLayout confirmBody = new LinearLayout(context());
         confirmBody.setOrientation(LinearLayout.VERTICAL);
         confirmBody.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
-        TextView confirmTitle = Ui.title(host, T.s("memorydetailpanel.20", en));
+        TextView confirmTitle = Ui.title(context(), T.s("memorydetailpanel.20", en));
         confirmTitle.setTextSize(14);
         confirmBody.addView(confirmTitle);
-        TextView confirmText = new TextView(host);
+        TextView confirmText = new TextView(context());
         confirmText.setText(T.s("memorydetail.a_tombstone_prevents_old_archives_from", en));
         confirmText.setTextSize(13);
-        confirmText.setTextColor(Ui.text(host));
+        confirmText.setTextColor(Ui.text(context()));
         confirmText.setPadding(0, host.dpRef(4), 0, 0);
         confirmBody.addView(confirmText);
-        AlertDialog confirm = new AlertDialog.Builder(host)
+        AlertDialog confirm = new AlertDialog.Builder(context())
             .setView(confirmBody)
             .setNegativeButton(T.s("memorydetailpanel.21", en), null)
             .setPositiveButton(T.s("memorydetailpanel.22", en), (dialog, which) -> {
@@ -195,24 +199,24 @@ final class MemoryDetailPanel {
             })
             .create();
         confirm.show();
-        Ui.themeDialog(confirm, host);
+        Ui.themeDialog(confirm, context());
     }
 
 
     private void edit(AgentStore.Memory memory) {
         boolean en = host.english();
-        LinearLayout panel = new LinearLayout(host); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(36, 12, 36, 0);
-        EditText input = new EditText(host); input.setText(memory.content); input.setMinLines(2);
+        LinearLayout panel = new LinearLayout(context()); panel.setOrientation(LinearLayout.VERTICAL); panel.setPadding(36, 12, 36, 0);
+        EditText input = new EditText(context()); input.setText(memory.content); input.setMinLines(2);
         if (WorkflowTemplate.isTemplate(memory)) input.setEnabled(false);
         panel.addView(input);
-        TextView help = new TextView(host);
+        TextView help = new TextView(context());
         help.setText(T.s("memorydetail.expiration_excludes_this_memory_from_n", en));
         panel.addView(help);
-        Spinner expiry = new Spinner(host); expiry.setAdapter(new ArrayAdapter<>(host, android.R.layout.simple_spinner_dropdown_item,
+        Spinner expiry = new Spinner(context()); expiry.setAdapter(new ArrayAdapter<>(context(), android.R.layout.simple_spinner_dropdown_item,
             new String[]{T.s("memory.keep_expiration", en), T.s("memory.no_expiration", en),
                 T.s("memory.expire_7", en), T.s("memory.expire_30", en), T.s("memory.expire_90", en)}));
         panel.addView(expiry);
-        new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.23", en)).setView(panel)
+        new AlertDialog.Builder(context()).setTitle(T.s("memorydetailpanel.23", en)).setView(panel)
             .setNegativeButton(T.s("memorydetailpanel.24", en), null)
             .setPositiveButton(T.s("memorydetailpanel.25", en), (dialog, which) -> {
                 try {
@@ -230,7 +234,7 @@ final class MemoryDetailPanel {
         boolean en = host.english();
         String[] labels = new String[]{T.s("memory.source_user", en), T.s("memory.source_traceweave", en),
             T.s("memory.source_suggestions", en), T.s("memory.source_sensor", en)};
-        new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.26", en))
+        new AlertDialog.Builder(context()).setTitle(T.s("memorydetailpanel.26", en))
             .setItems(labels, (dialog, which) -> {
                 try {
                     java.util.ArrayList<AgentStore.Memory> selected = new java.util.ArrayList<>();
@@ -240,7 +244,7 @@ final class MemoryDetailPanel {
                     }
                     String message = (T.s("memorydetailpanel.27", en)) + selected.size() + (T.s("memorydetailpanel.28", en)) + labels[which]
                         + (T.s("memorydetail.workflow_templates_in_this_source_are", en));
-                    new AlertDialog.Builder(host).setTitle(T.s("memorydetailpanel.29", en)).setMessage(message)
+                    new AlertDialog.Builder(context()).setTitle(T.s("memorydetailpanel.29", en)).setMessage(message)
                         .setNegativeButton(T.s("memorydetailpanel.30", en), null)
                         .setPositiveButton(T.s("memorydetailpanel.31", en), (confirm, button) -> {
                             try { host.storeRef().deleteMemoriesReviewed(selected); host.refreshAfterSync(); } catch (Exception error) { host.failWith(error); }
