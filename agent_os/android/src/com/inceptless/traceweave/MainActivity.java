@@ -1354,7 +1354,23 @@ public final class MainActivity extends Activity {
         detailContainer.addView(actions);
 
         if (!isTerminal && !documentPlanning) {
-            addCapabilityControls(detailContainer, task);
+            // Raw grant/read/revoke rows are diagnostics; a normal task flow only
+            // needs Start, review, cancel and delete.
+            LinearLayout advanced = new LinearLayout(this);
+            advanced.setOrientation(LinearLayout.VERTICAL);
+            advanced.setVisibility(View.GONE);
+            addCapabilityControls(advanced, task);
+            Button advancedToggle = createCompactActionButton(T.s("task.advanced_closed", en),
+                Ui.secondaryBg(this), Ui.secondaryFg(this), view -> {
+                    boolean showing = advanced.getVisibility() == View.VISIBLE;
+                    advanced.setVisibility(showing ? View.GONE : View.VISIBLE);
+                    ((Button) view).setText(T.s(showing ? "task.advanced_closed" : "task.advanced_open", en));
+                });
+            LinearLayout.LayoutParams advancedLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(48));
+            advancedLp.setMargins(0, dp(4), 0, 0);
+            detailContainer.addView(advancedToggle, advancedLp);
+            detailContainer.addView(advanced);
         }
 
         card.addView(detailContainer);

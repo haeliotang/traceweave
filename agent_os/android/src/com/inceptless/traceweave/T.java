@@ -697,6 +697,8 @@ final class T {
         add("ui.diagnostics_open", "Diagnostics ▾", "诊断 ▾");
         add("ui.chinese", "Chinese", "中文");
         add("ui.english", "English", "英文");
+        add("task.advanced_closed", "Advanced capability controls ▸", "高级能力控制 ▸");
+        add("task.advanced_open", "Advanced capability controls ▾", "高级能力控制 ▾");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

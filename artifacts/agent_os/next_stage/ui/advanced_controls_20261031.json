@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-31",
+  "problem": "the expanded task card exposed raw capability rows (Grant/Read/Revoke Demo Note, Synthesis Status, Traceweave Local History Summary, Select Cross-App Source) that read like debug switches",
+  "change": "those rows now sit inside 高级能力控制 ▸ / Advanced capability controls ▸, collapsed by default; the card keeps Start, Review selected task memories, the step plan, Cancel and Delete",
+  "kept_on_purpose": "the per-step Pre-grant button stays visible because a step cannot run without it",
+  "device_evidence": {
+    "collapsed": "card shows Start, Review selected task memories, plan, Cancel, Delete, Advanced capability controls ▸",
+    "expanded": "Grant/Read/Revoke rows appear only after tapping the toggle",
+    "screenshot": "artifacts/agent_os/next_stage/ui/advanced_controls_expanded_20261031.png"
+  }
+}
