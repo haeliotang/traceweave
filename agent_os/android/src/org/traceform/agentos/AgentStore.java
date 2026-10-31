@@ -1479,6 +1479,8 @@ final class AgentStore extends SQLiteOpenHelper {
                 }
             }
         }
+        conflicts.sort((left, right) -> Long.compare(
+            MemoryMerge.recency(right.clock), MemoryMerge.recency(left.clock)));
         return conflicts;
     }
 

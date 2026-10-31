@@ -31,7 +31,7 @@
 | 3 | **模型输出曾受 128 token 原生上限** | L3 的文稿质量被截断 | 真实文稿 55 字节；**已重建运行时放开到 512 token / 2048 上下文**，目录预算 Qwen 256、MiniCPM 384 | 需用新上限重跑质量与 JSON 评测并出收据 |
 | 4 | **无自动同步与后台调度** | 设备无关是手动的 | 自动同步仅前台尝试一次 | 设计草案已写：[auto_sync_design](auto_sync_design.md)；实现待做 |
 | 5 | **无独立审计** | L4 的信任声明受限 | 威胁模型与范围已写，未审 | 外部审计方 |
-| 6 | **无分发与更新通道** | 用户拿不到更新 | 侧载 + 开发密钥；商店未接 | 决定分发渠道；签名托管 |
+| 6 | **无分发与更新通道** | 用户拿不到更新 | 侧载 + 开发密钥；商店未接 | 准备材料已写：[distribution_readiness](distribution_readiness_2026-10-31.md)；需要你决定签名归属与渠道 |
 | 7 | **输入类弹窗仍为浅色；TalkBack 仅一次走查** | L4 的可用性 | 记忆/授权/导入/删除/配对等 7 个确认弹窗已深色；口令与云配置等含输入框的弹窗保持浅色；TalkBack 完成一轮主流程走查 | 输入类弹窗需要单独设计深色输入样式；TalkBack 需要多轮回归 |
 | 8 | **系统级能力仍是实验** | 与 L4 的距离 | 悬浮窗、无障碍、传感器均标实验；通知/分享/文件选择已稳定 | 清点见 [system_capability_inventory](system_capability_inventory_2026-10-31.md)；建议先做零权限的静态快捷方式 |
 | 9 | **Rust daemon 与 IPC 停用** | 长期架构未闭合 | 代码中 `run_tcp_server` 直接返回“disabled pending authenticated IPC” | 评估已写：[daemon_ipc_assessment](daemon_ipc_assessment_2026-10-31.md)；结论是短期不启用 |

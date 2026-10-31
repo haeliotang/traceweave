@@ -19,6 +19,21 @@ import java.util.TreeMap;
  * This class has no Android dependency so it can be exercised by a host test.
  */
 final class MemoryMerge {
+    /** Recency of an encoded clock: the largest counter anywhere in the map. */
+    static long recency(String encodedClock) {
+        if (encodedClock == null || encodedClock.isEmpty()) return 0;
+        long best = 0;
+        for (String entry : encodedClock.split(",")) {
+            int colon = entry.lastIndexOf(':');
+            if (colon < 0) continue;
+            try {
+                best = Math.max(best, Long.parseLong(entry.substring(colon + 1).trim()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return best;
+    }
+
     static final int MAX_ACTORS = 32;
     static final int MAX_BRANCHES = 64;
     static final int MAX_HASH_LENGTH = 128;
