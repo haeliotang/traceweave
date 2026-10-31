@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "layers": {
+    "host_tests": {
+      "command": "python3 -m unittest discover -s agent_os/tests -p 'test_*.py'",
+      "result": "54 tests OK",
+      "evidence": "run in this session"
+    },
+    "device_regression": {
+      "command": "device_regression_android.py --serial 25161JEGR06836",
+      "cases": [
+        "RUN_SUITE",
+        "TASK_CENTER",
+        "RUN_DOCUMENTS"
+      ],
+      "ok": true,
+      "tail": [
+        "RUN_SUITE => 10-31 18:27:07.490  1932  1988 I AgentOsActionsValidation: PASS action_flow checks=48 mode=RUN_SUITE",
+        "TASK_CENTER => 10-31 18:27:09.607  2036  2064 I AgentOsWorkflowValidation: PASS workflow checks=10 mode=TASK_CENTER",
+        "RUN_DOCUMENTS => 10-31 18:27:12.537  2092  2120 I AgentOsDocumentsValidation: PASS document_flow checks=20 mode=RUN_DOCUMENTS"
+      ],
+      "artifact": "agent_os/build/device-final/device_regression.json"
+    },
+    "release_preflight": {
+      "command": "release_preflight_android.py ... --previous-apk previous-0.6.13",
+      "ok": true,
+      "skipped": [],
+      "steps": [
+        {
+          "name": "build",
+          "ok": true,
+          "seconds": 5.1
+        },
+        {
+          "name": "verify",
+          "ok": true,
+          "seconds": 0.5
+        },
+        {
+          "name": "host_tests",
+          "ok": true,
+          "seconds": 6.0
+        },
+        {
+          "name": "release_notes",
+          "ok": true,
+          "seconds": 0.0
+        }
+      ],
+      "artifact": "agent_os/build/preflight-final/preflight.json"
+    }
+  },
+  "notes": [
+    "the upgrade check ran against a real 0.6.13 build, so preflight skipped nothing",
+    "device regression covers 48 action-flow checks, 10 workflow checks and 20 document checks"
+  ]
+}
