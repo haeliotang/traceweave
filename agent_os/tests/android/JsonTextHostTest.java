@@ -13,6 +13,9 @@ public final class JsonTextHostTest {
         if (!JsonText.stripThink("<think>plan</think>\nREADY").equals("READY")) throw new AssertionError("think stripped");
         if (!JsonText.stripThink("READY").equals("READY")) throw new AssertionError("plain kept");
         if (!JsonText.stripThink("<think>unterminated").isEmpty()) throw new AssertionError("unterminated think");
+        if (!JsonText.normalize("```markdown\n# Title\n```").equals("# Title")) throw new AssertionError("fence stripped");
+        if (!JsonText.normalize("```markdown\n# Title").equals("# Title")) throw new AssertionError("unclosed fence stripped");
+        if (!JsonText.normalize("# Title").equals("# Title")) throw new AssertionError("plain kept");
         System.out.println("JSONTEXT_OK");
     }
 

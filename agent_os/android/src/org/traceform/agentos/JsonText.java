@@ -7,13 +7,12 @@ final class JsonText {
     static String normalize(String raw) {
         if (raw == null) return "";
         String text = raw.trim();
-        int fence = text.indexOf("```");
-        if (fence >= 0) {
-            int start = text.indexOf('\n', fence);
-            int end = text.lastIndexOf("```");
-            if (start > 0 && end > start) text = text.substring(start + 1, end).trim();
-        }
-        return text;
+        if (!text.startsWith("```")) return text;
+        int start = text.indexOf('\n');
+        if (start < 0) return text;
+        String body = text.substring(start + 1);
+        int end = body.lastIndexOf("```");
+        return (end >= 0 ? body.substring(0, end) : body).trim();
     }
 
     static String firstJsonObject(String raw) {

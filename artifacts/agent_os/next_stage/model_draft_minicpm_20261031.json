@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "model": "MiniCPM5-2B Q4_K_M (staged as the single model slot)",
+  "flow": [
+    "新建文件任务 -> 审核上下文 -> 使用端侧模型生成文稿",
+    "draft shown with no <think> block and no code fences",
+    "saved through the system picker and verified by readback"
+  ],
+  "result": {
+    "saved_bytes": 55,
+    "first_line": "# Camping Checklist",
+    "think_blocks": 0,
+    "fences": 0
+  },
+  "issues_found_and_fixed": [
+    "raw output began with ```markdown; fence stripping now handles an unclosed opening fence",
+    "raw output began with a <think> block; think stripping runs before validation"
+  ],
+  "limitations": [
+    "the pinned runtime rejects max_tokens > 128, so the draft is truncated after a short section (55 bytes here)",
+    "raising the budget needs a native rebuild, which needs the pinned llama.cpp checkout that is not present",
+    "one run only; not a quality judgement of the draft text"
+  ]
+}

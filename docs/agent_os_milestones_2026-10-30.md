@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：真实文稿路径——MiniCPM 经“审核页 → 端侧模型生成”产出草稿，已剥离 `<think>` 与 ``` 围栏，保存并读回核验（55 字节，因运行时 128 token 上限被截断）；见 [model_draft_minicpm_20261031](artifacts/agent_os/next_stage/model_draft_minicpm_20261031.json)。
 - 2026-10-31：双模型接入——`LocalModelCatalog` 支持 Qwen2.5-1.5B（128 token）与 MiniCPM5-2B（256 token），导入/校验按体积+摘要匹配；生成统一剥离 `<think>` 并在校验失败时重试一次；设备上模型页显示“本机已校验：MiniCPM5-2B”。
 - 2026-10-31：换模型实测——MiniCPM5-2B Q4_K_M 在设备上 **47/50**（剥离 `<think>` 后；不剥离为 0/50），对比 Qwen2.5-1.5B 的 26/50；中位延迟 14.95 s（长尾 26 s），模型 +0.5 GB。3 条 JSON 失败源于 think 块耗尽 96 token 预算。
 - 2026-10-31：结构化输出层——schema 提示 + JSON 恢复 + 一次重试，10 条 JSON 用例 9/10 合法且含必需键（D2 的 0/10 是更严的内容判定，不可直接比较）；GBNF 需重建原生库，当前缺 pinned llama.cpp 检出。

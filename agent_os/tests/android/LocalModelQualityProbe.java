@@ -282,7 +282,7 @@ public final class LocalModelQualityProbe extends Activity {
                     LocalModelProbe.prepare();
                     last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128),
                         StandardCharsets.UTF_8);
-                    org.json.JSONObject parsed = StructuredOutput.parse(last);
+                    org.json.JSONObject parsed = StructuredOutput.parse(JsonText.stripThink(last));
                     ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
                 } catch (Exception error) {
                     last = "<error: " + error.getMessage() + ">";

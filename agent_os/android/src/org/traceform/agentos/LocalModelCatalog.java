@@ -24,8 +24,10 @@ final class LocalModelCatalog {
     static final Entry QWEN = new Entry("qwen2.5-1.5b-q4_0", "Qwen2.5-1.5B", 1066227232L,
         "dcd819ff094852c38faba6873d8ff0c9d51eadb2844539e52042ae5d647bbfdb", 128);
 
+    // The pinned runtime rejects max_tokens > 128, so both models share that budget until the
+    // native library is rebuilt; MiniCPM's reasoning traces can consume it before the answer.
     static final Entry MINICPM = new Entry("minicpm5-2b-q4_k_m", "MiniCPM5-2B", 1561318368L,
-        "ec2d5801640099e97d8d7e8003ad4d81f336e757811f03a26173dddf386602fd", 256);
+        "ec2d5801640099e97d8d7e8003ad4d81f336e757811f03a26173dddf386602fd", 128);
 
     private LocalModelCatalog() {}
 

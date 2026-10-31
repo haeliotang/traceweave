@@ -44,7 +44,7 @@ final class LocalModelDraft {
                     if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
                     String text = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT)
                         .onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(output)).toString();
-                    text = JsonText.stripThink(text);
+                    text = JsonText.normalize(JsonText.stripThink(text));
                     try {
                         DocumentAction.validateContent(text);
                         return text;
