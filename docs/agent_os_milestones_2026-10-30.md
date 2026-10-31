@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：MainActivity 拆分（第二步）——记忆详情/编辑/删除/按来源审核抽到 `MemoryDetailPanel`（181 行）；MainActivity 2582 行（累计从 3036 降 454 行），设备冒烟确认记忆列表与详情对话框正常。
 - 2026-10-31：MainActivity 拆分（第一步）——配对/同步 UI 抽到 `SyncPanel`（348 行），地址解析抽到 `AddressParser`、payload 解析抽到 `SyncActions`；MainActivity 从 3036 行降到 2737 行，设备冒烟确认设置页与配对对话框正常。
 - 2026-10-31：真实文稿路径——MiniCPM 经“审核页 → 端侧模型生成”产出草稿，已剥离 `<think>` 与 ``` 围栏，保存并读回核验（55 字节，因运行时 128 token 上限被截断）；见 [model_draft_minicpm_20261031](artifacts/agent_os/next_stage/model_draft_minicpm_20261031.json)。
 - 2026-10-31：双模型接入——`LocalModelCatalog` 支持 Qwen2.5-1.5B（128 token）与 MiniCPM5-2B（256 token），导入/校验按体积+摘要匹配；生成统一剥离 `<think>` 并在校验失败时重试一次；设备上模型页显示“本机已校验：MiniCPM5-2B”。
