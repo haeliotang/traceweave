@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-31",
+  "scenario": "A (actionsvalidation) dials B (documentsvalidation) on 127.0.0.1:47961 while B serves the pairing endpoint",
+  "observed": [
+    "logcat: pair_dial start address=/ip4/127.0.0.1/tcp/47961 at 17:35:12",
+    "no pair_dial result line appeared after more than 20 seconds, and no exception was logged",
+    "an earlier attempt at 17:34:44 produced show_pair_result session=null"
+  ],
+  "suspected_cause": "nativePairDial blocks past its 20s argument when the peer endpoint is half-open or the server window already closed; the timeout appears to cover connection setup, not the whole handshake",
+  "impact": "the two-package conflict test could not start because pairing did not complete",
+  "next_step": "add a hard timeout around nativePairDial on the Java side (future.get with timeout) so the UI always gets an answer, then retry the conflict test",
+  "notes": [
+    "A fingerprint dce094aa... and B fingerprint 5e4cca35... are different, so a stale dump earlier made them look identical"
+  ]
+}
