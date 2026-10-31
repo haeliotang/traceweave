@@ -196,13 +196,29 @@ The repository contains the following experimental components. Their presence in
 
 ---
 
-## 6.3 Current Verification Status
+## 6.3 Verification toolbox
+
+| Script | What it proves | Typical use |
+| :--- | :--- | :--- |
+| `agent_os/tests/` (`unittest discover`) | Catalog, format arity, literal ratchet, runtime structure, release metadata | Every change |
+| `agent_os/scripts/release_preflight_android.py` | Build, signature, packaged inputs, upgrade path, host tests, release notes | Before publishing |
+| `agent_os/scripts/smoke_candidate_android.py` | The candidate APK installs, launches and shows its first screen | After the preflight |
+| `agent_os/scripts/device_regression_android.py` | Action, workflow and document flows on a device (`--suite documents` for the document chain) | After UI or text changes |
+| `agent_os/scripts/release_notes_android.py` | Version, signer, schema and runtime flags written from build provenance | Publishing |
+| `agent_os/scripts/measure_power_android.py` | Battery slope while unplugged; refuses to run while charging | Power work |
+| `agent_os/scripts/check_a11y_android.py` | Every clickable speech-class control on the current screen has a label | Accessibility work |
+
+All device scripts take `--serial`; none of them start a replacement server or install anything outside the validation packages.
+
+## 6.4 Current Verification Status
 
 A short policy for which strings belong in the bilingual catalog is in [docs/i18n_policy_2026-10-31.md](docs/i18n_policy_2026-10-31.md).
 
 A one-page capability and limits overview is in [docs/capability_overview_2026-10-31.md](docs/capability_overview_2026-10-31.md).
 
 The six follow-up optimizations (documentation alignment, sync packaging, SAS pairing, model reliability, code/structure split, audit and dark mode) are summarized in [docs/optimization_round_2026-10-31.md](docs/optimization_round_2026-10-31.md).
+
+The current three-layer verification result is summarised in [docs/stage_status_2026-10-31.md](docs/stage_status_2026-10-31.md).
 
 The A–F boundary-closing milestones are tracked in [docs/agent_os_milestones_2026-10-30.md](docs/agent_os_milestones_2026-10-30.md): 28 of 30 are complete with dated device or host receipts. Three require external resources and are not claimed: independent audit, a second device matrix, and power-meter-grade energy measurement. Device results in this repository come from one Pixel 6a unless stated otherwise.
 
