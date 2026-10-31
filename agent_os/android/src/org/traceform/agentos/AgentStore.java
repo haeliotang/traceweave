@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 11;
     private static final String KEY_ALIAS = "org.traceform.agentos.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -271,6 +271,36 @@ final class AgentStore extends SQLiteOpenHelper {
             + "PRIMARY KEY (memory_id, clock))");
     }
 
+    /** Memories created before clocks existed could never be exported; give them a first version. */
+    private void backfillMemoryVersions(SQLiteDatabase database) {
+        try (Cursor cursor = database.query("memories", new String[]{"id", "updated_at", "sealed_payload"},
+                null, null, null, null, null)) {
+            // rows are read through the cursor below
+            ArrayList<String[]> rows = new ArrayList<>();
+            while (cursor.moveToNext()) rows.add(new String[]{cursor.getString(0), String.valueOf(cursor.getLong(1))});
+            for (String[] row : rows) {
+                try {
+                    if (!listMemoryVersions(row[0]).isEmpty()) continue;
+                    String content = new org.json.JSONObject(new String(unseal(memoryAad(row[0]),
+                        sealedPayload(database, row[0])), StandardCharsets.UTF_8)).getString("content");
+                    java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+                    clock.put(localActor(), Long.parseLong(row[1]));
+                    replaceMemoryVersions(database, row[0], java.util.Collections.singletonList(
+                        new MemoryMerge.Version(clock, sha256Hex(content), false)));
+                } catch (Exception skipped) {
+                    android.util.Log.w("AgentOsStore", "backfill skip " + row[0] + ": " + skipped);
+                }
+            }
+        }
+    }
+
+    private byte[] sealedPayload(SQLiteDatabase database, String memoryId) throws Exception {
+        try (Cursor cursor = database.query("memories", new String[]{"sealed_payload"}, "id=?",
+                new String[]{memoryId}, null, null, null)) {
+            return cursor.moveToNext() ? cursor.getBlob(0) : null;
+        }
+    }
+
     private static void createSyncCursorTable(SQLiteDatabase database) {
         database.execSQL("CREATE TABLE sync_cursor ("
             + "device_id TEXT PRIMARY KEY NOT NULL, "
@@ -329,6 +359,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 9) {
                 createSyncCursorTable(database);
                 version = 10;
+            } else if (version == 10) {
+                backfillMemoryVersions(database);
+                version = 11;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -1711,6 +1744,17 @@ final class AgentStore extends SQLiteOpenHelper {
         return builder.toString();
     }
 
+    /** Stable per-install actor id so locally created memories carry a clock. */
+    private String localActor() {
+        android.content.SharedPreferences prefs = appContext.getSharedPreferences("agent_os_prefs", 0);
+        String actor = prefs.getString("sync_actor", "");
+        if (actor == null || actor.isEmpty()) {
+            actor = "local-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            prefs.edit().putString("sync_actor", actor).apply();
+        }
+        return actor;
+    }
+
     Memory createMemory(String kind, String content) throws Exception {
         return createMemory(kind, content, MEMORY_SOURCE_USER, "");
     }
@@ -1736,7 +1780,18 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("created_at", now);
         values.put("updated_at", now);
         values.put("sealed_payload", sealed);
-        getWritableDatabase().insertOrThrow("memories", null, values);
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            database.insertOrThrow("memories", null, values);
+            java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+            clock.put(localActor(), now);
+            replaceMemoryVersions(database, id, java.util.Collections.singletonList(
+                new MemoryMerge.Version(clock, sha256Hex(normalized), false)));
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
         return new Memory(id, kind, normalized, source, reference, now, now, expiresAt);
     }
 

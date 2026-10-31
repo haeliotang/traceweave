@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "bug": "memories created locally never received a row in memory_versions, so exportSyncRecords skipped them (versionClock returned null) and sync silently exported nothing",
+  "evidence_before_fix": {
+    "A_database": "memories=1, memory_versions=0",
+    "two_package_sync": "auto_sync completed with applied=0 and B still showed 还没有记忆"
+  },
+  "fix": [
+    "createMemory now writes a memory_versions row inside the same transaction, with a per-install actor id (prefs key sync_actor) and the creation timestamp as the clock value",
+    "schema 11 adds a backfillMemoryVersions migration for memories that predate clocks"
+  ],
+  "verified_after_fix": {
+    "A_database": "memories=2, memory_versions=1 after creating one new memory",
+    "transfer": "auto_sync completed with peer-5e4cca35c89b6376 applied=1",
+    "B_database": "memories=1, memory_versions=1"
+  },
+  "not_verified": [
+    "the 10 -> 11 backfill never ran on a real upgrade: the test package was reinstalled to ship the logging build, which wiped the pre-fix data",
+    "no merge-conflict case was exercised"
+  ],
+  "note": "the missing version is also why the earlier end-to-end 'completed' run carried no data"
+}
