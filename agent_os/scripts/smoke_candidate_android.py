@@ -52,6 +52,10 @@ def main():
     match = re.search(r"versionName=([^\s]+)", version)
     details["version"] = match.group(1) if match else None
 
+    # A fresh install shows the notification prompt, which would otherwise be the
+    # resumed activity and make the launch check fail.
+    adb_run(args.adb, args.serial, "shell", "pm", "grant", args.package,
+            "android.permission.POST_NOTIFICATIONS", check=False)
     adb_run(args.adb, args.serial, "shell", "am", "force-stop", args.package, check=False)
     adb_run(args.adb, args.serial, "shell", "am", "start",
             "-n", f"{args.package}/{args.activity}", check=False)

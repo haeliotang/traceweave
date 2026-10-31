@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-31",
+  "artifact": "agent_os/build/preflight-traceweave-0.1.0/agent-os.apk",
+  "package": "com.inceptless.traceweave",
+  "version": "0.1.0 (versionCode 1)",
+  "device": "Pixel 6a",
+  "checks": {
+    "install": "ok (old validation package removed first)",
+    "launch": "MainActivity resumed after granting notifications",
+    "header": "Traceweave Agent OS 原型",
+    "screenshot": "artifacts/agent_os/next_stage/ui/traceweave_home_0_1_0.png"
+  },
+  "tooling_fix": "smoke_candidate_android.py now grants POST_NOTIFICATIONS before launching; a fresh install used to show the permission prompt as the resumed activity and fail the launch check",
+  "untested": ["no task was created in this build", "the old org.traceform.agentos packages are still installed side by side"]
+}
