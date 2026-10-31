@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-31",
+  "audit_chain": {
+    "schema": "database version 11 -> 12 adds prev_hash and hash columns and re-seals existing rows in rowid order",
+    "append": "every new event commits to the previous hash: sha256(prev|id|taskId|occurredAt|event)",
+    "ui": "the audit page shows 'Tamper check: chain intact across N events' or the first row that does not match",
+    "limits": "tamper-evident, not tamper-proof: whoever owns the file can rewrite and re-seal the whole chain, and a truncated tail still verifies as a shorter chain"
+  },
+  "palette": "the purple save button and the blue action buttons now use the single ink/secondary scheme; only the stop-recording red remains",
+  "device_evidence": {
+    "audit": "Tamper check: chain intact across 9 events",
+    "vault": "Save Encrypted Memory is ink, secondary rows neutral",
+    "screenshots": [
+      "artifacts/agent_os/next_stage/ui/audit_integrity_20261031.png",
+      "artifacts/agent_os/next_stage/ui/vault_unified_20261031.png",
+      "artifacts/agent_os/next_stage/ui/settings_full_height_20261031.png"
+    ]
+  },
+  "verification": "host suite OK (new audit chain test); RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}

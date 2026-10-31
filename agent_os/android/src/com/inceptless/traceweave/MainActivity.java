@@ -587,7 +587,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         taskHeading.setPadding(0, dp(10), 0, dp(4));
         page.addView(taskHeading);
 
-        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, T.s("ui.new_agent_task", en), 0xFF0284C7);
+        LinearLayout taskInputCard = createCard(page, IconFactory.IconType.TASK, T.s("ui.new_agent_task", en), Ui.cardAccent(this));
 
         taskInput = new EditText(this);
         taskInput.setMinHeight(dp(48));
@@ -818,7 +818,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         root.setPadding(dp(20), dp(16), dp(20), dp(12));
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(this, IconFactory.IconType.SCREEN,
-                T.s("ui.console_diagnostics_hub", en), 0xFF00695C, 16);
+                T.s("ui.console_diagnostics_hub", en), Ui.cardAccent(this), 16);
         root.addView(titleRow);
 
         vadLiveStatus = new TextView(this);
@@ -834,7 +834,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(2), 0, dp(4));
 
-        Button toggleFloatingBtn = createCompactActionButton(T.s("ui.launch_capsule", en), 0xFF0284C7, 0xFFFFFFFF, v -> {
+        Button toggleFloatingBtn = createCompactActionButton(T.s("ui.launch_capsule", en), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 new AlertDialog.Builder(this)
                         .setTitle(T.s("ui.grant_floating_capsule_permission", en))
@@ -876,7 +876,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         diagBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         diagBtnRow.setPadding(0, dp(4), 0, dp(4));
 
-        btnToggleVoice = createCompactActionButton(T.s("ui.live_audio", en), 0xFF0284C7, 0xFFFFFFFF, v -> toggleContinuousVoice());
+        btnToggleVoice = createCompactActionButton(T.s("ui.live_audio", en), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> toggleContinuousVoice());
         diagBtnRow.addView(btnToggleVoice, new LinearLayout.LayoutParams(0, dp(32), 1.1f));
 
         Button testVoiceBtn = createCompactActionButton(T.s("ui.synth_test", en), 0xFFF8FAFC, 0xFF475569, v -> {

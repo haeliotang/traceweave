@@ -110,7 +110,7 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
         save.setText(T.s("ui.save_encrypted_memory", en));
         save.setAllCaps(false);
         save.setTypeface(null, android.graphics.Typeface.BOLD);
-        save.setBackgroundColor(0xFF6D28D9);
+        save.setBackgroundColor(0xFF0F172A);
         save.setTextColor(0xFFFFFFFF);
         save.setOnClickListener(view -> saveMemory());
         page.addView(save, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpRef(48)));

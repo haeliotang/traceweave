@@ -20,6 +20,7 @@ public final class AuditActivity extends Activity {
     private boolean en;
     private LinearLayout rows;
     private LinearLayout chipRow;
+    private TextView integrityLine;
     private TextView countLine;
     private String category = "all";
     private String query = "";
@@ -46,7 +47,7 @@ public final class AuditActivity extends Activity {
 
         LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
-        Button refresh = compact(T.s("audit.refresh", en), view -> render());
+        Button refresh = compact(T.s("audit.refresh", en), view -> { render(); showIntegrity(); });
         Button export = compact(T.s("audit.export", en), view -> export());
         Button diagnosticsButton = compact(T.s("audit.diagnostics", en), view -> exportDiagnostics());
         actions.addView(refresh, new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f));
@@ -101,6 +102,11 @@ public final class AuditActivity extends Activity {
         countLine = Ui.meta(this, "");
         root.addView(countLine);
 
+        integrityLine = new TextView(this);
+        integrityLine.setTextSize(12);
+        integrityLine.setPadding(0, Ui.dp(this, 2), 0, Ui.dp(this, 4));
+        root.addView(integrityLine);
+
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.VERTICAL);
         rows.setPadding(0, Ui.dp(this, 6), 0, 0);
@@ -112,6 +118,7 @@ public final class AuditActivity extends Activity {
         root.addView(back, backLp);
         refreshChips();
         render();
+        showIntegrity();
     }
 
     private Button compact(String label, View.OnClickListener listener) {
@@ -121,6 +128,22 @@ public final class AuditActivity extends Activity {
         button.setTextSize(12);
         button.setOnClickListener(listener);
         return button;
+    }
+
+    private void showIntegrity() {
+        if (integrityLine == null) return;
+        try {
+            java.util.Map<String, Object> report = store.auditIntegrity();
+            boolean ok = Boolean.TRUE.equals(report.get("ok"));
+            int checked = ((Number) report.get("checked")).intValue();
+            integrityLine.setText(ok
+                ? T.format("audit.integrity_ok", en, checked)
+                : T.format("audit.integrity_broken", en, ((Number) report.get("brokenAt")).intValue() + 1));
+            integrityLine.setTextColor(ok ? 0xFF15803D : 0xFFB91C1C);
+        } catch (Exception error) {
+            integrityLine.setText(T.s("audit.integrity_unknown", en));
+            integrityLine.setTextColor(Ui.muted(this));
+        }
     }
 
     private void refreshChips() {

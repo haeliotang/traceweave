@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 12;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -245,7 +245,9 @@ final class AgentStore extends SQLiteOpenHelper {
             + "id TEXT PRIMARY KEY NOT NULL, "
             + "task_id TEXT NOT NULL, "
             + "occurred_at INTEGER NOT NULL, "
-            + "event TEXT NOT NULL)");
+            + "event TEXT NOT NULL, "
+            + "prev_hash TEXT NOT NULL DEFAULT '', "
+            + "hash TEXT NOT NULL DEFAULT '')");
     }
 
     private static void createMemoryTables(SQLiteDatabase database) {
@@ -362,10 +364,54 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 10) {
                 backfillMemoryVersions(database);
                 version = 11;
+            } else if (version == 11) {
+                upgradeAuditChain(database);
+                version = 12;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
         }
+    }
+
+    /** Version 11 -> 12: give the audit trail a hash chain and seal the existing rows. */
+    private void upgradeAuditChain(SQLiteDatabase database) {
+        database.execSQL("ALTER TABLE audit ADD COLUMN prev_hash TEXT NOT NULL DEFAULT ''");
+        database.execSQL("ALTER TABLE audit ADD COLUMN hash TEXT NOT NULL DEFAULT ''");
+        String previous = AuditChain.GENESIS;
+        java.util.ArrayList<String[]> rows = new java.util.ArrayList<>();
+        try (Cursor cursor = database.rawQuery(
+                "SELECT id, task_id, occurred_at, event FROM audit ORDER BY rowid", null)) {
+            while (cursor.moveToNext()) {
+                rows.add(new String[]{cursor.getString(0), cursor.getString(1),
+                    String.valueOf(cursor.getLong(2)), cursor.getString(3)});
+            }
+        }
+        for (String[] row : rows) {
+            String hash = AuditChain.digest(previous, row[0], row[1], Long.parseLong(row[2]), row[3]);
+            ContentValues values = new ContentValues();
+            values.put("prev_hash", previous);
+            values.put("hash", hash);
+            database.update("audit", values, "id=?", new String[]{row[0]});
+            previous = hash;
+        }
+    }
+
+    /** Verifies the whole chain and reports the first row that does not match. */
+    java.util.Map<String, Object> auditIntegrity() {
+        java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT id, task_id, occurred_at, event, prev_hash, hash FROM audit ORDER BY rowid", null)) {
+            while (cursor.moveToNext()) {
+                rows.add(new AuditChain.Row(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
+                    cursor.getString(3), cursor.getString(4), cursor.getString(5)));
+            }
+        }
+        int broken = AuditChain.firstBrokenIndex(rows);
+        java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
+        report.put("checked", rows.size());
+        report.put("brokenAt", broken);
+        report.put("ok", broken < 0);
+        return report;
     }
 
     private void upgradeExternalOutcomes(SQLiteDatabase database) {
@@ -2423,11 +2469,18 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void appendAudit(SQLiteDatabase database, String taskId, String event, long occurredAt) {
         if (event == null || event.isEmpty() || event.length() > MAX_AUDIT_EVENT_LENGTH)
             throw new IllegalArgumentException("Task history event is invalid or too long");
+        String previous = AuditChain.GENESIS;
+        try (Cursor cursor = database.rawQuery("SELECT hash FROM audit ORDER BY rowid DESC LIMIT 1", null)) {
+            if (cursor.moveToFirst()) previous = cursor.getString(0);
+        }
+        String id = UUID.randomUUID().toString();
         ContentValues values = new ContentValues();
-        values.put("id", UUID.randomUUID().toString());
+        values.put("id", id);
         values.put("task_id", taskId);
         values.put("occurred_at", occurredAt);
         values.put("event", event);
+        values.put("prev_hash", previous);
+        values.put("hash", AuditChain.digest(previous, id, taskId, occurredAt, event));
         database.insertOrThrow("audit", null, values);
     }
 

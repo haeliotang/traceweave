@@ -116,6 +116,12 @@ final class SettingsPanel {
         builder.setPositiveButton(T.s("settingspanel.9", en), null);
         AlertDialog dialog = builder.create();
         dialog.show();
+        // Settings carry several sections; a full-height surface keeps them readable
+        // instead of squeezing them into a small floating card.
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+        }
         if (Ui.dark(host) && dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Ui.background(host)));
             if (dialog.getButton(AlertDialog.BUTTON_POSITIVE) != null)

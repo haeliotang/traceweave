@@ -769,6 +769,9 @@ final class T {
         add("audit.event.memory_other", "Memory event: %s", "记忆事件：%s");
         add("audit.event.sync_other", "Sync event: %s", "同步事件：%s");
         add("audit.event.task_other", "Task event: %s", "任务事件：%s");
+        add("audit.integrity_ok", "Tamper check: chain intact across %d events", "防篡改校验：%d 条事件链完整");
+        add("audit.integrity_broken", "Tamper check: row %d does not match its hash chain", "防篡改校验：第 %d 条与哈希链不一致");
+        add("audit.integrity_unknown", "Tamper check unavailable", "无法执行防篡改校验");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
