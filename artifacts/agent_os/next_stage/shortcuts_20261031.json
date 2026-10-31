@@ -1,14 +1,20 @@
 {
   "date": "2026-10-31",
-  "change": "static shortcuts declared in AndroidManifest (android.app.shortcuts -> @xml/shortcuts) with two entries: audit_log (AuditActivity) and new_task (MainActivity)",
-  "verified": [
-    "aapt2 dump xmltree on the built APK shows android:name=android.app.shortcuts and android:resource=@0x7f060002 under MainActivity",
-    "aapt2 dump resources shows string/shortcut_audit_long, string/shortcut_audit_short, string/shortcut_task_long, string/shortcut_task_short, xml/shortcuts",
-    "APK builds and installs on the Pixel 6a"
+  "device": "Pixel 6a",
+  "package": "org.traceform.agentos (production candidate built by the preflight, versionCode 23)",
+  "method": "opened the app drawer, long-pressed the Agent OS icon, inspected the popup, then tapped one shortcut",
+  "observed": {
+    "popup_entries": [
+      "查看本机审计日志",
+      "从系统入口新建任务"
+    ],
+    "activation": "tapping 查看本机审计日志 opened org.traceform.agentos/.AuditActivity",
+    "screenshot": "artifacts/agent_os/next_stage/ui/shortcuts_menu.png"
+  },
+  "correction": "the first attempt showed no shortcuts because the installed production APK predated the manifest change; after installing the preflight build they appeared",
+  "limitations": [
+    "only the audit shortcut was activated; the new-task shortcut was not tapped",
+    "verified on the production package only"
   ],
-  "not_verified": [
-    "the launcher's long-press menu was not captured, so end-user visibility is unproven",
-    "dumpsys shortcut shows no entry for the package yet, likely because the launcher has not queried it"
-  ],
-  "next": "long-press the app icon on the device to confirm both shortcuts appear and open the right screens"
+  "verified": true
 }
