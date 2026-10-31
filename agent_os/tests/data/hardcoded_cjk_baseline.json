@@ -13,10 +13,10 @@
   "LocalModelStatus.java": 1,
   "LocalNotificationProvider.java": 4,
   "LocalSlmEngine.java": 12,
-  "MainActivity.java": 15,
   "MemoryConsolidator.java": 2,
   "MemorySelectionView.java": 1,
   "SemanticRulePlanner.java": 7,
+  "StepText.java": 14,
   "TaskCenterState.java": 1,
   "VisionAgentManager.java": 2,
   "VoiceInteractionManager.java": 4

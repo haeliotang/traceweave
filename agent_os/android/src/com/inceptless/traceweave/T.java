@@ -728,6 +728,14 @@ final class T {
         add("taskdetail.no_audit", "No audit entries yet.", "还没有审计记录。");
         add("model.open_download_page", "Open downloads", "打开下载页");
         add("model.no_browser", "No browser available to open the download page.", "没有可用的浏览器打开下载页。");
+        add("model.import_progress", "Importing %d / %d MB (%d%%)", "正在导入 %d / %d MB（%d%%）");
+        add("model.import_copied_mb", "Imported %d MB", "已导入 %d MB");
+        add("audit.filter_all", "All", "全部");
+        add("audit.filter_task", "Tasks", "任务");
+        add("audit.filter_memory", "Memories", "记忆");
+        add("audit.filter_sync", "Sync", "同步");
+        add("audit.search_hint", "Search events or task id...", "搜索事件或任务 ID...");
+        add("audit.count", "%d events shown", "显示 %d 条");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

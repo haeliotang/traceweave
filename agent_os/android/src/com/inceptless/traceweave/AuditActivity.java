@@ -19,6 +19,10 @@ public final class AuditActivity extends Activity {
     private AgentStore store;
     private boolean en;
     private LinearLayout rows;
+    private LinearLayout chipRow;
+    private TextView countLine;
+    private String category = "all";
+    private String query = "";
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -54,6 +58,49 @@ public final class AuditActivity extends Activity {
         diagLp.setMargins(0, Ui.dp(this, 4), 0, 0);
         root.addView(diagnosticsButton, diagLp);
 
+        LinearLayout chips = new LinearLayout(this);
+        chips.setOrientation(LinearLayout.HORIZONTAL);
+        chips.setPadding(0, Ui.dp(this, 6), 0, 0);
+        String[][] categories = {
+            {"all", T.s("audit.filter_all", en)},
+            {"task", T.s("audit.filter_task", en)},
+            {"memory", T.s("audit.filter_memory", en)},
+            {"sync", T.s("audit.filter_sync", en)},
+        };
+        for (String[] entry : categories) {
+            Button chip = compact(entry[1], view -> { category = entry[0]; refreshChips(); render(); });
+            chip.setTag(entry[0]);
+            chip.setTextSize(11);
+            LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f);
+            chipLp.setMargins(0, 0, Ui.dp(this, 4), 0);
+            chips.addView(chip, chipLp);
+        }
+        chipRow = chips;
+        root.addView(chips);
+
+        android.widget.EditText search = new android.widget.EditText(this);
+        search.setHint(T.s("audit.search_hint", en));
+        search.setTextSize(13);
+        search.setMinHeight(Ui.dp(this, 48));
+        search.setBackgroundColor(Ui.secondaryBg(this));
+        search.setTextColor(Ui.text(this));
+        search.setHintTextColor(Ui.muted(this));
+        search.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
+                query = text.toString().trim().toLowerCase(java.util.Locale.ROOT);
+                render();
+            }
+            @Override public void afterTextChanged(android.text.Editable text) {}
+        });
+        LinearLayout.LayoutParams searchLp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 48));
+        searchLp.setMargins(0, Ui.dp(this, 6), 0, 0);
+        root.addView(search, searchLp);
+
+        countLine = Ui.meta(this, "");
+        root.addView(countLine);
+
         rows = new LinearLayout(this);
         rows.setOrientation(LinearLayout.VERTICAL);
         rows.setPadding(0, Ui.dp(this, 6), 0, 0);
@@ -63,6 +110,7 @@ public final class AuditActivity extends Activity {
         LinearLayout.LayoutParams backLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
         backLp.setMargins(0, Ui.dp(this, 8), 0, 0);
         root.addView(back, backLp);
+        refreshChips();
         render();
     }
 
@@ -75,9 +123,41 @@ public final class AuditActivity extends Activity {
         return button;
     }
 
+    private void refreshChips() {
+        if (chipRow == null) return;
+        for (int index = 0; index < chipRow.getChildCount(); index++) {
+            View child = chipRow.getChildAt(index);
+            if (!(child instanceof Button)) continue;
+            Button chip = (Button) child;
+            boolean selected = category.equals(chip.getTag());
+            chip.setBackgroundColor(selected ? 0xFF334155 : Ui.secondaryBg(this));
+            chip.setTextColor(selected ? 0xFFFFFFFF : Ui.secondaryFg(this));
+        }
+    }
+
+    private boolean matches(AgentStore.AuditEvent event) {
+        if (!"all".equals(category)) {
+            String name = event.event == null ? "" : event.event;
+            boolean taskCategory = name.startsWith("task_") || name.startsWith("plan_") || name.startsWith("status_")
+                || name.startsWith("local_rule_");
+            if ("task".equals(category) && !taskCategory) return false;
+            if ("memory".equals(category) && !name.startsWith("memory_")) return false;
+            if ("sync".equals(category) && !(name.startsWith("sync_") || name.startsWith("pair_"))) return false;
+        }
+        if (query == null || query.isEmpty()) return true;
+        String haystack = (event.event == null ? "" : event.event)
+            + " " + (event.taskId == null ? "" : event.taskId);
+        return haystack.toLowerCase(java.util.Locale.ROOT).contains(query);
+    }
+
     private void render() {
         rows.removeAllViews();
-        List<AgentStore.AuditEvent> events = store.listRecentAuditEvents(200);
+        java.util.List<AgentStore.AuditEvent> events = new java.util.ArrayList<>();
+        for (AgentStore.AuditEvent event : store.listRecentAuditEvents(500)) {
+            if (matches(event)) events.add(event);
+            if (events.size() >= 200) break;
+        }
+        if (countLine != null) countLine.setText(T.format("audit.count", en, events.size()));
         if (events.isEmpty()) {
             rows.addView(Ui.meta(this, T.s("audit.empty", en)));
             return;

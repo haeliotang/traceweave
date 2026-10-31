@@ -137,7 +137,7 @@ public final class TaskDetailActivity extends Activity {
                 row.setPadding(dp(10), dp(8), dp(10), dp(8));
 
                 TextView heading = new TextView(this);
-                heading.setText((step.index + 1) + ". " + step.title);
+                heading.setText((step.index + 1) + ". " + StepText.title(step.title, en));
                 heading.setTextSize(14);
                 heading.setTextColor(Ui.text(this));
                 heading.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -149,7 +149,7 @@ public final class TaskDetailActivity extends Activity {
 
                 if (step.observation != null && !step.observation.isEmpty()) {
                     TextView observation = new TextView(this);
-                    observation.setText(step.observation);
+                    observation.setText(StepText.observation(step.observation, en));
                     observation.setTextSize(12);
                     observation.setTextColor(Ui.body(this));
                     observation.setPadding(0, dp(4), 0, 0);

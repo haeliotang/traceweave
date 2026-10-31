@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-31",
+  "items": {
+    "resume_refresh": "MainActivity.onResume now refreshes tasks and memories, so returning from the detail page or the vault shows the change immediately",
+    "import_progress": "the model import shows a progress bar with copied/total MB and percent, driven by a counting stream, and hides when the import finishes",
+    "audit_filters": "the audit page has category chips (All / Tasks / Memories / Sync), a search box over event names and task ids, and a visible result count"
+  },
+  "bug_fixed_on_request": "task detail showed Chinese step titles in the English UI because stored plans keep the wording they were planned with; the built-in wordings are now translated at render time by the shared StepText helper (MainActivity and TaskDetailActivity both use it)",
+  "device_evidence": {
+    "step_titles": "1. Read Local Note / 2. On-Device Synthesis & Report",
+    "audit": "chips + search + 9 events shown",
+    "screenshots": [
+      "artifacts/agent_os/next_stage/ui/task_detail_english_20261031.png",
+      "artifacts/agent_os/next_stage/ui/audit_filters_20261031.png"
+    ]
+  },
+  "verification": "host suite OK after refreshing the literal baseline (StepText holds the matchers); RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}

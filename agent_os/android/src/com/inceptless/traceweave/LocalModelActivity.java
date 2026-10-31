@@ -25,6 +25,8 @@ public final class LocalModelActivity extends Activity {
     private Button delete;
     private Button cancel;
     private LinearLayout guide;
+    private android.widget.ProgressBar progressBar;
+    private TextView progressLabel;
     private LinearLayout supported;
 
     static File modelFile(Context context) {
@@ -97,6 +99,14 @@ public final class LocalModelActivity extends Activity {
         root.addView(supported);
 
         root.addView(Ui.section(this, T.s("localmodel.import", en)));
+        progressBar = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setMax(100);
+        progressBar.setVisibility(View.GONE);
+        root.addView(progressBar, new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 8)));
+        progressLabel = Ui.meta(this, "");
+        progressLabel.setVisibility(View.GONE);
+        root.addView(progressLabel);
         select = button(root, T.s("localmodel.choose_model_file", en), () -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
             try { startActivityForResult(intent, SELECT_MODEL); }
@@ -135,19 +145,73 @@ public final class LocalModelActivity extends Activity {
             try {
                 File model = modelFile(this);
                 if (!model.getParentFile().isDirectory() && !model.getParentFile().mkdirs()) throw new java.io.IOException("Model directory unavailable");
-                try (InputStream input = getContentResolver().openInputStream(uri)) {
-                    LocalModelFiles.installSupported(input, model, token);
+                long total = 0;
+                android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null) {
+                    try {
+                        int index = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                        if (index >= 0 && cursor.moveToFirst()) total = cursor.getLong(index);
+                    } finally { cursor.close(); }
+                }
+                long expected = total;
+                runOnUiThread(() -> showProgress(0, expected));
+                try (InputStream raw = getContentResolver().openInputStream(uri)) {
+                    if (raw == null) throw new java.io.IOException("Model file unavailable");
+                    java.io.InputStream counted = new java.io.FilterInputStream(raw) {
+                        private long copied;
+                        private long lastPost;
+                        @Override public int read() throws java.io.IOException {
+                            int value = super.read();
+                            if (value >= 0) tick(1);
+                            return value;
+                        }
+                        @Override public int read(byte[] buffer, int offset, int length) throws java.io.IOException {
+                            int read = super.read(buffer, offset, length);
+                            if (read > 0) tick(read);
+                            return read;
+                        }
+                        private void tick(int count) {
+                            copied += count;
+                            long now = System.currentTimeMillis();
+                            if (now - lastPost < 250) return;
+                            lastPost = now;
+                            long shown = copied;
+                            runOnUiThread(() -> showProgress(shown, expected));
+                        }
+                    };
+                    LocalModelFiles.installSupported(counted, model, token);
                 }
             } catch (Exception error) { failure = error; }
             Exception resultError = failure;
             runOnUiThread(() -> {
                 busy = false; cancelled = null;
                 if (isFinishing() || isDestroyed()) return;
+                hideProgress();
                 refresh();
                 status.setText(resultError == null ? (T.s("localmodel.model_imported_and_verified", en))
                     : (T.s("localmodel.import_failed_or_cancelled_the_previou", en)));
             });
         }, "local-model-import").start();
+    }
+
+    private void showProgress(long copied, long total) {
+        if (progressBar == null || progressLabel == null) return;
+        progressBar.setVisibility(View.VISIBLE);
+        progressLabel.setVisibility(View.VISIBLE);
+        if (total > 0) {
+            progressBar.setProgress((int) Math.min(100, copied * 100 / total));
+            progressLabel.setText(T.format("model.import_progress", en,
+                copied / 1024 / 1024, total / 1024 / 1024,
+                (int) Math.min(100, copied * 100 / total)));
+        } else {
+            progressBar.setProgress(0);
+            progressLabel.setText(T.format("model.import_copied_mb", en, copied / 1024 / 1024));
+        }
+    }
+
+    private void hideProgress() {
+        if (progressBar != null) progressBar.setVisibility(View.GONE);
+        if (progressLabel != null) progressLabel.setVisibility(View.GONE);
     }
 
     private void remove() {
