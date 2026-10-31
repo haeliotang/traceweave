@@ -1683,9 +1683,8 @@ public final class MainActivity extends Activity {
         String details = CapabilityBroker.TRACEFORM_CAPABILITY.equals(capability)
             ? (T.s("ui.allow_this_task_to_query_retained_local", en))
             : T.format("cap.allow_details", en, label);
-        new AlertDialog.Builder(this)
-            .setTitle(T.format("cap.allow_title", en, label))
-            .setMessage(details)
+        AlertDialog grantDialog = new AlertDialog.Builder(this)
+            .setView(Ui.dialogBody(this, T.format("cap.allow_title", en, label), details, 13))
             .setNegativeButton(T.s("ui.deny", en), (dialog, which) -> {
                 try {
                     capabilityBroker.deny(task.id, capability, scope);
@@ -1703,7 +1702,9 @@ public final class MainActivity extends Activity {
                 }
                 refreshTasks();
             })
-            .show();
+            .create();
+        grantDialog.show();
+        Ui.themeDialog(grantDialog, this);
     }
 
     private void invokeCapability(AgentStore.Task task, String capability, String scope) {

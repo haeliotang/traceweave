@@ -56,6 +56,27 @@ final class Ui {
         }
     }
 
+    /** Builds a dialog body with our own title and message so dark mode stays readable. */
+    static android.widget.LinearLayout dialogBody(Context context, String title, String message, int messageSize) {
+        android.widget.LinearLayout body = new android.widget.LinearLayout(context);
+        body.setOrientation(android.widget.LinearLayout.VERTICAL);
+        body.setPadding(dp(context, 16), dp(context, 8), dp(context, 16), 0);
+        if (title != null && !title.isEmpty()) {
+            TextView heading = title(context, title);
+            heading.setTextSize(14);
+            body.addView(heading);
+        }
+        if (message != null && !message.isEmpty()) {
+            TextView text = new TextView(context);
+            text.setText(message);
+            text.setTextSize(messageSize);
+            text.setTextColor(text(context));
+            text.setPadding(0, dp(context, 4), 0, 0);
+            body.addView(text);
+        }
+        return body;
+    }
+
     static int dp(Context context, int value) {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
             context.getResources().getDisplayMetrics()));

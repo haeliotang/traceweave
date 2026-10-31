@@ -393,6 +393,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：能力授权弹窗深色——`Ui.dialogBody` 统一自绘标题/正文，授权确认弹窗在深色下可读（[capability_grant_dark_themed](artifacts/agent_os/next_stage/ui/capability_grant_dark_themed.png)）；云配置、导入确认等仍为浅色。
 - 2026-10-31：系统弹窗深色（记忆相关）——记忆详情、删除确认、配对结果改为自绘标题/正文，深色下可读（[memory_delete_dark_themed](artifacts/agent_os/next_stage/ui/memory_delete_dark_themed.png)）；能力授权、云配置等系统文案弹窗仍为浅色。
 - 2026-10-31：TalkBack 全流程走查（完成）——用“点按聚焦 + KEYCODE_ENTER 激活”代替不稳定的双触，依次走通主屏 → 任务中心 → 返回 → 设置 → 配对设备 → 取消 → 控制台 → 审计日志；焦点框与节点标签均有截图。收据 [talkback_walkthrough_20261031](artifacts/agent_os/next_stage/talkback_walkthrough_20261031.json)。
 - 2026-10-31：TalkBack 走查（部分）——服务确认启用，焦点框在主屏标题、配对弹窗指纹文本与同步 ID 输入框上可见，节点树 65 项均有标签，双触一次成功从主屏进入任务中心；脚本化双触不稳定，未完成全流程。收据 [talkback_walkthrough_20261031](artifacts/agent_os/next_stage/talkback_walkthrough_20261031.json)，截图 ui/talkback_focus_*.png。
