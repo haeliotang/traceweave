@@ -47,15 +47,20 @@ final class SyncPanel {
         autoSync.setChecked(host.storeRef().syncAutoEnabled());
         autoSync.setOnCheckedChangeListener((button, checked) -> {
             if (checked) {
-                new AlertDialog.Builder(host)
-                    .setTitle(T.s("sync.enable_title", en))
-                    .setMessage(T.s("sync.enable_message", en))
+                AlertDialog enableDialog = new AlertDialog.Builder(host)
+                    .setView(Ui.dialogBody(host, T.s("sync.enable_title", en), T.s("sync.enable_message", en), 13))
                     .setNegativeButton(T.s("common.cancel", en), (dialog, which) -> button.setChecked(false))
-                    .setPositiveButton(T.s("common.enable", en), (dialog, which) -> host.storeRef().setSyncAutoEnabled(true))
+                    .setPositiveButton(T.s("common.enable", en), (dialog, which) -> {
+                        host.storeRef().setSyncAutoEnabled(true);
+                        AutoSyncScheduler.apply(host, true, AutoSyncScheduler.DEFAULT_INTERVAL_MS);
+                    })
                     .setOnCancelListener(dialog -> button.setChecked(false))
-                    .show();
+                    .create();
+                enableDialog.show();
+                Ui.themeDialog(enableDialog, host);
             } else {
                 host.storeRef().setSyncAutoEnabled(false);
+                AutoSyncScheduler.apply(host, false, AutoSyncScheduler.DEFAULT_INTERVAL_MS);
             }
         });
         syncRow.addView(autoSync);
