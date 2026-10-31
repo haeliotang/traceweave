@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-31",
+  "decision": "GitHub Releases first (user decision), Play later",
+  "tooling": "agent_os/scripts/package_release_android.py",
+  "produced": {
+    "dir": "agent_os/build/release-0.6.14",
+    "files": ["traceform-agent-os-0.6.14.apk", "build_report.json", "release_verification.json", "release_manifest.json", "RELEASE_NOTES.md", "SHA256SUMS"],
+    "apk_sha256": "0432b9fc7ed9ec325c5d751953a5bce0332b925021a27310cf74032aa72eec4d"
+  },
+  "ready_to_publish": {
+    "tag": "v0.6.14",
+    "command": "gh release create v0.6.14 <files> --draft --notes-file RELEASE_NOTES.md",
+    "not_done": "no tag and no release were created; publishing waits for the operator to review the draft"
+  }
+}
