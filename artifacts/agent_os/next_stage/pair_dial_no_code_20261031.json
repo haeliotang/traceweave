@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "scenario": "clean state on both packages, B serves the pairing endpoint, A dials 127.0.0.1:47961 with B's fingerprint",
+  "observed": {
+    "B": "showed the confirmation dialog 核对确认码 with a code",
+    "A": "kept the pairing form open; no confirmation dialog appeared, even after 20+ seconds",
+    "A_form_state": "fingerprint and address fields stayed filled"
+  },
+  "suspected_cause": "the dial result callback either never fired or its dialog was dismissed; there is no log line around startPairDialFromText to tell them apart",
+  "next_step": "add logging inside startPairDialFromText and showPairResult, then rerun; if the callback fires, the dialog is being dismissed by the harness, otherwise the transport call hangs or throws",
+  "impact": "blocks the two-package end-to-end sync verification"
+}
