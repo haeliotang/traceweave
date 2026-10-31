@@ -1,0 +1,12 @@
+{
+  "app": "org.traceform.agentos.actionsvalidation",
+  "version_name": "0.5-validation",
+  "version_code": 2,
+  "android": "17",
+  "device": "Google Pixel 6a",
+  "tasks": 0,
+  "memories": 0,
+  "sync_runtime": true,
+  "recent_events": [],
+  "note": "No memory contents, task texts or device identifiers are included."
+}
