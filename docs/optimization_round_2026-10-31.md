@@ -30,9 +30,9 @@
 - 调研：[on-device-llm-shortlist-2026](on-device-llm-shortlist-2026.md)（结论：严格 JSON 主要是解码问题，约束解码优先于换模型）。
 - 结构化输出：`JsonText` / `StructuredOutput`（去围栏、取首个对象、修尾逗号、剥离 `<think>`），schema 提示 + 一次重试；10 条 JSON 用例 9/10 合法且含必需键（与 D2 的严格内容判定不可直接比较）。
 - 换模型：MiniCPM5-2B Q4_K_M 在同一套 50 题上 **47/50**（英文 10、中文 10、算术 10、JSON 7、列表 10），Qwen2.5-1.5B 为 26/50；中位延迟 14.95 s vs 2.7 s。
-- 双模型接入：`LocalModelCatalog`（Qwen 128 token / MiniCPM 128 token），导入校验按体积 + 摘要，生成统一剥离 think 与围栏、失败重试一次。
+- 双模型接入：`LocalModelCatalog`（当时 Qwen 128 token / MiniCPM 128 token，现已放开到 256 / 384），导入校验按体积 + 摘要，生成统一剥离 think 与围栏、失败重试一次。
 - 真实文稿路径：审核页 → 端侧生成 → 保存读回核验通过，产出 55 字节（受运行时 128 token 上限截断）。
-- 限制：原生运行时硬编码 `max_tokens ≤ 128`，放宽需重建（缺 pinned llama.cpp 检出）；GBNF 约束解码未实现。
+- 限制（当时）：原生运行时硬编码 `max_tokens ≤ 128`；后续已拉取 pinned llama.cpp 重建并放开到 512，同时实现 GBNF 约束解码。
 - 收据：[minicpm5_quality_20261031](../artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)、[structured_json_20261031](../artifacts/agent_os/next_stage/structured_json_20261031.json)、[model_draft_minicpm_20261031](../artifacts/agent_os/next_stage/model_draft_minicpm_20261031.json)。
 
 ## 5. MainActivity 拆分与字符串迁移
