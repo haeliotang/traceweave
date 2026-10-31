@@ -15,7 +15,7 @@ path = "src/bin/sync_probe.rs"
 
 [dependencies]
 futures = "0.3"
-libp2p = { version = "=0.57.1", default-features = false, features = ["tokio", "tcp", "noise", "yamux", "ed25519", "request-response", "cbor"] }
+libp2p = { version = "=0.57.1", default-features = false, features = ["tokio", "tcp", "noise", "yamux", "ed25519", "request-response", "cbor", "mdns"] }
 sha2 = "0.10"
 jni = "0.21"
 p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
