@@ -413,6 +413,7 @@
 - 2026-10-31：自动同步端到端尝试（未完成）——新建 B 包清单并装好两个包，A 成功与 B 配对（SAS 550893），但 B 侧配对未落库（设置仍显示 0 台），导致 B 无法启动同步服务端，A 也就没有完成一次手动同步、无法写入游标。根因是同屏双包的 60 秒配对窗口在 adb 点击节奏下太短。记录 [auto_sync_pairing_attempt_20261031](artifacts/agent_os/next_stage/auto_sync_pairing_attempt_20261031.json)。
 - 2026-10-31：把修复回路接进应用——文稿重试时会把上次的校验失败原因写回提示（`strictPrompt(goal, memories, previousFailure)`），不再只是“再说一次”。
 - 2026-10-31：内容质量实验（严格提示 vs 修复回路）——同一 10 例、grammar + 512 token：基线内容 **5/10**，加“不要复述示例/用真实日期/类型匹配”的严格提示升到 **6/10**，再加一轮“把失败项写回提示重生成”的修复后升到 **10/10**（4 例被修复）。结论：**校验 + 定向重生成**比单纯加强提示有效得多。数据 [json7_strict_prompt](artifacts/agent_os/next_stage/json7_strict_prompt_20261031.json)、[json8_repair](artifacts/agent_os/next_stage/json8_repair_20261031.json)。
+- 2026-10-31：硬编码文案“棘轮”测试——扫描 `agent_os/android/src/.../*.java` 里含中文的字面量（排除 `T.java` 与注释），基线冻结 21 个文件、233 处；任何文件增加新中文硬编码或出现新文件都会让测试失败（已用临时插入验证会真的失败）。目的是止血，不强制一次性重构。基线 `agent_os/tests/data/hardcoded_cjk_baseline.json`。
 - 2026-10-31：待定版本批量入口——记忆面板新增“待定版本（N）”按钮，列出所有含冲突候选的记忆，点一条直接进入该记忆的冲突选择弹窗（实测 3 条记忆、每条 2 个待定版本，选择后进入“冲突版本”弹窗）。截图 ui/pending_versions_list.png。
 - 2026-10-31：记忆列表显示待定版本数——每条记忆的时间戳后追加“N 待定”（有冲突候选时），设备上显示 `10-31 · 2 待定`，不必点开详情就能看到哪些记忆存在分歧。截图 ui/vault_pending_badge.png。
 - 2026-10-31：同步结果改成可读文案——`SyncResultText.describe` 把 `ok:1 / paired / no response / skipped / error` 映射为中英双语短句；设备上列表显示“已同步 · 1 条变更”“已配对，尚未同步”。宿主测试覆盖 6 种输入（含空串）。截图 ui/pairing_list_friendly.png。
