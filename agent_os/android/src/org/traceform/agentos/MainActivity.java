@@ -516,27 +516,7 @@ public final class MainActivity extends Activity {
         sensInfo.setPadding(0, dp(4), 0, 0);
         sensCard.addView(sensInfo);
 
-        Button reviewBtn = createCompactActionButton(T.s("ui.review", en), 0xFF1E293B, 0xFFFFFFFF,
-            view -> reviewSensorObservation());
-        reviewBtn.setTextSize(10);
-        LinearLayout.LayoutParams reviewLp = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, dp(24));
-        reviewLp.setMargins(0, dp(3), 0, 0);
-        sensCard.addView(reviewBtn, reviewLp);
-
-        sensCard.setOnClickListener(v -> {
-            try {
-                PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
-                if (!sens.isMonitoring()) {
-                    Toast.makeText(this, T.s("ui.enable_sensors_to_view_live_context", en), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                updateSensorsCard();
-                Toast.makeText(this, sensInfo.getText(), Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(this, "Sensors: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        sensCard.setOnClickListener(v -> showSensorsDialog(sensInfo));
 
         LinearLayout visionCard = createGridCard(gridRow2, IconFactory.IconType.EYE, T.s("ui.vision_ptt", en), 0xFF4527A0);
         TextView visionInfo = new TextView(this);
@@ -2189,6 +2169,30 @@ public final class MainActivity extends Activity {
         sensorToggleButton.setText(en
                 ? (monitoring ? "Stop sensors" : "Enable sensors")
                 : T.s(monitoring ? "sensor.stop" : "sensor.start", isEnglish()));
+    }
+
+    private void showSensorsDialog(TextView sensInfo) {
+        boolean en = isEnglish();
+        PhysicalSensoriumManager sens = PhysicalSensoriumManager.getInstance(this);
+        boolean monitoring = sens.isMonitoring();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+            .setTitle(T.s("ui.sensors", en))
+            .setMessage(monitoring ? sensInfo.getText() : T.s("ui.enable_sensors_to_view_live_context", en))
+            .setNegativeButton(T.s("common.close", en), null);
+        if (monitoring) {
+            builder.setPositiveButton(T.s("sensor.save_as_memory", en), (dialog, which) -> reviewSensorObservation());
+            builder.setNeutralButton(T.s("sensor.stop", en), (dialog, which) -> {
+                sens.stopMonitoring();
+                updateSensorsCard();
+                Toast.makeText(this, T.s("ui.sensor_monitoring_stopped", en), Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            builder.setPositiveButton(T.s("sensor.start", en), (dialog, which) -> {
+                sens.startMonitoring();
+                updateSensorsCard();
+            });
+        }
+        builder.show();
     }
 
     private void reviewSensorObservation() {

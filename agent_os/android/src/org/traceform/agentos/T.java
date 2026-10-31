@@ -687,6 +687,7 @@ final class T {
         add("ui.thermal_detail", "100%% offloaded to CPU NEON (%d ops, GPU=%d, TPU=%d) · shed delay %d ms", "100%% 卸载至 CPU NEON (%d ops, GPU=%d, TPU=%d) · 避险延迟 %d ms");
         add("cap.step_line_remaining", "Capability: %s · Grant remaining ~%d min", "能力标识：%s · 授权剩余约 %d 分钟");
         add("cap.step_line_none", "Capability: %s · Not granted", "能力标识：%s · 尚未授权");
+        add("sensor.save_as_memory", "Save as memory", "保存为记忆");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

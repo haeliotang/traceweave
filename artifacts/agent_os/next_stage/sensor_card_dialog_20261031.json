@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-31",
+  "change": "removed the standalone 审核 button from the sensors card; tapping the card now opens a dialog",
+  "dialog": {
+    "when_sensing_off": ["title 环境感知", "hint 请先启用感知，再查看实时状态", "关闭", "启用感知"],
+    "when_sensing_on": ["live status lines", "停止感知", "关闭", "保存为记忆"]
+  },
+  "device_evidence": {
+    "home_screen_review_buttons": 0,
+    "off_state_dialog": "环境感知 / 请先启用感知… / 关闭 / 启用感知",
+    "on_state_dialog": "运动… 光照… 电池温度 27.4 °C / 停止感知 / 关闭 / 保存为记忆",
+    "after_stop": "card shows 传感器采集已关闭"
+  },
+  "why": "six cards were visually inconsistent: only the sensors card carried an extra permanent button, while the flow itself is a look-then-decide action",
+  "capability": "sensor observation to memory is still reachable from the UI, now through the card dialog"
+}
