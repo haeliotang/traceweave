@@ -338,7 +338,7 @@ public final class MainActivity extends Activity {
         persistentButtons.clear();
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setBackgroundColor(0xFFF8FAFC);
+        page.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
         page.setPadding(dp(16), dp(46), dp(16), dp(16));
 
         boolean en = isEnglish();
@@ -354,7 +354,7 @@ public final class MainActivity extends Activity {
         TextView title = new TextView(this);
         title.setText(T.s("ui.traceform_agent_os_prototype", en));
         title.setTextSize(20);
-        title.setTextColor(0xFF0F172A);
+        title.setTextColor(Ui.text(this));
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams titleLp = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
@@ -547,7 +547,7 @@ public final class MainActivity extends Activity {
         taskHeading.setText(T.s("task.section", en));
         taskHeading.setTextSize(14);
         taskHeading.setTypeface(null, android.graphics.Typeface.BOLD);
-        taskHeading.setTextColor(0xFF0F172A);
+        taskHeading.setTextColor(Ui.text(this));
         taskHeading.setPadding(0, dp(10), 0, dp(4));
         page.addView(taskHeading);
 
@@ -613,6 +613,7 @@ public final class MainActivity extends Activity {
         page.addView(dockRow);
 
         ScrollView pageScroll = new ScrollView(this);
+        pageScroll.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
         pageScroll.setFillViewport(true);
         pageScroll.addView(page);
         setContentView(pageScroll);
@@ -1140,9 +1141,9 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFFFFFFFF);
+        bg.setColor(Ui.card(this));
         bg.setCornerRadius(dp(12));
-        bg.setStroke(dp(1), 0xFFE2E8F0);
+        bg.setStroke(dp(1), Ui.stroke(this));
         card.setBackground(bg);
         card.setPadding(dp(12), dp(10), dp(12), dp(10));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -1159,7 +1160,7 @@ public final class MainActivity extends Activity {
         description.setText(task.title);
         description.setTextSize(15);
         description.setTypeface(null, android.graphics.Typeface.BOLD);
-        description.setTextColor(0xFF0F172A);
+        description.setTextColor(Ui.text(this));
         headerRow.addView(description, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         TextView badge = DocumentAction.locallyVerified(task)
@@ -2175,6 +2176,7 @@ public final class MainActivity extends Activity {
     private void addEmptyMessage(LinearLayout parent, String text) {
         TextView empty = new TextView(this);
         empty.setText(text);
+        empty.setTextColor(Ui.muted(this));
         empty.setPadding(0, 8, 0, 8);
         parent.addView(empty);
     }
@@ -2228,9 +2230,9 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFFFFFFFF);
+        bg.setColor(Ui.card(this));
         bg.setCornerRadius(dp(12));
-        bg.setStroke(dp(1), 0xFFE2E8F0);
+        bg.setStroke(dp(1), Ui.stroke(this));
         card.setBackground(bg);
         card.setPadding(dp(12), dp(10), dp(12), dp(10));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -2249,9 +2251,9 @@ public final class MainActivity extends Activity {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFFFFFFFF);
+        bg.setColor(Ui.card(this));
         bg.setCornerRadius(dp(10));
-        bg.setStroke(dp(1), 0xFFE2E8F0);
+        bg.setStroke(dp(1), Ui.stroke(this));
         card.setBackground(bg);
         card.setPadding(dp(7), dp(8), dp(7), dp(8));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(

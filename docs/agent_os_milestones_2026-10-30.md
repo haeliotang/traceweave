@@ -389,6 +389,7 @@
 - 2026-10-30：建立本文件；基线固定在 0.6.13（`9ea7909`）。
 - 2026-10-31：**CI 中断**——自 19:42Z 起所有 job 无 runner、数秒内失败；重跑此前成功过的运行同样失败，判定为账户级 Actions 问题而非代码。本地 26 项宿主测试与 10 项 Rust 测试通过。恢复后需补跑 CI。
 - 2026-10-31：端侧模型调研完成——[on-device-llm-shortlist-2026.md](on-device-llm-shortlist-2026.md)；关键结论：严格 JSON 0/10 主要是解码问题，llama.cpp 的 GBNF 约束解码优先于换模型。随后实测 MiniCPM5-2B 为 47/50（见 [minicpm5_quality_20261031](artifacts/agent_os/next_stage/minicpm5_quality_20261031.json)）。
+- 2026-10-31：深色模式第一版——`Ui.dark/background/card/text/muted/stroke` 跟随系统 `uiMode`；主屏、设置弹窗、审计页、任务中心、模型页改为深色配色，设置弹窗的按钮栏也按主题着色。设备上 `cmd uimode night yes/no` 双向验证，截图 [main_dark_zh](artifacts/agent_os/next_stage/ui/main_dark_zh.png)、[settings_dark_zh](artifacts/agent_os/next_stage/ui/settings_dark_zh.png)、[audit_dark_zh](artifacts/agent_os/next_stage/ui/audit_dark_zh.png)。同时把动作网格触控高度提到 48dp、给任务中心的“⋯”补了 `contentDescription`。
 - 2026-10-31：第 6 项开始——新增只读审计日志页（`AuditActivity`，入口在控制台），按时间倒序展示最近 200 条事件、可导出带时间戳的 TSV；设备上生成任务后看到 `task_created / local_rule_planning_started / plan_generated` 等真实事件，导出 5 行 TSV 并核对内容。截图 [audit_log_zh](artifacts/agent_os/next_stage/ui/audit_log_zh.png)。
 - 2026-10-31：字符串迁移收尾（第二批）——外部动作、悬浮服务、传感器上下文、记忆审核、云端失败、记忆选择、模型状态、外设服务共 73 处迁入 `T`；全应用剩余约 5 处（枚举/常量拼接）。`T` 共 522 条。
 - 2026-10-31：字符串迁移收尾——九个主要界面（主屏、设置、配对、记忆、任务、文稿、工作流、模型、任务中心）的文案全部改由 `T` 提供（`T` 共 449 条），这些文件内 `en ? …` 内联三元清零；其余次要类（外部动作、悬浮服务、传感器上下文、记忆审核等）仍有 76 处，已列出待后续迁移。`T` 审计允许专有名词同形（Traceform）。设备冒烟通过。

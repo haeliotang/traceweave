@@ -28,6 +28,18 @@ final class Ui {
 
     private Ui() {}
 
+    static boolean dark(Context context) {
+        int mode = context.getResources().getConfiguration().uiMode
+            & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return mode == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    static int background(Context context) { return dark(context) ? 0xFF0B1220 : 0xFFFFFFFF; }
+    static int card(Context context) { return dark(context) ? 0xFF16213A : 0xFFFFFFFF; }
+    static int text(Context context) { return dark(context) ? 0xFFE2E8F0 : COLOR_TEXT; }
+    static int muted(Context context) { return dark(context) ? 0xFF94A3B8 : COLOR_MUTED; }
+    static int stroke(Context context) { return dark(context) ? 0xFF334155 : COLOR_STROKE; }
+
     static int dp(Context context, int value) {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
             context.getResources().getDisplayMetrics()));
@@ -38,7 +50,7 @@ final class Ui {
         view.setText(text);
         view.setTextSize(TEXT_TITLE);
         view.setTypeface(null, Typeface.BOLD);
-        view.setTextColor(COLOR_TEXT);
+        view.setTextColor(text(context));
         return view;
     }
 
@@ -47,7 +59,7 @@ final class Ui {
         view.setText(text);
         view.setTextSize(TEXT_SECTION);
         view.setTypeface(null, Typeface.BOLD);
-        view.setTextColor(COLOR_TEXT);
+        view.setTextColor(text(context));
         view.setPadding(0, dp(context, SPACE_M), 0, dp(context, SPACE_S));
         return view;
     }
@@ -56,7 +68,7 @@ final class Ui {
         TextView view = new TextView(context);
         view.setText(text);
         view.setTextSize(TEXT_META);
-        view.setTextColor(COLOR_MUTED);
+        view.setTextColor(muted(context));
         return view;
     }
 
@@ -71,7 +83,7 @@ final class Ui {
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 holder.addView(row);
             }
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dp(context, 44), 1f);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, dp(context, 48), 1f);
             params.setMargins(index % 2 == 0 ? 0 : dp(context, SPACE_S), dp(context, SPACE_S), 0, 0);
             row.addView(buttons[index], params);
         }

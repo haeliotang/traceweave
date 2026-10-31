@@ -33,7 +33,7 @@ public final class LocalModelActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(Ui.dp(this, 12), Ui.dp(this, 40), Ui.dp(this, 12), Ui.dp(this, 12));
-        root.setBackgroundColor(0xFFFFFFFF);
+        root.setBackgroundColor(Ui.background(this));
         setContentView(root);
 
         TextView title = Ui.title(this, T.s("localmodel.on_device_draft_model", en));

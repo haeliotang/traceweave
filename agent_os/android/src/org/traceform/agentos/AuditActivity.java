@@ -26,9 +26,10 @@ public final class AuditActivity extends Activity {
         en = "en".equals(getSharedPreferences("agent_os_prefs", 0).getString("app_lang", "zh"));
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(0xFFFFFFFF);
+        root.setBackgroundColor(Ui.background(this));
         root.setPadding(Ui.dp(this, 12), Ui.dp(this, 40), Ui.dp(this, 12), Ui.dp(this, 12));
         ScrollView scroll = new ScrollView(this);
+        scroll.setBackgroundColor(Ui.background(this));
         scroll.addView(root);
         setContentView(scroll);
 
@@ -85,7 +86,7 @@ public final class AuditActivity extends Activity {
             TextView line = new TextView(this);
             line.setText(event.event);
             line.setTextSize(12);
-            line.setTextColor(Ui.COLOR_TEXT);
+            line.setTextColor(Ui.text(this));
             row.addView(line);
             String task = event.taskId == null || event.taskId.isEmpty() ? "-"
                 : (event.taskId.length() > 8 ? event.taskId.substring(0, 8) : event.taskId);

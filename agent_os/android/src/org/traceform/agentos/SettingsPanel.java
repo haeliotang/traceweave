@@ -33,6 +33,7 @@ final class SettingsPanel {
         LinearLayout root = new LinearLayout(host);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(host.dpRef(16), host.dpRef(10), host.dpRef(16), host.dpRef(8));
+        root.setBackgroundColor(Ui.background(host));
 
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(host, IconFactory.IconType.SHIELD,
                 T.s("settingspanel.1", en), 0xFF334155, 16);
@@ -112,7 +113,13 @@ final class SettingsPanel {
         scroll.addView(root);
         builder.setView(scroll);
         builder.setPositiveButton(T.s("settingspanel.9", en), null);
-        builder.show();
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        if (Ui.dark(host) && dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Ui.background(host)));
+            if (dialog.getButton(AlertDialog.BUTTON_POSITIVE) != null)
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF7DD3FC);
+        }
     }
 
     void toggleTraceformProvider() {

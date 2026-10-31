@@ -35,9 +35,11 @@ public final class TaskCenterActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         scroll = new ScrollView(this);
+        scroll.setBackgroundColor(Ui.background(this));
         scroll.addView(root);
         scroll.setOnApplyWindowInsetsListener((view, insets) -> {
-            root.setPadding(Ui.dp(this, 12), Ui.dp(this, 12) + insets.getSystemWindowInsetTop(),
+            root.setBackgroundColor(Ui.background(this));
+        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 12) + insets.getSystemWindowInsetTop(),
                 Ui.dp(this, 12), Ui.dp(this, 12) + insets.getSystemWindowInsetBottom());
             return insets;
         });
@@ -144,7 +146,7 @@ public final class TaskCenterActivity extends Activity {
         title.setTextSize(13);
         title.setMaxLines(1);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        title.setTextColor(Ui.COLOR_TEXT);
+        title.setTextColor(Ui.text(this));
         textColumn.addView(title);
 
         LinearLayout metaRow = new LinearLayout(this);
@@ -175,6 +177,7 @@ public final class TaskCenterActivity extends Activity {
         more.setMinWidth(0);
         more.setMinimumWidth(0);
         more.setPadding(0, 0, 0, 0);
+        more.setContentDescription(T.s("taskcenter.actions", en));
         more.setOnClickListener(view -> showActions(task));
         LinearLayout.LayoutParams moreLp = new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40));
         moreLp.setMargins(Ui.dp(this, 4), 0, 0, 0);
