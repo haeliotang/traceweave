@@ -4,7 +4,19 @@
 
 ## 固定更新身份
 
-更新必须保留包名 `org.traceweave.agentos` 和同一 APK 签名证书。使用现有忽略目录中的 keystore 和本机 Keychain 项；找不到签名材料时停止，不自动生成新密钥。Keychain 项与 keystore 都需要由持有人纳入受控加密备份，GitHub 不保管它们。不要把口令写入聊天、日志或仓库。
+当前包名是 `com.inceptless.traceweave`（2026-10-31 由 `org.traceform.agentos` 更名而来）。
+
+**命名变更是一次应用身份变更**：新包是新 UID，旧安装无法覆盖升级，旧本地库也不会被新包读取。数据迁移只有一条受支持的路径：
+
+1. 在旧版（0.6.x）里用「加密导出」生成 `.taos` 档案；
+2. 安装新包；
+3. 用「导入档案」把同一份档案导入。
+
+兼容性由 `ArchiveCompat` 保证：旧格式 `org.traceform.agentos.memory`、旧记忆来源 `traceform`、以及旧执行计划里的 `traceform.*` 能力 id 都会在导入时被接受或映射。回归测试是 `agent_os/tests/test_archive_compat.py`（含一份真实的 0.6.14 档案）。
+
+签名证书不变，仍是 `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`。Agent OS 与 Edge 应用现在共用这一身份。
+
+使用现有忽略目录中的 keystore 和本机 Keychain 项；找不到签名材料时停止，不自动生成新密钥。Keychain 项与 keystore 都需要由持有人纳入受控加密备份，GitHub 不保管它们。不要把口令写入聊天、日志或仓库。
 
 已安装包的证书 SHA-256 是公开校验值，不是私钥。操作人应从可信旧 APK/安装记录核对并作为 `--expected-signer` 传入。
 

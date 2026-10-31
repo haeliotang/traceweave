@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-31",
+  "items": {
+    "release_process_doc": "rewritten: states the current package com.inceptless.traceweave, that the rename is an identity change, the only supported migration path (export in 0.6.x, install new, import) and the ArchiveCompat guarantee",
+    "release_artifacts": "0.1.0 rebuilt from HEAD (includes the Edge build chain, ArchiveCompat and the import-dialog fix); draft v0.1.0 assets replaced, digest check ok",
+    "static_consistency": "agent_os/tests/test_package_consistency.py added: manifest package, no pre-rename tokens (one documented exception), every cross-app string resolves to a declared package, manifest components have sources, shortcut intents target existing classes"
+  },
+  "evidence": {
+    "device_smoke": "ok: true, version 0.1.0",
+    "host_tests": "all passing (includes the two new test modules)",
+    "negative_check": "changing a shortcut targetPackage to com.inceptless.edge makes the new test fail"
+  },
+  "still_open": [
+    "deferred by the user: second physical device, hosted CI quota, power measurement under load",
+    "independent external audit"
+  ]
+}
