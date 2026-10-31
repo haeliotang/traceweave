@@ -23,6 +23,34 @@ final class CrashLog {
         return text.length() > MAX_BYTES ? text.substring(0, MAX_BYTES) : text;
     }
 
+    /** Short, human-readable summary: exception type, message and the first few frames. */
+    static String summarize(String raw) {
+        if (raw == null || raw.isEmpty()) return "";
+        String[] lines = raw.split("\n");
+        String first = "";
+        StringBuilder frames = new StringBuilder();
+        int taken = 0;
+        for (int index = 0; index < lines.length; index++) {
+            String line = lines[index].trim();
+            if (index == 0) {
+                // The first line may be the timestamp written by record().
+                if (line.matches("\\d+")) continue;
+            }
+            if (first.isEmpty() && !line.isEmpty()) {
+                first = line;
+                continue;
+            }
+            if (line.startsWith("at ") && taken < 5) {
+                if (frames.length() > 0) frames.append("\n");
+                frames.append(line);
+                taken++;
+            }
+            if (taken >= 5) break;
+        }
+        if (first.isEmpty()) return "";
+        return frames.length() == 0 ? first : first + "\n" + frames;
+    }
+
     static void record(Context context, Throwable error) {
         try (FileOutputStream output = new FileOutputStream(new File(context.getFilesDir(), FILE_NAME))) {
             output.write((System.currentTimeMillis() + "\n" + format(error)).getBytes(StandardCharsets.UTF_8));

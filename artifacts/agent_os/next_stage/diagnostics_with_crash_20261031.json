@@ -1,0 +1,29 @@
+{
+  "app": "org.traceform.agentos.actionsvalidation",
+  "version_name": "0.5-validation",
+  "version_code": 2,
+  "android": "17",
+  "device": "Google Pixel 6a",
+  "tasks": 0,
+  "memories": 4,
+  "sync_runtime": true,
+  "recent_events": [
+    {
+      "at": 1793447893272,
+      "event": "memory_conflict_resolved"
+    },
+    {
+      "at": 1793447862336,
+      "event": "memory_conflict_resolved"
+    },
+    {
+      "at": 1793447753964,
+      "event": "memory_conflict_resolved"
+    }
+  ],
+  "last_crash": {
+    "summary": "java.lang.IllegalStateException: synthetic crash\nat a.b.C(C.java:1)\nat d.e.F(F.java:2)",
+    "raw": "1793447000000\njava.lang.IllegalStateException: synthetic crash\n\tat a.b.C(C.java:1)\n\tat d.e.F(F.java:2)\n"
+  },
+  "note": "No memory contents, task texts or device identifiers are included."
+}

@@ -5,7 +5,7 @@
 ## 1. 已实现
 
 - `CrashLog` 在 `MainActivity` 启动时安装默认未捕获异常处理器，把最后一次崩溃写到 `files/last_crash.txt`（上限 64 KB）；
-- 审计页的“导出诊断”JSON 会带上 `last_crash`；
+- 审计页的“导出诊断”JSON 带 `last_crash`，其中 `summary` 是“异常类型 + 前 5 帧”，`raw` 是原始堆栈；设备上已用合成崩溃验证（[diagnostics_with_crash_20261031](../artifacts/agent_os/next_stage/diagnostics_with_crash_20261031.json)）；
 - **不会自动上传**，只有用户主动导出时才离开设备。
 
 ## 2. 为什么不自动上报

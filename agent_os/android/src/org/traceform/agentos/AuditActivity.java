@@ -139,7 +139,13 @@ public final class AuditActivity extends Activity {
             }
             report.put("recent_events", events);
             String crash = CrashLog.read(this);
-            report.put("last_crash", crash.isEmpty() ? org.json.JSONObject.NULL : crash);
+            if (crash.isEmpty()) {
+                report.put("last_crash", org.json.JSONObject.NULL);
+            } else {
+                report.put("last_crash", new org.json.JSONObject()
+                    .put("summary", CrashLog.summarize(crash))
+                    .put("raw", crash));
+            }
             report.put("note", "No memory contents, task texts or device identifiers are included.");
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
