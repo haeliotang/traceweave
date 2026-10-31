@@ -263,11 +263,19 @@ final class SyncPanel {
         android.util.Log.i("AgentOsPairing", "pair_dial start address=" + address);
         host.ioRef().execute(() -> {
             String payload;
+            java.util.concurrent.ExecutorService call = java.util.concurrent.Executors.newSingleThreadExecutor();
             try {
-                payload = SyncTransport.nativePairDial(syncSeed(), address, DeviceIdentity.fingerprint(), 20000L);
+                java.util.concurrent.Future<String> pending = call.submit(
+                    () -> SyncTransport.nativePairDial(syncSeed(), address, DeviceIdentity.fingerprint(), 20000L));
+                payload = pending.get(25, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.TimeoutException timeout) {
+                payload = null;
+                android.util.Log.w("AgentOsPairing", "pair_dial timed out after 25s");
             } catch (Throwable error) {
                 payload = null;
                 android.util.Log.w("AgentOsPairing", "pair_dial threw " + error);
+            } finally {
+                call.shutdownNow();
             }
             android.util.Log.i("AgentOsPairing", "pair_dial result=" + (payload == null ? "null" : payload));
             final String json = payload;

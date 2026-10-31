@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "method": "test-only MergeConflictProbe creates a memory (local version), then calls the production store.mergeSyncRecords with a remote record for the same id carrying a different actor clock and different content",
+  "observed": "before=1 applied=0 after=2 candidate=true stored=\"conflict base value\"",
+  "interpretation": [
+    "the remote edit did not overwrite the local value (applied=0, stored value unchanged)",
+    "both versions survive (2 clocks for the same memory id)",
+    "a conflict candidate is created so the difference can be reviewed",
+    "this is the desired behaviour for device-independent data: no silent last-writer-wins"
+  ],
+  "limitations": [
+    "the probe calls the merge path directly; it does not travel over the transport",
+    "the review flow (choosing which version wins) was not exercised",
+    "only one memory and one conflict shape were tested"
+  ]
+}

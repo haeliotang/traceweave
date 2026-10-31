@@ -1446,6 +1446,14 @@ final class AgentStore extends SQLiteOpenHelper {
         database.insertWithOnConflict("memory_candidates", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
+    /** True when a conflict candidate exists for this memory. */
+    boolean hasMemoryCandidate(String memoryId) {
+        try (Cursor cursor = getReadableDatabase().query("memory_candidates", new String[]{"memory_id"},
+                "memory_id=?", new String[]{memoryId}, null, null, null)) {
+            return cursor.moveToFirst();
+        }
+    }
+
     private org.json.JSONObject candidatePayload(String memoryId, MemoryMerge.Version version) throws Exception {
         try (Cursor cursor = getReadableDatabase().query("memory_candidates", new String[]{"sealed_payload"},
                 "memory_id=? AND clock=?", new String[]{memoryId, encodeClock(version.clock)}, null, null, null)) {
