@@ -123,6 +123,45 @@ public final class AuditActivity extends Activity {
 
     private void exportDiagnostics() {
         try {
+            String json = buildDiagnostics().toString(2);
+            previewDiagnostics(json);
+        } catch (Exception error) {
+            android.widget.Toast.makeText(this, error.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void previewDiagnostics(String json) throws Exception {
+        org.json.JSONObject report = new org.json.JSONObject(json);
+        StringBuilder fields = new StringBuilder();
+        java.util.Iterator<String> keys = report.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            fields.append(fields.length() == 0 ? "" : "、").append(key);
+        }
+        String crash = report.optJSONObject("last_crash") == null
+            ? T.s("audit.no_crash", en) : report.getJSONObject("last_crash").optString("summary", "");
+        String message = T.format("audit.diagnostics_fields", en, fields.toString())
+            + "\n\n" + crash;
+        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(this)
+            .setView(Ui.dialogBody(this, T.s("audit.diagnostics_preview_title", en), message, 12))
+            .setNegativeButton(T.s("common.cancel", en), null)
+            .setPositiveButton(T.s("audit.choose_location", en), (inner, which) -> writeDiagnostics(json))
+            .create();
+        dialog.show();
+        Ui.themeDialog(dialog, this);
+    }
+
+    private void writeDiagnostics(String json) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("application/json")
+            .putExtra(Intent.EXTRA_TITLE, "traceform-diagnostics-" + System.currentTimeMillis() + ".json");
+        pendingExport = json;
+        startActivityForResult(intent, REQUEST_EXPORT);
+    }
+
+    private org.json.JSONObject buildDiagnostics() throws Exception {
+        {
             org.json.JSONObject report = new org.json.JSONObject();
             report.put("app", getPackageName());
             android.content.pm.PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -147,14 +186,7 @@ public final class AuditActivity extends Activity {
                     .put("raw", crash));
             }
             report.put("note", "No memory contents, task texts or device identifiers are included.");
-            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("application/json")
-                .putExtra(Intent.EXTRA_TITLE, "traceform-diagnostics-" + System.currentTimeMillis() + ".json");
-            pendingExport = report.toString(2);
-            startActivityForResult(intent, REQUEST_EXPORT);
-        } catch (Exception error) {
-            android.widget.Toast.makeText(this, error.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+            return report;
         }
     }
 

@@ -539,6 +539,10 @@ final class T {
         add("memory.use_this_version", "Use this version", "采用此版本");
         add("memory.conflict_resolved", "Conflict resolved", "冲突已解决");
         add("common.close", "Close", "关闭");
+        add("audit.diagnostics_preview_title", "Export diagnostics?", "导出诊断？");
+        add("audit.diagnostics_fields", "Fields: %s", "包含字段：%s");
+        add("audit.no_crash", "No crash recorded", "没有崩溃记录");
+        add("audit.choose_location", "Choose location", "选择位置");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

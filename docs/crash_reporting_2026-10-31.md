@@ -23,6 +23,10 @@
 3. **批处理**：下次联网时上传，失败即丢弃，不做重试队列；
 4. **可撤回**：上传前可预览将要发送的 JSON。
 
+## 3.1 导出前先预览
+
+“导出诊断”现在先弹一个确认框，列出**将要写入的全部字段**与崩溃摘要，用户点“选择位置”才会打开文件选择器。设备上验证：弹窗显示 `包含字段：app、version_name、version_code、android、device、tasks、memories、sync_runtime、recent_events、last_crash、note`，并附崩溃摘要；确认后导出的文件字段与预览一致。截图 ui/diagnostics_preview.png。
+
 ## 4. 验证
 
 - 宿主测试覆盖 `CrashLog.format`（含空值与截断）；
