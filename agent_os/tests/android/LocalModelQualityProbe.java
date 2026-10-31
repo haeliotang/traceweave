@@ -251,6 +251,58 @@ public final class LocalModelQualityProbe extends Activity {
         Log.i("AgentOsModelQuality", "QUALITY50_DONE " + passed + "/" + QUALITY_CASES.length + " " + categories);
     }
 
+    private static final String[][] JSON_CASES = {
+        {"plan", "Make a JSON object with keys title and steps (array of 2 strings) for a camping trip.", "title,steps"},
+        {"memory", "Return JSON with keys kind and content for a preference about concise checklists.", "kind,content"},
+        {"error", "Return JSON with keys error and retry (boolean) for a failed calendar write.", "error,retry"},
+        {"count", "Return JSON with keys total (number) and items (array of three short words).", "total,items"},
+        {"schedule", "Return JSON with keys start and end as ISO dates for tomorrow 9-10am.", "start,end"},
+        {"summary", "Return JSON with keys summary (one sentence) and tags (array of two words).", "summary,tags"},
+        {"device", "Return JSON with keys device and available (boolean) for this phone.", "device,available"},
+        {"route", "Return JSON with keys to (string) and reason (string) for opening the calendar.", "to,reason"},
+        {"conflict", "Return JSON with keys conflict (boolean) and choices (array of two strings).", "conflict,choices"},
+        {"empty", "Return JSON with keys ok (boolean) and note (string) when nothing needs doing.", "ok,note"}
+    };
+
+    private void runJson2(File model) throws Exception {
+        JSONArray results = new JSONArray();
+        int passed = 0;
+        for (String[] item : JSON_CASES) {
+            String prompt = JsonText.schemaPrompt(item[1],
+                "an object with the requested keys", "{\"title\":\"camping\",\"steps\":[\"pack\",\"go\"]}");
+            String output;
+            boolean ok = false;
+            int attempts = 0;
+            long startedAt = SystemClock.elapsedRealtime();
+            String last = "";
+            while (attempts < 2 && !ok) {
+                attempts++;
+                try {
+                    LocalModelProbe.prepare();
+                    last = new String(LocalModelProbe.generate(model.getPath(), prompt.getBytes(StandardCharsets.UTF_8), 128),
+                        StandardCharsets.UTF_8);
+                    org.json.JSONObject parsed = StructuredOutput.parse(last);
+                    ok = StructuredOutput.missingKeys(parsed, item[2].split(",")).isEmpty();
+                } catch (Exception error) {
+                    last = "<error: " + error.getMessage() + ">";
+                }
+                if (!ok) prompt = JsonText.schemaPrompt(item[1] + " Return only the JSON object, nothing else.",
+                    "an object with the requested keys", "{\"title\":\"camping\",\"steps\":[\"pack\",\"go\"]}");
+            }
+            if (ok) passed++;
+            results.put(new JSONObject().put("case", item[0]).put("required_keys", item[2]).put("attempts", attempts)
+                .put("output", last.length() > 200 ? last.substring(0, 200) : last)
+                .put("elapsed_ms", SystemClock.elapsedRealtime() - startedAt).put("passed", ok));
+        }
+        JSONObject summary = new JSONObject().put("passed", passed).put("total", JSON_CASES.length)
+            .put("mode", "schema prompt + parse + one retry").put("criterion", "valid JSON object containing the required keys")
+            .put("cases", results);
+        try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "json2.json"))) {
+            output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        Log.i("AgentOsModelQuality", "JSON2_DONE " + passed + "/" + JSON_CASES.length);
+    }
+
     private JSONObject telemetry() throws Exception {
         android.content.Intent battery = registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
         android.os.PowerManager power = (android.os.PowerManager) getSystemService(POWER_SERVICE);
@@ -327,6 +379,10 @@ public final class LocalModelQualityProbe extends Activity {
                 if (!expected.equals(hash.toString())) throw new SecurityException("Model digest mismatch");
                 if ("STRESS3".equals(getIntent().getAction())) {
                     runStress3(model, getIntent().getStringExtra("phase"));
+                    return;
+                }
+                if ("JSON2".equals(getIntent().getAction())) {
+                    runJson2(model);
                     return;
                 }
                 if ("QUALITY50".equals(getIntent().getAction())) {

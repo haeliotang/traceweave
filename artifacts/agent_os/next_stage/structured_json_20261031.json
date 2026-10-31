@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "model": "Qwen2.5-1.5B-Instruct Q4_0 (same as D2)",
+  "change": "schema prompt + JSON recovery (fences/prose/trailing commas) + one corrective retry",
+  "criterion": "valid JSON object containing the required keys, within 2 attempts",
+  "result": {
+    "passed": 9,
+    "total": 10,
+    "failed_case": "route returned {\"keys\":[...],\"values\":[...]} instead of {\"to\",\"reason\"}"
+  },
+  "comparison": {
+    "d2_strict_json": "0/10 — D2 required exact expected values, a stricter criterion than this run",
+    "note": "these numbers are not directly comparable; JSON validity improved, content correctness did not"
+  },
+  "observations": [
+    "Most outputs wrapped JSON in ``` fences; recovery handled it without retry",
+    "One retry was needed only for the route case and still produced wrong keys",
+    "Content errors remain: device answered \"iPhone\", schedule answered 2023 dates"
+  ],
+  "limitations": [
+    "GBNF grammar-constrained decoding is not implemented; rebuilding the runtime needs the pinned llama.cpp checkout, which is absent",
+    "The context cap is native (input <= 4096 bytes, tokens <= 768, prompt+max <= 1024) and was not changed",
+    "The probe measures 10 synthetic JSON prompts, not the full 50-case suite"
+  ]
+}
