@@ -109,7 +109,7 @@ public final class MainActivity extends Activity {
             store.recoverExternalActions();
             int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
             if (recoveredJobs > 0)
-                settingsPanel.setRecoveryMessage("已恢复 " + recoveredJobs + " 条本地任务调度；任务记录保持不变。");
+                settingsPanel.setRecoveryMessage(T.format("settings.recovered_jobs", isEnglish(), recoveredJobs));
         } catch (Exception error) {
             showError(error);
         }
@@ -285,14 +285,14 @@ public final class MainActivity extends Activity {
                     remoteUriExpiresAtElapsed = SystemClock.elapsedRealtime() + REMOTE_URI_LIFETIME_MILLIS;
                     scheduleRemoteUriExpiry();
                 }
-                showMessage("已为此任务接收单条合成内容的临时读取权");
+                showMessage(T.s("cap.received_once", isEnglish()));
             } else {
                 if (taskId != null) {
                     capabilityBroker.deny(taskId, AndroidRemoteStatusProvider.CAPABILITY,
                         AndroidRemoteStatusProvider.SCOPE);
                     capabilityBroker.releaseRemoteUri(taskId);
                 }
-                showMessage("未接收跨应用内容授权");
+                showMessage(T.s("cap.not_received", isEnglish()));
                 if (selectedUri != null) {
                     restartMainActivityAfterRemoteGrantRelease();
                     return;
@@ -312,7 +312,7 @@ public final class MainActivity extends Activity {
                 .edit()
                 .putString("app_lang", nextIsEn ? "en" : "zh")
                 .commit();
-        Toast.makeText(this, nextIsEn ? "Switched to English interface" : "已切换为中文界面", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, T.s("ui.switched_english", nextIsEn), Toast.LENGTH_SHORT).show();
         try {
             android.util.Log.i("MainActivity", "Sending ACTION_UPDATE_LOCALE nextIsEn=" + nextIsEn);
             Intent langIntent = new Intent(this, AgentFloatingService.class);
@@ -1402,7 +1402,7 @@ public final class MainActivity extends Activity {
         TextView planHeading = new TextView(this);
         planHeading.setText(en
             ? "Dynamic Execution Plan (" + task.plan.totalSteps() + " steps)"
-            : "动态执行计划（共 " + task.plan.totalSteps() + " 步）");
+            : T.format("task.plan_header", false, task.plan.totalSteps()));
         planHeading.setTextSize(15);
         planHeading.setTypeface(null, android.graphics.Typeface.BOLD);
         planHeading.setTextColor(0xFF222222);
@@ -1418,7 +1418,7 @@ public final class MainActivity extends Activity {
         TextView progressText = new TextView(this);
         progressText.setText(en
             ? "Progress: " + doneCount + " / " + task.plan.totalSteps() + " steps completed (" + progressPercent + "%)"
-            : "执行进度：已完成 " + doneCount + " / " + task.plan.totalSteps() + " 步 (" + progressPercent + "%)");
+            : T.format("task.progress_line", false, doneCount, task.plan.totalSteps(), progressPercent));
         progressText.setTextSize(13);
         progressText.setTextColor(0xFF0D47A1);
         progressText.setPadding(0, 0, 0, dp(6));
@@ -1656,7 +1656,7 @@ public final class MainActivity extends Activity {
                     AgentScheduler.cancelTask(this, task.jobId);
                 }
                 refreshTasks();
-                if (AgentStore.ACTIVE.equals(status)) showMessage("任务已提交给 Android 后台调度");
+                if (AgentStore.ACTIVE.equals(status)) showMessage(T.s("task.submitted_to_scheduler", isEnglish()));
             } catch (Exception error) {
                 showError(error);
             }
@@ -1754,7 +1754,7 @@ public final class MainActivity extends Activity {
 
     private void invokeCapability(AgentStore.Task task, String capability, String scope) {
         if (busy) return;
-        setBusy(true, isEnglish() ? "Reading the authorized local capability…" : "正在读取授权的本机能力…");
+        setBusy(true, T.s("cap.reading", isEnglish()));
         io.execute(() -> {
             String value = null;
             Exception failure = null;
@@ -1767,8 +1767,7 @@ public final class MainActivity extends Activity {
             Exception invokeFailure = failure;
             mainHandler.post(() -> {
                 if (destroyed) return;
-                setBusy(false, isEnglish() ? (invokeFailure == null ? "Local capability read completed" : "Local capability read failed")
-                    : (invokeFailure == null ? "本机能力读取完成" : "本机能力读取失败"));
+                setBusy(false, T.s(invokeFailure == null ? "cap.read_done" : "cap.read_failed", isEnglish()));
                 refreshTasks();
                 if (invokeFailure != null) {
                     showError(invokeFailure);
@@ -1812,7 +1811,7 @@ public final class MainActivity extends Activity {
         try {
             boolean revoked = capabilityBroker.revoke(task.id, capability, scope);
             showMessage(isEnglish() ? (revoked ? label + " grant revoked" : "No active " + label + " grant")
-                : (revoked ? label + "授权已撤销" : "当前没有有效的" + label + "授权"));
+                : T.format(revoked ? "cap.revoked" : "cap.none", isEnglish(), label));
         } catch (Exception error) {
             showError(error);
         }
@@ -1846,17 +1845,17 @@ public final class MainActivity extends Activity {
         if (remoteUriExpiresAtElapsed > 0
                 && SystemClock.elapsedRealtime() >= remoteUriExpiresAtElapsed && !destroyed) {
             capabilityBroker.releaseAllRemoteUris();
-            showMessage("跨应用临时读取权已过期，请重新打开 Agent OS");
+            showMessage(T.s("cap.remote_expired", isEnglish()));
             finishAndRemoveTask();
         }
     }
 
     private void confirmDeleteTask(AgentStore.Task task) {
         AlertDialog deleteTaskDialog = new AlertDialog.Builder(this)
-            .setView(Ui.dialogBody(this, "删除任务记录？",
-                "删除会清除任务和对应的本机审计记录，并保存一个删除标记，阻止旧档案重新导入这条任务。", 13))
-            .setNegativeButton("保留", null)
-            .setPositiveButton("删除", (dialog, which) -> {
+            .setView(Ui.dialogBody(this, T.s("task.delete_title", isEnglish()),
+                T.s("task.delete_body", isEnglish()), 13))
+            .setNegativeButton(T.s("task.delete_keep", isEnglish()), null)
+            .setPositiveButton(T.s("task.delete_confirm", isEnglish()), (dialog, which) -> {
                 try {
                     capabilityBroker.revoke(task.id, AndroidRemoteStatusProvider.CAPABILITY,
                         AndroidRemoteStatusProvider.SCOPE);
@@ -1897,14 +1896,14 @@ public final class MainActivity extends Activity {
         LinearLayout fields = new LinearLayout(this);
         fields.setOrientation(LinearLayout.VERTICAL);
         fields.setPadding(dp(24), dp(8), dp(24), 0);
-        EditText first = passwordField("新建档案口令");
-        EditText second = passwordField("再次输入口令");
+        EditText first = passwordField(T.s("archive.passphrase_new", isEnglish()));
+        EditText second = passwordField(T.s("archive.passphrase_again", isEnglish()));
         fields.addView(first);
         fields.addView(second);
         String exportNote = isEnglish()
             ? "Use and retain a passphrase of at least 12 characters. To restore this archive, the destination must run Agent OS 0.6.0 or later."
-            : "请使用至少 12 个字符的长口令，并妥善保存。新档案需在 Agent OS 0.6.0 或更新版本导入；忘记口令后无法恢复内容。";
-        fields.addView(Ui.title(this, isEnglish() ? "Encrypted export" : "加密导出"), 0);
+            : T.s("archive.passphrase_note", false);
+        fields.addView(Ui.title(this, T.s("archive.export_title", isEnglish())), 0);
         TextView exportNoteView = new TextView(this);
         exportNoteView.setText(exportNote);
         exportNoteView.setTextSize(12);
@@ -1912,8 +1911,8 @@ public final class MainActivity extends Activity {
         fields.addView(exportNoteView, 1);
         AlertDialog exportDialog = new AlertDialog.Builder(this)
             .setView(fields)
-            .setNegativeButton("取消", null)
-            .setPositiveButton("选择保存位置", (dialog, which) -> {
+            .setNegativeButton(T.s("common.cancel", isEnglish()), null)
+            .setPositiveButton(T.s("archive.choose_location", isEnglish()), (dialog, which) -> {
                 char[] passphrase = first.getText().toString().toCharArray();
                 char[] confirmation = second.getText().toString().toCharArray();
                 first.setText("");
@@ -1921,13 +1920,13 @@ public final class MainActivity extends Activity {
                 if (!Arrays.equals(passphrase, confirmation)) {
                     clear(passphrase);
                     clear(confirmation);
-                    showMessage("两次输入的口令不一致");
+                    showMessage(T.s("archive.passphrase_mismatch", isEnglish()));
                     return;
                 }
                 clear(confirmation);
                 if (Character.codePointCount(passphrase, 0, passphrase.length) < 12) {
                     clear(passphrase);
-                    showMessage("口令至少需要 12 个字符");
+                    showMessage(T.s("archive.passphrase_short", isEnglish()));
                     return;
                 }
                 pendingExportPassphrase = passphrase;
@@ -1936,12 +1935,12 @@ public final class MainActivity extends Activity {
                 intent.setType("application/octet-stream");
                 intent.putExtra(Intent.EXTRA_TITLE, "agent-os-memory-" + new SimpleDateFormat("yyyyMMdd", Locale.US).format(new Date()) + ".taos");
                 try {
-                    setBusy(true, "请选择档案保存位置");
+                    setBusy(true, T.s("archive.picking_location", isEnglish()));
                     startActivityForResult(intent, CREATE_ARCHIVE_REQUEST);
                 } catch (ActivityNotFoundException error) {
                     clearPendingExportPassphrase();
                     setBusy(false, "");
-                    showMessage("系统没有可用的文件保存位置");
+                    showMessage(T.s("archive.no_save_location", isEnglish()));
                 }
             })
             .create();
@@ -1955,11 +1954,11 @@ public final class MainActivity extends Activity {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
         try {
-            setBusy(true, "请选择 Agent OS 加密档案");
+            setBusy(true, T.s("archive.picking_file", isEnglish()));
             startActivityForResult(intent, OPEN_ARCHIVE_REQUEST);
         } catch (ActivityNotFoundException error) {
             setBusy(false, "");
-            showMessage("系统没有可用的文件选择器");
+            showMessage(T.s("archive.no_picker", isEnglish()));
         }
     }
 
@@ -2003,13 +2002,13 @@ public final class MainActivity extends Activity {
     }
 
     private void writeArchive(Uri uri, char[] passphrase) {
-        setBusy(true, "正在加密并保存档案…");
+        setBusy(true, T.s("archive.encrypting", isEnglish()));
         io.execute(() -> {
             Exception failure = null;
             try {
                 byte[] archive = store.exportArchive(passphrase);
                 try (OutputStream output = getContentResolver().openOutputStream(uri, "wt")) {
-                    if (output == null) throw new java.io.IOException("无法打开所选保存位置");
+                    if (output == null) throw new java.io.IOException(T.s("archive.cannot_open_target", isEnglish()));
                     output.write(archive);
                     output.flush();
                 } finally {
@@ -2023,19 +2022,19 @@ public final class MainActivity extends Activity {
             Exception result = failure;
             mainHandler.post(() -> {
                 if (destroyed) return;
-                setBusy(false, result == null ? "加密档案已保存" : "导出失败");
+                setBusy(false, T.s(result == null ? "archive.saved" : "archive.export_failed", isEnglish()));
                 if (result != null) showError(result);
             });
         });
     }
 
     private void reviewArchive(Uri uri, char[] passphrase) {
-        setBusy(true, isEnglish() ? "Unlocking archive…" : "正在解密并校验档案…");
+        setBusy(true, T.s("archive.unlocking", isEnglish()));
         io.execute(() -> {
             AgentStore.ArchiveReview review = null;
             Exception failure = null;
             try (InputStream input = getContentResolver().openInputStream(uri)) {
-                if (input == null) throw new java.io.IOException("无法打开所选档案");
+                if (input == null) throw new java.io.IOException(T.s("archive.cannot_open_file", isEnglish()));
                 review = store.reviewArchive(input, passphrase);
             } catch (Exception error) { failure = error; }
             finally { clear(passphrase); }
@@ -2092,7 +2091,7 @@ public final class MainActivity extends Activity {
     }
 
     private void importReviewedArchive(AgentStore.ArchiveReview review, java.util.Map<String, Boolean> choices) {
-        setBusy(true, isEnglish() ? "Importing archive…" : "正在合并档案…");
+        setBusy(true, T.s("archive.importing", isEnglish()));
         io.execute(() -> {
             AgentStore.ImportResult result = null;
             Exception failure = null;
@@ -2156,7 +2155,7 @@ public final class MainActivity extends Activity {
         boolean monitoring = PhysicalSensoriumManager.getInstance(this).isMonitoring();
         sensorToggleButton.setText(en
                 ? (monitoring ? "Stop sensors" : "Enable sensors")
-                : (monitoring ? "停止感知" : "启用感知"));
+                : T.s(monitoring ? "sensor.stop" : "sensor.start", isEnglish()));
     }
 
     private void reviewSensorObservation() {
@@ -2285,7 +2284,7 @@ public final class MainActivity extends Activity {
     }
 
     private void showError(Exception error) {
-        String message = error.getMessage() == null ? "操作失败" : error.getMessage();
+        String message = error.getMessage() == null ? T.s("common.operation_failed", isEnglish()) : error.getMessage();
         showMessage(message);
     }
 
