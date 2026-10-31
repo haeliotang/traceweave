@@ -34,7 +34,9 @@ final class LocalModelDraft {
             try {
                 Exception lastFailure = null;
                 for (int attempt = 0; attempt < 2; attempt++) {
-                    byte[] attemptInput = attempt == 0 ? input : strictPrompt(task.title, TaskContext.memories(task.plan));
+                    byte[] attemptInput = attempt == 0 ? input
+                        : strictPrompt(task.title, TaskContext.memories(task.plan),
+                            lastFailure == null ? "" : lastFailure.getMessage());
                     synchronized (cancelled) {
                         if (cancelled.get()) throw new IllegalStateException("Local model request cancelled");
                         synchronized (ACTIVE_LOCK) { activeRequest = cancelled; }
@@ -60,10 +62,13 @@ final class LocalModelDraft {
         }
     }
 
-    private static byte[] strictPrompt(String goal, List<AgentStore.Memory> memories) {
+    static byte[] strictPrompt(String goal, List<AgentStore.Memory> memories, String previousFailure) {
         StringBuilder text = new StringBuilder("Output only the Markdown document body. No preamble, no explanation, no code fences.\nGoal: ")
             .append(goal).append("\nSelected memories:\n");
         for (AgentStore.Memory memory : memories) text.append("- ").append(memory.content).append("\n");
+        if (previousFailure != null && !previousFailure.isEmpty())
+            text.append("The previous attempt was rejected because: ").append(previousFailure)
+                .append("\nFix exactly that problem and keep the body short and complete.");
         if (memories.isEmpty()) text.append("(none)\n");
         byte[] bytes = text.toString().getBytes(StandardCharsets.UTF_8);
         if (bytes.length > 4096) throw new IllegalArgumentException("Selected goal and memories exceed the local model input limit");
