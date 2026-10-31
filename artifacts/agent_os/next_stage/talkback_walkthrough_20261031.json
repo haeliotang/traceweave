@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "talkback": "com.android.talkback enabled by the user; service confirmed active in dumpsys accessibility",
+  "checks": {
+    "service_enabled": true,
+    "focus_highlight_captured": [
+      "main screen title",
+      "pairing dialog fingerprint text",
+      "pairing dialog sync-id field"
+    ],
+    "labeled_nodes_in_tree": true,
+    "tree_nodes": 65,
+    "navigation_by_double_tap": "main -> task center succeeded once",
+    "settings_dialog_opened": true
+  },
+  "limitations": [
+    "Scripted double-tap activation under TalkBack was unreliable: most attempts only moved focus, so a full multi-screen walkthrough was not completed",
+    "Spoken output is not captured; evidence is the focus highlight, the labeled tree and one observed navigation",
+    "A TalkBack phone-permission setup dialog kept reappearing until the permission was granted via adb"
+  ]
+}

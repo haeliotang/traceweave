@@ -114,9 +114,20 @@ final class MemoryDetailPanel {
 
     private void confirmDelete(AgentStore.Memory memory) {
         boolean en = host.english();
+        LinearLayout confirmBody = new LinearLayout(host);
+        confirmBody.setOrientation(LinearLayout.VERTICAL);
+        confirmBody.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
+        TextView confirmTitle = Ui.title(host, T.s("memorydetailpanel.20", en));
+        confirmTitle.setTextSize(14);
+        confirmBody.addView(confirmTitle);
+        TextView confirmText = new TextView(host);
+        confirmText.setText(T.s("memorydetail.a_tombstone_prevents_old_archives_from", en));
+        confirmText.setTextSize(13);
+        confirmText.setTextColor(Ui.text(host));
+        confirmText.setPadding(0, host.dpRef(4), 0, 0);
+        confirmBody.addView(confirmText);
         AlertDialog confirm = new AlertDialog.Builder(host)
-            .setTitle(T.s("memorydetailpanel.20", en))
-            .setMessage(T.s("memorydetail.a_tombstone_prevents_old_archives_from", en))
+            .setView(confirmBody)
             .setNegativeButton(T.s("memorydetailpanel.21", en), null)
             .setPositiveButton(T.s("memorydetailpanel.22", en), (dialog, which) -> {
                 try {
