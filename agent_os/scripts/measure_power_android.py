@@ -19,10 +19,28 @@ def parse_battery(text):
     powered = any(fields.get(name) == "true" for name in ("ac powered", "usb powered", "wireless powered"))
     level = fields.get("level")
     temperature = fields.get("temperature")
+    counter = fields.get("charge counter")
     return {
         "powered": powered,
         "level": int(level) if level and level.isdigit() else None,
         "temperature_c": (int(temperature) / 10.0) if temperature and temperature.lstrip("-").isdigit() else None,
+        "charge_uah": int(counter) if counter and counter.lstrip("-").isdigit() else None,
+    }
+
+
+def estimate_from_charge(samples):
+    """Consumption from (seconds, microamp-hours) samples; far finer than whole-percent levels."""
+    if len(samples) < 2:
+        raise ValueError("at least two samples are required")
+    (first_seconds, first_charge), (last_seconds, last_charge) = samples[0], samples[-1]
+    hours = (last_seconds - first_seconds) / 3600.0
+    if hours <= 0:
+        raise ValueError("samples must span a positive interval")
+    used_uah = first_charge - last_charge
+    return {
+        "hours": round(hours, 3),
+        "used_mah": round(used_uah / 1000.0, 1),
+        "mah_per_hour": round((used_uah / 1000.0) / hours, 1),
     }
 
 
@@ -86,7 +104,8 @@ def main():
             "device": "manual",
             "capacity_mah": args.capacity_mah,
             "samples": samples,
-            "estimate": estimate(samples, args.capacity_mah),
+            "estimate": estimate_value,
+        "charge_samples": charge_samples,
             "temperature_c": {"start": None, "end": None, "max": None},
             "notes": ["computed from manually reported readings", "no temperature data"],
         }
@@ -110,20 +129,27 @@ def main():
 
     started = time.time()
     samples = [(0.0, first["level"])]
+    charge_samples = [(0.0, first["charge_uah"])] if first.get("charge_uah") else []
     temperatures = [first["temperature_c"]]
     while time.time() - started < args.minutes * 60:
         time.sleep(args.interval_seconds)
         current = sample(args.adb, args.serial)
         samples.append((time.time() - started, current["level"]))
+        if current.get("charge_uah"):
+            charge_samples.append((time.time() - started, current["charge_uah"]))
         if current["temperature_c"] is not None:
             temperatures.append(current["temperature_c"])
 
+    estimate_value = estimate(samples, args.capacity_mah)
+    if len(charge_samples) >= 2:
+        estimate_value = estimate_from_charge(charge_samples)
     result = {
         "label": args.label,
         "device": args.serial,
         "capacity_mah": args.capacity_mah,
         "samples": samples,
-        "estimate": estimate(samples, args.capacity_mah),
+        "estimate": estimate_value,
+        "charge_samples": charge_samples,
         "temperature_c": {
             "start": temperatures[0],
             "end": temperatures[-1],

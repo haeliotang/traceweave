@@ -28,6 +28,15 @@ class PowerEstimateTests(unittest.TestCase):
         self.assertEqual(result["lost_percent"], 4)
         self.assertAlmostEqual(result["percent_per_hour"], 24.0, places=1)
 
+    def test_estimate_from_charge_counter(self):
+        result = MODULE.estimate_from_charge([(0, 3_962_000), (3600, 3_900_000)])
+        self.assertAlmostEqual(result["used_mah"], 62.0, places=1)
+        self.assertAlmostEqual(result["mah_per_hour"], 62.0, places=1)
+
+    def test_parse_charge_counter(self):
+        parsed = MODULE.parse_battery("  Charge counter: 3962000\n  level: 100\n")
+        self.assertEqual(parsed["charge_uah"], 3_962_000)
+
     def test_estimate_rejects_short_series(self):
         with self.assertRaises(ValueError):
             MODULE.estimate([(0.0, 100)], 4000)

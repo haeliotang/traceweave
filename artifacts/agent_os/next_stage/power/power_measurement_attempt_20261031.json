@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "goal": "compare idle drain with automatic sync off vs on, device unplugged",
+  "setup": {
+    "connection": "adb over Wi-Fi at 192.168.0.25:5555 (USB data cable unplugged; USB adb drops when unplugged)",
+    "meter": "battery charge counter (uAh) sampled every 60 s, plus level and temperature"
+  },
+  "runs": [
+    {"label": "auto-sync-off", "window": "10 min", "screen": "on (settings dialog open)", "used_mah": 60.0, "mah_per_hour": 359.1},
+    {"label": "auto-sync-on", "window": "10 min", "screen": "off/ambient after HOME", "used_mah": 32.0, "mah_per_hour": 191.5, "forced_sync_attempts": 1, "attempt_result": "skipped: no paired device"}
+  ],
+  "conclusion": "the two runs are NOT comparable: screen state differed, and the screen dominates the drain. The numbers must not be presented as a sync-overhead measurement.",
+  "operational_findings": [
+    "unplugging the USB cable removes the USB adb path, so a wireless path is required for on-battery work",
+    "wireless adb dropped when the device entered Doze after the screen turned off",
+    "the device locked behind a PIN entry screen, which blocks scripted interaction"
+  ],
+  "next_options": [
+    "keep the device unlocked with a long screen timeout and run two 10-minute screen-on windows back to back",
+    "or report two battery-percentage readings by hand while using the device normally; the script accepts --reading 'HH:MM level'"
+  ]
+}
