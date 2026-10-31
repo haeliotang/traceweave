@@ -143,7 +143,8 @@ public final class TaskDetailActivity extends Activity {
                 heading.setTypeface(null, android.graphics.Typeface.BOLD);
                 row.addView(heading);
 
-                TextView detail = Ui.meta(this, step.status + (step.capability.isEmpty() ? "" : " · " + step.capability));
+                TextView detail = Ui.meta(this, StepText.status(step.status, en)
+            + (step.capability.isEmpty() ? "" : " · " + step.capability));
                 detail.setPadding(0, dp(2), 0, 0);
                 row.addView(detail);
 
@@ -168,7 +169,8 @@ public final class TaskDetailActivity extends Activity {
         try {
             for (AgentStore.AuditEvent event : store.listRecentAuditEvents(200)) {
                 if (!taskId.equals(event.taskId)) continue;
-                content.addView(Ui.meta(this, clock.format(new java.util.Date(event.occurredAt)) + " · " + event.event));
+                content.addView(Ui.meta(this, clock.format(new java.util.Date(event.occurredAt)) + " · "
+                    + AuditText.describe(event.event, en)));
                 if (++shown >= 20) break;
             }
         } catch (Exception ignored) {

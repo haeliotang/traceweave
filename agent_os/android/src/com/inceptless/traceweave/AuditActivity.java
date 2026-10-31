@@ -168,7 +168,7 @@ public final class AuditActivity extends Activity {
             row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(0, Ui.dp(this, 5), 0, Ui.dp(this, 5));
             TextView line = new TextView(this);
-            line.setText(event.event);
+            line.setText(AuditText.describe(event.event, en));
             line.setTextSize(12);
             line.setTextColor(Ui.text(this));
             row.addView(line);

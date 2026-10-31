@@ -24,6 +24,13 @@ final class StepText {
         return title;
     }
 
+    /** Step states are stored as identifiers; the UI shows words from the catalog. */
+    static String status(String status, boolean en) {
+        if (status == null) return "";
+        String key = "step.status." + status;
+        return T.has(key) ? T.s(key, en) : status;
+    }
+
     static String observation(String observation, boolean en) {
         if (observation == null || observation.isEmpty()) return "";
         String clean = observation;

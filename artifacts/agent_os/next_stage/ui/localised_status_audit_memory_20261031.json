@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-31",
+  "items": {
+    "step_status": "step states render through the catalog (待处理/执行中/等待授权… or Pending/Running/Awaiting grant…) instead of the stored identifiers",
+    "audit_events": "audit identifiers are described in words on both the audit page and the task detail page (Task started, Plan generated (2 steps), Capability denied: …)",
+    "memory_all_types": "the memory vault picker has an All types entry and filters the list by the chosen kind; saving offsets correctly"
+  },
+  "process_note": "the first version hardcoded both translations in the helpers; the literal ratchet rejected it, so the copy moved into the catalog and the helpers only hold keys. That is the documented rule for user-facing text.",
+  "device_evidence": {
+    "detail": "1. Read Local Note / Awaiting grant · demo.note.read / 10-31 23:10:41 · Waiting for your approval (step_1)",
+    "vault": "All types selected, Fact (1) and Preference (1) groups shown",
+    "screenshots": [
+      "artifacts/agent_os/next_stage/ui/detail_localized_20261031.png",
+      "artifacts/agent_os/next_stage/ui/memory_all_types_20261031.png"
+    ]
+  },
+  "verification": "host suite OK; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+}

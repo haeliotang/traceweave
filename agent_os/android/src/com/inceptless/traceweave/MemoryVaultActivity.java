@@ -66,7 +66,15 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
 
         kind = new Spinner(this);
         kind.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                new String[]{T.s("kind.preference", en), T.s("kind.fact", en), T.s("kind.workflow", en)}));
+                new String[]{T.s("memory.kind_all", en), T.s("kind.preference", en),
+                    T.s("kind.fact", en), T.s("kind.workflow", en)}));
+        kind.setSelection(0);
+        kind.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                render();
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
         controls.addView(kind, new LinearLayout.LayoutParams(dpRef(140), ViewGroup.LayoutParams.WRAP_CONTENT));
 
         search = new EditText(this);
@@ -163,8 +171,9 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
         String content = input.getText().toString().trim();
         if (content.isEmpty()) return;
         String[] kinds = {AgentStore.MEMORY_PREFERENCE, AgentStore.MEMORY_FACT, AgentStore.MEMORY_WORKFLOW};
+        int selected = Math.max(0, kind.getSelectedItemPosition() - 1);
         try {
-            store.createMemory(kinds[Math.max(0, kind.getSelectedItemPosition())], content);
+            store.createMemory(kinds[Math.min(selected, kinds.length - 1)], content);
             input.setText("");
             render();
         } catch (Exception error) {
@@ -181,7 +190,17 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
             return;
         }
         String query = search == null ? "" : search.getText().toString();
-        renderResults(index.search(query));
+        List<AgentStore.Memory> found = index.search(query);
+        int selected = kind == null ? 0 : kind.getSelectedItemPosition();
+        String wanted = selected <= 0 ? null
+            : selected == 1 ? AgentStore.MEMORY_PREFERENCE
+            : selected == 2 ? AgentStore.MEMORY_FACT : AgentStore.MEMORY_WORKFLOW;
+        if (wanted != null) {
+            List<AgentStore.Memory> filtered = new java.util.ArrayList<>();
+            for (AgentStore.Memory memory : found) if (wanted.equals(memory.kind)) filtered.add(memory);
+            found = filtered;
+        }
+        renderResults(found);
     }
 
     private void renderResults(List<AgentStore.Memory> memories) {

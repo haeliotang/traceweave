@@ -736,6 +736,39 @@ final class T {
         add("audit.filter_sync", "Sync", "同步");
         add("audit.search_hint", "Search events or task id...", "搜索事件或任务 ID...");
         add("audit.count", "%d events shown", "显示 %d 条");
+        add("memory.kind_all", "All types", "全部类型");
+        add("step.status.pending", "Pending", "待处理");
+        add("step.status.running", "Running", "执行中");
+        add("step.status.awaiting_grant", "Awaiting grant", "等待授权");
+        add("step.status.done", "Done", "已完成");
+        add("step.status.failed", "Failed", "失败");
+        add("step.status.draft_ready", "Draft ready", "草稿就绪");
+        add("step.status.handed_off", "Handed off", "已交给系统");
+        add("step.status.outcome_unknown", "Outcome unknown", "结果未知");
+        add("step.status.cancelled", "Cancelled", "已取消");
+        add("audit.event.task_created", "Task created", "任务已创建");
+        add("audit.event.plan_generated.arg", "Plan generated (%s steps)", "已生成计划（%s 步）");
+        add("audit.event.local_rule_planning_started", "Local rule planning started", "开始本地规则规划");
+        add("audit.event.local_rule_planning_completed", "Local rule planning finished", "本地规则规划完成");
+        add("audit.event.status_active", "Task started", "任务开始执行");
+        add("audit.event.status_completed", "Task completed", "任务已完成");
+        add("audit.event.status_cancelled", "Task cancelled", "任务已取消");
+        add("audit.event.status_paused", "Task paused", "任务已暂停");
+        add("audit.event.task_waiting_for_user.arg", "Waiting for your approval (%s)", "等待你授权（%s）");
+        add("audit.event.executor_step_1_started", "Step 1 started", "第 1 步开始");
+        add("audit.event.executor_step_2_started", "Step 2 started", "第 2 步开始");
+        add("audit.event.capability_granted.arg", "Capability granted: %s", "已授权能力：%s");
+        add("audit.event.capability_denied.arg", "Capability denied: %s", "已拒绝能力：%s");
+        add("audit.event.capability_revoked.arg", "Capability revoked: %s", "已撤销能力：%s");
+        add("audit.event.memory_created", "Memory saved", "已保存记忆");
+        add("audit.event.memory_deleted", "Memory deleted", "已删除记忆");
+        add("audit.event.memory_revised", "Memory revised", "已修改记忆");
+        add("audit.event.sync_applied.arg", "Sync applied: %s", "同步已应用：%s");
+        add("audit.event.pair_created", "Device paired", "已配对设备");
+        add("audit.event.pair_revoked", "Pairing revoked", "已撤销配对");
+        add("audit.event.memory_other", "Memory event: %s", "记忆事件：%s");
+        add("audit.event.sync_other", "Sync event: %s", "同步事件：%s");
+        add("audit.event.task_other", "Task event: %s", "任务事件：%s");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
@@ -773,6 +806,11 @@ final class T {
     }
 
     private T() {}
+
+    /** True when the key exists; lets callers fall back instead of throwing. */
+    static boolean has(String key) {
+        return STRINGS.containsKey(key);
+    }
 
     static String format(String key, boolean english, Object... args) {
         return String.format(java.util.Locale.ROOT, s(key, english), args);
