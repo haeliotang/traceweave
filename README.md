@@ -146,7 +146,7 @@ The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/org/tra
 
 ## 6. Practical Application Scenarios & Real-World Use Cases
 
-This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the production APK does not package the sync library yet. The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
+This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the sync runtime is now part of the local production candidate and its packaging is checked by the release verifier (no released version bump yet). The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
 
 ### 6.1 Third-Party Agent & Standalone Bot Ecosystem Integration
 

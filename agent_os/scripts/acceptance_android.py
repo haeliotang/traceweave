@@ -80,6 +80,7 @@ def main():
     parser.add_argument('--install', action='store_true', help='Install the verified update in place after all automated checks')
     parser.add_argument('--legacy-validation-apk', type=Path, help='Optional trusted older isolated source APK for archive compatibility')
     parser.add_argument('--model-runtime', type=Path, help='Optional pinned, locally rebuilt model runtime')
+    parser.add_argument('--sync-runtime', type=Path, help='Optional locally built sync runtime')
     args = parser.parse_args()
     out = args.output_dir.resolve()
     if not args.previous_apk.is_file() or args.previous_apk.resolve().is_relative_to(out):
@@ -102,6 +103,7 @@ def main():
     release_command = [sys.executable, 'agent_os/scripts/prepare_release_android.py', *common,
                        '--expected-signer', args.expected_signer, '--previous-apk', args.previous_apk, '--output-dir', candidate]
     if args.model_runtime: release_command += ['--model-runtime', args.model_runtime]
+    if args.sync_runtime: release_command += ['--sync-runtime', args.sync_runtime]
     execute(release_command)
     manifest = ROOT / 'agent_os/tests/android/manifest-documents.xml'
     target_manifest = out / 'validation-target.xml'

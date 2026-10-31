@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "scope": "production candidate with both native runtimes; same versionCode as the installed app, local only",
+  "build": {
+    "apk_bytes": 3466279,
+    "apk_sha256": "e30be025460e9a1a969297e7e34ff9b26c6fe48ab050ba899f1fbb4c092bbb97",
+    "sync_runtime_included": true,
+    "model_runtime_included": true,
+    "test_components_excluded": true,
+    "version": "0.6.14",
+    "version_code": 23
+  },
+  "pipeline_changes": [
+    "prepare_release_android.py accepts --sync-runtime and passes it as a second --native-lib",
+    "verify_release_android.py checks the packaged libtraceform_sync.so against the build input digest and requires it with --require-sync-runtime",
+    "acceptance_android.py forwards --sync-runtime"
+  ],
+  "device_check": {
+    "installed_candidate": true,
+    "settings_sync_row": "Sync: 0 paired device(s) · this device 00240801",
+    "meaning": "SyncTransport.available() is true, so the packaged library loads and derives a peer id"
+  },
+  "limitations": [
+    "Same versionCode as the installed app; this is a candidate rebuild, not a released version bump",
+    "Two production installs cannot coexist, so the end-to-end exchange was validated earlier on isolated installs (C6/F4)",
+    "No signed release receipt yet for this candidate"
+  ]
+}

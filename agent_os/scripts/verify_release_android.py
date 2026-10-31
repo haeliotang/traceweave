@@ -92,7 +92,22 @@ def check_model_runtime(archive, inputs):
     return True
 
 
-def verify(apk, report, tools, expected_signer, previous=None, require_model_runtime=False):
+def check_sync_runtime(archive, inputs):
+    path = "lib/arm64-v8a/libtraceform_sync.so"
+    names = archive.namelist()
+    if path not in names:
+        return False
+    if names.count(path) != 1:
+        raise ValueError("Sync runtime is ambiguous")
+    labels = [label for label in inputs if label.endswith("/libtraceform_sync.so")]
+    digest = hashlib.sha256(archive.read(path)).hexdigest()
+    if len(labels) != 1 or inputs[labels[0]] != digest:
+        raise ValueError("Packaged sync runtime does not match the build input")
+    return True
+
+
+def verify(apk, report, tools, expected_signer, previous=None, require_model_runtime=False,
+           require_sync_runtime=False):
     identity = apk_identity(apk, tools)
     if identity["package"] != PACKAGE or identity["debuggable"]:
         raise ValueError("Expected a non-debuggable production APK")
@@ -131,6 +146,9 @@ def verify(apk, report, tools, expected_signer, previous=None, require_model_run
         model_runtime_included = check_model_runtime(archive, inputs)
         if require_model_runtime and not model_runtime_included:
             raise ValueError("Required local model runtime is missing")
+        sync_runtime_included = check_sync_runtime(archive, inputs)
+        if require_sync_runtime and not sync_runtime_included:
+            raise ValueError("Required sync runtime is missing")
     if previous:
         old = apk_identity(previous, tools)
         if old["package"] != PACKAGE or old["signer_sha256"] != identity["signer_sha256"] or old["version_code"] >= identity["version_code"]:
@@ -138,6 +156,7 @@ def verify(apk, report, tools, expected_signer, previous=None, require_model_run
     return {**identity, "apk_sha256": report["apk_sha256"], "input_count": len(inputs),
             "packaged_manifest_checked": True, "packaged_network_policy_checked": True,
             "test_components_excluded": True, "model_runtime_included": model_runtime_included,
+            "sync_runtime_included": sync_runtime_included,
             "previous_same_signer_upgrade_checked": previous is not None,
             "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "scope": "local_candidate_only_not_store_release_or_os_ota"}
@@ -152,9 +171,10 @@ def main():
     parser.add_argument("--previous-apk", type=Path)
     parser.add_argument("--require-model-runtime", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--require-sync-runtime", action="store_true")
     args = parser.parse_args()
     try:
-        result = verify(args.apk, json.loads(args.report.read_text()), args.build_tools, args.expected_signer, args.previous_apk, args.require_model_runtime)
+        result = verify(args.apk, json.loads(args.report.read_text()), args.build_tools, args.expected_signer, args.previous_apk, args.require_model_runtime, args.require_sync_runtime)
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError, zipfile.BadZipFile) as error:
         raise SystemExit("Release verification failed: " + str(error))
     args.output.parent.mkdir(parents=True, exist_ok=True)

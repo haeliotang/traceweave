@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--expected-signer", required=True)
     parser.add_argument("--password-env", default="AGENT_OS_KEYSTORE_PASSWORD")
     parser.add_argument("--model-runtime", type=Path)
+    parser.add_argument("--sync-runtime", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     if not args.previous_apk.is_file() or args.previous_apk.resolve() == (args.output_dir / "agent-os.apk").resolve():
@@ -34,6 +35,11 @@ def main():
     args.output_dir.mkdir(parents=True, exist_ok=True)
     if args.model_runtime:
         validate_model_runtime(args.model_runtime, root)
+    if args.sync_runtime:
+        if not args.sync_runtime.is_file() or args.sync_runtime.stat().st_size < 100_000:
+            raise ValueError("Sync runtime must be an existing arm64 shared library")
+        if args.sync_runtime.name != "libtraceform_sync.so":
+            raise ValueError("Sync runtime must be named libtraceform_sync.so")
     verification = args.output_dir / "release_verification.json"
     verification.unlink(missing_ok=True)
     builder = [sys.executable, str(root / "agent_os/scripts/build_android.py")]
@@ -41,6 +47,8 @@ def main():
         builder += ["--" + name, str(getattr(args, name.replace("-", "_")))]
     if args.model_runtime:
         builder += ["--native-lib", str(args.model_runtime)]
+    if args.sync_runtime:
+        builder += ["--native-lib", str(args.sync_runtime)]
     subprocess.run(builder, cwd=root, check=True)
     env = os.environ.copy()
     env["AGENT_OS_BUILD_REPORT"] = str((args.output_dir / "build_report.json").resolve())
@@ -52,6 +60,8 @@ def main():
                     "--previous-apk", str(args.previous_apk), "--output", str(verification)]
     if args.model_runtime:
         command.append("--require-model-runtime")
+    if args.sync_runtime:
+        command.append("--require-sync-runtime")
     subprocess.run(command, cwd=root, check=True)
     print("Candidate is verified locally. Device acceptance and a data-recovery rehearsal are still required before distribution.")
 
