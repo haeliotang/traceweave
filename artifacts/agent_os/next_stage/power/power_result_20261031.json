@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-31",
+  "device": "Pixel 6a",
+  "state": {
+    "charging": false,
+    "screen": "on, locked to the home screen, kept awake by a KEYCODE_WAKEUP every 20 s",
+    "connection": "adb over Wi-Fi (USB data cable unplugged)",
+    "meter": "battery charge counter in uAh, sampled every 60 s"
+  },
+  "arms": [
+    {"label": "sync-off", "minutes": 10, "used_mah": 26.0, "mah_per_hour": 155.6,
+     "charge_start_uah": 3854000, "charge_end_uah": 3828000, "temp_c": {"start": 27.4, "end": 26.8}},
+    {"label": "sync-on", "minutes": 10, "used_mah": 26.0, "mah_per_hour": 155.4,
+     "charge_start_uah": 3828000, "charge_end_uah": 3802000, "temp_c": {"start": 26.8, "end": 26.5},
+     "sync_attempts": 5}
+  ],
+  "attempt_log": [
+    "19:35:27 auto_sync skipped: no paired device",
+    "19:37:12 auto_sync skipped: no paired device",
+    "19:38:47 auto_sync skipped: no paired device",
+    "19:40:22 auto_sync skipped: no paired device",
+    "19:41:57 auto_sync skipped: no paired device",
+    "19:43:33 auto_sync skipped: no paired device"
+  ],
+  "result": {
+    "difference_mah_per_hour": 0.2,
+    "resolution_mah_over_window": 1,
+    "conclusion": "five background sync attempts changed drain by less than the meter's resolution; each attempt costs well under 1 mAh in the no-peer case"
+  },
+  "limitations": [
+    "screen was on for both arms, so the absolute figure includes display drain and is not an idle-standby number",
+    "no paired device existed, so every attempt failed before any transfer; a real sync with data would cost more",
+    "single run per arm, no repeats, no thermal chamber",
+    "the device had to stay awake because wireless adb disconnects when the screen sleeps"
+  ]
+}
