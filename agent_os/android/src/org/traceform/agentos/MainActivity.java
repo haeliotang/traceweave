@@ -1971,13 +1971,15 @@ public final class MainActivity extends Activity {
     private void reviewArchiveConflict(AgentStore.ArchiveReview review, List<String> ids, int index, java.util.Map<String, Boolean> choices) {
         boolean en = isEnglish();
         if (index == ids.size()) {
-            new AlertDialog.Builder(this)
-                .setTitle(T.s("ui.confirm_archive_import", en))
-                .setMessage(T.format("archive.import_confirm", en, review.localMemoryDeletions, review.localTaskDeletions))
+            AlertDialog importConfirm = new AlertDialog.Builder(this)
+                .setView(Ui.dialogBody(this, T.s("ui.confirm_archive_import", en),
+                    T.format("archive.import_confirm", en, review.localMemoryDeletions, review.localTaskDeletions), 13))
                 .setNegativeButton(T.s("ui.cancel", en), (dialog, which) -> setBusy(false, T.s("ui.import_cancelled", en)))
                 .setPositiveButton(T.s("ui.import", en), (dialog, which) -> importReviewedArchive(review, choices))
                 .setOnCancelListener(dialog -> setBusy(false, T.s("ui.import_cancelled", en)))
-                .show();
+                .create();
+            importConfirm.show();
+            Ui.themeDialog(importConfirm, this);
             return;
         }
         String id = ids.get(index);
