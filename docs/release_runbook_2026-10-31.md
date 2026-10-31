@@ -91,7 +91,17 @@ adb -s <serial> install -r agent_os/build/preflight-<date>/agent-os.apk
 adb -s <serial> shell am start -n org.traceform.agentos/org.traceform.agentos.MainActivity
 ```
 
-冒烟清单：主屏、任务、记忆、同步、审计各开一次；深色与浅色各看一遍；导出一次诊断。
+最小自动化冒烟：
+
+```bash
+python3 agent_os/scripts/smoke_candidate_android.py \
+  --serial <serial> --apk agent_os/build/preflight-<date>/agent-os.apk \
+  --output agent_os/build/smoke-candidate.json
+```
+
+它做三件事：安装候选包、启动 `MainActivity`、用 `uiautomator` 断言首屏元素（标题、状态徽章、功能磁贴）。注意断言只能放在**首屏可见**的元素上——导航栏在滚动区域下方，未滚动时不进辅助功能树（第一版就因此误判失败）。
+
+人工冒烟清单（脚本覆盖不到）：任务、记忆、同步、审计各开一次；深浅色各看一遍；导出一次诊断。
 
 ## 5. 常见失败与处理（均在本项目真实出现）
 

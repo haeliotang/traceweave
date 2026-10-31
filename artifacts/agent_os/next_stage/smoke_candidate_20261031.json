@@ -1,0 +1,19 @@
+{
+  "apk": "Documents/traceform/agent_os/build/preflight-final/agent-os.apk",
+  "package": "org.traceform.agentos",
+  "version": "0.6.14",
+  "checks": {
+    "install": true,
+    "launch": true,
+    "header": true,
+    "status_chips": true,
+    "tiles": true
+  },
+  "details": {
+    "install_output": [
+      "Install command complete in 405 ms"
+    ],
+    "version": "0.6.14"
+  },
+  "ok": true
+}
