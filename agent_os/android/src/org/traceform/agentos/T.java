@@ -40,6 +40,26 @@ final class T {
         add("settings.section_data", "Data & archive", "数据与存档");
         add("settings.section_sync", "Sync", "同步");
         add("settings.section_services", "Services & extensions", "服务与扩展");
+        add("sync.wait_peer", "Wait for peer", "等待对端");
+        add("sync.now", "Sync now", "同步现在");
+        add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
+        add("sync.enable_title", "Enable automatic sync?", "启用自动同步？");
+        add("sync.enable_message", "Only while the app is open, and only with paired devices. No background service is started.",
+            "仅在应用打开时、且只对已配对设备尝试；不会启动后台常驻服务。");
+        add("common.enable", "Enable", "启用");
+        add("common.cancel", "Cancel", "取消");
+        add("pair.title", "Pair a device", "配对新设备");
+        add("pair.remote_hint", "Remote fingerprint (64 hex characters)", "对端指纹（64 位十六进制）");
+        add("pair.sync_hint", "Peer sync ID (hex, optional)", "对端同步 ID（十六进制，可选）");
+        add("pair.address_hint", "Peer address, e.g. 192.168.0.25:47961", "对端地址，如 192.168.0.25:47961");
+        add("pair.find", "Find on this network", "局域网发现");
+        add("pair.wait", "Wait for the other device", "等待对方设备");
+        add("pair.connect", "Connect to address", "连接此地址");
+        add("pair.compare", "Compare the code", "核对确认码");
+        add("pair.same_code", "Both devices must show the same code.", "两台设备必须显示相同的确认码。");
+        add("pair.confirm", "Pair", "确认配对");
+        add("pair.done", "Device paired", "设备已配对");
+        add("pair.failed", "Pairing failed", "配对失败");
         add("taskcenter.open", "Open", "打开");
         add("taskcenter.actions", "Actions", "更多操作");
         add("taskcenter.pause", "Pause", "暂停");

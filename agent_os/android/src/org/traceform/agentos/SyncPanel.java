@@ -36,23 +36,22 @@ final class SyncPanel {
 
         LinearLayout syncButtons = new LinearLayout(host);
         syncButtons.setOrientation(LinearLayout.HORIZONTAL);
-        host.addActionButton(syncButtons, en ? "Wait for peer" : "等待对端", view -> startSyncServe(en));
-        host.addActionButton(syncButtons, en ? "Sync now" : "同步现在", view -> startSyncDial(en));
+        host.addActionButton(syncButtons, T.s("sync.wait_peer", en), view -> startSyncServe(en));
+        host.addActionButton(syncButtons, T.s("sync.now", en), view -> startSyncDial(en));
         syncRow.addView(syncButtons);
 
         android.widget.CheckBox autoSync = new android.widget.CheckBox(host);
-        autoSync.setText(en ? "Automatic sync while the app is open" : "应用打开时自动同步");
+        autoSync.setText(T.s("sync.auto", en));
         autoSync.setTextSize(11);
         autoSync.setTextColor(0xFF64748B);
         autoSync.setChecked(host.storeRef().syncAutoEnabled());
         autoSync.setOnCheckedChangeListener((button, checked) -> {
             if (checked) {
                 new AlertDialog.Builder(host)
-                    .setTitle(en ? "Enable automatic sync?" : "启用自动同步？")
-                    .setMessage(en ? "Only while the app is open, and only with paired devices. No background service is started."
-                                   : "仅在应用打开时、且只对已配对设备尝试；不会启动后台常驻服务。")
-                    .setNegativeButton(en ? "Cancel" : "取消", (dialog, which) -> button.setChecked(false))
-                    .setPositiveButton(en ? "Enable" : "启用", (dialog, which) -> host.storeRef().setSyncAutoEnabled(true))
+                    .setTitle(T.s("sync.enable_title", en))
+                    .setMessage(T.s("sync.enable_message", en))
+                    .setNegativeButton(T.s("common.cancel", en), (dialog, which) -> button.setChecked(false))
+                    .setPositiveButton(T.s("common.enable", en), (dialog, which) -> host.storeRef().setSyncAutoEnabled(true))
                     .setOnCancelListener(dialog -> button.setChecked(false))
                     .show();
             } else {
@@ -69,7 +68,7 @@ final class SyncPanel {
             DeviceIdentity.create();
             String local = DeviceIdentity.fingerprint();
             EditText remote = new EditText(host);
-            remote.setHint(en ? "Remote fingerprint (64 hex characters)" : "对端指纹（64 位十六进制）");
+            remote.setHint(T.s("pair.remote_hint", en));
             TextView localView = new TextView(host);
             localView.setText((en ? "This device: " : "本机：") + local);
             localView.setTextSize(11);
@@ -78,9 +77,9 @@ final class SyncPanel {
             syncView.setText((en ? "Sync ID: " : "同步 ID：") + (localSyncId.isEmpty() ? "—" : localSyncId));
             syncView.setTextSize(11);
             EditText remoteSync = new EditText(host);
-            remoteSync.setHint(en ? "Peer sync ID (hex, optional)" : "对端同步 ID（十六进制，可选）");
+            remoteSync.setHint(T.s("pair.sync_hint", en));
             EditText remoteAddress = new EditText(host);
-            remoteAddress.setHint(en ? "Peer address, e.g. 192.168.0.25:47961" : "对端地址，如 192.168.0.25:47961");
+            remoteAddress.setHint(T.s("pair.address_hint", en));
 
             LinearLayout holder = new LinearLayout(host);
             holder.setOrientation(LinearLayout.VERTICAL);
@@ -91,18 +90,18 @@ final class SyncPanel {
             holder.addView(remoteSync);
             holder.addView(remoteAddress);
 
-            Button discoverButton = compact(en ? "Find on this network" : "局域网发现", view -> startPairDiscovery(en));
-            Button waitButton = compact(en ? "Wait for the other device" : "等待对方设备", view -> startPairServe(en));
-            Button connectButton = compact(en ? "Connect to address" : "连接此地址",
+            Button discoverButton = compact(T.s("pair.find", en), view -> startPairDiscovery(en));
+            Button waitButton = compact(T.s("pair.wait", en), view -> startPairServe(en));
+            Button connectButton = compact(T.s("pair.connect", en),
                 view -> startPairDialFromText(remoteAddress.getText().toString(), en));
             holder.addView(discoverButton);
             holder.addView(waitButton);
             holder.addView(connectButton);
 
             new AlertDialog.Builder(host)
-                .setTitle(en ? "Pair a device" : "配对新设备")
+                .setTitle(T.s("pair.title", en))
                 .setView(holder)
-                .setNegativeButton(en ? "Cancel" : "取消", null)
+                .setNegativeButton(T.s("common.cancel", en), null)
                 .setPositiveButton(en ? "Pair by fingerprint" : "用指纹配对", (dialog, which) -> {
                     String remoteValue = remote.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
                     if (!SyncPairing.validFingerprint(remoteValue) || remoteValue.equals(local)) {
@@ -117,12 +116,12 @@ final class SyncPanel {
                         new AlertDialog.Builder(host)
                             .setTitle(en ? "Compare this code" : "核对确认码")
                             .setMessage((en ? "Code: " : "确认码：") + code + "\n"
-                                + (en ? "Both devices must show the same code." : "两台设备必须显示相同的确认码。"))
-                            .setNegativeButton(en ? "Cancel" : "取消", null)
-                            .setPositiveButton(en ? "Pair" : "确认配对", (inner, ignored) -> {
+                                + (T.s("pair.same_code", en)))
+                            .setNegativeButton(T.s("common.cancel", en), null)
+                            .setPositiveButton(T.s("pair.confirm", en), (inner, ignored) -> {
                                 try {
                                     SyncPairing.confirm(host.storeRef(), local, remoteValue, deviceId, peerId, code, code);
-                                    host.toast(en ? "Device paired" : "设备已配对");
+                                    host.toast(T.s("pair.done", en));
                                     host.refreshAfterSync();
                                 } catch (Exception error) {
                                     host.failWith(error);
@@ -221,7 +220,7 @@ final class SyncPanel {
                 new AlertDialog.Builder(host)
                     .setTitle(en ? "Pick a device" : "选择设备")
                     .setItems(labels.toArray(new String[0]), (dialog, which) -> startPairDial(addresses.get(which), en))
-                    .setNegativeButton(en ? "Cancel" : "取消", null)
+                    .setNegativeButton(T.s("common.cancel", en), null)
                     .show();
             });
         });
@@ -268,23 +267,23 @@ final class SyncPanel {
         SyncActions.Session session = SyncActions.session(json);
         if (session == null) {
             String detail = SyncActions.error(json);
-            host.toast((en ? "Pairing failed" : "配对失败") + (detail.isEmpty() ? "" : ": " + detail));
+            host.toast((T.s("pair.failed", en)) + (detail.isEmpty() ? "" : ": " + detail));
             return;
         }
         final String sas = session.sas;
         final String remoteFingerprint = session.fingerprint;
         final String peerId = session.peerId;
         new AlertDialog.Builder(host)
-            .setTitle(en ? "Compare the code" : "核对确认码")
+            .setTitle(T.s("pair.compare", en))
             .setMessage((en ? "Code: " : "确认码：") + sas + "\n"
-                + (en ? "Both devices must show the same code." : "两台设备必须显示相同的确认码。"))
-            .setNegativeButton(en ? "Cancel" : "取消", null)
-            .setPositiveButton(en ? "Pair" : "确认配对", (dialog, which) -> {
+                + (T.s("pair.same_code", en)))
+            .setNegativeButton(T.s("common.cancel", en), null)
+            .setPositiveButton(T.s("pair.confirm", en), (dialog, which) -> {
                 try {
                     SyncPairing.confirm(host.storeRef(), DeviceIdentity.fingerprint(), remoteFingerprint,
                         "peer-" + remoteFingerprint.substring(0, 16), peerId, sas, sas);
                     host.refreshAfterSync();
-                    host.toast(en ? "Device paired" : "设备已配对");
+                    host.toast(T.s("pair.done", en));
                 } catch (Exception error) { host.failWith(error); }
             })
             .show();
