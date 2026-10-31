@@ -614,6 +614,12 @@ final class T {
         add("plan.synthesis_note", "\nSynthetic note read: %s", "\n读取的合成便笺：%s");
         add("plan.synthesis_step", "\n[Step %d · %s] %s", "\n[步骤 %d · %s] %s");
         add("plan.synthesis_footer", "\nOn-device analysis: %d capabilities ran under the offline guard; all data stayed on this device and no network was used.", "\n端侧推理分析：已在离线保护环境下完成 %d 项能力的受控执行与状态核对，所有数据保存在本机，未请求网络。");
+        add("step.read_note.fallback_desc", "Local rule fallback: read the local note", "本地规则兜底规划：读取本地便笺");
+        add("plan.local_header", "【Local rule summary】\n", "【本地规则整理结果】\n");
+        add("plan.local_goal", "Goal: %s\n\n", "任务意图目标：%s\n\n");
+        add("plan.local_observations", "Execution observations:\n", "执行观察数据：\n");
+        add("plan.local_no_observations", "(no earlier observations)\n", "（无前序步骤观察数据）\n");
+        add("plan.local_footer", "\nThe text above was assembled by local rules; it is not a language-model response.", "\n以上内容由本地规则整理；这不是语言模型生成结果。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

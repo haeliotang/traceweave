@@ -76,7 +76,12 @@ final class LocalSlmEngine implements ReasoningEngine {
 
     @Override
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
-                             List<AgentStore.Memory> memories) {
+                              List<AgentStore.Memory> memories) {
+        return plan(taskId, userGoal, availableCaps, memories, false);
+    }
+
+    ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
+                             List<AgentStore.Memory> memories, boolean en) {
         String goal = userGoal == null ? "" : userGoal.trim();
 
         if (NativeAgentCore.isAvailable()) {
@@ -152,10 +157,10 @@ final class LocalSlmEngine implements ReasoningEngine {
                             if (!hasSynthesis) {
                                 steps.add(new ExecutionPlan.Step(
                                         steps.size(),
-                                        "端侧综合推理报告",
+                                        T.s("step.synthesis.title", en),
                                         "builtin.synthesis",
                                         "local_inference",
-                                        "使用本地规则整理多步观察",
+                                        T.s("step.synthesis.desc", en),
                                         ExecutionPlan.STEP_PENDING,
                                         "",
                                         0L
@@ -183,7 +188,7 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_NOTE] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.DEMO_NOTE_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取示例便笺",
+                T.s("step.read_note.title", en),
                 CapabilityBroker.DEMO_NOTE_CAPABILITY,
                 CapabilityBroker.DEMO_NOTE_SCOPE,
                 "本地规则规划：读取本地示例便笺内容",
@@ -196,10 +201,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_STATUS] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.DEMO_STATUS_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取设备运行状态",
+                T.s("step.device_status.title", en),
                 CapabilityBroker.DEMO_STATUS_CAPABILITY,
                 CapabilityBroker.DEMO_STATUS_SCOPE,
-                "本地规则规划：获取设备运行与网络状态",
+                T.s("step.device_status.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -209,10 +214,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_TRACEFORM] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.TRACEFORM_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取 Traceform 本机历史摘要",
+                T.s("step.traceform.title", en),
                 CapabilityBroker.TRACEFORM_CAPABILITY,
                 CapabilityBroker.TRACEFORM_SCOPE,
-                "本地规则规划：读取 Traceform 本机历史摘要",
+                T.s("step.traceform.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -226,7 +231,7 @@ final class LocalSlmEngine implements ReasoningEngine {
                 "读取示例便笺",
                 CapabilityBroker.DEMO_NOTE_CAPABILITY,
                 CapabilityBroker.DEMO_NOTE_SCOPE,
-                "本地规则兜底规划：读取本地便笺",
+                T.s("step.read_note.fallback_desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -237,10 +242,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_CALENDAR] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.CALENDAR_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "创建系统日历日程",
+                T.s("step.calendar.title", en),
                 CapabilityBroker.CALENDAR_CAPABILITY,
                 CapabilityBroker.CALENDAR_SCOPE,
-                "本地规则规划：生成日程草稿",
+                T.s("step.calendar.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -250,10 +255,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_NOTIFICATION] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.NOTIFICATION_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "推送系统任务通知",
+                T.s("step.notify.title", en),
                 CapabilityBroker.NOTIFICATION_CAPABILITY,
                 CapabilityBroker.NOTIFICATION_SCOPE,
-                "本地规则规划：在通知栏推送任务执行状态",
+                T.s("step.notify.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -263,10 +268,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         if (logits[CLASS_SHARE] >= INTENT_THRESHOLD && supportedCaps.contains(CapabilityBroker.SHARE_CAPABILITY)) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "打包文本分享导出",
+                T.s("step.share.title", en),
                 CapabilityBroker.SHARE_CAPABILITY,
                 CapabilityBroker.SHARE_SCOPE,
-                "本地规则规划：生成用于外部系统分享的文本摘要",
+                T.s("step.share.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -290,11 +295,15 @@ final class LocalSlmEngine implements ReasoningEngine {
 
     @Override
     public String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("【本地规则整理结果】\n");
-        sb.append("任务意图目标：").append(userGoal == null ? "" : userGoal).append("\n\n");
+        return synthesize(taskId, userGoal, executedSteps, false);
+    }
 
-        sb.append("执行观察数据：\n");
+    String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps, boolean en) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(T.s("plan.local_header", en));
+        sb.append(T.format("plan.local_goal", en, userGoal == null ? "" : userGoal));
+
+        sb.append(T.s("plan.local_observations", en));
         int count = 0;
         for (ExecutionPlan.Step step : executedSteps) {
             if (!step.observation.isEmpty()) {
@@ -304,10 +313,10 @@ final class LocalSlmEngine implements ReasoningEngine {
         }
 
         if (count == 0) {
-            sb.append("(无前序步骤观察数据)\n");
+            sb.append(T.s("plan.local_no_observations", en));
         }
 
-        sb.append("\n以上内容由本地规则整理；这不是语言模型生成结果。");
+        sb.append(T.s("plan.local_footer", en));
         return sb.toString();
     }
 
