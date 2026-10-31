@@ -1198,6 +1198,19 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    List<AuditEvent> listRecentAuditEvents(int limit) {
+        java.util.ArrayList<AuditEvent> events = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("audit",
+                new String[]{"id", "task_id", "occurred_at", "event"}, null, null, null, null,
+                "occurred_at DESC", String.valueOf(Math.max(1, Math.min(limit, 500))))) {
+            while (cursor.moveToNext()) {
+                events.add(new AuditEvent(cursor.getString(0), cursor.getString(1),
+                    cursor.getLong(2), cursor.getString(3)));
+            }
+        }
+        return events;
+    }
+
     public List<String> listAuditEvents(String taskId, int limit) {
         SQLiteDatabase database = getReadableDatabase();
         List<String> list = new ArrayList<>();

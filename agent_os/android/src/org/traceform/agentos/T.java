@@ -523,6 +523,15 @@ final class T {
         add("sensorcontext.motion", "Motion: ", "运动：");
         add("sensorcontext.battery_temp", "Battery temp: ", "电池温度：");
         add("sensorcontext.nsource_accelerometer_gyroscope", "\nSource: accelerometer + gyroscope", "\n来源：加速度计 + 陀螺仪");
+        add("audit.title", "Audit log", "审计日志");
+        add("audit.note", "Read-only local events. Export writes a timestamped TSV you choose.", "本机只读事件。导出会在你选择的位置写入带时间戳的 TSV。");
+        add("audit.refresh", "Refresh", "刷新");
+        add("audit.export", "Export TSV", "导出 TSV");
+        add("audit.back", "Back", "返回");
+        add("audit.empty", "No audit events yet", "暂无审计事件");
+        add("audit.task", "Task", "任务");
+        add("audit.exported", "Audit log exported", "审计日志已导出");
+        add("audit.open", "Audit log", "审计日志");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

@@ -793,6 +793,8 @@ public final class MainActivity extends Activity {
         vadLiveStatus.setPadding(0, dp(8), 0, dp(6));
         root.addView(vadLiveStatus);
 
+        addPageButton(root, T.s("audit.open", en), view -> startActivity(new android.content.Intent(this, AuditActivity.class)));
+
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
         autoBtnRow.setPadding(0, dp(2), 0, dp(4));
