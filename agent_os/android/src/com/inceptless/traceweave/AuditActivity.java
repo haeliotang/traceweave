@@ -32,7 +32,9 @@ public final class AuditActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Ui.background(this));
-        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 40), Ui.dp(this, 12), Ui.dp(this, 12));
+        int statusBar = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int topInset = statusBar > 0 ? getResources().getDimensionPixelSize(statusBar) : Ui.dp(this, 24);
+        root.setPadding(Ui.dp(this, 12), topInset + Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
         ScrollView scroll = new ScrollView(this);
         scroll.setBackgroundColor(Ui.background(this));
         scroll.addView(root);
@@ -49,13 +51,13 @@ public final class AuditActivity extends Activity {
         actions.setOrientation(LinearLayout.HORIZONTAL);
         Button refresh = compact(T.s("audit.refresh", en), view -> { render(); showIntegrity(); });
         Button export = compact(T.s("audit.export", en), view -> export());
-        Button diagnosticsButton = compact(T.s("audit.diagnostics", en), view -> exportDiagnostics());
-        actions.addView(refresh, new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f));
-        LinearLayout.LayoutParams exportLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f);
+        Button diagnosticsButton = compact(T.s("audit.diagnostics", en), view -> exportDiagnostics(), true);
+        actions.addView(refresh, new LinearLayout.LayoutParams(0, Ui.dp(this, 48), 1f));
+        LinearLayout.LayoutParams exportLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 48), 1f);
         exportLp.setMargins(Ui.dp(this, 6), 0, 0, 0);
         actions.addView(export, exportLp);
         root.addView(actions);
-        LinearLayout.LayoutParams diagLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
+        LinearLayout.LayoutParams diagLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 48));
         diagLp.setMargins(0, Ui.dp(this, 4), 0, 0);
         root.addView(diagnosticsButton, diagLp);
 
@@ -72,7 +74,7 @@ public final class AuditActivity extends Activity {
             Button chip = compact(entry[1], view -> { category = entry[0]; refreshChips(); render(); });
             chip.setTag(entry[0]);
             chip.setTextSize(11);
-            LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1f);
+            LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(0, Ui.dp(this, 48), 1f);
             chipLp.setMargins(0, 0, Ui.dp(this, 4), 0);
             chips.addView(chip, chipLp);
         }
@@ -113,7 +115,7 @@ public final class AuditActivity extends Activity {
         root.addView(rows);
 
         Button back = compact(T.s("audit.back", en), view -> finish());
-        LinearLayout.LayoutParams backLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 40));
+        LinearLayout.LayoutParams backLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 48));
         backLp.setMargins(0, Ui.dp(this, 8), 0, 0);
         root.addView(back, backLp);
         refreshChips();
@@ -122,10 +124,21 @@ public final class AuditActivity extends Activity {
     }
 
     private Button compact(String label, View.OnClickListener listener) {
+        return compact(label, listener, false);
+    }
+
+    private Button compact(String label, View.OnClickListener listener, boolean primary) {
         Button button = new Button(this);
         button.setText(label);
         button.setAllCaps(false);
-        button.setTextSize(12);
+        button.setTextSize(13);
+        if (primary) {
+            button.setBackgroundColor(0xFF0F172A);
+            button.setTextColor(0xFFFFFFFF);
+        } else {
+            button.setBackgroundColor(Ui.secondaryBg(this));
+            button.setTextColor(Ui.secondaryFg(this));
+        }
         button.setOnClickListener(listener);
         return button;
     }

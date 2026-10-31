@@ -52,10 +52,7 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
         TextView title = Ui.title(this, T.s("ui.encrypted_memory_vault", en));
         title.setTextSize(18);
         topRow.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        Button close = new Button(this);
-        close.setText(T.s("common.close", en));
-        close.setAllCaps(false);
-        close.setOnClickListener(view -> finish());
+        Button close = secondaryButton(T.s("common.close", en), view -> finish());
         topRow.addView(close, new LinearLayout.LayoutParams(dpRef(96), dpRef(48)));
         page.addView(topRow);
 

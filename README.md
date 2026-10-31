@@ -21,15 +21,15 @@ Traceweave redefines personal computing for the post-application agent era. Trad
 Traceweave's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
-  <img src="docs/assets/screen_home_light_en.png" alt="Traceweave Agent OS home screen in light mode" width="240" />
-  <img src="docs/assets/screen_home_dark_en.png" alt="Traceweave Agent OS home screen in dark mode" width="240" />
-  <img src="docs/assets/screen_task_plan_en.png" alt="A planned task with its steps expanded" width="240" />
+  <img src="docs/assets/screen_home_light_en.png" alt="Home screen in light mode" width="240" />
+  <img src="docs/assets/screen_home_dark_en.png" alt="Home screen in dark mode" width="240" />
+  <img src="docs/assets/screen_task_detail_en.png" alt="A task with its steps and audit trail" width="240" />
   <br />
   <img src="docs/assets/screen_memory_vault_en.png" alt="Encrypted memory vault" width="240" />
-  <img src="docs/assets/screen_audit_log_en.png" alt="On-device audit log" width="240" />
-  <img src="docs/assets/screen_settings_en.png" alt="Settings: archive, sync and providers" width="240" />
+  <img src="docs/assets/screen_audit_log_en.png" alt="Audit log with tamper check" width="240" />
+  <img src="docs/assets/screen_model_en.png" alt="On-device model page" width="240" />
   <br />
-  <sub>Pixel 6a, 0.1.0 build: home (light and dark), a planned task, the memory vault, the audit log and settings.</sub>
+  <sub>Pixel 6a, 0.1.0 build: home (light and dark), a task page, the memory vault, the audit log with its tamper check, and the model page.</sub>
 </p>
 
 ---

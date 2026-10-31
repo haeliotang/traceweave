@@ -23,13 +23,13 @@ Traceweave 的设计目标是一个**设备无关的计算基底**：计算状�
 <p align="center">
   <img src="docs/assets/screen_home_light_en.png" alt="浅色模式首页" width="240" />
   <img src="docs/assets/screen_home_dark_en.png" alt="深色模式首页" width="240" />
-  <img src="docs/assets/screen_task_plan_en.png" alt="任务与执行计划" width="240" />
+  <img src="docs/assets/screen_task_detail_en.png" alt="任务详情：步骤与审计" width="240" />
   <br />
   <img src="docs/assets/screen_memory_vault_en.png" alt="加密记忆库" width="240" />
-  <img src="docs/assets/screen_audit_log_en.png" alt="本机审计日志" width="240" />
-  <img src="docs/assets/screen_settings_en.png" alt="设置：档案、同步与能力提供方" width="240" />
+  <img src="docs/assets/screen_audit_log_en.png" alt="审计日志与防篡改校验" width="240" />
+  <img src="docs/assets/screen_model_en.png" alt="端侧模型页" width="240" />
   <br />
-  <sub>Pixel 6a，0.1.0 构建：首页（浅色/深色）、任务与计划、记忆库、审计日志、设置。</sub>
+  <sub>Pixel 6a，0.1.0 构建：首页（浅色/深色）、任务详情、记忆库、带防篡改校验的审计页、模型页。</sub>
 </p>
 
 ---
