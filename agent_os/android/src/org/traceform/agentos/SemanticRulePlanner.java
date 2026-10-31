@@ -36,6 +36,11 @@ final class SemanticRulePlanner implements ReasoningEngine {
     @Override
     public ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
                              List<AgentStore.Memory> memories) {
+        return plan(taskId, userGoal, availableCaps, memories, false);
+    }
+
+    ExecutionPlan plan(String taskId, String userGoal, List<CapabilityDescriptor> availableCaps,
+                       List<AgentStore.Memory> memories, boolean en) {
         String goal = userGoal == null ? "" : userGoal.trim();
         String lowerGoal = goal.toLowerCase(Locale.ROOT);
         List<ExecutionPlan.Step> steps = new ArrayList<>();
@@ -57,10 +62,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedNote) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取示例便笺",
+                T.s("step.read_note.title", en),
                 CapabilityBroker.DEMO_NOTE_CAPABILITY,
                 CapabilityBroker.DEMO_NOTE_SCOPE,
-                "读取本地固定的合成示例便笺内容",
+                T.s("step.read_note.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -70,10 +75,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedStatus) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取设备运行状态",
+                T.s("step.device_status.title", en),
                 CapabilityBroker.DEMO_STATUS_CAPABILITY,
                 CapabilityBroker.DEMO_STATUS_SCOPE,
-                "获取端侧离线运行与设备状态",
+                T.s("step.device_status.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -83,10 +88,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedTraceform) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取 Traceform 本机历史摘要",
+                T.s("step.traceform.title", en),
                 CapabilityBroker.TRACEFORM_CAPABILITY,
                 CapabilityBroker.TRACEFORM_SCOPE,
-                "读取底层传感器流形预测与历史候选样本",
+                T.s("step.traceform.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -96,10 +101,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedRemote) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "读取跨应用状态",
+                T.s("step.remote.title", en),
                 AndroidRemoteStatusProvider.CAPABILITY,
                 AndroidRemoteStatusProvider.SCOPE,
-                "从已选取的 ContentProvider 读取跨应用状态",
+                T.s("step.remote.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -109,10 +114,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedNotification) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "发送系统通知",
+                T.s("step.notify.title", en),
                 CapabilityBroker.NOTIFICATION_CAPABILITY,
                 CapabilityBroker.NOTIFICATION_SCOPE,
-                "向 Android 系统通知栏发送任务状态与提醒",
+                T.s("step.notify.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -122,10 +127,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedCalendar) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "创建系统日历日程",
+                T.s("step.calendar.title", en),
                 CapabilityBroker.CALENDAR_CAPABILITY,
                 CapabilityBroker.CALENDAR_SCOPE,
-                "创建日程意图与系统日历备忘事项",
+                T.s("step.calendar.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -135,10 +140,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         if (matchedShare) {
             steps.add(new ExecutionPlan.Step(
                 steps.size(),
-                "导出系统分享文本",
+                T.s("step.share.title", en),
                 CapabilityBroker.SHARE_CAPABILITY,
                 CapabilityBroker.SHARE_SCOPE,
-                "通过系统分享渠道导出文本内容与报告摘要",
+                T.s("step.share.desc", en),
                 ExecutionPlan.STEP_PENDING,
                 "",
                 0L
@@ -148,10 +153,10 @@ final class SemanticRulePlanner implements ReasoningEngine {
         // Always append the final synthesis step.
         steps.add(new ExecutionPlan.Step(
             steps.size(),
-            "端侧综合推理与报告生成",
+            T.s("step.synthesis.title", en),
             "builtin.synthesis",
             "local_inference",
-            "整合前序步骤观察输出，进行本地确定性推理并生成最终结论",
+            T.s("step.synthesis.desc", en),
             ExecutionPlan.STEP_PENDING,
             "",
             0L
@@ -162,8 +167,12 @@ final class SemanticRulePlanner implements ReasoningEngine {
 
     @Override
     public String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps) {
+        return synthesize(taskId, userGoal, executedSteps, false);
+    }
+
+    String synthesize(String taskId, String userGoal, List<ExecutionPlan.Step> executedSteps, boolean en) {
         StringBuilder builder = new StringBuilder();
-        builder.append("本地演示结果\n任务：").append(userGoal);
+        builder.append(T.format("plan.synthesis_header", en, userGoal));
 
         String noteObservation = null;
         List<ExecutionPlan.Step> otherSteps = new ArrayList<>();
@@ -180,19 +189,17 @@ final class SemanticRulePlanner implements ReasoningEngine {
         }
 
         if (noteObservation != null && !noteObservation.isEmpty()) {
-            builder.append("\n读取的合成便笺：").append(noteObservation);
+            builder.append(T.format("plan.synthesis_note", en, noteObservation));
         }
 
         if (!otherSteps.isEmpty()) {
             for (ExecutionPlan.Step step : otherSteps) {
-                builder.append("\n[步骤 ").append(step.index + 1).append(" · ").append(step.title).append("] ")
-                    .append(step.observation);
+                builder.append(T.format("plan.synthesis_step", en, step.index + 1, step.title, step.observation));
             }
         }
 
         int totalExternal = (noteObservation != null ? 1 : 0) + otherSteps.size();
-        builder.append("\n端侧推理分析：已在离线保护环境下完成 ").append(totalExternal)
-            .append(" 项能力的受控执行与状态核对，所有数据保存在本机，未请求网络。");
+        builder.append(T.format("plan.synthesis_footer", en, totalExternal));
 
         return builder.toString();
     }
