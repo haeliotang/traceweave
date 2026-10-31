@@ -3,7 +3,7 @@
 - 包名：org.traceform.agentos
 - 签名指纹：9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db
 - 数据格式：schema 11（升级后不可回退到旧版本）
-- 同步运行库：未包含
+- 同步运行库：已包含
 - 模型运行库：已包含
 - 测试组件已剔除：是
 
@@ -19,4 +19,4 @@
 ## 校验
 
 - 构建报告：build_report.json
-- 发布校验：verify.json
+- 发布校验：release_verification.json

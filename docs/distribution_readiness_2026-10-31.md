@@ -38,7 +38,21 @@
 - 数据库 schema 只升不降：**新版写过的库不能被旧版打开**（当前 `onUpgrade` 没有降级路径）；
 - 需要在发布说明里写明“升级后不可回退到 0.6.x 之前的版本”。
 
-## 3. 发布前检查清单（本地可执行）
+## 3. 一条命令完成发布前检查
+
+```
+python3 agent_os/scripts/release_preflight_android.py \
+  --android-jar <android.jar> --build-tools <build-tools> \
+  --keystore <keystore.p12> --key-alias <alias> --expected-signer <sha256> \
+  --model-runtime <libtraceform_local_model.so> --sync-runtime <libtraceform_sync.so> \
+  --output-dir build/preflight-<date>
+```
+
+依次执行：构建 → 发布校验 → 宿主测试（用本次构建报告作为溯源输入）→ 生成发布说明，最后写 `preflight.json`。任一步失败则整体退出码非零。
+
+0.6.14 的实跑结果：[preflight_20261031](../artifacts/agent_os/next_stage/preflight_20261031.json)（4 步全部通过，升级校验因缺上一版 APK 标为 skipped）。
+
+## 3.1 发布前检查清单（本地可执行）
 
 1. `prepare_release_android.py --require-model-runtime --require-sync-runtime` 通过；
 2. `verify_release_android.py` 输出签名与包内容校验通过；
