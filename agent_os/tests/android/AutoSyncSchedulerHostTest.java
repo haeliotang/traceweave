@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 public final class AutoSyncSchedulerHostTest {
     public static void main(String[] args) {

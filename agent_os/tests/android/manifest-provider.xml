@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos.validation.provider"
+    package="com.inceptless.traceweave.validation.provider"
     android:versionCode="1"
     android:versionName="0.1.0-validation-provider">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
@@ -10,18 +10,18 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
         <provider
-            android:name="org.traceform.agentos.SyntheticCapabilityContentProvider"
-            android:authorities="org.traceform.agentos.validation.provider"
+            android:name="com.inceptless.traceweave.SyntheticCapabilityContentProvider"
+            android:authorities="com.inceptless.traceweave.validation.provider"
             android:exported="false">
             <grant-uri-permission android:path="/status" />
         </provider>
         <activity
-            android:name="org.traceform.agentos.SyntheticCapabilityPickerActivity"
+            android:name="com.inceptless.traceweave.SyntheticCapabilityPickerActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="org.traceform.agentos.validation.provider.SELECT_STATUS" />
+                <action android:name="com.inceptless.traceweave.validation.provider.SELECT_STATUS" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="application/vnd.org.traceform.agentos.validation.status" />
+                <data android:mimeType="application/vnd.com.inceptless.traceweave.validation.status" />
             </intent-filter>
         </activity>
     </application>

@@ -13,7 +13,7 @@ import tempfile
 import time
 import xml.etree.ElementTree as ET
 
-PACKAGE = "org.traceform.agentos.actionsvalidation"
+PACKAGE = "com.inceptless.traceweave.actionsvalidation"
 
 
 def main():
@@ -56,7 +56,7 @@ def main():
     try:
         if original["whitelisted"]:
             run("shell", "dumpsys", "deviceidle", "whitelist", "-" + PACKAGE)
-        run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/org.traceform.agentos.BackgroundProbeActivity", "-a", "ARM_RESTRICTED_JOB")
+        run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/com.inceptless.traceweave.BackgroundProbeActivity", "-a", "ARM_RESTRICTED_JOB")
         prefs = ET.fromstring(run("exec-out", "run-as", PACKAGE, "cat", "shared_prefs/background_probe.xml"))
         task_id = next(n.text for n in prefs if n.attrib.get("name") == "restrictedTask")
         job_id = next(n.attrib["value"] for n in prefs if n.attrib.get("name") == "restrictedJob")
@@ -88,7 +88,7 @@ def main():
         run("shell", "cmd", "connectivity", "airplane-mode", "enable")
         run("shell", "svc", "wifi", "disable")
         time.sleep(3)
-        run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/org.traceform.agentos.BackgroundProbeActivity", "-a", "VERIFY_OFFLINE_LOCAL")
+        run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/com.inceptless.traceweave.BackgroundProbeActivity", "-a", "VERIFY_OFFLINE_LOCAL")
         offline = json.loads(run("exec-out", "run-as", PACKAGE, "cat", "files/offline-result.json"))
         receipt["cases"].append({"case": "offline_local_execution", **offline, "passed": all(offline.values())})
     finally:

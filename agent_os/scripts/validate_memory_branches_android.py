@@ -6,7 +6,7 @@ from verify_release_android import apk_identity
 parser=argparse.ArgumentParser(description="Test synthetic offline archive conflicts between isolated apps")
 for name in ('adb','serial','source-apk','target-apk','build-tools'):parser.add_argument('--'+name,required=True)
 args=parser.parse_args()
-adb=[args.adb,'-s',args.serial];source='org.traceform.agentos.actionsvalidation';target='org.traceform.agentos.documentsvalidation';bt=Path(args.build_tools)
+adb=[args.adb,'-s',args.serial];source='com.inceptless.traceweave.actionsvalidation';target='com.inceptless.traceweave.documentsvalidation';bt=Path(args.build_tools)
 apks={'source':Path(args.source_apk),'target':Path(args.target_apk)}
 results=tempfile.TemporaryDirectory(prefix='traceform-memory-branches-');root=Path(results.name)
 for name,pkg in [('source',source),('target',target)]:

@@ -4,10 +4,10 @@
 //! Synthetic identities only; no user data is read or written.
 
 use std::time::Duration;
-use traceform_sync::identity::DeviceIdentity;
-use traceform_sync::discovery::discover;
-use traceform_sync::pairing_session::{pair_dial, pair_serve};
-use traceform_sync::transport::{dial, loopback, serve, Ed25519BindingVerifier};
+use traceweave_sync::identity::DeviceIdentity;
+use traceweave_sync::discovery::discover;
+use traceweave_sync::pairing_session::{pair_dial, pair_serve};
+use traceweave_sync::transport::{dial, loopback, serve, Ed25519BindingVerifier};
 use sha2::{Digest, Sha256};
 
 fn fingerprint(identity: &DeviceIdentity) -> String {

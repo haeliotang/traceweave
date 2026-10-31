@@ -17,7 +17,7 @@
 | **权威任务状态机** | **Rust 内核** | [`task.rs`](../agent_os/core/src/task.rs) | 严格单向状态机约束与步骤断点原子提交。 |
 | **记忆沉淀与原地去重** | **Rust 内核** | [`store.rs`](../agent_os/core/src/store.rs)<br>[`memory.rs`](../agent_os/core/src/memory.rs) | 基于 `topic_key` 唯一索引实现同主题原地刷新，支持直接从 SQLite 提取时序加权关联记忆。 |
 | **C-ABI JNI 存储网关** | **Rust 原生库** | [`jni_api.rs`](../agent_os/core/src/jni_api.rs) | 导出 10 个 `nativeStore*` 接口，提供全局单例持久化连接。 |
-| **薄客户端桥接** | **Android 宿主** | [`NativeAgentCore.java`](../agent_os/android/src/org/traceform/agentos/NativeAgentCore.java) | 为 UI 层提供极简无业务逻辑的数据切片读取与意图派发。 |
+| **薄客户端桥接** | **Android 宿主** | [`NativeAgentCore.java`](../agent_os/android/src/com/inceptless/traceweave/NativeAgentCore.java) | 为 UI 层提供极简无业务逻辑的数据切片读取与意图派发。 |
 | **真机验收套件** | **Pixel 6a 真机** | [`DeviceValidationActivity.java`](../agent_os/tests/android/DeviceValidationActivity.java) | `VERIFY_FULL_RUST_STORE` 自动化全流程真机断言。 |
 
 ---

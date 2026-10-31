@@ -13,8 +13,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-NODE_A = 'org.traceform.agentos.actionsvalidation'
-NODE_B = 'org.traceform.agentos.documentsvalidation'
+NODE_A = 'com.inceptless.traceweave.actionsvalidation'
+NODE_B = 'com.inceptless.traceweave.documentsvalidation'
 
 
 def main():

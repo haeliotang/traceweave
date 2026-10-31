@@ -249,7 +249,7 @@
 
 **结果（2026-10-30）**：数据库升到 schema 7，新增 `memory_versions` 表；`mergeMemoryVersions` 在事务内合并并持久化，单一墓碑会删除记忆行并写入删除标记；`resolveMemoryVersion` 在事务内重读并核对被审核候选集合，变化即拒绝，选定内容应用后把各候选时钟合并并给本机加一。隔离真机 5 个用例通过：因果旧版本剔除、并发候选保留且不覆盖内容、墓碑删除与标记、重放去重、33 台拒绝、候选集合变化拒绝、解决后内容与时钟正确。见 [memory_merge_device_20261030](../artifacts/agent_os/next_stage/memory_merge_device_20261030.json)。合并尚未由同步传输驱动，候选选择 UI 不在本里程碑内。
 
-**进展（2026-10-30）**：[MemoryMerge.java](../agent_os/android/src/org/traceform/agentos/MemoryMerge.java) 完成合并规则（向量时钟、并发保留、墓碑优先、32 台与同钟不同内容拒绝、解决后时钟合并）并通过 7 项宿主断言（`agent_os/tests/test_memory_merge.py`）。尚未接入 AgentStore 表与事务，也未做设备验收。
+**进展（2026-10-30）**：[MemoryMerge.java](../agent_os/android/src/com/inceptless/traceweave/MemoryMerge.java) 完成合并规则（向量时钟、并发保留、墓碑优先、32 台与同钟不同内容拒绝、解决后时钟合并）并通过 7 项宿主断言（`agent_os/tests/test_memory_merge.py`）。尚未接入 AgentStore 表与事务，也未做设备验收。
 
 ### C6 端到端同步
 

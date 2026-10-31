@@ -8,7 +8,7 @@ import re
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "agent_os/android/src/org/traceform/agentos"
+SOURCE = ROOT / "agent_os/android/src/com/inceptless/traceweave"
 PLACEHOLDER = re.compile(r"%(?!%)(?:\d+\$)?[-+ 0,]*\d*(?:\.\d+)?[sdf]")
 
 

@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos.validation.source"
+    package="com.inceptless.traceweave.validation.source"
     android:versionCode="1"
     android:versionName="0.1.0-validation">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
     <queries>
-        <package android:name="org.traceform.agentos.validation.provider" />
+        <package android:name="com.inceptless.traceweave.validation.provider" />
     </queries>
     <application
         android:allowBackup="false"
@@ -13,8 +13,8 @@
         android:label="Agent OS Validation Source"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
-        <activity android:name="org.traceform.agentos.MainActivity" android:exported="true" />
-        <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true">
+        <activity android:name="com.inceptless.traceweave.MainActivity" android:exported="true" />
+        <activity android:name="com.inceptless.traceweave.DeviceValidationActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

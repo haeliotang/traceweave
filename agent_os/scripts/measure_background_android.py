@@ -11,7 +11,7 @@ import subprocess
 import re
 import time
 
-PACKAGE = "org.traceform.agentos.actionsvalidation"
+PACKAGE = "com.inceptless.traceweave.actionsvalidation"
 
 
 def compare(samples, prefix):
@@ -81,7 +81,7 @@ def main():
             if args.controlled and not setup["original_notification_permission"]:
                 run("shell", "pm", "grant", PACKAGE, "android.permission.POST_NOTIFICATIONS")
             action = "ARM_CONTROLLED" if args.controlled else "ARM_BACKGROUND"
-            run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/org.traceform.agentos.BackgroundProbeActivity", "-a", action)
+            run("shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/com.inceptless.traceweave.BackgroundProbeActivity", "-a", action)
             filename = "controlled-probe.json" if args.controlled else "background-probe.json"
             deadline = time.monotonic() + 10
             state = {}

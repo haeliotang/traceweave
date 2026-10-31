@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos"
-    android:versionCode="24"
-    android:versionName="0.6.15">
+    package="com.inceptless.traceweave"
+    android:versionCode="1"
+    android:versionName="0.1.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -18,20 +18,20 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
-    <uses-permission android:name="org.traceform.edge.READ_HISTORY_SUMMARY" />
+    <uses-permission android:name="com.inceptless.edge.CANONICAL_INPUT" />
+    <uses-permission android:name="com.inceptless.edge.READ_HISTORY_SUMMARY" />
     <queries>
         <intent><action android:name="android.intent.action.INSERT" /><data android:mimeType="vnd.android.cursor.dir/event" /></intent>
         <intent><action android:name="android.intent.action.SEND" /><data android:mimeType="text/plain" /></intent>
-        <package android:name="org.traceform.agentos.validation.provider" />
-        <package android:name="org.traceform.edge" />
+        <package android:name="com.inceptless.traceweave.validation.provider" />
+        <package android:name="com.inceptless.edge" />
     </queries>
     <application
         android:allowBackup="false"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
-        android:label="Agent OS Prototype"
+        android:label="Traceweave"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:networkSecurityConfig="@xml/network_security_config"
         android:usesCleartextTraffic="false">
@@ -47,7 +47,7 @@
             android:name=".SubstrateService"
             android:exported="true">
             <intent-filter>
-                <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
+                <action android:name="com.inceptless.traceweave.action.BIND_SUBSTRATE" />
             </intent-filter>
         </service>
         <activity android:name=".CapabilityApprovalActivity" android:exported="false" />

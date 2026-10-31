@@ -10,7 +10,7 @@ import re
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "agent_os/android/src/org/traceform/agentos"
+SOURCE = ROOT / "agent_os/android/src/com/inceptless/traceweave"
 BASELINE = ROOT / "agent_os/tests/data/hardcoded_cjk_baseline.json"
 LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 CJK = re.compile(r"[\u4e00-\u9fff]")

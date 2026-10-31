@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -30,7 +30,7 @@ public final class SyntheticCapabilityContentProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         if (!AndroidRemoteStatusProvider.CONTENT_URI.equals(uri)) return null;
-        return "vnd.android.cursor.item/vnd.org.traceform.agentos.validation.status";
+        return "vnd.android.cursor.item/vnd.com.inceptless.traceweave.validation.status";
     }
 
     @Override

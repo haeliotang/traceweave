@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

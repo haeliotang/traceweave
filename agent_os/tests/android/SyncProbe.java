@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 /** Thin JNI bridge used only by isolated validation builds. */
 final class SyncProbe {

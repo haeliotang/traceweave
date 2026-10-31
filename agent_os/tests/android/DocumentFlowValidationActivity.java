@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -704,7 +704,7 @@ public final class DocumentFlowValidationActivity extends Activity {
         boolean rejected = false;
         try {
             WorkflowTemplate.decode(workflowMemory(store,
-                "{\"format\":\"org.traceform.agentos.workflow\",\"version\":4,\"type\":\"markdown_review_save_share_guarded\",\"name\":\"x\",\"goalTemplate\":\"{{input}}\",\"steps\":[\"verified_document\",\"share_draft\"],\"guard\":{\"type\":\"shell\",\"value\":1}}"));
+                "{\"format\":\"com.inceptless.traceweave.workflow\",\"version\":4,\"type\":\"markdown_review_save_share_guarded\",\"name\":\"x\",\"goalTemplate\":\"{{input}}\",\"steps\":[\"verified_document\",\"share_draft\"],\"guard\":{\"type\":\"shell\",\"value\":1}}"));
         } catch (IllegalArgumentException error) {
             rejected = true;
         }

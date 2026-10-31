@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 public final class LocalModelStatusHostTest {
     private static void check(boolean value, String message) { if (!value) throw new AssertionError(message); }

@@ -6,7 +6,7 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-STORE = ROOT / "agent_os/android/src/org/traceform/agentos/AgentStore.java"
+STORE = ROOT / "agent_os/android/src/com/inceptless/traceweave/AgentStore.java"
 
 
 def schema_version():
@@ -26,7 +26,7 @@ def main():
     verification = json.loads(pathlib.Path(args.verification).read_text())
     version_name = verification.get("version") or report.get("version", "unknown")
     version_code = verification.get("version_code") or report.get("version_code", "unknown")
-    package = verification.get("package") or report.get("package", "org.traceform.agentos")
+    package = verification.get("package") or report.get("package", "com.inceptless.traceweave")
     signer = verification.get("signer_sha256") or "unknown"
     sync_included = bool(verification.get("sync_runtime_included", False))
     model_included = bool(verification.get("model_runtime_included", False))

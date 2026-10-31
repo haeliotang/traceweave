@@ -8,7 +8,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 NATIVE = ROOT / "agent_os/android/native/experimental_local_model.cpp"
-RUNTIME = ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelRuntime.java"
+RUNTIME = ROOT / "agent_os/android/src/com/inceptless/traceweave/LocalModelRuntime.java"
 PROBE = ROOT / "agent_os/tests/android/LocalModelProbe.java"
 
 
@@ -31,7 +31,7 @@ class GrammarRuntimeTests(unittest.TestCase):
         source = NATIVE.read_text()
         self.assertIn("max_tokens <= 512", source)
         self.assertIn("count + max_tokens <= 2048", source)
-        catalog = (ROOT / "agent_os/android/src/org/traceform/agentos/LocalModelCatalog.java").read_text()
+        catalog = (ROOT / "agent_os/android/src/com/inceptless/traceweave/LocalModelCatalog.java").read_text()
         self.assertIn("256)", catalog)
         self.assertIn("384)", catalog)
 

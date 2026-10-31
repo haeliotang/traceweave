@@ -12,8 +12,8 @@ def main():
     parser.add_argument("--serial", required=True)
     args = parser.parse_args()
     adb = [args.adb, "-s", args.serial]
-    source = "org.traceform.agentos.actionsvalidation"
-    target = "org.traceform.agentos.documentsvalidation"
+    source = "com.inceptless.traceweave.actionsvalidation"
+    target = "com.inceptless.traceweave.documentsvalidation"
     subprocess.run(adb + ["shell", "run-as", target, "mkdir", "-p", "files"], check=True)
     for name in ("synthetic-migration.taos", "migration-ids.json"):
         payload = subprocess.check_output(adb + ["exec-out", "run-as", source, "cat", "files/" + name])

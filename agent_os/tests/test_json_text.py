@@ -10,10 +10,10 @@ ROOT = Path(__file__).resolve().parents[2]
 class JsonTextTests(unittest.TestCase):
     def test_recovers_json_from_model_prose(self):
         with tempfile.TemporaryDirectory(prefix="traceform-json-text-") as directory:
-            sources = [ROOT / "agent_os/android/src/org/traceform/agentos/JsonText.java",
+            sources = [ROOT / "agent_os/android/src/com/inceptless/traceweave/JsonText.java",
                        ROOT / "agent_os/tests/android/JsonTextHostTest.java"]
             subprocess.run(["javac", "--release", "8", "-d", directory, *map(str, sources)], check=True)
-            result = subprocess.run(["java", "-cp", directory, "org.traceform.agentos.JsonTextHostTest"],
+            result = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.JsonTextHostTest"],
                                     capture_output=True, text=True, check=True)
             self.assertIn("JSONTEXT_OK", result.stdout)
 

@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos.actionsvalidation" android:versionCode="1" android:versionName="model-document-test">
+    package="com.inceptless.traceweave.actionsvalidation" android:versionCode="1" android:versionName="model-document-test">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
     <application android:label="Isolated model document probe" android:debuggable="true"
         android:allowBackup="false" android:extractNativeLibs="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
-        <activity android:name="org.traceform.agentos.LocalModelDocumentProbe" android:exported="true" />
-        <activity android:name="org.traceform.agentos.DocumentTaskActivity" android:exported="false" />
-        <provider android:name="org.traceform.agentos.DocumentFixtureProvider"
-            android:authorities="org.traceform.agentos.actionsvalidation.documents.fixture" android:exported="false" />
+        <activity android:name="com.inceptless.traceweave.LocalModelDocumentProbe" android:exported="true" />
+        <activity android:name="com.inceptless.traceweave.DocumentTaskActivity" android:exported="false" />
+        <provider android:name="com.inceptless.traceweave.DocumentFixtureProvider"
+            android:authorities="com.inceptless.traceweave.actionsvalidation.documents.fixture" android:exported="false" />
     </application>
 </manifest>

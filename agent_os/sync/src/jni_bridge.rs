@@ -112,7 +112,7 @@ fn verify_p256(message: &[u8], signature: &[u8], public_key: &[u8]) -> bool {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeLoopback(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativeLoopback(
     mut env: JNIEnv,
     _class: JClass,
     port: jint,
@@ -127,7 +127,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeLoopback(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeTranscript(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativeTranscript(
     mut env: JNIEnv,
     _class: JClass,
     device_id: JByteArray,
@@ -158,7 +158,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeTranscript(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeVerifyP256(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativeVerifyP256(
     mut env: JNIEnv,
     _class: JClass,
     message: JByteArray,
@@ -172,7 +172,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeVerifyP256(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePeerId(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativePeerId(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,
@@ -192,7 +192,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePeerId(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativeServeOnce(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,
@@ -253,7 +253,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeServeOnce(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeDialOnce(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativeDialOnce(
     mut env: JNIEnv<'_>,
     _class: JClass<'_>,
     seed: JString<'_>,
@@ -295,7 +295,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativeDialOnce(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialAddressOnce(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativeDialAddressOnce(
     mut env: JNIEnv<'_>,
     _class: JClass<'_>,
     seed: JString<'_>,
@@ -344,7 +344,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialAddres
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePublicKey(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativePublicKey(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,
@@ -365,16 +365,16 @@ pub extern "system" fn Java_org_traceform_agentos_SyncProbe_nativePublicKey(
 
 // Production-facing names: the app class is SyncTransport; tests use SyncProbe.
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePeerId(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativePeerId(
     env: JNIEnv,
     class: JClass,
     seed: JString,
 ) -> jstring {
-    Java_org_traceform_agentos_SyncProbe_nativePeerId(env, class, seed)
+    Java_com_inceptless_traceweave_SyncProbe_nativePeerId(env, class, seed)
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeServeOnce(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativeServeOnce(
     env: JNIEnv,
     class: JClass,
     seed: JString,
@@ -382,11 +382,11 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeServeOnce(
     allowed_csv: JString,
     handler: JObject,
 ) -> jstring {
-    Java_org_traceform_agentos_SyncProbe_nativeServeOnce(env, class, seed, port, allowed_csv, handler)
+    Java_com_inceptless_traceweave_SyncProbe_nativeServeOnce(env, class, seed, port, allowed_csv, handler)
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialOnce(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativeDialOnce(
     env: JNIEnv<'_>,
     class: JClass<'_>,
     seed: JString<'_>,
@@ -394,7 +394,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDialOnce(
     expected_peer: JString<'_>,
     payload: JByteArray<'_>,
 ) -> jni::sys::jbyteArray {
-    Java_org_traceform_agentos_SyncProbe_nativeDialOnce(env, class, seed, port, expected_peer, payload)
+    Java_com_inceptless_traceweave_SyncProbe_nativeDialOnce(env, class, seed, port, expected_peer, payload)
 }
 
 fn runtime() -> Result<tokio::runtime::Runtime, String> {
@@ -429,7 +429,7 @@ fn session_json(session: &crate::pairing_session::PairSession) -> String {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDiscover(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativeDiscover(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,
@@ -471,7 +471,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativeDiscover(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePairServe(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativePairServe(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,
@@ -499,7 +499,7 @@ pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePairServe(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_org_traceform_agentos_SyncTransport_nativePairDial(
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativePairDial(
     mut env: JNIEnv,
     _class: JClass,
     seed: JString,

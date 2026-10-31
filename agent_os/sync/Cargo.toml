@@ -1,11 +1,11 @@
 [package]
-name = "traceform-sync"
+name = "traceweave-sync"
 version = "0.1.0"
 edition = "2021"
-description = "Traceform cross-device sync transport (default off, synthetic tests only)"
+description = "Traceweave cross-device sync transport (default off, synthetic tests only)"
 
 [lib]
-name = "traceform_sync"
+name = "traceweave_sync"
 path = "src/lib.rs"
 crate-type = ["lib", "cdylib"]
 

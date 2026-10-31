@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos.validation.target"
+    package="com.inceptless.traceweave.validation.target"
     android:versionCode="1"
     android:versionName="0.1.0-validation">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
@@ -10,9 +10,9 @@
     <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="org.traceform.edge.CANONICAL_INPUT" />
+    <uses-permission android:name="com.inceptless.edge.CANONICAL_INPUT" />
     <queries>
-        <package android:name="org.traceform.edge" />
+        <package android:name="com.inceptless.edge" />
     </queries>
     <application
         android:allowBackup="false"
@@ -21,30 +21,30 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="true">
         <service
-            android:name="org.traceform.agentos.AgentJobService"
+            android:name="com.inceptless.traceweave.AgentJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
         <service
-            android:name="org.traceform.agentos.AgentFloatingService"
+            android:name="com.inceptless.traceweave.AgentFloatingService"
             android:exported="false" />
-        <service android:name="org.traceform.agentos.SubstrateService" android:exported="true">
+        <service android:name="com.inceptless.traceweave.SubstrateService" android:exported="true">
             <intent-filter>
-                <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
+                <action android:name="com.inceptless.traceweave.action.BIND_SUBSTRATE" />
             </intent-filter>
         </service>
         <service
-            android:name="org.traceform.agentos.AgentAccessibilityService"
+            android:name="com.inceptless.traceweave.AgentAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
         </service>
-        <activity android:name="org.traceform.agentos.CapabilityApprovalActivity" android:exported="false" />
-        <activity android:name="org.traceform.agentos.RemoteUriPickerActivity" android:exported="false" />
-        <activity android:name="org.traceform.agentos.ExternalActionActivity" android:exported="false" />
-        <activity android:name="org.traceform.agentos.MainActivity" android:exported="true" />
-        <activity android:name="org.traceform.agentos.DeviceValidationActivity" android:exported="true">
+        <activity android:name="com.inceptless.traceweave.CapabilityApprovalActivity" android:exported="false" />
+        <activity android:name="com.inceptless.traceweave.RemoteUriPickerActivity" android:exported="false" />
+        <activity android:name="com.inceptless.traceweave.ExternalActionActivity" android:exported="false" />
+        <activity android:name="com.inceptless.traceweave.MainActivity" android:exported="true" />
+        <activity android:name="com.inceptless.traceweave.DeviceValidationActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

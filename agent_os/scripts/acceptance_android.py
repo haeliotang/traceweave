@@ -14,9 +14,9 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = 'org.traceform.agentos.actionsvalidation'
-TARGET = 'org.traceform.agentos.documentsvalidation'
-PRODUCTION = 'org.traceform.agentos'
+SOURCE = 'com.inceptless.traceweave.actionsvalidation'
+TARGET = 'com.inceptless.traceweave.documentsvalidation'
+PRODUCTION = 'com.inceptless.traceweave'
 EXTRAS = ('DocumentFlowValidationActivity', 'DocumentFixtureProvider', 'ActionFlowValidationActivity',
           'DeviceValidationActivity', 'WorkflowValidationActivity', 'BackgroundProbeJob',
           'BackgroundProbeActivity', 'ControlledProbeService')

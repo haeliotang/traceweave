@@ -40,10 +40,10 @@
 
 | 里程碑 | 交付模块与文件 | 验收条件 | Pixel 6a 真机验证结论 |
 |---|---|---|---|
-| **Step 1：关联记忆选择器** | [`AssociativeMemorySelector.java`](../agent_os/android/src/org/traceform/agentos/AssociativeMemorySelector.java) | 基于衰减和关键词相关度精准提取 Top-K，排除老旧不相关记忆。 | **100% PASS**<br>测试包含 4 条不同类型和时间记忆的库，偏好查询与日程查询均以最高分准确命中对应记忆。 |
-| **Step 2：记忆自动抽取沉淀** | [`MemoryConsolidator.java`](../agent_os/android/src/org/traceform/agentos/MemoryConsolidator.java)<br>升级 [`AgentExecutor.java`](../agent_os/android/src/org/traceform/agentos/AgentExecutor.java) | 任务完成时自动提取事实/偏好/工作流；记录 `memory_consolidated` 审计。 | **100% PASS**<br>日程规划任务完成后自动沉淀出 `【日程待办 · Agent OS 规划日程待办】` 事实记忆，审计流水记录完备。 |
-| **Step 3：原地去重与更新** | 升级 [`AgentStore.java`](../agent_os/android/src/org/traceform/agentos/AgentStore.java) | 连续执行同类任务时，已沉淀记忆原地刷新，不产生重复条目。 | **100% PASS**<br>执行两次相同主题任务，记忆总数保持 6 条未膨胀（从 6 条增至 8 条的冗余被 100% 阻止），`updatedAt` 原地刷新。 |
-| **Step 4：JIT 待办中断/恢复流** | 升级 [`MainActivity.java`](../agent_os/android/src/org/traceform/agentos/MainActivity.java) | 缺权限自动停在待办状态；授权后从中断步骤无缝继续至完成。 | **100% PASS**<br>测试未预先授权步骤 1，任务准确停在 `WAITING_FOR_USER` 且 `executionStep=1`；授权后继续推进至 `COMPLETED`。 |
+| **Step 1：关联记忆选择器** | [`AssociativeMemorySelector.java`](../agent_os/android/src/com/inceptless/traceweave/AssociativeMemorySelector.java) | 基于衰减和关键词相关度精准提取 Top-K，排除老旧不相关记忆。 | **100% PASS**<br>测试包含 4 条不同类型和时间记忆的库，偏好查询与日程查询均以最高分准确命中对应记忆。 |
+| **Step 2：记忆自动抽取沉淀** | [`MemoryConsolidator.java`](../agent_os/android/src/com/inceptless/traceweave/MemoryConsolidator.java)<br>升级 [`AgentExecutor.java`](../agent_os/android/src/com/inceptless/traceweave/AgentExecutor.java) | 任务完成时自动提取事实/偏好/工作流；记录 `memory_consolidated` 审计。 | **100% PASS**<br>日程规划任务完成后自动沉淀出 `【日程待办 · Agent OS 规划日程待办】` 事实记忆，审计流水记录完备。 |
+| **Step 3：原地去重与更新** | 升级 [`AgentStore.java`](../agent_os/android/src/com/inceptless/traceweave/AgentStore.java) | 连续执行同类任务时，已沉淀记忆原地刷新，不产生重复条目。 | **100% PASS**<br>执行两次相同主题任务，记忆总数保持 6 条未膨胀（从 6 条增至 8 条的冗余被 100% 阻止），`updatedAt` 原地刷新。 |
+| **Step 4：JIT 待办中断/恢复流** | 升级 [`MainActivity.java`](../agent_os/android/src/com/inceptless/traceweave/MainActivity.java) | 缺权限自动停在待办状态；授权后从中断步骤无缝继续至完成。 | **100% PASS**<br>测试未预先授权步骤 1，任务准确停在 `WAITING_FOR_USER` 且 `executionStep=1`；授权后继续推进至 `COMPLETED`。 |
 | **Step 5：真机自动化测试** | 升级 [`DeviceValidationActivity.java`](../agent_os/tests/android/DeviceValidationActivity.java) | 包含选择器、抽取、去重、中断恢复与 UI 逻辑的全量真机测试。 | **100% PASS**<br>全流程自动化运行并通过真机断言。 |
 
 ---

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.agentos.automergevalidation" android:versionCode="1" android:versionName="automerge-test">
+    package="com.inceptless.traceweave.automergevalidation" android:versionCode="1" android:versionName="automerge-test">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
     <application android:label="Isolated Automerge probe" android:debuggable="true" android:allowBackup="false" android:extractNativeLibs="true">
-        <activity android:name="org.traceform.agentos.AutomergeValidationActivity" android:exported="true" />
+        <activity android:name="com.inceptless.traceweave.AutomergeValidationActivity" android:exported="true" />
     </application>
 </manifest>

@@ -38,8 +38,8 @@ def main():
     if args.sync_runtime:
         if not args.sync_runtime.is_file() or args.sync_runtime.stat().st_size < 100_000:
             raise ValueError("Sync runtime must be an existing arm64 shared library")
-        if args.sync_runtime.name != "libtraceform_sync.so":
-            raise ValueError("Sync runtime must be named libtraceform_sync.so")
+        if args.sync_runtime.name != "libtraceweave_sync.so":
+            raise ValueError("Sync runtime must be named libtraceweave_sync.so")
     verification = args.output_dir / "release_verification.json"
     verification.unlink(missing_ok=True)
     builder = [sys.executable, str(root / "agent_os/scripts/build_android.py")]

@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'agent_os/scripts'))
 from verify_release_android import apk_identity
 
 EDGE = 'org.traceform.edge.validation'
-PROBE = 'org.traceform.agentos.actionsvalidation'
+PROBE = 'com.inceptless.traceweave.actionsvalidation'
 
 
 def main():
@@ -67,7 +67,7 @@ def main():
         tag = 'AgentOsScopedProbe' if args.case == 'summary' else 'AgentOsScopedBroker'
         expected = 'PASS authorized_synthetic_history' if args.case == 'summary' else 'PASS denied_granted_summary_revoked_denied'
         run('shell', 'am', 'start', '-W', '-S', '-a', 'AVAILABLE_HISTORY', '-n',
-            PROBE + '/org.traceform.agentos.' + activity, stdout=subprocess.DEVNULL)
+            PROBE + '/com.inceptless.traceweave.' + activity, stdout=subprocess.DEVNULL)
         pid = None
         for _ in range(20):
             result = subprocess.run(adb + ['shell', 'pidof', PROBE], capture_output=True, text=True)

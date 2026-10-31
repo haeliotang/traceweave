@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = "org.traceform.agentos"
+PACKAGE = "com.inceptless.traceweave"
 MODEL_PROBES = ("LocalModelProbe", "LocalModelQualityProbe", "LocalModelDocumentProbe")
 
 
@@ -79,13 +79,13 @@ def network_policy_path(nodes, resources):
 
 
 def check_model_runtime(archive, inputs):
-    path = "lib/arm64-v8a/libtraceform_local_model.so"
+    path = "lib/arm64-v8a/libtraceweave_local_model.so"
     names = archive.namelist()
     if path not in names:
         return False
     if names.count(path) != 1 or "res/raw/llama_cpp_license.txt" not in names:
         raise ValueError("Model runtime or its license is missing or ambiguous")
-    labels = [label for label in inputs if label.endswith("/libtraceform_local_model.so")]
+    labels = [label for label in inputs if label.endswith("/libtraceweave_local_model.so")]
     digest = hashlib.sha256(archive.read(path)).hexdigest()
     if len(labels) != 1 or inputs[labels[0]] != digest:
         raise ValueError("Packaged model runtime does not match the build input")
@@ -93,13 +93,13 @@ def check_model_runtime(archive, inputs):
 
 
 def check_sync_runtime(archive, inputs):
-    path = "lib/arm64-v8a/libtraceform_sync.so"
+    path = "lib/arm64-v8a/libtraceweave_sync.so"
     names = archive.namelist()
     if path not in names:
         return False
     if names.count(path) != 1:
         raise ValueError("Sync runtime is ambiguous")
-    labels = [label for label in inputs if label.endswith("/libtraceform_sync.so")]
+    labels = [label for label in inputs if label.endswith("/libtraceweave_sync.so")]
     digest = hashlib.sha256(archive.read(path)).hexdigest()
     if len(labels) != 1 or inputs[labels[0]] != digest:
         raise ValueError("Packaged sync runtime does not match the build input")

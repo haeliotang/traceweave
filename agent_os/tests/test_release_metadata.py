@@ -49,7 +49,7 @@ class BuildReportTests(unittest.TestCase):
   A: allowBackup=false
   A: usesCleartextTraffic=false
     E: activity
-      A: name="org.traceform.agentos.BackgroundProbeActivity"
+      A: name="com.inceptless.traceweave.BackgroundProbeActivity"
       A: exported=false
 '''
         with self.assertRaises(ValueError):
@@ -61,7 +61,7 @@ class BuildReportTests(unittest.TestCase):
   A: allowBackup=false
   A: usesCleartextTraffic=false
     E: activity
-      A: name="org.traceform.agentos.{name}"
+      A: name="com.inceptless.traceweave.{name}"
       A: exported=false
 '''
             with self.subTest(name=name), self.assertRaises(ValueError):
@@ -80,17 +80,17 @@ class BuildReportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             apk = Path(folder) / "synthetic.apk"
             with zipfile.ZipFile(apk, "w") as archive:
-                archive.writestr("lib/arm64-v8a/libtraceform_local_model.so", runtime)
+                archive.writestr("lib/arm64-v8a/libtraceweave_local_model.so", runtime)
                 archive.writestr("res/raw/llama_cpp_license.txt", "synthetic license")
             with zipfile.ZipFile(apk) as archive:
-                self.assertTrue(verifier.check_model_runtime(archive, {"build/libtraceform_local_model.so": digest}))
+                self.assertTrue(verifier.check_model_runtime(archive, {"build/libtraceweave_local_model.so": digest}))
                 with self.assertRaises(ValueError):
-                    verifier.check_model_runtime(archive, {"build/libtraceform_local_model.so": "0" * 64})
+                    verifier.check_model_runtime(archive, {"build/libtraceweave_local_model.so": "0" * 64})
             with zipfile.ZipFile(apk, "w") as archive:
-                archive.writestr("lib/arm64-v8a/libtraceform_local_model.so", runtime)
+                archive.writestr("lib/arm64-v8a/libtraceweave_local_model.so", runtime)
             with zipfile.ZipFile(apk) as archive:
                 with self.assertRaises(ValueError):
-                    verifier.check_model_runtime(archive, {"build/libtraceform_local_model.so": digest})
+                    verifier.check_model_runtime(archive, {"build/libtraceweave_local_model.so": digest})
 
     def test_model_runtime_provenance_rejects_changed_binary_or_source(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -98,7 +98,7 @@ class BuildReportTests(unittest.TestCase):
             source = root / "agent_os/android/native/experimental_local_model.cpp"
             source.parent.mkdir(parents=True)
             source.write_bytes(b"synthetic source")
-            runtime = root / "libtraceform_local_model.so"
+            runtime = root / "libtraceweave_local_model.so"
             runtime.write_bytes(b"synthetic runtime")
             report = {"llama_cpp_commit": "d78f40d9d34d7a72ecdcd2e854f75ff86afc8ca3", "android_abi": "arm64-v8a",
                       "android_api": 29, "native_source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),

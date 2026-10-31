@@ -76,18 +76,18 @@ for name in ("SEED_WORKFLOW_UI", "OPEN_WORKFLOW_UI", "VERIFY_WORKFLOW_UI", "SEED
     CASES[name] = ("WorkflowValidationActivity", name, "AgentOsWorkflowValidation")
 for name in ("VERIFY_SENSOR_OPT_IN", "VERIFY_DYNAMIC_EXECUTOR", "VERIFY_EXECUTOR_LIFECYCLE", "VERIFY_MEMORY_PROVENANCE",
              "VERIFY_MEMORY_CONSOLIDATION_AND_UI", "VERIFY_DATABASE_MIGRATION", "VERIFY_HYBRID_CLOUD_AND_REDACTION"):
-    CASES[name] = ("DeviceValidationActivity", "org.traceform.agentos.validation." + name, "AgentOsValidation")
+    CASES[name] = ("DeviceValidationActivity", "com.inceptless.traceweave.validation." + name, "AgentOsValidation")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--adb", default="adb")
     parser.add_argument("--serial", required=True)
-    parser.add_argument("--package", default="org.traceform.agentos.actionsvalidation")
+    parser.add_argument("--package", default="com.inceptless.traceweave.actionsvalidation")
     parser.add_argument("--case", choices=CASES, action="append", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    if args.package not in ("org.traceform.agentos.actionsvalidation", "org.traceform.agentos.documentsvalidation"):
+    if args.package not in ("com.inceptless.traceweave.actionsvalidation", "com.inceptless.traceweave.documentsvalidation"):
         parser.error("Only isolated validation packages are supported")
     adb = [args.adb, "-s", args.serial]
     package = args.package
@@ -100,7 +100,7 @@ def main():
         component, action, tag = CASES[name]
         if name == "ARM_DOCUMENT_CRASH":
             run("shell", "am", "start", "-S", "-f", "0x10008000", "-n",
-                package + "/org.traceform.agentos." + component, "-a", action)
+                package + "/com.inceptless.traceweave." + component, "-a", action)
             time.sleep(2)
             process = subprocess.run(adb + ["shell", "pidof", package], capture_output=True, text=True, timeout=10)
             result = {"case": name, "passed": process.returncode != 0,
@@ -111,7 +111,7 @@ def main():
                 break
             continue
         run("shell", "am", "start", "-W", "-S", "-f", "0x10008000", "-n",
-            package + "/org.traceform.agentos." + component, "-a", action)
+            package + "/com.inceptless.traceweave." + component, "-a", action)
         pid = run("shell", "pidof", package).strip().split()[0]
         deadline = time.monotonic() + 60
         line = "TIMEOUT"

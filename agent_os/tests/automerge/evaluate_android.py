@@ -12,7 +12,7 @@ import time
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[3]
-PACKAGE = "org.traceform.agentos.automergevalidation"
+PACKAGE = "com.inceptless.traceweave.automergevalidation"
 EXPECTED = {
     "jar": "7629272a27287b675cd26209cb53ec9aaf4b0e3ecb464fb4df7e7a08b9e24c8e",
     "aar": "fbc19dda6567f48109d68c02c962fe03b9000fe54470bf4e8dd59b9b0b2c732f",
@@ -63,7 +63,7 @@ def main():
         installed = False
         try:
             run(adb + ["install", apk], capture_output=True); installed = True
-            run(adb + ["shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/org.traceform.agentos.AutomergeValidationActivity"], capture_output=True)
+            run(adb + ["shell", "am", "start", "-W", "-S", "-n", PACKAGE + "/com.inceptless.traceweave.AutomergeValidationActivity"], capture_output=True)
             pid = run(adb + ["shell", "pidof", PACKAGE], capture_output=True, text=True).stdout.strip()
             if not pid.isdecimal(): raise RuntimeError("Isolated test process unavailable")
             result = None

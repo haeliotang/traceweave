@@ -37,7 +37,7 @@ def main():
     parser.add_argument("--serial", required=True)
     parser.add_argument("--apk", required=True)
     parser.add_argument("--adb", default="adb")
-    parser.add_argument("--package", default="org.traceform.agentos")
+    parser.add_argument("--package", default="com.inceptless.traceweave")
     parser.add_argument("--activity", default=".MainActivity")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()

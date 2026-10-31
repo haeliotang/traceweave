@@ -14,7 +14,7 @@
 | **生态与业务技能层** | **TypeScript / Node.js** | [`server.ts`](../agent_os/ts_plugins/src/server.ts) | 标准 MCP JSON-RPC 2.0 协议服务端，提供天气、工作区、数据分析等动态工具。 |
 | **双语跨进程桥接** | **JSON-RPC stdio** | [`ts_mcp_integration.rs`](../agent_os/core/tests/ts_mcp_integration.rs) | Rust 子进程管理、协议握手、`McpCapabilityAdapter` 动态适配与端到端任务执行。 |
 | **底层核心计算与安全** | **Rust (agent-os-core)** | [`jni_api.rs`](../agent_os/core/src/jni_api.rs)<br>[`libagent_os_core.so`](../agent_os/core/target/aarch64-linux-android/release/libagent_os_core.so) | 原生脱敏清洗（4.9μs）、量化微模型推演（3.8μs）、关联记忆库（89μs），arm64-v8a 原生编译。 |
-| **Android 宿主系统** | **Java / Android Framework** | [`NativeAgentCore.java`](../agent_os/android/src/org/traceform/agentos/NativeAgentCore.java)<br>[`build_android.py`](../agent_os/scripts/build_android.py) | `System.loadLibrary("agent_os_core")` 原生加载与双模回退，打包包含 native `.so`。 |
+| **Android 宿主系统** | **Java / Android Framework** | [`NativeAgentCore.java`](../agent_os/android/src/com/inceptless/traceweave/NativeAgentCore.java)<br>[`build_android.py`](../agent_os/scripts/build_android.py) | `System.loadLibrary("agent_os_core")` 原生加载与双模回退，打包包含 native `.so`。 |
 | **真机验收套件** | **Android 真机 (Pixel 6a)** | [`DeviceValidationActivity.java`](../agent_os/tests/android/DeviceValidationActivity.java) | `VERIFY_NATIVE_CORE_AND_JNI` 自动化真机断言套件。 |
 
 ---

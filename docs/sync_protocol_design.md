@@ -14,7 +14,7 @@
 
 | 能力 | 现状 | 差距 |
 |---|---|---|
-| 设备身份 | [DeviceIdentity.java](../agent_os/android/src/org/traceform/agentos/DeviceIdentity.java) 生成 Keystore P-256、签名与指纹 | 未被任何用户流程调用 |
+| 设备身份 | [DeviceIdentity.java](../agent_os/android/src/com/inceptless/traceweave/DeviceIdentity.java) 生成 Keystore P-256、签名与指纹 | 未被任何用户流程调用 |
 | 传输 | Rust libp2p/Noise 实验（`agent_os/tests/libp2p_live_binding`） | 未进正式模块，密钥是公开测试夹具 |
 | 因果合并 | [causal_memory.rs](../agent_os/core/src/causal_memory.rs) 纯函数 + SQLite 夹具 | 未接 Android 规范记忆库与持久化 |
 | 回执 | SQLite 合成夹具 | 未与合并代码连接，清理策略未定 |

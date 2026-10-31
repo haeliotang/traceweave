@@ -8,7 +8,7 @@ import re
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-SOURCE_DIR = ROOT / "agent_os/android/src/org/traceform/agentos"
+SOURCE_DIR = ROOT / "agent_os/android/src/com/inceptless/traceweave"
 CATALOG = SOURCE_DIR / "T.java"
 KEY_PATTERN = re.compile(r'T\.(?:s|format)\("([^"]+)"')
 

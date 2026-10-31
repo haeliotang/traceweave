@@ -33,7 +33,7 @@ def main():
         raise SystemExit("Android NDK toolchain missing or ambiguous")
     compiler = toolchains[0]
     strip = compiler.parent / "llvm-strip"
-    output = out / "libtraceform_local_model.so"
+    output = out / "libtraceweave_local_model.so"
     report = out / "experimental_model_build.json"
     out.mkdir(parents=True, exist_ok=True)
     report.unlink(missing_ok=True)

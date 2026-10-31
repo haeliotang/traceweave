@@ -5,7 +5,7 @@ from cryptography.exceptions import InvalidSignature
 parser=argparse.ArgumentParser(description='Run synthetic isolated Keystore and Noise binding experiment')
 for arg in ('adb','serial','host','binary','apk'):parser.add_argument('--'+arg,required=True)
 args=parser.parse_args()
-adb=[args.adb,'-s',args.serial];package='org.traceform.agentos.actionsvalidation';target='/data/local/tmp/traceform-live-binding-probe';host=args.host;binary=args.binary
+adb=[args.adb,'-s',args.serial];package='com.inceptless.traceweave.actionsvalidation';target='/data/local/tmp/traceform-live-binding-probe';host=args.host;binary=args.binary
 ids=subprocess.run([host,'ids'],capture_output=True,text=True,check=True).stdout.split();sender,receiver=map(bytes.fromhex,ids)
 enc=lambda b:base64.b64encode(b).decode(); packages=subprocess.run(adb+['shell','pm','list','packages',package],capture_output=True,text=True,check=True).stdout.splitlines()
 if 'package:'+package in packages:raise RuntimeError('Existing test package must be preserved')
@@ -29,7 +29,7 @@ try:
  nonce=os.urandom(32)
  server.stdin.write(enc(nonce)+'\n');server.stdin.flush()
  if line(client) != 'CHALLENGE '+enc(nonce):raise RuntimeError('Challenge was not delivered over the Noise connection')
- subprocess.run(adb+['shell','am','start','-W','-S','-a','SIGN_BINDING_FIXTURE','-n',package+'/org.traceform.agentos.DeviceIdentityValidationActivity','--es','sender',enc(sender),'--es','receiver',enc(receiver),'--es','challenge',enc(nonce)],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run(adb+['shell','am','start','-W','-S','-a','SIGN_BINDING_FIXTURE','-n',package+'/com.inceptless.traceweave.DeviceIdentityValidationActivity','--es','sender',enc(sender),'--es','receiver',enc(receiver),'--es','challenge',enc(nonce)],check=True,stdout=subprocess.DEVNULL)
  proof=None
  for _ in range(40):
   result=subprocess.run(adb+['exec-out','run-as',package,'cat','files/synthetic-binding.json'],capture_output=True)

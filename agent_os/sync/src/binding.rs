@@ -6,7 +6,7 @@
 use sha2::{Digest, Sha256};
 
 /// Domain separation tag; changing it invalidates every existing binding.
-pub const DOMAIN: &[u8] = b"traceform-sync-v1";
+pub const DOMAIN: &[u8] = b"traceweave-sync-v1";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum BindingError {

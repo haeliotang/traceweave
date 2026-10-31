@@ -137,7 +137,7 @@ Traceform's target architecture has four mutually reinforcing layers; the diagra
 The Android Broker mediates the prototype's registered capabilities. A request is bound to a caller UID, package, task, capability, and scope. For cross-app calls, the user sees an Android approval screen; an accepted grant lasts up to five minutes, and denial, timeout, expiry, or revoke fails closed and is recorded in the app database. This is an application-level prototype, not a system-wide zero-trust boundary or an immutable audit ledger.
 
 ### 5.2 Optional Local Context Bridge
-The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/org/traceform/agentos/TraceformProvider.java)) is an optional local context adapter in the Android prototype:
+The `TraceformProvider` ([`TraceformProvider.java`](agent_os/android/src/com/inceptless/traceweave/TraceformProvider.java)) is an optional local context adapter in the Android prototype:
 - **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. The current Agent OS signer differs from the installed Edge signer, so this integration is paused. No HSM release-signing process is implemented.
 - **Current validation**: The Pixel 6a test used the Traceform Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
 - **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; global configuration alone does not authorize transmission. Each cloud planning request requires an exact payload preview and single-use user approval; subsequent execution observations remain local.

@@ -16,9 +16,9 @@ class ReleaseNotesTests(unittest.TestCase):
             report = directory / "build_report.json"
             verification = directory / "verify.json"
             output = directory / "notes.md"
-            report.write_text(json.dumps({"package": "org.traceform.agentos", "version": "1.2.3", "version_code": 42}))
+            report.write_text(json.dumps({"package": "com.inceptless.traceweave", "version": "1.2.3", "version_code": 42}))
             verification.write_text(json.dumps({
-                "package": "org.traceform.agentos", "version": "1.2.3", "version_code": 42,
+                "package": "com.inceptless.traceweave", "version": "1.2.3", "version_code": 42,
                 "signer_sha256": "abc123", "sync_runtime_included": True,
                 "model_runtime_included": False, "test_components_excluded": True}))
             subprocess.run([sys.executable, str(SCRIPT), "--report", str(report),

@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -22,7 +22,7 @@ public final class ScopedTraceformProbe extends Activity {
         new Thread(() -> {
             try {
                 Intent target = new Intent().setComponent(new ComponentName("org.traceform.edge.validation", "org.traceform.edge.HistorySummaryService"));
-                if ("org.traceform.agentos.scopeduntrusted".equals(getPackageName())) {
+                if ("com.inceptless.traceweave.scopeduntrusted".equals(getPackageName())) {
                     if (checkSelfPermission(PERMISSION) != PackageManager.PERMISSION_DENIED)
                         throw new IllegalStateException("unknown signer received summary permission");
                     try {
@@ -49,7 +49,7 @@ public final class ScopedTraceformProbe extends Activity {
                 if (!bindService(target, connection, BIND_AUTO_CREATE)) throw new IllegalStateException("isolated service unavailable");
                 try {
                     if (!connected.await(10, TimeUnit.SECONDS) || binder[0] == null) throw new IllegalStateException("isolated service did not connect");
-                    boolean allowed = "org.traceform.agentos.actionsvalidation".equals(getPackageName());
+                    boolean allowed = "com.inceptless.traceweave.actionsvalidation".equals(getPackageName());
                     if (!allowed) {
                         if (!rejected(binder[0], DESCRIPTOR, false)) throw new IllegalStateException("wrong package accessed summary");
                     } else {

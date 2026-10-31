@@ -15,8 +15,8 @@ sys.path.insert(0, str(ROOT / 'agent_os/scripts'))
 from acceptance_android import distinct_validation_uids
 from verify_release_android import apk_identity
 
-SOURCE = 'org.traceform.agentos.actionsvalidation'
-TARGET = 'org.traceform.agentos.documentsvalidation'
+SOURCE = 'com.inceptless.traceweave.actionsvalidation'
+TARGET = 'com.inceptless.traceweave.documentsvalidation'
 
 
 def main():

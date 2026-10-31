@@ -1,4 +1,4 @@
-//! Traceform cross-device sync transport.
+//! Traceweave cross-device sync transport.
 //!
 //! Scope: framing limits, device binding transcripts and a libp2p/Noise transport.
 //! It is not linked into the Android app yet and has no UI entry; the app stays

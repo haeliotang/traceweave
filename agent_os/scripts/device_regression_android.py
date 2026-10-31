@@ -74,7 +74,7 @@ def main():
         cases = CASES
     run = [sys.executable, str(SCRIPTS / "validate_actions_android.py"),
            "--adb", args.adb, "--serial", args.serial,
-           "--package", "org.traceform.agentos.actionsvalidation",
+           "--package", "com.inceptless.traceweave.actionsvalidation",
            "--output", str(output / "regression.json")]
     for case in cases:
         run += ["--case", case]

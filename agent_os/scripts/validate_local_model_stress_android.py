@@ -6,7 +6,7 @@ from verify_release_android import apk_identity
 parser=argparse.ArgumentParser(description="Measure synthetic on-device model latency with a thermal guard")
 for name in ('adb','serial','apk','model','build-tools','output'):parser.add_argument('--'+name,required=True)
 args=parser.parse_args()
-adb=[args.adb,'-s',args.serial];pkg='org.traceform.agentos.actionsvalidation';apk=args.apk;model=Path(args.model);installed=False
+adb=[args.adb,'-s',args.serial];pkg='com.inceptless.traceweave.actionsvalidation';apk=args.apk;model=Path(args.model);installed=False
 identity=apk_identity(Path(apk),Path(args.build_tools))
 if identity['package']!=pkg or not identity['debuggable']:raise RuntimeError('Only the isolated debug package is allowed')
 packages=subprocess.run(adb+['shell','pm','list','packages',pkg],capture_output=True,text=True,check=True).stdout.splitlines()
@@ -14,7 +14,7 @@ if 'package:'+pkg in packages:raise RuntimeError('Existing validation app must b
 try:
  subprocess.run(adb+['install',apk],check=True,stdout=subprocess.DEVNULL);installed=True
  with model.open('rb') as f:subprocess.run(adb+['shell',shlex.join(['run-as',pkg,'sh','-c','mkdir -p files && cat > files/synthetic-evaluation-model.gguf'])],stdin=f,check=True)
- subprocess.run(adb+['shell','am','start','-W','-a','STRESS','--es','model','qwen15','-n',pkg+'/org.traceform.agentos.LocalModelQualityProbe'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run(adb+['shell','am','start','-W','-a','STRESS','--es','model','qwen15','-n',pkg+'/com.inceptless.traceweave.LocalModelQualityProbe'],check=True,stdout=subprocess.DEVNULL)
  pid=subprocess.run(adb+['shell','pidof',pkg],capture_output=True,text=True,check=True).stdout.strip().split()[0]
  for _ in range(480):
   logs=subprocess.run(adb+['logcat','-d','--pid='+pid,'-s','AgentOsModelQuality:I','*:S'],capture_output=True,text=True,check=True).stdout

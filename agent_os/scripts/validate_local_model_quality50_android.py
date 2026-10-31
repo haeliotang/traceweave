@@ -25,7 +25,7 @@ def main():
     run('shell', 'am', 'force-stop', args.package)
     run('logcat', '-c')
     run('shell', 'am', 'start', '-W', '-a', 'QUALITY50', '--es', 'model', args.model, '-n',
-        args.package + '/org.traceform.agentos.LocalModelQualityProbe')
+        args.package + '/com.inceptless.traceweave.LocalModelQualityProbe')
     deadline = time.time() + args.timeout
     done = False
     while time.time() < deadline:
