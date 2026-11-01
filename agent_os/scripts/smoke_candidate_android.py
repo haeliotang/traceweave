@@ -16,8 +16,8 @@ import time
 # first screen, so uiautomator does not expose it until the page is scrolled.
 MARKERS = {
     "header": ["Traceweave"],
-    "status_chips": ["JAVA FALLBACK"],
-    "tiles": ["本地规划", "Local planning"],
+    "composer": ["AI tasks"],
+    "tiles": ["Local Planner", "本地规划"],
 }
 
 
