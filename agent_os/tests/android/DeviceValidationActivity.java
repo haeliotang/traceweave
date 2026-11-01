@@ -2015,7 +2015,7 @@ public final class DeviceValidationActivity extends Activity {
         }
 
         // 2. Verify Native Redaction (Rust ContextRedactor)
-        String rawLeakText = "用户手机号: 13812345678, 邮箱: confidential@company.com, 密钥: sk-9876543210abcdef9876543210";
+        String rawLeakText = "用户手机号: 13812345678, 邮箱: confidential@company.com, 密钥: sk-TESTTESTTESTTESTTESTTESTTEST1234";
         ContextRedactor.RedactionResult redRes = ContextRedactor.redact(rawLeakText);
         if (redRes.redactionsCount < 3) {
             throw new IllegalStateException("Native redactor failed: expected >= 3 redactions, got " + redRes.redactionsCount + "; text=" + redRes.redactedText);
