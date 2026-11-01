@@ -345,4 +345,4 @@ Traceweave is initiated, engineered, and governed by **Inceptless**.
 - Parent Entity: Inceptless
 - Core Product: Traceweave
 - Subsystems: Traceweave OS, Traceweave Runtime, Traceweave Protocol, Traceweave Research
-- Copyright: (c) 2026 Inceptless. All rights reserved.
+- Copyright: (c) 2026 Inceptless. Licensed under the Apache License 2.0 (see [LICENSE](LICENSE)); "Traceweave" and the Traceweave marks remain trademarks of Inceptless.

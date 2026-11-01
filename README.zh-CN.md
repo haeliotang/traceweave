@@ -225,4 +225,4 @@ Traceweave 由 **Inceptless** 发起、工程化并治理。
 - 母实体：Inceptless
 - 核心产品：Traceweave
 - 子系统：Traceweave OS、Traceweave Runtime、Traceweave Protocol、Traceweave Research
-- 版权：(c) 2026 Inceptless. All rights reserved.
+- 版权：(c) 2026 Inceptless。代码以 Apache License 2.0 授权（见 [LICENSE](LICENSE)）；「Traceweave」名称与标识仍为 Inceptless 的商标。
