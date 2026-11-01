@@ -75,4 +75,4 @@ jobs:
           python3 agent_os/scripts/ci_android.py \
             --android-jar "$ANDROID_HOME/platforms/android-35/android.jar" \
             --build-tools "$ANDROID_HOME/build-tools/35.0.0" \
-            --model-runtime agent_os/build/model-runtime-ci/libtraceform_local_model.so
+            --model-runtime agent_os/build/model-runtime-ci/libtraceweave_local_model.so
