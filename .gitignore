@@ -112,4 +112,6 @@ local_private_metadata/
 *.keystore
 *.p12
 *.taos
+# A real 0.6.14 export is the compatibility fixture; it contains synthetic data only.
+!agent_os/tests/data/legacy-0.6.14-memory.taos
 .cargo-home/
