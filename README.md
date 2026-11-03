@@ -5,6 +5,8 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
+See [CHANGELOG.md](CHANGELOG.md) for what changed between releases.
+
 > **Prototype, not production software.** Expect missing pieces, rough edges and breaking changes before 1.0.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

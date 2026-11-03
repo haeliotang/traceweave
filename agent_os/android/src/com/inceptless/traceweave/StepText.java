@@ -6,10 +6,10 @@ package com.inceptless.traceweave;
  * helpers translate the built-in wordings at render time and leave anything the
  * user or a model wrote untouched.
  */
-final class StepText {
+public final class StepText {
     private StepText() {}
 
-    static String title(String title, boolean en) {
+    public static String title(String title, boolean en) {
         if (!en || title == null) return title;
         if (title.contains("端侧综合推理") || title.contains("端侧综合分析") || title.contains("报告生成")) {
             return "On-Device Synthesis & Report";
@@ -25,13 +25,13 @@ final class StepText {
     }
 
     /** Step states are stored as identifiers; the UI shows words from the catalog. */
-    static String status(String status, boolean en) {
+    public static String status(String status, boolean en) {
         if (status == null) return "";
         String key = "step.status." + status;
         return T.has(key) ? T.s(key, en) : status;
     }
 
-    static String observation(String observation, boolean en) {
+    public static String observation(String observation, boolean en) {
         if (observation == null || observation.isEmpty()) return "";
         String clean = observation;
         int conclusion = clean.indexOf("本地推理结论：");

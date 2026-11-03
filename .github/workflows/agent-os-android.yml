@@ -1,8 +1,9 @@
 name: Agent OS Android checks
 
 on:
-  # Push builds are opt-in so the monthly Actions quota is not spent on every
-  # commit; add [ci] to a commit message to run the full job on push.
+  # The repository is public, so Actions minutes are free: every push to main and
+  # every pull request runs the full job. The old [ci] opt-in guard existed only to
+  # protect a private-repo quota and is gone.
   push:
     branches: [main]
   pull_request:
@@ -11,12 +12,8 @@ on:
 permissions:
   contents: read
 
-# Skips the run unless the commit asks for it ([ci]) or a human triggered it.
-# A push without [ci] still lands in the repo, it just does not cost minutes.
-
 jobs:
   rust-core:
-    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[ci]')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     defaults:
@@ -34,7 +31,6 @@ jobs:
           rustup run 1.94.0 cargo test --locked --test causal_memory_merge --test persistent_store_policy
 
   sync-transport:
-    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[ci]')
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     defaults:
@@ -50,7 +46,6 @@ jobs:
         run: rustup run 1.94.0 cargo test --locked --lib
 
   android-host:
-    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[ci]')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

@@ -1,10 +1,10 @@
 package com.inceptless.traceweave;
 
 /** Turns audit identifiers into short, readable lines. */
-final class AuditText {
+public final class AuditText {
     private AuditText() {}
 
-    static String describe(String event, boolean en) {
+    public static String describe(String event, boolean en) {
         if (event == null || event.isEmpty()) return "";
         String name = event;
         String argument = "";

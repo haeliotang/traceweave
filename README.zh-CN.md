@@ -5,6 +5,8 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
+版本之间的变更见 [CHANGELOG.md](CHANGELOG.md)。
+
 > **这是原型，不是可生产使用的软件。** 在 1.0 之前会有缺失、粗糙和破坏性变更。
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

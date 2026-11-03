@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Bilingual string catalog: every key carries both languages, so a missing side fails at startup. */
-final class T {
+public final class T {
     private static final Map<String, String[]> STRINGS = new LinkedHashMap<>();
 
     private static void add(String key, String en, String zh) {
@@ -826,15 +826,15 @@ final class T {
     private T() {}
 
     /** True when the key exists; lets callers fall back instead of throwing. */
-    static boolean has(String key) {
+    public static boolean has(String key) {
         return STRINGS.containsKey(key);
     }
 
-    static String format(String key, boolean english, Object... args) {
+    public static String format(String key, boolean english, Object... args) {
         return String.format(java.util.Locale.ROOT, s(key, english), args);
     }
 
-    static String s(String key, boolean english) {
+    public static String s(String key, boolean english) {
         String[] pair = STRINGS.get(key);
         if (pair == null) throw new IllegalStateException("Unknown string key: " + key);
         return pair[english ? 0 : 1];
