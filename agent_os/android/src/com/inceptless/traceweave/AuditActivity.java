@@ -326,6 +326,14 @@ public final class AuditActivity extends Activity {
                     .put("summary", CrashLog.summarize(crash))
                     .put("raw", crash));
             }
+            org.json.JSONArray crashes = new org.json.JSONArray();
+            for (CrashLog.Entry entry : CrashLog.history(this)) {
+                crashes.put(new org.json.JSONObject()
+                    .put("at", entry.occurredAt)
+                    .put("type", entry.type)
+                    .put("message", entry.message));
+            }
+            report.put("crash_history", crashes);
             report.put("note", "No memory contents, task texts or device identifiers are included.");
             return report;
         }
