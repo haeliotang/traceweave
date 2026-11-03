@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-03",
+  "scope": "A1-A4 from the next-steps list",
+  "A1_model_quality_at_new_limits": {
+    "what": "reran the 50-case probe at the catalog token budget instead of the old 96-token ceiling",
+    "budget": "96 -> 256 tokens (LocalModelCatalog.QWEN.maxTokens)",
+    "result": "26/50 again; every category identical (english 9/10, chinese 6/10, arithmetic 9/10, strict_json 0/10, list_three 2/10)",
+    "conclusion": "the token ceiling was not the cause of the failures; they are formatting (code fences) and instruction-following, not truncation",
+    "median_ms": 2836,
+    "receipt": "artifacts/agent_os/next_stage/local_model_quality50_20261103.json",
+    "fix_during_the_run": [
+      "LocalModelProbe still loaded libtraceform_local_model.so, which no longer exists after the rename",
+      "the probe package was pinned at versionCode 1 while an older probe was installed at 2, so the install silently failed"
+    ]
+  },
+  "A2_dark_input_dialogs": {
+    "what": "Ui.input() gives text fields the theme; the cloud configuration dialog and both passphrase dialogs use it and get Ui.themeDialog()",
+    "evidence": "artifacts/agent_os/next_stage/ui/dark_cloud_dialog_20261103.png (dark surface, themed fields, readable hints)"
+  },
+  "A3_background_auto_sync": {
+    "what": "the JobScheduler path was already in the tree; this round verified it on device and surfaced its result",
+    "device": "job 4711 present in dumpsys jobscheduler, forced run logged 'auto_sync skipped: no paired device', audit shows '后台同步跳过：no paired device'",
+    "new": "Settings shows the last background result, and audit lines keep the reason instead of dropping it",
+    "evidence": "artifacts/agent_os/next_stage/ui/auto_sync_audit_20261103.png"
+  },
+  "A4_crash_history": {
+    "what": "CrashLog keeps the last 20 crashes as one tab-separated line each; the diagnostics hub shows them with timestamps",
+    "tests": "test_crash_history.py covers format/parse/skip-damaged/cap ordering",
+    "evidence": "artifacts/agent_os/next_stage/ui/crash_history_20261103.png (two entries listed)",
+    "how_verified": "a temporary debuggable build let the reviewer seed two entries; the release build was reinstalled afterwards and the seeded files removed"
+  },
+  "verification": "host suite OK (70 tests); device suite RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS on the release build"
+}

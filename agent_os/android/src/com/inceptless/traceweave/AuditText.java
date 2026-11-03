@@ -11,7 +11,12 @@ final class AuditText {
         int split = event.indexOf(':');
         if (split > 0) {
             name = event.substring(0, split);
-            argument = event.substring(split + 1);
+            argument = event.substring(split + 1).trim();
+        }
+        // Background sync carries its reason after the colon; keep it visible.
+        if (name.startsWith("sync_auto_")) {
+            String key = "audit.event." + name + ".arg";
+            if (T.has(key)) return T.format(key, en, argument);
         }
         String plain = "audit.event." + name;
         if (T.has(plain)) return T.s(plain, en);

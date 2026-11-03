@@ -215,18 +215,19 @@ public final class LocalModelQualityProbe extends Activity {
         Log.i("AgentOsModelQuality", "D3_DONE " + phase);
     }
 
-    private void runQuality50(File model) throws Exception {
+    private void runQuality50(File model, String requested) throws Exception {
         JSONArray results = new JSONArray();
         java.util.LinkedHashMap<String, int[]> byCategory = new java.util.LinkedHashMap<>();
         int passed = 0;
+        int qualityBudget = LocalModelCatalog.QWEN.maxTokens;
         for (String[] item : QUALITY_CASES) {
             String category = item[0];
             String output;
             long startedAt = SystemClock.elapsedRealtime();
             try {
                 LocalModelProbe.prepare();
-                output = new String(LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8), 96, null),
-                    StandardCharsets.UTF_8);
+                output = new String(LocalModelProbe.generate(model.getPath(), item[1].getBytes(StandardCharsets.UTF_8),
+                    qualityBudget, null), StandardCharsets.UTF_8);
             } catch (Exception error) {
                 output = "<error: " + error.getMessage() + ">";
             }
@@ -245,6 +246,7 @@ public final class LocalModelQualityProbe extends Activity {
         for (java.util.Map.Entry<String, int[]> entry : byCategory.entrySet())
             categories.put(entry.getKey(), entry.getValue()[0] + "/" + entry.getValue()[1]);
         JSONObject summary = new JSONObject().put("passed", passed).put("total", QUALITY_CASES.length)
+            .put("max_tokens", qualityBudget).put("model", requested)
             .put("by_category", categories).put("cases", results);
         try (java.io.FileOutputStream output = new java.io.FileOutputStream(new File(getFilesDir(), "quality50.json"))) {
             output.write(summary.toString().getBytes(StandardCharsets.UTF_8));
@@ -843,7 +845,7 @@ public final class LocalModelQualityProbe extends Activity {
                     return;
                 }
                 if ("QUALITY50".equals(getIntent().getAction())) {
-                    runQuality50(model);
+                    runQuality50(model, requested);
                     return;
                 }
                 if ("STRESS".equals(getIntent().getAction())) {

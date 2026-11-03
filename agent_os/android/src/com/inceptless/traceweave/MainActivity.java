@@ -809,6 +809,42 @@ public final class MainActivity extends Activity implements MemoryHost {
         settingsPanel.show();
     }
 
+    private void showCrashHistory() {
+        boolean en = isEnglish();
+        java.util.ArrayList<CrashLog.Entry> entries = CrashLog.history(this);
+        LinearLayout body = new LinearLayout(this);
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(dp(20), dp(8), dp(20), dp(8));
+        if (entries.isEmpty()) {
+            body.addView(Ui.meta(this, T.s("crash.history_empty", en)));
+        } else {
+            java.text.SimpleDateFormat stamp = new java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.ROOT);
+            for (CrashLog.Entry entry : entries) {
+                TextView line = new TextView(this);
+                line.setText(stamp.format(new java.util.Date(entry.occurredAt)) + " · " + entry.label());
+                line.setTextSize(12);
+                line.setTextColor(Ui.text(this));
+                line.setPadding(0, dp(4), 0, dp(4));
+                body.addView(line);
+            }
+            body.addView(Ui.meta(this, T.s("crash.history_note", en)));
+        }
+        ScrollView scroller = new ScrollView(this);
+        scroller.addView(body);
+        AlertDialog historyDialog = new AlertDialog.Builder(this)
+            .setTitle(T.s("crash.history_title", en))
+            .setView(scroller)
+            .setNegativeButton(T.s("common.close", en), null)
+            .setPositiveButton(T.s("crash.history_clear", en), (dialog, which) -> {
+                CrashLog.clearHistory(this);
+                CrashLog.clear(this);
+                showMessage(T.s("crash.history_cleared", en));
+            })
+            .create();
+        historyDialog.show();
+        Ui.themeDialog(historyDialog, this);
+    }
+
     private void showConsoleDialog() {
         boolean en = isEnglish();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -829,6 +865,8 @@ public final class MainActivity extends Activity implements MemoryHost {
         root.addView(vadLiveStatus);
 
         addPageButton(root, T.s("audit.open", en), view -> startActivity(new android.content.Intent(this, AuditActivity.class)));
+        addPageButton(root, T.format("crash.history_button", en, CrashLog.history(this).size()),
+            view -> showCrashHistory());
 
         LinearLayout autoBtnRow = new LinearLayout(this);
         autoBtnRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -2001,9 +2039,7 @@ public final class MainActivity extends Activity implements MemoryHost {
     }
 
     private EditText passwordField(String hint) {
-        EditText input = new EditText(this);
-        input.setHint(hint);
-        input.setSingleLine(true);
+        EditText input = Ui.input(this, hint);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         return input;
     }

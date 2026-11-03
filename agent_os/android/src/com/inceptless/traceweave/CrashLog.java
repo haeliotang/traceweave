@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 final class CrashLog {
     private static final int MAX_BYTES = 64 * 1024;
     private static final String FILE_NAME = "last_crash.txt";
+    private static final String HISTORY_NAME = "crash_history.txt";
+    private static final int HISTORY_LIMIT = 20;
 
     private CrashLog() {}
 
@@ -52,9 +54,67 @@ final class CrashLog {
     }
 
     static void record(Context context, Throwable error) {
+        String raw = format(error);
         try (FileOutputStream output = new FileOutputStream(new File(context.getFilesDir(), FILE_NAME))) {
-            output.write((System.currentTimeMillis() + "\n" + format(error)).getBytes(StandardCharsets.UTF_8));
+            output.write((System.currentTimeMillis() + "\n" + raw).getBytes(StandardCharsets.UTF_8));
         } catch (Exception ignored) {
+        }
+        appendHistory(context, error, raw);
+    }
+
+    /** One line per crash so the diagnostics page can show a trend instead of a single event. */
+    private static void appendHistory(Context context, Throwable error, String raw) {
+        String type = error == null ? "unknown" : error.getClass().getName();
+        String message = error == null || error.getMessage() == null ? "" : error.getMessage();
+        if (message.length() > 200) message = message.substring(0, 200);
+        java.util.ArrayList<CrashHistory.Entry> existing = new java.util.ArrayList<>();
+        for (CrashLog.Entry entry : history(context))
+            existing.add(new CrashHistory.Entry(entry.occurredAt, entry.type, entry.message));
+        java.util.ArrayList<CrashHistory.Entry> entries = CrashHistory.prepend(existing,
+            new CrashHistory.Entry(System.currentTimeMillis(), type, message), HISTORY_LIMIT);
+        try (FileOutputStream output = new FileOutputStream(new File(context.getFilesDir(), HISTORY_NAME))) {
+            output.write(CrashHistory.format(entries).getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+        }
+    }
+
+    static java.util.ArrayList<CrashLog.Entry> history(Context context) {
+        java.util.ArrayList<CrashLog.Entry> entries = new java.util.ArrayList<>();
+        File file = new File(context.getFilesDir(), HISTORY_NAME);
+        if (!file.exists()) return entries;
+        try {
+            String text = new String(java.nio.file.Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            for (CrashHistory.Entry entry : CrashHistory.parse(text)) {
+                entries.add(new Entry(entry.occurredAt, entry.type, entry.message, ""));
+            }
+        } catch (Exception ignored) {
+        }
+        return entries;
+    }
+
+    static void clearHistory(Context context) {
+        File file = new File(context.getFilesDir(), HISTORY_NAME);
+        if (file.exists()) file.delete();
+    }
+
+    static final class Entry {
+        final long occurredAt;
+        final String type;
+        final String message;
+        final String summary;
+
+        Entry(long occurredAt, String type, String message, String summary) {
+            this.occurredAt = occurredAt;
+            this.type = type;
+            this.message = message == null ? "" : message;
+            this.summary = summary == null ? "" : summary;
+        }
+
+        /** "java.lang.IllegalStateException: bad state" without the package prefix. */
+        String label() {
+            int dot = type.lastIndexOf('.');
+            String shortType = dot >= 0 ? type.substring(dot + 1) : type;
+            return message.isEmpty() ? shortType : shortType + ": " + message;
         }
     }
 

@@ -204,13 +204,11 @@ final class SettingsPanel {
         enabledCheck.setChecked(current.enabled);
         fields.addView(enabledCheck);
 
-        final EditText urlInput = new EditText(host);
-        urlInput.setHint(T.s("settingspanel.27", en));
+        final EditText urlInput = Ui.input(host, T.s("settingspanel.27", en));
         urlInput.setText(current.endpointUrl);
         fields.addView(urlInput);
 
-        final EditText keyInput = new EditText(host);
-        keyInput.setHint(T.s("settingspanel.28", en));
+        final EditText keyInput = Ui.input(host, T.s("settingspanel.28", en));
         keyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         keyInput.setText(current.apiKey);
         fields.addView(keyInput);
@@ -236,12 +234,11 @@ final class SettingsPanel {
         });
         fields.addView(toggleKeyVisBtn);
 
-        final EditText modelInput = new EditText(host);
-        modelInput.setHint(T.s("settingspanel.32", en));
+        final EditText modelInput = Ui.input(host, T.s("settingspanel.32", en));
         modelInput.setText(current.modelName);
         fields.addView(modelInput);
 
-        new AlertDialog.Builder(host)
+        AlertDialog cloudDialog = new AlertDialog.Builder(host)
             .setTitle(T.s("settingspanel.33", en))
             .setMessage(T.s("settings.saving_this_configuration_sends_no_tas", en))
             .setView(fields)
@@ -267,7 +264,9 @@ final class SettingsPanel {
                 refreshCloud();
                 host.toast(T.s("settingspanel.36", en));
             })
-            .show();
+            .create();
+        cloudDialog.show();
+        Ui.themeDialog(cloudDialog, host);
     }
 
 }

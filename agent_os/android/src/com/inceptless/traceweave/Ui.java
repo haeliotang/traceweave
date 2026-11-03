@@ -87,6 +87,24 @@ final class Ui {
         styleContent(context, dialog.getWindow().getDecorView());
     }
 
+    /** Text field that follows the theme, including inside dialogs. */
+    static android.widget.EditText input(Context context, String hint) {
+        android.widget.EditText field = new android.widget.EditText(context);
+        field.setHint(hint);
+        field.setSingleLine(true);
+        field.setTextSize(13);
+        field.setTextColor(text(context));
+        field.setHintTextColor(muted(context));
+        field.setMinHeight(dp(context, 48));
+        android.graphics.drawable.GradientDrawable background = new android.graphics.drawable.GradientDrawable();
+        background.setColor(dark(context) ? 0xFF0F172A : 0xFFF8FAFC);
+        background.setCornerRadius(dp(context, 8));
+        background.setStroke(dp(context, 1), stroke(context));
+        field.setBackground(background);
+        field.setPadding(dp(context, 12), dp(context, 10), dp(context, 12), dp(context, 10));
+        return field;
+    }
+
     /** Builds a dialog body with our own title and message so dark mode stays readable. */
     static android.widget.LinearLayout dialogBody(Context context, String title, String message, int messageSize) {
         android.widget.LinearLayout body = new android.widget.LinearLayout(context);

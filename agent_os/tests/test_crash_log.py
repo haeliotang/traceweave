@@ -5,6 +5,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "agent_os/android/src/com/inceptless/traceweave/CrashLog.java"
+HISTORY = ROOT / "agent_os/android/src/com/inceptless/traceweave/CrashHistory.java"
 TEST = ROOT / "agent_os/tests/android/CrashLogHostTest.java"
 
 
@@ -18,7 +19,7 @@ class CrashLogTests(unittest.TestCase):
                 "public class Context {\n"
                 "  public java.io.File getFilesDir() { return null; }\n"
                 "}\n")
-            subprocess.run(["javac", "--release", "8", "-d", directory, str(SOURCE), str(TEST),
+            subprocess.run(["javac", "--release", "8", "-d", directory, str(SOURCE), str(HISTORY), str(TEST),
                             str(stub / "Context.java")],
                            check=True, capture_output=True)
             result = subprocess.run(["java", "-cp", directory, "com.inceptless.traceweave.CrashLogHostTest"],

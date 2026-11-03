@@ -1510,6 +1510,15 @@ final class AgentStore extends SQLiteOpenHelper {
             .getLong("sync_auto_interval_ms", AutoSyncPolicy.DEFAULT_INTERVAL_MS);
     }
 
+    /** Newest background-sync audit line, so Settings can show when it last ran. */
+    String lastAutoSyncEvent() {
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT event, occurred_at FROM audit WHERE event LIKE 'sync_auto_%' ORDER BY occurred_at DESC LIMIT 1", null)) {
+            if (!cursor.moveToFirst()) return "";
+            return cursor.getString(0) + "\t" + cursor.getLong(1);
+        }
+    }
+
     void setSyncAutoIntervalMs(long intervalMs) {
         appContext.getSharedPreferences("agent_os_prefs", 0).edit()
             .putLong("sync_auto_interval_ms", AutoSyncPolicy.clampInterval(intervalMs)).apply();

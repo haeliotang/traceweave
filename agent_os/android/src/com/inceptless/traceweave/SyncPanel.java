@@ -50,6 +50,16 @@ final class SyncPanel {
             AutoSyncScheduler.apply(host, host.storeRef().syncAutoEnabled(), options[next]);
             ((Button) view).setText(T.format("sync.interval_button", en, intervalLabel(options[next])));
         });
+        TextView lastAuto = new TextView(host);
+        String lastEvent = host.storeRef().lastAutoSyncEvent();
+        lastAuto.setText(lastEvent.isEmpty()
+            ? T.s("sync.auto_never", en)
+            : T.format("sync.auto_last", en, lastEvent.substring(0, lastEvent.indexOf('\t')).replace("sync_auto_", "")));
+        lastAuto.setTextSize(11);
+        lastAuto.setTextColor(Ui.muted(host));
+        lastAuto.setPadding(0, host.dpRef(4), 0, 0);
+        syncRow.addView(lastAuto);
+
         autoSync.setText(T.s("sync.auto", en));
         autoSync.setTextSize(11);
         autoSync.setTextColor(0xFF64748B);

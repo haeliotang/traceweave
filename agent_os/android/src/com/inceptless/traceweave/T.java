@@ -775,6 +775,18 @@ final class T {
         add("audit.integrity_anchored", "Tamper check: chain intact across %d events; %d heads anchored to the device key", "防篡改校验：%d 条事件链完整，%d 个链头已用设备密钥锚定");
         add("archive.audit_mismatch", "The archive's audit rows do not match its declared chain head; the file was altered.", "档案内的审计记录与其声明的链头不一致，文件可能被改动过。");
         add("archive.export_head", "Audit head at export: %s (%d events). Keep it somewhere outside this device to prove the history later.", "导出时的审计链头：%s（共 %d 条）。把它保存在本机之外，日后可用于证明历史未被改写。");
+        add("crash.history_button", "Crash history (%d)", "崩溃历史（%d）");
+        add("crash.history_title", "Crash history", "崩溃历史");
+        add("crash.history_empty", "No crashes recorded on this device.", "本机没有记录到崩溃。");
+        add("crash.history_note", "Kept on this device only; never uploaded. Clear it once you no longer need it.", "仅保存在本机，从不上传。不需要时可以清除。");
+        add("crash.history_clear", "Clear", "清除");
+        add("crash.history_cleared", "Crash history cleared", "崩溃历史已清除");
+        add("sync.auto_never", "Background sync: never ran", "后台同步：尚未运行");
+        add("sync.auto_last", "Background sync last result: %s", "后台同步上次结果：%s");
+        add("audit.event.sync_auto_skipped.arg", "Background sync skipped: %s", "后台同步跳过：%s");
+        add("audit.event.sync_auto_completed.arg", "Background sync finished: %s", "后台同步完成：%s");
+        add("audit.event.sync_auto_failed.arg", "Background sync failed: %s", "后台同步失败：%s");
+        add("audit.event.sync_auto_error.arg", "Background sync error: %s", "后台同步出错：%s");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
