@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-03",
+  "what": "removed the [ci] opt-in guard from the workflow; every push to main and every pull request now runs the full job",
+  "why": "the guard existed to protect a private-repo Actions quota; the repository is public, so minutes are free and the guard only left main untested (the last five pushes, including v0.1.2, were all skipped)",
+  "change": [
+    ".github/workflows/agent-os-android.yml: dropped three 'if: ... contains(head_commit.message, [ci])' lines and the quota comment",
+    "test_ci_workflow.py: now asserts no guard comes back and that push/pull_request/workflow_dispatch all trigger",
+    "CHANGELOG.md: added with 0.1.0, 0.1.1, 0.1.2 and an Unreleased section; linked from both READMEs",
+    "test_audit_text.py + test_step_text.py: cover bilingual audit wording and step wording, plus a check that step.status.* keys match the ExecutionPlan constants exactly"
+  ],
+  "evidence": {
+    "first_unguarded_run": "https://github.com/haeliotang/traceweave/actions/runs/41690901787",
+    "jobs": "rust-core success, sync-transport success, android-host success",
+    "commit": "9cde831"
+  },
+  "host_tests": "74 tests pass"
+}
