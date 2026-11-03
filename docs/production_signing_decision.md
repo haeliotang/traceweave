@@ -89,8 +89,17 @@
 
 收据：[signing_recovery_drill_20261104](../artifacts/agent_os/next_stage/signing_recovery_drill_20261104.json)，`temporary_key_material_removed: true`。演练过程中遇到并修掉两个真实问题：档案内容其实是 **JSON（base64 承载 keystore）而不是 tar**；`keytool` 输出的指纹是冒号分隔、需要归一化后才能与期望值比较。
 
+**口令离线保存（2026-11-04 起为明确步骤）**
+
+恢复说明与口令分离保存，具体动作写在 [signing_custody_checklist](signing_custody_checklist.md)：
+
+1. `scripts/signing_custody_card.py` 生成**不含任何机密**的恢复卡（档案名、SHA-256、Keychain 项名、演练命令、验证日志），与档案副本放在一起；
+2. 口令本体只写在**离线介质**（密封信封 / 密码管理器 / 离线 U 盘），不与档案同处；
+3. 卡片上只写「口令放在哪里」，不写口令本身；
+4. 每季度按清单第 3 节跑一次演练，结果记进卡片日志。
+
 **仍未消除的风险**：
 
-1. 加密档案没有离线可读的恢复说明——丢失 Keychain 条目即无法解密，口令必须由持有人另行保存；
+1. 口令的离线副本是否存在、是否可用，只能靠持有人自查——仓库无法验证；
 2. Keychain 访问需要人工放行（`security` 曾返回 161），自动化流程仍需一次交互；
 3. 密钥轮换、吊销与第二设备恢复仍未演练（见 [signing_recovery_drill_20261030](../artifacts/agent_os/next_stage/signing_recovery_drill_20261030.json) 的限制项）。
