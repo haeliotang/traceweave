@@ -6,11 +6,20 @@ what changed between versions; the prototype disclaimer from the README still ap
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.3 — 2026-11-04
+
+- Floating capsule redesigned to the same design system as the app: card surface, 1 dp
+  stroke, rounded corners, one filled primary action, 40 dp touch targets.
+- The capsule follows light/dark theme changes live: the overlay rebuilds itself in
+  `onConfigurationChanged` while keeping its expansion state and position.
 - CI runs on every push and pull request again; the `[ci]` opt-in guard existed only to
   protect a private-repo Actions quota and is gone now that the repository is public.
 - Host tests cover the audit wording (`AuditText`) and step wording (`StepText`) so a
   renamed state or a missing catalog key fails in CI instead of surfacing as raw
   identifiers in the UI.
+- `CHANGELOG.md` added and linked from both READMEs.
 
 ## 0.1.2 — 2026-11-03
 
