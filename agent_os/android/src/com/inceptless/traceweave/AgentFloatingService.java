@@ -457,6 +457,66 @@ public final class AgentFloatingService extends Service {
         });
     }
 
+    /**
+     * The overlay is its own window, so it does not restyle itself when the system
+     * switches between light and dark. Rebuilding the view keeps the capsule in the
+     * same theme as the app; the expansion state and drag position are carried over.
+     */
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        rebuildForCurrentTheme();
+    }
+
+    private void rebuildForCurrentTheme() {
+        boolean wasExpanded = isExpanded;
+        int x = floatingParams == null ? dp(16) : floatingParams.x;
+        int y = floatingParams == null ? dp(110) : floatingParams.y;
+        tearDownView();
+        initFloatingLayout();
+        if (floatingView == null) return;
+        if (floatingParams != null) {
+            floatingParams.x = x;
+            floatingParams.y = y;
+            try {
+                if (windowManager != null) windowManager.updateViewLayout(floatingView, floatingParams);
+            } catch (Exception ignored) {
+            }
+        }
+        isExpanded = !wasExpanded; // toggleExpansion() flips the flag
+        toggleExpansion();
+        updateLocaleTexts();
+    }
+
+    private void tearDownView() {
+        sensorHandler.removeCallbacks(sensorRefresh);
+        if (floatingView != null && windowManager != null) {
+            try {
+                windowManager.removeView(floatingView);
+            } catch (Exception ignored) {
+            }
+        }
+        floatingView = null;
+        ballView = null;
+        expandedCard = null;
+        ballDotView = null;
+        statusDotView = null;
+        statusTextView = null;
+        collapseBtn = null;
+        jitContainer = null;
+        jitTitle = null;
+        jitPromptView = null;
+        btnGrant = null;
+        btnDeny = null;
+        taskDetailView = null;
+        sensoriumDetailView = null;
+        voiceWaveformBar = null;
+        btnVoice = null;
+        btnVision = null;
+        btnPtt = null;
+        btnOpenApp = null;
+    }
+
     private void toggleExpansion() {
         isExpanded = !isExpanded;
         sensorHandler.removeCallbacks(sensorRefresh);

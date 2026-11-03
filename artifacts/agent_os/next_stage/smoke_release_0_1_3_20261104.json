@@ -1,0 +1,19 @@
+{
+  "apk": "/Users/hao/Documents/traceweave/agent_os/build/release-0.1.3/traceweave-0.1.3.apk",
+  "package": "com.inceptless.traceweave",
+  "version": "0.1.3",
+  "checks": {
+    "install": true,
+    "launch": true,
+    "header": true,
+    "composer": true,
+    "tiles": true
+  },
+  "details": {
+    "install_output": [
+      "Success"
+    ],
+    "version": "0.1.3"
+  },
+  "ok": true
+}
