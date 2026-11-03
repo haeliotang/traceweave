@@ -67,3 +67,21 @@
 - 签名恢复演练：[signing_recovery_drill_20261030](../artifacts/agent_os/next_stage/signing_recovery_drill_20261030.json)
 - 回滚边界演练：[release_rollback_drill_20261030](../artifacts/agent_os/next_stage/release_rollback_drill_20261030.json)
 - Edge 加固与恢复：[agent_os_next_stage_2026-10-27](agent_os_next_stage_2026-10-27.md)
+
+## 7. 密钥保管现状（2026-11-04）
+
+发布用签名材料共三处：
+
+| 位置 | 内容 | 是否随仓库发布 |
+|---|---|---|
+| `agent_os/build/agent-os-rotation-20261025.p12` | 工作用 keystore，口令在 macOS Keychain | 否（构建产物目录，已忽略） |
+| `local_device_archives/signing-backup-3ab8918d….edgea` | 加密档案，含 Agent OS 与 Edge 两把钥匙 | 否（忽略目录） |
+| 用户独立备份（本机之外） | 同一加密档案的副本 | 否 |
+
+2026-11-04 清理了 `~/Desktop` 上与 `local_device_archives/` 逐字节相同的两份拷贝（SHA-256 核对后删除），并在删除前确认用户已完成本机之外的备份。同时保留的 `edge-backup-bf543cc6….edgea`（2.6 GB）是 Edge 应用数据快照，与签名无关。
+
+**仍未消除的风险**：
+
+1. 加密档案本身没有离线可读的恢复说明——丢失 Keychain 条目即无法解密，口令必须由持有人另行保存；
+2. 本机之外的那份副本没有自动校验流程，能否解开只能靠人工演练；
+3. 密钥轮换、吊销与第二设备恢复仍未演练（见 [signing_recovery_drill_20261030](../artifacts/agent_os/next_stage/signing_recovery_drill_20261030.json) 的限制项）。
