@@ -1,0 +1,74 @@
+{
+ "date": "2026-11-04",
+ "archive": "/Users/hao/Documents/traceweave私钥/signing-backup-3ab8918d80e6401f8c35d5ebdcc95f92.edgea",
+ "archive_sha256": "539426431151c2ad8396484ee1a35a1ca71634c16c4fc9c95a8878b53b4b61f5",
+ "keychain_service": "com.inceptless.traceform.edge.archive",
+ "archive_authenticated": true,
+ "members": [
+  "keys-0-keystore_b64.p12",
+  "keys-1-keystore_b64.p12",
+  "backup-manifest.json"
+ ],
+ "keystores_found": [
+  "keys-0-keystore_b64.p12",
+  "keys-1-keystore_b64.p12"
+ ],
+ "password_candidates_tried": 2,
+ "recovered": [
+  {
+   "keystore": "keys-0-keystore_b64.p12",
+   "aliases": [
+    {
+     "alias": "traceform",
+     "certificate_sha256": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+     "keytool_error": null,
+     "signed_apk_signer": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+     "sign_error": null
+    }
+   ],
+   "opened_with_candidate": true
+  },
+  {
+   "keystore": "keys-1-keystore_b64.p12",
+   "aliases": [
+    {
+     "alias": "agent-os-rotation-20261025",
+     "certificate_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+     "keytool_error": null,
+     "signed_apk_signer": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+     "sign_error": null
+    }
+   ],
+   "opened_with_candidate": true
+  }
+ ],
+ "checks": [
+  {
+   "alias": "traceform",
+   "expected": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+   "actual": "e4bd7ecd43aba24b7759519e054b89d937417c1dbc08def02b7e9fd11584cf0c",
+   "matches": true
+  },
+  {
+   "alias": "traceform",
+   "signed_apk_matches_certificate": true
+  },
+  {
+   "alias": "agent-os-rotation-20261025",
+   "expected": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+   "actual": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db",
+   "matches": true
+  },
+  {
+   "alias": "agent-os-rotation-20261025",
+   "signed_apk_matches_certificate": true
+  }
+ ],
+ "verified": true,
+ "temporary_key_material_removed": true,
+ "limitations": [
+  "the drill proves the archive decrypts and the keys sign; it does not install anything",
+  "keychain access still requires operator approval on this machine",
+  "rotation, revocation and restore on a second device remain untested"
+ ]
+}

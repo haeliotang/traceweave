@@ -80,8 +80,17 @@
 
 2026-11-04 清理了 `~/Desktop` 上与 `local_device_archives/` 逐字节相同的两份拷贝（SHA-256 核对后删除），并在删除前确认用户已完成本机之外的备份。同时保留的 `edge-backup-bf543cc6….edgea`（2.6 GB）是 Edge 应用数据快照，与签名无关。
 
+**2026-11-04 恢复演练（外部副本）**：在 `scripts/recover_signing_archive.py` 里实现了可重复的演练流程——认证档案、解出 keystore、用 `keytool` 读证书指纹、用 `apksigner` 给 `agent-os-unsigned.apk` 的副本签名并验签、比对期望指纹、`finally` 删除临时密钥材料。对外部副本（`~/Documents/traceweave私钥/`）实跑结果：
+
+| 别名 | 证书 SHA-256 | 与发布身份一致 | 签名测试 APK 验签 |
+|---|---|---|---|
+| `agent-os-rotation-20261025` | `9effee32…a6db` | ✅ | ✅ |
+| `traceform`（Edge） | `e4bd7ecd…cf0c` | ✅ | ✅ |
+
+收据：[signing_recovery_drill_20261104](../artifacts/agent_os/next_stage/signing_recovery_drill_20261104.json)，`temporary_key_material_removed: true`。演练过程中遇到并修掉两个真实问题：档案内容其实是 **JSON（base64 承载 keystore）而不是 tar**；`keytool` 输出的指纹是冒号分隔、需要归一化后才能与期望值比较。
+
 **仍未消除的风险**：
 
-1. 加密档案本身没有离线可读的恢复说明——丢失 Keychain 条目即无法解密，口令必须由持有人另行保存；
-2. 本机之外的那份副本没有自动校验流程，能否解开只能靠人工演练；
+1. 加密档案没有离线可读的恢复说明——丢失 Keychain 条目即无法解密，口令必须由持有人另行保存；
+2. Keychain 访问需要人工放行（`security` 曾返回 161），自动化流程仍需一次交互；
 3. 密钥轮换、吊销与第二设备恢复仍未演练（见 [signing_recovery_drill_20261030](../artifacts/agent_os/next_stage/signing_recovery_drill_20261030.json) 的限制项）。
