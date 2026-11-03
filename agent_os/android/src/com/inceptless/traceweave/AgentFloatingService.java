@@ -96,6 +96,11 @@ public final class AgentFloatingService extends Service {
     private String pendingCap;
     private String pendingScope;
 
+    /** Filled action colour: ink on light, near-white on dark, so it never disappears. */
+    private int primaryBg() { return Ui.dark(this) ? 0xFFE2E8F0 : 0xFF0F172A; }
+
+    private int primaryFg() { return Ui.dark(this) ? 0xFF0F172A : 0xFFFFFFFF; }
+
     private int dp(int value) {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
@@ -208,16 +213,18 @@ public final class AgentFloatingService extends Service {
 
         GradientDrawable ballBg = new GradientDrawable();
         ballBg.setShape(GradientDrawable.OVAL);
-        ballBg.setColor(Color.argb(240, 15, 23, 42)); // Deep slate navy
-        ballBg.setStroke(dp(2), Color.argb(220, 74, 246, 195)); // Glowing cyan
+        // Same surface as the app's cards so the capsule reads as part of the product.
+        ballBg.setColor(Ui.card(this));
+        ballBg.setStroke(dp(1), Ui.stroke(this));
         ballView.setBackground(ballBg);
+        ballView.setElevation(dp(4));
 
-        ImageView ballIcon = IconFactory.createIconView(this, IconFactory.IconType.BRAIN, 0xFF4AF6C3, 22);
+        ImageView ballIcon = IconFactory.createIconView(this, IconFactory.IconType.BRAIN, Ui.text(this), 22);
         FrameLayout.LayoutParams iconLp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
         ballView.addView(ballIcon, iconLp);
 
-        ballDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 8);
+        ballDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF15803D, 8);
         FrameLayout.LayoutParams dotLp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
         dotLp.setMargins(0, dp(4), dp(4), 0);
@@ -232,33 +239,34 @@ public final class AgentFloatingService extends Service {
         expandedCard = new LinearLayout(this);
         expandedCard.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable cardBg = new GradientDrawable();
-        cardBg.setColor(Color.argb(245, 15, 23, 42));
-        cardBg.setCornerRadius(dp(16));
-        cardBg.setStroke(dp(1), Color.argb(160, 74, 246, 195));
+        cardBg.setColor(Ui.card(this));
+        cardBg.setCornerRadius(dp(18));
+        cardBg.setStroke(dp(1), Ui.stroke(this));
         expandedCard.setBackground(cardBg);
-        expandedCard.setPadding(dp(14), dp(12), dp(14), dp(12));
-        expandedCard.setLayoutParams(new FrameLayout.LayoutParams(dp(290), FrameLayout.LayoutParams.WRAP_CONTENT));
+        expandedCard.setElevation(dp(8));
+        expandedCard.setPadding(dp(16), dp(14), dp(16), dp(14));
+        expandedCard.setLayoutParams(new FrameLayout.LayoutParams(dp(292), FrameLayout.LayoutParams.WRAP_CONTENT));
 
         // --- Header Row ---
         LinearLayout headerRow = new LinearLayout(this);
         headerRow.setOrientation(LinearLayout.HORIZONTAL);
         headerRow.setGravity(Gravity.CENTER_VERTICAL);
 
-        statusDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF00E676, 10);
+        statusDotView = IconFactory.createIconView(this, IconFactory.IconType.STATUS_DOT_GREEN, 0xFF15803D, 10);
         headerRow.addView(statusDotView);
 
         statusTextView = new TextView(this);
-        statusTextView.setText(" Traceweave Capsule");
-        statusTextView.setTextColor(Color.parseColor("#4AF6C3"));
-        statusTextView.setTextSize(13);
+        statusTextView.setText(" Traceweave");
+        statusTextView.setTextColor(Ui.text(this));
+        statusTextView.setTextSize(14);
         statusTextView.setTypeface(null, android.graphics.Typeface.BOLD);
         statusTextView.setPadding(dp(6), 0, 0, 0);
         headerRow.addView(statusTextView, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
 
         collapseBtn = new TextView(this);
         collapseBtn.setText(T.s("overlay.collapse", isEnglish()));
-        collapseBtn.setTextSize(11);
-        collapseBtn.setTextColor(Color.parseColor("#94A3B8"));
+        collapseBtn.setTextSize(12);
+        collapseBtn.setTextColor(Ui.muted(this));
         collapseBtn.setPadding(dp(8), dp(4), dp(4), dp(4));
         collapseBtn.setOnClickListener(v -> toggleExpansion());
         headerRow.addView(collapseBtn);
@@ -276,17 +284,17 @@ public final class AgentFloatingService extends Service {
         LinearLayout jitTitleRow = new LinearLayout(this);
         jitTitleRow.setOrientation(LinearLayout.HORIZONTAL);
         jitTitleRow.setGravity(Gravity.CENTER_VERTICAL);
-        jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, Color.parseColor("#FFD54F"), 14));
+        jitTitleRow.addView(IconFactory.createIconView(this, IconFactory.IconType.ALERT, 0xFFB78103, 14));
         jitTitle = new TextView(this);
         jitTitle.setText(" " + T.s("overlay.jit_title", isEnglish()));
-        jitTitle.setTextColor(Color.parseColor("#FFD54F"));
+        jitTitle.setTextColor(0xFFB78103);
         jitTitle.setTextSize(12);
         jitTitle.setTypeface(null, android.graphics.Typeface.BOLD);
         jitTitleRow.addView(jitTitle);
         jitContainer.addView(jitTitleRow);
 
         jitPromptView = new TextView(this);
-        jitPromptView.setTextColor(Color.WHITE);
+        jitPromptView.setTextColor(Ui.body(this));
         jitPromptView.setTextSize(11);
         jitPromptView.setPadding(0, dp(2), 0, dp(4));
         jitContainer.addView(jitPromptView);
@@ -294,10 +302,10 @@ public final class AgentFloatingService extends Service {
         LinearLayout jitBtnRow = new LinearLayout(this);
         jitBtnRow.setOrientation(LinearLayout.HORIZONTAL);
 
-        btnGrant = createSmallButton(T.s("overlay.grant_five_minutes", isEnglish()), Color.parseColor("#1B5E20"), Color.WHITE, v -> handleJitDecision(true));
+        btnGrant = createSmallButton(T.s("overlay.grant_five_minutes", isEnglish()), primaryBg(), primaryFg(), v -> handleJitDecision(true));
         jitBtnRow.addView(btnGrant, new LinearLayout.LayoutParams(0, dp(28), 1.0f));
 
-        btnDeny = createSmallButton(T.s("overlay.deny", isEnglish()), Color.parseColor("#B71C1C"), Color.WHITE, v -> handleJitDecision(false));
+        btnDeny = createSmallButton(T.s("overlay.deny", isEnglish()), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> handleJitDecision(false));
         LinearLayout.LayoutParams denyLp = new LinearLayout.LayoutParams(0, dp(28), 1.0f);
         denyLp.setMargins(dp(6), 0, 0, 0);
         jitBtnRow.addView(btnDeny, denyLp);
@@ -310,10 +318,10 @@ public final class AgentFloatingService extends Service {
         taskRow.setOrientation(LinearLayout.HORIZONTAL);
         taskRow.setGravity(Gravity.CENTER_VERTICAL);
         taskRow.setPadding(0, dp(6), 0, 0);
-        taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Color.parseColor("#94A3B8"), 13));
+        taskRow.addView(IconFactory.createIconView(this, IconFactory.IconType.TASK, Ui.muted(this), 13));
         taskDetailView = new TextView(this);
         taskDetailView.setText(" " + T.s("overlay.core_ready", isEnglish()));
-        taskDetailView.setTextColor(Color.parseColor("#E2E8F0"));
+        taskDetailView.setTextColor(Ui.body(this));
         taskDetailView.setTextSize(11);
         taskRow.addView(taskDetailView);
         expandedCard.addView(taskRow);
@@ -323,10 +331,10 @@ public final class AgentFloatingService extends Service {
         sensRow.setOrientation(LinearLayout.HORIZONTAL);
         sensRow.setGravity(Gravity.CENTER_VERTICAL);
         sensRow.setPadding(0, dp(4), 0, 0);
-        sensRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SENSOR, Color.parseColor("#38BDF8"), 13));
+        sensRow.addView(IconFactory.createIconView(this, IconFactory.IconType.SENSOR, Ui.muted(this), 13));
         sensoriumDetailView = new TextView(this);
         updateSensorText(isEnglish());
-        sensoriumDetailView.setTextColor(Color.parseColor("#38BDF8"));
+        sensoriumDetailView.setTextColor(Ui.body(this));
         sensoriumDetailView.setTextSize(11);
         sensRow.addView(sensoriumDetailView);
         expandedCard.addView(sensRow);
@@ -341,7 +349,10 @@ public final class AgentFloatingService extends Service {
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(4), dp(10));
             lp.setMargins(dp(2), 0, dp(2), 0);
             bar.setLayoutParams(lp);
-            bar.setBackgroundColor(Color.parseColor("#4AF6C3"));
+            GradientDrawable barBg = new GradientDrawable();
+            barBg.setCornerRadius(dp(2));
+            barBg.setColor(Ui.dark(this) ? 0xFF64748B : 0xFFCBD5E1);
+            bar.setBackground(barBg);
             voiceWaveformBar.addView(bar);
         }
         expandedCard.addView(voiceWaveformBar);
@@ -351,22 +362,23 @@ public final class AgentFloatingService extends Service {
         actionRow.setOrientation(LinearLayout.HORIZONTAL);
         actionRow.setPadding(0, dp(6), 0, 0);
 
-        btnVoice = createSmallButton(T.s("overlay.live_audio", isEnglish()), Color.argb(220, 2, 132, 199), Color.WHITE, v -> toggleVoiceListening());
-        actionRow.addView(btnVoice, new LinearLayout.LayoutParams(0, dp(30), 1.0f));
+        btnVoice = createSmallButton(T.s("overlay.live_audio", isEnglish()), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> toggleVoiceListening());
+        actionRow.addView(btnVoice, new LinearLayout.LayoutParams(0, dp(40), 1.0f));
 
-        btnVision = createSmallButton(T.s("overlay.vision", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerVisionInspection());
-        LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        visLp.setMargins(dp(4), 0, 0, 0);
+        btnVision = createSmallButton(T.s("overlay.vision", isEnglish()), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> triggerVisionInspection());
+        LinearLayout.LayoutParams visLp = new LinearLayout.LayoutParams(0, dp(40), 1.0f);
+        visLp.setMargins(dp(6), 0, 0, 0);
         actionRow.addView(btnVision, visLp);
 
-        btnPtt = createSmallButton(T.s("overlay.ptt", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> triggerPttAction());
-        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(30), 1.0f);
-        pttLp.setMargins(dp(4), 0, 0, 0);
+        btnPtt = createSmallButton(T.s("overlay.ptt", isEnglish()), Ui.secondaryBg(this), Ui.secondaryFg(this), v -> triggerPttAction());
+        LinearLayout.LayoutParams pttLp = new LinearLayout.LayoutParams(0, dp(40), 1.0f);
+        pttLp.setMargins(dp(6), 0, 0, 0);
         actionRow.addView(btnPtt, pttLp);
 
-        btnOpenApp = createSmallButton(T.s("overlay.open_app", isEnglish()), Color.argb(200, 30, 41, 59), Color.parseColor("#E2E8F0"), v -> launchMainActivity());
-        LinearLayout.LayoutParams openLp = new LinearLayout.LayoutParams(0, dp(30), 0.9f);
-        openLp.setMargins(dp(4), 0, 0, 0);
+        // One filled action: going back to the app is what the capsule is for.
+        btnOpenApp = createSmallButton(T.s("overlay.open_app", isEnglish()), primaryBg(), primaryFg(), v -> launchMainActivity());
+        LinearLayout.LayoutParams openLp = new LinearLayout.LayoutParams(dp(76), dp(40));
+        openLp.setMargins(dp(6), 0, 0, 0);
         actionRow.addView(btnOpenApp, openLp);
 
         expandedCard.addView(actionRow);
@@ -390,13 +402,13 @@ public final class AgentFloatingService extends Service {
     private Button createSmallButton(String text, int bgColor, int textColor, View.OnClickListener listener) {
         Button btn = new Button(this);
         btn.setText(text);
-        btn.setTextSize(10);
+        btn.setTextSize(12);
         btn.setTextColor(textColor);
         btn.setAllCaps(false);
         btn.setPadding(0, 0, 0, 0);
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(bgColor);
-        bg.setCornerRadius(dp(8));
+        bg.setCornerRadius(dp(10));
         btn.setBackground(bg);
         btn.setOnClickListener(listener);
         return btn;

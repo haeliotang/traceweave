@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-04",
+  "what": "floating capsule restyled to the same design system as the main app",
+  "before": "dark navy ball and card with a cyan glow border and one blue button, which no longer matched the light-first single-colour UI",
+  "after": {
+    "collapsed": "card-coloured circle, 1 dp stroke, ink mark, 4 dp elevation, green status dot kept for state",
+    "expanded": "white/dark card at 18 dp radius with 1 dp stroke and 8 dp elevation, ink title, muted collapse action, body-coloured rows",
+    "actions": "three secondary chips (实时拾音 / 真机视觉 / PTT 按键) at 40 dp plus one filled primary (主系统)",
+    "waveform": "rounded light-grey bars instead of saturated cyan"
+  },
+  "dark_mode": "the service reads the theme when it attaches; the primary button flips to near-white with ink text so it stays visible on the dark card",
+  "evidence": [
+    "artifacts/agent_os/next_stage/ui/floating_capsule_collapsed_20261104.png",
+    "artifacts/agent_os/next_stage/ui/floating_capsule_light_20261104.png",
+    "artifacts/agent_os/next_stage/ui/floating_capsule_dark_20261104.png"
+  ],
+  "known_limit": "the overlay keeps the theme it was created with; toggling system dark mode while the capsule is open does not restyle it until it is hidden and shown again"
+}
