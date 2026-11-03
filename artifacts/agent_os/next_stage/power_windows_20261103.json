@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-03",
+  "device": "Pixel 6a, Android 17, wireless adb (192.168.0.25:5555), unplugged",
+  "method": "measure_power_android.py, 10-minute windows, 60-second samples, BatteryManager charge counter (uAh)",
+  "controlled": "screen on at 200/255 brightness, auto-brightness off, app force-stopped, keep-awake ping every 60 s to stop Wi-Fi from sleeping",
+  "windows": [
+    {"label": "auto-sync-on", "used_mah": 24.0, "mah_per_hour": 143.7, "temp_start_c": 28.8, "temp_end_c": 28.9, "temp_max_c": 29.0},
+    {"label": "auto-sync-off", "used_mah": 16.0, "mah_per_hour": 95.7, "temp_start_c": 28.9, "temp_end_c": 29.0, "temp_max_c": 29.0},
+    {"label": "auto-sync-off-2", "used_mah": 38.0, "mah_per_hour": 227.4, "temp_start_c": 29.0, "temp_end_c": 28.8, "temp_max_c": 29.0}
+  ],
+  "finding": "the two windows with identical settings (auto-sync off) differ by 2.4x (95.7 vs 227.4 mAh/h), so this method cannot separate the auto-sync toggle from run-to-run noise",
+  "why_the_toggle_cannot_show_up": [
+    "the scheduled job runs at most once an hour, so a 10-minute window usually contains no run at all",
+    "with no paired device the run exits immediately after building an empty record set",
+    "the only run observed in this session was the foreground attempt at 23:20 (logcat: 'auto_sync skipped: no paired device')"
+  ],
+  "limits": [
+    "no power meter or thermal chamber; numbers come from the battery's own charge counter",
+    "screen brightness fixed but display content not pinned, so compositor load varies between windows",
+    "the earlier 2026-10-31 figures (240 mAh/h idle, 588 mAh/h under continuous model load) have the same uncertainty and cannot be compared across days",
+    "measuring the cost of a real peer-to-peer sync still needs a second device"
+  ],
+  "receipts": [
+    "artifacts/agent_os/next_stage/power_auto_sync_on_20261103.json",
+    "artifacts/agent_os/next_stage/power_auto_sync_off_20261103.json",
+    "artifacts/agent_os/next_stage/power_auto_sync_off_2_20261103.json"
+  ]
+}

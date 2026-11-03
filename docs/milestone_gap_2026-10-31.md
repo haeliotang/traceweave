@@ -36,7 +36,7 @@
 | 8 | **系统级能力仍是实验** | 与 L4 的距离 | 悬浮窗、无障碍、传感器均标实验；通知/分享/文件选择已稳定 | 清点见 [system_capability_inventory](system_capability_inventory_2026-10-31.md)；建议先做零权限的静态快捷方式 |
 | 9 | **Rust daemon 与 IPC 停用** | 长期架构未闭合 | 代码中 `run_tcp_server` 直接返回“disabled pending authenticated IPC” | 评估已写：[daemon_ipc_assessment](daemon_ipc_assessment_2026-10-31.md)；结论是短期不启用 |
 | 10 | **无遥测、无崩溃上报** | 现场问题难复现 | 本地崩溃捕获已实现（`last_crash.txt`，随导出诊断携带）；**不自动上传**；方案见 [crash_reporting](crash_reporting_2026-10-31.md) | 自动上报需要用户同意与接收端，未做 |
-| 11 | **功耗只有单次点测** | 续航结论缺失 | 240/588 mAh/h、+2.6 °C，且未覆盖“自动同步开启” | 工具与协议已就绪：[power_measurement](power_measurement_2026-10-31.md)；需要设备拔电后采样 |
+| 11 | **功耗仍不足以支撑续航结论** | 续航结论缺失 | 2026-11-03 补了三次未插电窗口（143.7 / 95.7 / 227.4 mAh/h）：同样设定下两次「关」相差 2.4 倍，**10 分钟窗口无法分辨自动同步开关的影响** | 需要第二台设备与更长窗口（每段 ≥1 小时，A/B/A）或功率计；见 [power_measurement](power_measurement_2026-10-31.md) |
 | 12 | **CI 长期不可用** | 证据链依赖本地 | Actions 报计费受阻（run 41194259269）；**但 CI 脚本本地实跑通过**：42 项测试 + 构建 + 校验收据见 [ci_local_run_20261031](../artifacts/agent_os/next_stage/ci_local_run_20261031.json) | 只需等额度恢复；已加 `test_ci_workflow.py` 防止工作流与固定提交漂移 |
 
 ## 3.1 审计建议的落实进度（2026-10-31）
