@@ -2,7 +2,7 @@
 
 本流程用于 Android APK 的本地候选验证与公开 Release 发布。
 
-**当前状态（2026-11-07）**：仓库公开（`https://github.com/haeliotang/traceweave`），已发布 v0.1.0–v0.1.3 四个 Release，每个版本都是**开发密钥签名的侧载包**，不是生产签名、不是应用商店分发。
+**当前状态（2026-11-07）**：仓库公开（`https://github.com/haeliotang/traceweave`），已发布 v0.1.0–v0.1.4 五个 Release，每个版本都是**开发密钥签名的侧载包**，不是生产签名、不是应用商店分发。
 
 ## 固定更新身份
 

@@ -3,7 +3,7 @@
 > 以 `AgentStore.DATABASE_VERSION`、`AndroidManifest.xml` 与
 > [production_signing_decision.md](../docs/production_signing_decision.md) 为准。
 >
-> 当前事实：包名 `com.inceptless.traceweave`、schema **13**、已发布 v0.1.0–v0.1.3（开发密钥侧载）、
+> 当前事实：包名 `com.inceptless.traceweave`、schema **17**、已发布 v0.1.0–v0.1.4（开发密钥侧载）、
 > 开发签名密钥别名 `agent-os-rotation-20261025`、Keychain service `com.inceptless.traceform.agentos.signing`。
 
 # Agent OS Android prototype
