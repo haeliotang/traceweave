@@ -560,9 +560,9 @@ public final class AgentFloatingService extends Service {
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .build();
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= 34) {
                 startForeground(CAPSULE_NOTIFICATION_ID, notification,
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
             } else {
                 startForeground(CAPSULE_NOTIFICATION_ID, notification);
             }

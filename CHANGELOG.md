@@ -20,6 +20,16 @@ what changed between versions; the prototype disclaimer from the README still ap
   `com.inceptless.traceweave.permission.BIND_SUBSTRATE`; the SDK and demo agent declare it.
 - Export no longer fails when the app is recreated while the document picker is open: the
   passphrase is requested again and written to the already chosen destination.
+- The floating capsule is a real foreground service now (ongoing notification, `specialUse`
+  type), so it is no longer frozen or killed when another app is in front; hiding it stops the
+  service and the notification, and a theme change no longer re-shows a hidden capsule.
+- The home screen polls a cheap signature instead of decrypting every task once a second, and
+  the full load runs off the main thread.
+- Screens draw edge-to-edge with system-bar, cutout and keyboard insets instead of a hardcoded
+  status-bar padding.
+- Backups and device transfer exclude the sealed database and preferences; a device whose rows
+  cannot be decrypted (copied database, lost Keystore key) gets an explicit reset action, and a
+  single unreadable row no longer hides every other task or memory.
 
 ## 0.1.3 — 2026-11-04
 

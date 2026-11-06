@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-07",
+  "scope": "P1 items from docs/audit_20261106.md",
+  "P1_1_capsule_foreground": {
+    "change": [
+      "AgentFloatingService now enters the foreground with a low-importance ongoing notification (channel floating_capsule)",
+      "service type switched from microphone to specialUse with the required property and FOREGROUND_SERVICE_SPECIAL_USE permission; the microphone type made startForeground fail whenever RECORD_AUDIO had not been granted yet",
+      "hiding the capsule stops the foreground state and stopSelf(); configuration changes now restore the hidden/visible state instead of always showing it"
+    ],
+    "device_evidence": "dumpsys activity services shows isForeground=true foregroundId=4801 types=0x40000000; notification text 'Traceweave 胶囊运行中'; the ball stays visible over the launcher; after 隐藏胶囊 the service count and the notification count are both 0"
+  },
+  "P1_2_home_refresh": {
+    "change": [
+      "the home screen polls one COUNT/MAX query (AgentStore.taskListSignature) instead of decrypting every task each second",
+      "the full load runs on the io executor and only re-renders when the signature changes",
+      "filter chips and the search box re-render from the in-memory list",
+      "summary and first-run use COUNT(*) queries, and recoverExternalActions/reconcileActiveTasks moved off the main thread"
+    ],
+    "verification": "device suite still passes; list updates when tasks change are driven by the signature"
+  },
+  "P1_3_edge_to_edge": {
+    "change": "Ui.edgeToEdge + Ui.padForInsets applied to Main, Audit, TaskDetail, MemoryVault, TaskCenter and LocalModel, replacing hardcoded status-bar paddings with system-bar/cutout/IME insets",
+    "device_evidence": "home screen content starts below the status bar and ends above the gesture bar (verified by screenshot after the inset change)"
+  },
+  "P1_4_migration_guard": {
+    "change": [
+      "res/xml/data_extraction_rules.xml excludes database, sharedpref and files from both cloud backup and device transfer, because payloads are sealed with a non-transferable Keystore key",
+      "AgentStore.countUnreadableRows()/resetLocalDatabase() plus a Settings entry that only appears when rows cannot be decrypted, with an explicit confirmation"
+    ],
+    "device_evidence": "aapt2 dump confirms dataExtractionRules in the packaged manifest; the Settings screen shows no reset entry when everything decrypts"
+  },
+  "P1_5_unreadable_rows": {
+    "change": "listTasks/listMemories skip rows that fail to decrypt, log them, and expose skippedUndecryptable, which the diagnostics export now carries as skipped_undecryptable_rows"
+  },
+  "verification": {
+    "host_tests": "88 tests pass",
+    "device_suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "preflight": "ok on agent_os/build/preflight-p1b"
+  }
+}
