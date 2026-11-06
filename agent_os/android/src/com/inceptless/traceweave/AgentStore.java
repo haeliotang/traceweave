@@ -453,6 +453,47 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Rebuilds the anchor table from the current chain. Only offered to the user when the
+     * chain itself is intact but the anchors predate the out-of-database state (upgrade from
+     * a build whose task deletion removed audit rows). Automatic re-signing would hand an
+     * attacker a forger; this requires an explicit tap and records that it happened.
+     */
+    int rebuildAnchors() {
+        java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT id, task_id, occurred_at, event, prev_hash, hash FROM audit ORDER BY rowid", null)) {
+            while (cursor.moveToNext()) {
+                rows.add(new AuditChain.Row(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
+                    cursor.getString(3), cursor.getString(4), cursor.getString(5)));
+            }
+        }
+        if (AuditChain.firstBrokenIndex(rows) >= 0)
+            throw new IllegalStateException("The audit chain itself is broken; anchors cannot be rebuilt");
+        javax.crypto.SecretKey key = AnchorKey.get();
+        if (key == null) throw new IllegalStateException("The device key is unavailable");
+        SQLiteDatabase database = getWritableDatabase();
+        database.beginTransaction();
+        try {
+            database.delete("audit_anchors", null, null);
+            for (int index = 0; index < rows.size(); index++) {
+                AuditChain.Row row = rows.get(index);
+                ContentValues values = new ContentValues();
+                values.put("idx", index);
+                values.put("hash", row.hash);
+                values.put("anchored_at", row.occurredAt);
+                values.put("mac", AnchorMac.compute(key, index, row.hash, row.occurredAt));
+                database.insertWithOnConflict("audit_anchors", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+            // appendAudit anchors the new event and advances the out-of-database state itself.
+            appendAudit(database, "system", "audit_anchors_rebuilt:" + rows.size(), System.currentTimeMillis());
+            database.setTransactionSuccessful();
+        } finally {
+            database.endTransaction();
+        }
+        return rows.size();
+    }
+
     /** Verifies the whole chain and reports the first row that does not match. */
     java.util.Map<String, Object> auditIntegrity() {
         java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
@@ -502,7 +543,10 @@ final class AgentStore extends SQLiteOpenHelper {
             appendSystemAudit("audit_anchor_baseline_established");
         }
 
+        boolean reconcilable = !state.present && broken < 0 && key != null && !rows.isEmpty()
+            && anchorProblem != null;
         java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
+        report.put("reconcilable", reconcilable);
         report.put("checked", rows.size());
         report.put("brokenAt", broken);
         report.put("anchors", anchors.size());

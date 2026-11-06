@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-06",
+  "scope": "P0-1..P0-5 from docs/audit_20261106.md",
+  "P0_1_audit_chain": {
+    "change": [
+      "deleteTask no longer runs DELETE FROM audit; it appends a task_deleted event",
+      "archive import of a task tombstone appends task_deleted_from_archive instead of deleting rows",
+      "imported audit rows are linked into the local hash chain (prev_hash/hash) and anchored",
+      "ensureAnchors (read-time re-signing) removed: it let anyone with DB write access re-seal a rewritten chain",
+      "audit_anchors state (count + head) now lives outside the database in a Keystore-MAC'd preference"
+    ],
+    "legacy_install_path": "when the chain is intact but anchors predate the state file, the audit page offers a one-time 'rebuild anchors' action; automatic re-signing is never done",
+    "device_evidence": "before: '防篡改校验失败：锚点异常 anchor_out_of_range_8'; after the one-time rebuild: '10 条事件链完整，10 个链头已用设备密钥锚定'; deleting a task kept the chain valid"
+  },
+  "P0_2_memory_versions": {
+    "change": [
+      "updateMemoryChecked writes a version row for the edited content",
+      "deleteMemory / deleteMemoriesReviewed write a tombstone version so deletions propagate",
+      "archive import writes versions for imported and replaced memories",
+      "exportSyncRecords counts unversioned rows and writes sync_export_skipped_unversioned:N instead of silently skipping"
+    ]
+  },
+  "P0_3_migrations": {
+    "change": [
+      "AgentStore.currentSchemaVersion() exposed; device checks compare against it instead of a literal 6",
+      "test_migration_chain.py asserts every version below DATABASE_VERSION has an upgrade branch, that a branch assigns the current version, and that onDowngrade exists",
+      "device validation no longer says 'v1→v6'"
+    ]
+  },
+  "P0_4_substrate_permission": {
+    "change": [
+      "SubstrateService now requires com.inceptless.traceweave.permission.BIND_SUBSTRATE (protectionLevel=dangerous, user-granted)",
+      "SDK README and demo agent updated to declare and request it"
+    ],
+    "device_evidence": "dumpsys shows the service filter with that permission and the permission declared prot=dangerous"
+  },
+  "P0_5_export_rotation": {
+    "change": "when the activity is recreated while the document picker is open, the passphrase is re-prompted (single field) and the export resumes to the already chosen URI instead of failing with an exception"
+  },
+  "verification": {
+    "host_tests": "88 tests pass (new: audit_anchor_verifier, migration_chain)",
+    "device_suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "screenshot": "artifacts/agent_os/next_stage/ui/audit_chain_after_delete_20261106.png"
+  }
+}

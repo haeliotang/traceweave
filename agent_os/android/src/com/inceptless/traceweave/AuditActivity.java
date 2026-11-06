@@ -21,6 +21,7 @@ public final class AuditActivity extends Activity {
     private LinearLayout rows;
     private LinearLayout chipRow;
     private TextView integrityLine;
+    private Button rebuildButton;
     private TextView countLine;
     private String category = "all";
     private String query = "";
@@ -104,6 +105,17 @@ public final class AuditActivity extends Activity {
         countLine = Ui.meta(this, "");
         root.addView(countLine);
 
+        rebuildButton = new Button(this);
+        rebuildButton.setText(T.s("audit.rebuild_anchors", en));
+        rebuildButton.setAllCaps(false);
+        rebuildButton.setTextSize(12);
+        rebuildButton.setBackgroundColor(Ui.secondaryBg(this));
+        rebuildButton.setTextColor(Ui.secondaryFg(this));
+        rebuildButton.setVisibility(View.GONE);
+        rebuildButton.setOnClickListener(view -> rebuildAnchors());
+        root.addView(rebuildButton, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, Ui.dp(this, 48)));
+
         integrityLine = new TextView(this);
         integrityLine.setTextSize(12);
         integrityLine.setPadding(0, Ui.dp(this, 2), 0, Ui.dp(this, 4));
@@ -143,6 +155,19 @@ public final class AuditActivity extends Activity {
         return button;
     }
 
+    private void rebuildAnchors() {
+        try {
+            int rows = store.rebuildAnchors();
+            android.widget.Toast.makeText(this,
+                T.format("audit.rebuild_done", en, rows), android.widget.Toast.LENGTH_SHORT).show();
+            showIntegrity();
+        } catch (Exception error) {
+            android.widget.Toast.makeText(this,
+                error.getMessage() == null ? T.s("audit.rebuild_failed", en) : error.getMessage(),
+                android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void showIntegrity() {
         if (integrityLine == null) return;
         try {
@@ -151,6 +176,7 @@ public final class AuditActivity extends Activity {
             int checked = ((Number) report.get("checked")).intValue();
             int anchors = report.get("anchors") == null ? 0 : ((Number) report.get("anchors")).intValue();
             boolean macsValid = !Boolean.FALSE.equals(report.get("anchorMacsValid"));
+            rebuildButton.setVisibility(Boolean.TRUE.equals(report.get("reconcilable")) ? View.VISIBLE : View.GONE);
             String anchorProblem = report.get("anchorProblem") == null ? null
                 : String.valueOf(report.get("anchorProblem"));
             int brokenAt = ((Number) report.get("brokenAt")).intValue();

@@ -660,7 +660,7 @@ public final class T {
         add("cap.none", "No active grant for %s", "当前没有有效的%s授权");
         add("cap.remote_expired", "The cross-app read grant expired; reopen Agent OS", "跨应用临时读取权已过期，请重新打开 Agent OS");
         add("task.delete_title", "Delete task record?", "删除任务记录？");
-        add("task.delete_body", "Deleting clears the task and its local audit entries and saves a deletion marker so older archives cannot bring it back.", "删除会清除任务和对应的本机审计记录，并保存一个删除标记，阻止旧档案重新导入这条任务。");
+        add("task.delete_body", "Deleting removes the task and saves a deletion marker so older archives cannot bring it back. The audit trail is append-only: it keeps the history and adds a deletion event.", "删除会移除任务本身并保存删除标记，阻止旧档案重新导入这条任务。审计记录只追加不删除：历史保留，并新增一条删除事件。");
         add("task.delete_keep", "Keep", "保留");
         add("task.delete_confirm", "Delete", "删除");
         add("archive.passphrase_new", "New archive passphrase", "新建档案口令");
@@ -790,6 +790,9 @@ public final class T {
         add("audit.event.sync_auto_failed.arg", "Background sync failed: %s", "后台同步失败：%s");
         add("audit.event.sync_auto_error.arg", "Background sync error: %s", "后台同步出错：%s");
         add("audit.integrity_anchor_problem", "Tamper check failed: anchor problem %s", "防篡改校验失败：锚点异常 %s");
+        add("audit.rebuild_anchors", "Rebuild anchors once (legacy install)", "一次性重建锚点（旧版本遗留）");
+        add("audit.rebuild_done", "Anchors rebuilt for %d events", "已为 %d 条事件重建锚点");
+        add("audit.rebuild_failed", "Anchor rebuild failed", "重建锚点失败");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
