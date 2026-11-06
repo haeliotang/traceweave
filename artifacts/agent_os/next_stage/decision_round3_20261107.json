@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-07",
+  "scope": "memory history (B3) and a pre-existing crash found while testing it",
+  "B3_memory_history": {
+    "change": "schema 16 adds memory_history; editing or deleting a memory records the previous content (max 5 snapshots per memory); the memory detail offers 'Previous versions (n)' with restore, and restore records the current content first",
+    "device_evidence": "edited GroupingCheckFact to '-v2', reopened the detail (history showed 1), restored, list content returned to the original value"
+  },
+  "crash_fixed": {
+    "problem": "MemoryDetailPanel.context() called itself, so opening any memory detail threw StackOverflowError. The regression dates back to bfec720 (the vault became a page) and was not caught because the tests never open a memory detail",
+    "fix": "cast the host (both hosts are Activities) and stop the recursion"
+  },
+  "verification": {
+    "host_tests": "93 pass",
+    "device_suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "preflight": "ok"
+  }
+}

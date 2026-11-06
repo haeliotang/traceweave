@@ -18,8 +18,50 @@ final class MemoryDetailPanel {
         this.host = host;
     }
 
+    private void showHistory(AgentStore.Memory memory, java.util.List<AgentStore.MemorySnapshot> snapshots) {
+        boolean en = host.english();
+        LinearLayout body = new LinearLayout(context());
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.setPadding(host.dpRef(16), host.dpRef(8), host.dpRef(16), 0);
+        for (AgentStore.MemorySnapshot snapshot : snapshots) {
+            LinearLayout row = new LinearLayout(context());
+            row.setOrientation(LinearLayout.VERTICAL);
+            TextView content = new TextView(context());
+            content.setText(snapshot.content);
+            content.setTextSize(12);
+            content.setTextColor(Ui.text(context()));
+            row.addView(content);
+            TextView meta = Ui.meta(context(), DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                .format(new Date(snapshot.recordedAt)));
+            row.addView(meta);
+            Button restore = new Button(context());
+            restore.setText(T.s("memorydetailpanel.restore_version", en));
+            restore.setAllCaps(false);
+            restore.setTextSize(11);
+            restore.setOnClickListener(view -> {
+                try {
+                    host.storeRef().restoreMemorySnapshot(memory.id, snapshot);
+                    host.refreshAfterSync();
+                    host.toast(T.s("memorydetailpanel.version_restored", en));
+                } catch (Exception error) {
+                    host.failWith(error);
+                }
+            });
+            row.addView(restore);
+            body.addView(row);
+        }
+        AlertDialog dialog = new AlertDialog.Builder(context())
+            .setView(body)
+            .setNegativeButton(T.s("common.close", en), null)
+            .create();
+        dialog.show();
+        Ui.themeDialog(dialog, context());
+    }
+
     private android.content.Context context() {
-        return context();
+        // Both hosts are Activities; this used to call itself and overflow the stack the
+        // moment a memory detail was opened.
+        return (android.content.Context) host;
     }
 
     void showDetail(AgentStore.Memory memory) {
@@ -56,6 +98,25 @@ final class MemoryDetailPanel {
             ? (T.s("memorydetailpanel.5", en)) : (T.s("memorydetailpanel.6", en)))
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(memory.expiresAt)));
         body.addView(metadata);
+
+        java.util.List<AgentStore.MemorySnapshot> history;
+        try {
+            history = host.storeRef().listMemoryHistory(memory.id);
+        } catch (Exception error) {
+            history = new java.util.ArrayList<>();
+        }
+        if (!history.isEmpty()) {
+            Button previous = new Button(context());
+            previous.setText(T.format("memorydetailpanel.previous_versions", en, history.size()));
+            previous.setAllCaps(false);
+            previous.setTextSize(12);
+            final java.util.List<AgentStore.MemorySnapshot> snapshots = history;
+            previous.setOnClickListener(view -> showHistory(memory, snapshots));
+            LinearLayout.LayoutParams historyLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, host.dpRef(40));
+            historyLp.setMargins(0, host.dpRef(6), 0, 0);
+            body.addView(previous, historyLp);
+        }
 
         Button edit = new Button(context());
         edit.setText(T.s("memorydetailpanel.7", en));

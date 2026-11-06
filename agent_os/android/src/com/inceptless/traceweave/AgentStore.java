@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 15;
+    private static final int DATABASE_VERSION = 16;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -328,6 +328,15 @@ final class AgentStore extends SQLiteOpenHelper {
             + "digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY + ", "
             + "origin TEXT NOT NULL DEFAULT '')");
+        database.execSQL("CREATE TABLE memory_history ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + "memory_id TEXT NOT NULL, "
+            + "content TEXT NOT NULL, "
+            + "source TEXT NOT NULL, "
+            + "source_ref TEXT NOT NULL DEFAULT '', "
+            + "expires_at INTEGER NOT NULL DEFAULT 0, "
+            + "user_edited INTEGER NOT NULL DEFAULT 0, "
+            + "recorded_at INTEGER NOT NULL)");
         database.execSQL("CREATE TABLE audit_anchors ("
             + "idx INTEGER PRIMARY KEY NOT NULL, "
             + "hash TEXT NOT NULL, "
@@ -461,6 +470,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 14) {
                 upgradeAuditOrigin(database);
                 version = 15;
+            } else if (version == 15) {
+                upgradeMemoryHistory(database);
+                version = 16;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -471,6 +483,19 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void upgradeAuditDigestVersion(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE audit ADD COLUMN digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY);
+    }
+
+    /** Version 15 -> 16: keep the previous content of an edited memory so it can be restored. */
+    private static void upgradeMemoryHistory(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS memory_history ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + "memory_id TEXT NOT NULL, "
+            + "content TEXT NOT NULL, "
+            + "source TEXT NOT NULL, "
+            + "source_ref TEXT NOT NULL DEFAULT '', "
+            + "expires_at INTEGER NOT NULL DEFAULT 0, "
+            + "user_edited INTEGER NOT NULL DEFAULT 0, "
+            + "recorded_at INTEGER NOT NULL)");
     }
 
     /** Version 14 -> 15: record where an audit row came from (local device or an archive). */
@@ -2278,6 +2303,7 @@ final class AgentStore extends SQLiteOpenHelper {
                     || !current.source.equals(expected.source) || !current.sourceReference.equals(expected.sourceReference))
                 throw new IllegalStateException("Memory changed or was deleted; review it again");
             if (current.updatedAt == Long.MAX_VALUE) throw new IllegalStateException("Memory timestamp cannot be advanced");
+            recordMemoryHistory(database, current);
             long now = Math.max(System.currentTimeMillis(), current.updatedAt + 1);
             boolean edited = current.userEdited || (userEdit && !current.content.equals(normalized));
             byte[] sealed = seal(memoryAad(current.id), memoryPayload(normalized, source, reference, expiresAt, edited));
@@ -2294,6 +2320,68 @@ final class AgentStore extends SQLiteOpenHelper {
                 new MemoryMerge.Version(clock, sha256Hex(normalized), false)));
             database.setTransactionSuccessful();
         } finally { database.endTransaction(); }
+    }
+
+    private static final int MEMORY_HISTORY_LIMIT = 5;
+
+    private static void recordMemoryHistory(SQLiteDatabase database, Memory memory) {
+        if (memory == null) return;
+        ContentValues values = new ContentValues();
+        values.put("memory_id", memory.id);
+        values.put("content", memory.content);
+        values.put("source", memory.source);
+        values.put("source_ref", memory.sourceReference == null ? "" : memory.sourceReference);
+        values.put("expires_at", memory.expiresAt);
+        values.put("user_edited", memory.userEdited ? 1 : 0);
+        values.put("recorded_at", System.currentTimeMillis());
+        database.insertOrThrow("memory_history", null, values);
+        // Keep only the newest snapshots; the table must not grow without bound.
+        database.execSQL("DELETE FROM memory_history WHERE memory_id=? AND id NOT IN "
+            + "(SELECT id FROM memory_history WHERE memory_id=? ORDER BY id DESC LIMIT ?)",
+            new Object[]{memory.id, memory.id, MEMORY_HISTORY_LIMIT});
+    }
+
+    static final class MemorySnapshot {
+        final String content;
+        final String source;
+        final String sourceReference;
+        final long expiresAt;
+        final boolean userEdited;
+        final long recordedAt;
+
+        MemorySnapshot(String content, String source, String sourceReference, long expiresAt,
+                       boolean userEdited, long recordedAt) {
+            this.content = content;
+            this.source = source;
+            this.sourceReference = sourceReference == null ? "" : sourceReference;
+            this.expiresAt = expiresAt;
+            this.userEdited = userEdited;
+            this.recordedAt = recordedAt;
+        }
+    }
+
+    /** Previous contents of one memory, newest first. */
+    java.util.List<MemorySnapshot> listMemoryHistory(String memoryId) {
+        java.util.ArrayList<MemorySnapshot> snapshots = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("memory_history",
+                new String[]{"content", "source", "source_ref", "expires_at", "user_edited", "recorded_at"},
+                "memory_id=?", new String[]{memoryId}, null, null, "id DESC",
+                String.valueOf(MEMORY_HISTORY_LIMIT))) {
+            while (cursor.moveToNext()) {
+                snapshots.add(new MemorySnapshot(cursor.getString(0), cursor.getString(1), cursor.getString(2),
+                    cursor.getLong(3), cursor.getInt(4) != 0, cursor.getLong(5)));
+            }
+        }
+        return snapshots;
+    }
+
+    /** Restores one previous snapshot; the current content is recorded in the history first. */
+    void restoreMemorySnapshot(String memoryId, MemorySnapshot snapshot) throws Exception {
+        if (snapshot == null) throw new IllegalArgumentException("Snapshot is required");
+        Memory current = getMemory(memoryId);
+        if (current == null) throw new IllegalArgumentException("Memory not found: " + memoryId);
+        updateMemoryChecked(current, current.kind, snapshot.content, snapshot.source,
+            snapshot.sourceReference, snapshot.expiresAt, true);
     }
 
     List<Memory> listMemories() throws Exception {
@@ -2316,11 +2404,13 @@ final class AgentStore extends SQLiteOpenHelper {
         return memories;
     }
 
-    void deleteMemory(String memoryId) {
+    void deleteMemory(String memoryId) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
             long now = System.currentTimeMillis();
+            Memory before = getMemory(memoryId);
+            if (before != null) recordMemoryHistory(database, before);
             addTombstone(database, "memory", memoryId, now);
             int deleted = database.delete("memories", "id=?", new String[]{memoryId});
             if (deleted == 0) throw new IllegalArgumentException("Memory no longer exists");

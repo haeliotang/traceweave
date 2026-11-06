@@ -806,6 +806,9 @@ public final class T {
         add("settings.migration_note", "Moving to a new device: export an encrypted archive here and import it on the new device. Backups and device transfer are excluded because the Keystore key does not leave this phone.", "换机请在这里导出加密档案，再在新设备导入。系统备份与设备迁移被排除，因为 Keystore 密钥不会离开本机。");
         add("audit.imported_marker", "[imported] ", "[导入] ");
         add("audit.baseline_rebuilt", "Note: the anchor baseline was rebuilt once on this device (see audit_anchors_rebuilt).", "注意：本机曾一次性重建锚点基线（见 audit_anchors_rebuilt 事件）。");
+        add("memorydetailpanel.previous_versions", "Previous versions (%d)", "历史版本（%d）");
+        add("memorydetailpanel.restore_version", "Restore this version", "恢复此版本");
+        add("memorydetailpanel.version_restored", "Version restored", "已恢复该版本");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
