@@ -246,6 +246,21 @@ public final class CapabilityBroker {
         return invoke("local_agent", taskId, capability, scope);
     }
 
+    /** Drops every grant an agent identity holds, used when the user revokes the agent. */
+    public static void revokeForAgent(String agentId) {
+        synchronized (grants) {
+            for (java.util.Iterator<Map.Entry<String, Map<String, Grant>>> task = grants.entrySet().iterator();
+                 task.hasNext(); ) {
+                Map<String, Grant> taskGrants = task.next().getValue();
+                for (java.util.Iterator<Map.Entry<String, Grant>> grant = taskGrants.entrySet().iterator();
+                     grant.hasNext(); ) {
+                    if (agentId.equals(grant.next().getValue().agentId)) grant.remove();
+                }
+                if (taskGrants.isEmpty()) task.remove();
+            }
+        }
+    }
+
     public boolean revoke(String agentId, String taskId, String capability, String scope) {
         String effectiveAgent = (agentId != null && !agentId.isEmpty()) ? agentId : "local_agent";
         String key = grantKey(effectiveAgent, capability, scope);

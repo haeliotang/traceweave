@@ -45,7 +45,8 @@ public final class ArchiveAudit {
         boolean hashes = !rows.isEmpty();
         for (Row row : rows) hashes &= row.hash != null && !row.hash.isEmpty();
         if (hashes) {
-            String previous = AuditChain.GENESIS;
+            // A trimmed archive starts mid-chain; its first row names the previous hash.
+            String previous = rows.isEmpty() ? AuditChain.GENESIS : rows.get(0).prevHash;
             for (Row row : rows) {
                 if (!previous.equals(row.prevHash == null ? "" : row.prevHash))
                     return new Verdict(false, "archive_chain_broken");

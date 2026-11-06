@@ -809,6 +809,13 @@ public final class T {
         add("memorydetailpanel.previous_versions", "Previous versions (%d)", "历史版本（%d）");
         add("memorydetailpanel.restore_version", "Restore this version", "恢复此版本");
         add("memorydetailpanel.version_restored", "Version restored", "已恢复该版本");
+        add("agents.channel_name", "Agent connections", "Agent 连接");
+        add("agents.connected_title", "An agent connected: %s", "已连接 Agent：%s");
+        add("agents.connected_text", "Signer %s…; review or revoke it in settings", "签名 %s…；可在设置中审查或撤销");
+        add("settings.section_agents", "Connected agents", "已连接的 Agent");
+        add("settings.revoke_agent", "Revoke", "撤销");
+        add("settings.agent_revoked", "Agent revoked and its grants cleared", "已撤销该 Agent 并清除其授权");
+        add("export.audit_trimmed", "Audit rows: %d. Only the newest %d travel with this archive; older events stay on this device.", "审计记录 %d 条，本档案只携带最新 %d 条；更早的事件仍保留在本机。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

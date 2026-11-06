@@ -45,7 +45,7 @@ public class SubstrateService extends Service {
 
     private AgentStore store;
     private CapabilityBroker broker;
-    private final Map<String, AgentSession> sessions = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String, AgentSession> sessions = Collections.synchronizedMap(new HashMap<>());
 
     static final class AgentSession {
         final String token;
@@ -116,18 +116,25 @@ public class SubstrateService extends Service {
                 String taskId = null;
                 synchronized (sessions) {
                     java.util.Iterator<Map.Entry<String, AgentSession>> iterator = sessions.entrySet().iterator();
+                    int sameUid = 0;
                     while (iterator.hasNext()) {
                         Map.Entry<String, AgentSession> entry = iterator.next();
                         AgentSession existing = entry.getValue();
                         if (existing.callerUid == callerUid && agentPackage.equals(existing.packageName)) {
                             taskId = existing.taskId;
                             iterator.remove();
+                            continue;
                         }
+                        // One app cannot open an unbounded number of sessions.
+                        if (existing.callerUid == callerUid && ++sameUid >= MAX_SESSIONS_PER_UID)
+                            iterator.remove();
                     }
                     if (taskId == null) taskId = store.createTask("Agent task: " + agentPackage).id;
                     sessions.put(token, new AgentSession(token, agentPackage, callerUid, signerSha256,
                         agentIdentity, manifestJson, taskId, now));
                 }
+                store.recordAgentLink(agentIdentity, agentPackage, signerSha256);
+                notifyAgentConnected(agentPackage, signerSha256);
                 store.appendTaskEvent(taskId, "agent_registered:" + agentIdentity);
 
                 JSONObject response = new JSONObject();
@@ -354,6 +361,53 @@ public class SubstrateService extends Service {
             throw new RemoteException("Agent session cannot access another task");
         }
         return effectiveTaskId;
+    }
+
+    private static final int MAX_SESSIONS_PER_UID = 4;
+
+    private boolean isEnglish() {
+        return "en".equals(getSharedPreferences("agent_os_prefs", 0).getString("app_lang", "zh"));
+    }
+
+    /** Visible signal that an app connected; the settings screen keeps the same list. */
+    private void notifyAgentConnected(String agentPackage, String signerSha256) {
+        try {
+            if (Build.VERSION.SDK_INT >= 33
+                    && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED)
+                return;
+            NotificationManager manager = notificationManager();
+            if (manager == null) return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                manager.createNotificationChannel(new NotificationChannel("agent_connections",
+                    T.s("agents.channel_name", isEnglish()), NotificationManager.IMPORTANCE_LOW));
+            }
+            String shortSigner = signerSha256 == null ? ""
+                : signerSha256.substring(0, Math.min(12, signerSha256.length()));
+            Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(this, "agent_connections") : new Notification.Builder(this);
+            Notification notification = builder
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setContentTitle(T.format("agents.connected_title", isEnglish(), agentPackage))
+                .setContentText(T.format("agents.connected_text", isEnglish(), shortSigner))
+                .setAutoCancel(true)
+                .build();
+            manager.notify(("agent-" + agentPackage).hashCode(), notification);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** Drops every session and grant belonging to one agent identity. */
+    static void revokeAgent(String agentIdentity) {
+        synchronized (sessions) {
+            java.util.Iterator<Map.Entry<String, AgentSession>> iterator = sessions.entrySet().iterator();
+            while (iterator.hasNext()) {
+                if (agentIdentity.equals(iterator.next().getValue().agentIdentity)) iterator.remove();
+            }
+        }
+        try {
+            CapabilityBroker.revokeForAgent(agentIdentity);
+        } catch (Throwable ignored) {
+        }
     }
 
     private boolean postApprovalNotification(PendingCapabilityApproval approval) {

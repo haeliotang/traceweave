@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 16;
+    private static final int DATABASE_VERSION = 17;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -208,6 +208,68 @@ final class AgentStore extends SQLiteOpenHelper {
         this.appContext = context.getApplicationContext();
     }
 
+    static final class AgentLink {
+        final String identity;
+        final String packageName;
+        final String signer;
+        final long firstSeen;
+        final long lastSeen;
+
+        AgentLink(String identity, String packageName, String signer, long firstSeen, long lastSeen) {
+            this.identity = identity;
+            this.packageName = packageName;
+            this.signer = signer;
+            this.firstSeen = firstSeen;
+            this.lastSeen = lastSeen;
+        }
+    }
+
+    int auditRowCount() {
+        try (Cursor cursor = getReadableDatabase().rawQuery("SELECT COUNT(*) FROM audit", null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
+    }
+
+    void recordAgentLink(String identity, String packageName, String signer) {
+        long now = System.currentTimeMillis();
+        SQLiteDatabase database = getWritableDatabase();
+        try (Cursor cursor = database.rawQuery("SELECT first_seen FROM agent_links WHERE identity=?",
+                new String[]{identity})) {
+            if (cursor.moveToFirst()) {
+                ContentValues values = new ContentValues();
+                values.put("last_seen", now);
+                values.put("signer", signer);
+                values.put("pkg", packageName);
+                database.update("agent_links", values, "identity=?", new String[]{identity});
+                return;
+            }
+        }
+        ContentValues values = new ContentValues();
+        values.put("identity", identity);
+        values.put("pkg", packageName);
+        values.put("signer", signer);
+        values.put("first_seen", now);
+        values.put("last_seen", now);
+        database.insertWithOnConflict("agent_links", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    java.util.List<AgentLink> listAgentLinks() {
+        java.util.ArrayList<AgentLink> links = new java.util.ArrayList<>();
+        try (Cursor cursor = getReadableDatabase().query("agent_links",
+                new String[]{"identity", "pkg", "signer", "first_seen", "last_seen"},
+                null, null, null, null, "last_seen DESC")) {
+            while (cursor.moveToNext()) {
+                links.add(new AgentLink(cursor.getString(0), cursor.getString(1), cursor.getString(2),
+                    cursor.getLong(3), cursor.getLong(4)));
+            }
+        }
+        return links;
+    }
+
+    void forgetAgentLink(String identity) {
+        getWritableDatabase().delete("agent_links", "identity=?", new String[]{identity});
+    }
+
     /**
      * Deletes the local database so a device that received a copy without the Keystore key can
      * start again. Callers must warn the user first: this drops tasks, memories and the audit
@@ -230,6 +292,22 @@ final class AgentStore extends SQLiteOpenHelper {
         }
         skippedUndecryptable = 0;
         return unreadable;
+    }
+
+    private static final String CLOCK_PREFS = "agent_os_clock";
+    private static final String CLOCK_LAST = "last_issued";
+
+    /**
+     * Wall clock time with a monotonic floor. Using System.currentTimeMillis() alone made a
+     * clock correction or a device clock edit look like an older edit, so a merge could keep
+     * the stale content.
+     */
+    synchronized long nextLocalClock() {
+        android.content.SharedPreferences prefs = appContext.getSharedPreferences(CLOCK_PREFS, 0);
+        long last = prefs.getLong(CLOCK_LAST, 0L);
+        long now = Math.max(System.currentTimeMillis(), last + 1);
+        prefs.edit().putLong(CLOCK_LAST, now).commit();
+        return now;
     }
 
     /** Cheap counters for the home screen; these never decrypt a payload. */
@@ -328,6 +406,12 @@ final class AgentStore extends SQLiteOpenHelper {
             + "digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY + ", "
             + "origin TEXT NOT NULL DEFAULT '')");
+        database.execSQL("CREATE TABLE agent_links ("
+            + "identity TEXT PRIMARY KEY NOT NULL, "
+            + "pkg TEXT NOT NULL, "
+            + "signer TEXT NOT NULL, "
+            + "first_seen INTEGER NOT NULL, "
+            + "last_seen INTEGER NOT NULL)");
         database.execSQL("CREATE TABLE memory_history ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             + "memory_id TEXT NOT NULL, "
@@ -473,6 +557,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 15) {
                 upgradeMemoryHistory(database);
                 version = 16;
+            } else if (version == 16) {
+                createAgentLinks(database);
+                version = 17;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -483,6 +570,16 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void upgradeAuditDigestVersion(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE audit ADD COLUMN digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY);
+    }
+
+    /** Version 16 -> 17: remember which apps registered as agents, so they can be reviewed and revoked. */
+    private static void createAgentLinks(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS agent_links ("
+            + "identity TEXT PRIMARY KEY NOT NULL, "
+            + "pkg TEXT NOT NULL, "
+            + "signer TEXT NOT NULL, "
+            + "first_seen INTEGER NOT NULL, "
+            + "last_seen INTEGER NOT NULL)");
     }
 
     /** Version 15 -> 16: keep the previous content of an edited memory so it can be restored. */
@@ -1836,7 +1933,7 @@ final class AgentStore extends SQLiteOpenHelper {
             java.util.TreeMap<String, Long> clock = versionClock(memoryId, hash);
             if (clock == null) {
                 clock = new java.util.TreeMap<>();
-                clock.put(localActor(), System.currentTimeMillis());
+                clock.put(localActor(), nextLocalClock());
             }
             // Keep the version that is about to be replaced so the choice can be undone.
             for (Memory current : listMemories()) {
@@ -2304,7 +2401,7 @@ final class AgentStore extends SQLiteOpenHelper {
                 throw new IllegalStateException("Memory changed or was deleted; review it again");
             if (current.updatedAt == Long.MAX_VALUE) throw new IllegalStateException("Memory timestamp cannot be advanced");
             recordMemoryHistory(database, current);
-            long now = Math.max(System.currentTimeMillis(), current.updatedAt + 1);
+            long now = Math.max(nextLocalClock(), current.updatedAt + 1);
             boolean edited = current.userEdited || (userEdit && !current.content.equals(normalized));
             byte[] sealed = seal(memoryAad(current.id), memoryPayload(normalized, source, reference, expiresAt, edited));
             ContentValues values = new ContentValues();
@@ -2408,7 +2505,7 @@ final class AgentStore extends SQLiteOpenHelper {
         SQLiteDatabase database = getWritableDatabase();
         database.beginTransaction();
         try {
-            long now = System.currentTimeMillis();
+            long now = nextLocalClock();
             Memory before = getMemory(memoryId);
             if (before != null) recordMemoryHistory(database, before);
             addTombstone(database, "memory", memoryId, now);
@@ -2437,7 +2534,7 @@ final class AgentStore extends SQLiteOpenHelper {
                         || !current.source.equals(item.source) || !current.sourceReference.equals(item.sourceReference))
                     throw new IllegalStateException("A memory changed or was deleted; review the selection again");
             }
-            long now = System.currentTimeMillis();
+            long now = nextLocalClock();
             for (Memory item : expected) {
                 addTombstone(database, "memory", item.id, now);
                 database.delete("memories", "id=?", new String[]{item.id});
@@ -2489,20 +2586,32 @@ final class AgentStore extends SQLiteOpenHelper {
             // Chain order is insertion order (rowid). Sorting by occurred_at produced archives whose
             // declared head could not be reproduced whenever two rows shared a millisecond or the
             // clock moved backwards.
-            try (Cursor cursor = database.rawQuery(
-                    "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version "
-                        + "FROM audit ORDER BY rowid", null)) {
+            int auditTotal = 0;
+            try (Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM audit", null)) {
+                if (cursor.moveToFirst()) auditTotal = cursor.getInt(0);
+            }
+            int otherRecords = data.tasks.size() + data.memories.size();
+            int auditBudget = Math.max(1, MemoryArchive.MAX_RECORDS - data.tombstones.size() - otherRecords);
+            boolean trimmed = auditTotal > auditBudget;
+            String auditQuery = "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version "
+                + "FROM audit ORDER BY rowid";
+            java.util.ArrayList<AuditEvent> auditRows = new java.util.ArrayList<>();
+            try (Cursor cursor = database.rawQuery(auditQuery, null)) {
                 while (cursor.moveToNext()) {
-                    data.audit.add(new AuditEvent(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
+                    auditRows.add(new AuditEvent(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
                         cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getInt(6)));
                 }
             }
-            try (Cursor cursor = database.rawQuery(
-                    "SELECT hash FROM audit ORDER BY rowid DESC LIMIT 1", null)) {
-                if (cursor.moveToFirst()) data.auditHead = cursor.getString(0);
+            if (trimmed && auditRows.size() > auditBudget) {
+                auditRows = new java.util.ArrayList<>(
+                    auditRows.subList(auditRows.size() - auditBudget, auditRows.size()));
             }
-            try (Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM audit", null)) {
-                if (cursor.moveToFirst()) data.auditCount = cursor.getInt(0);
+            data.audit.addAll(auditRows);
+            data.auditTrimmed = trimmed;
+            data.auditTotal = auditTotal;
+            if (!data.audit.isEmpty()) {
+                data.auditHead = data.audit.get(data.audit.size() - 1).hash;
+                data.auditCount = data.audit.size();
             }
             try (Cursor cursor = database.query("tombstones", new String[]{"entity_type", "entity_id", "deleted_at"},
                     null, null, null, null, "deleted_at ASC")) {
@@ -2803,7 +2912,7 @@ final class AgentStore extends SQLiteOpenHelper {
                         memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                     database.update("memories", values, "id=?", new String[]{memory.id});
                     java.util.TreeMap<String, Long> replacedClock = new java.util.TreeMap<>();
-                    replacedClock.put(localActor(), System.currentTimeMillis());
+                    replacedClock.put(localActor(), nextLocalClock());
                     replaceMemoryVersions(database, memory.id, java.util.Collections.singletonList(
                         new MemoryMerge.Version(replacedClock, sha256Hex(memory.content), false)));
                     memoriesReplaced++;
@@ -2818,7 +2927,7 @@ final class AgentStore extends SQLiteOpenHelper {
                     memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                 database.insertOrThrow("memories", null, values);
                 java.util.TreeMap<String, Long> importedClock = new java.util.TreeMap<>();
-                importedClock.put(localActor(), System.currentTimeMillis());
+                importedClock.put(localActor(), nextLocalClock());
                 replaceMemoryVersions(database, memory.id, java.util.Collections.singletonList(
                     new MemoryMerge.Version(importedClock, sha256Hex(memory.content), false)));
                 memoriesImported++;

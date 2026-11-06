@@ -57,7 +57,7 @@ Traceweave 的设计目标是一个**设备无关的计算基底**：计算状�
 | **Traceweave Runtime** | Rust 2021，C-ABI JNI | 实验性原生核心；Rust 守护进程与 IPC 已关闭 | — |
 | **本地规划器** | APK 内规则规划；可选用户导入的 GGUF 模型 | 不内置模型；可运行用户选择的模型文件 | 不声称吞吐基准 |
 | **应用数据与档案** | Keystore AES-GCM；口令加密档案 | 档案格式带版本；未独立审计 | 不承诺零知识或硬件背书 |
-| **Traceweave 协议** | JSON Schema、Android Binder、实验性 Rust 同步 | 守护进程 IPC 关闭 | 手动配对/同步在同机双包上已验证；**跨设备同步未验证**，后台同步由 JobScheduler 周期任务负责（不是"仅在应用打开时"） |
+| **Traceweave 协议** | JSON Schema、Android Binder、实验性 Rust 同步 | 守护进程 IPC 关闭 | 手动配对/同步在同机双包上已验证；**跨设备同步未验证**，后台同步由 JobScheduler 周期任务负责（不是"仅在应用打开时"）。合并采用**单写者假设**（墓碑优先 + 向量时钟），两台设备同时编辑同一记忆未验证；同步种子由不可导出的 Keystore 密钥包裹 |
 | **Traceweave Research** | Python 研究包 | 循环与动力系统方法 | 研究指标需自证可复现 |
 
 ---

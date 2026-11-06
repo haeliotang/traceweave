@@ -35,7 +35,7 @@ final class MemoryArchive {
     private static final int GCM_TAG_BITS = 128;
     private static final int HEADER_BYTES = 4 + 1 + 4 + SALT_BYTES + NONCE_BYTES;
     private static final int MAX_ARCHIVE_BYTES = 32 * 1024 * 1024;
-    private static final int MAX_RECORDS = 20000;
+    static final int MAX_RECORDS = 20000;
     private static final byte[] MAGIC = new byte[]{'T', 'A', 'O', 'S'};
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -51,6 +51,9 @@ final class MemoryArchive {
         /** False when the archive's history could not be verified (pre-chain archive). */
         boolean auditVerified;
         String auditVerification = "";
+        /** True when the archive carries only the newest audit rows (the trail outgrew the cap). */
+        boolean auditTrimmed;
+        int auditTotal;
     }
 
     private MemoryArchive() {}
@@ -238,6 +241,10 @@ final class MemoryArchive {
         root.put("tombstones", tombstones);
         root.put("auditHead", data.auditHead == null ? "" : data.auditHead);
         root.put("auditCount", data.auditCount);
+        if (data.auditTrimmed) {
+            root.put("auditTrimmed", true);
+            root.put("auditTotal", data.auditTotal);
+        }
         return root.toString();
     }
 
@@ -254,6 +261,8 @@ final class MemoryArchive {
         JSONArray audit = root.getJSONArray("audit");
         JSONArray tombstones = root.getJSONArray("tombstones");
         data.auditHead = root.optString("auditHead", "");
+        data.auditTrimmed = root.optBoolean("auditTrimmed", false);
+        data.auditTotal = root.optInt("auditTotal", 0);
         data.auditCount = root.optInt("auditCount", 0);
         long total = (long) tasks.length() + memories.length() + audit.length() + tombstones.length();
         if (total > MAX_RECORDS) throw new IOException("The archive contains too many records");

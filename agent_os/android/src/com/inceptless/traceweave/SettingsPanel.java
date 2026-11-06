@@ -39,6 +39,32 @@ final class SettingsPanel {
         LinearLayout titleRow = IconFactory.createHeaderWithIcon(host, IconFactory.IconType.SHIELD,
                 T.s("settingspanel.1", en), 0xFF334155, 16);
         root.addView(titleRow);
+        java.util.List<AgentStore.AgentLink> agents = host.storeRef().listAgentLinks();
+        if (!agents.isEmpty()) {
+            root.addView(Ui.section(host, T.s("settings.section_agents", en)));
+            for (AgentStore.AgentLink link : agents) {
+                LinearLayout row = new LinearLayout(host);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                TextView label = new TextView(host);
+                String shortSigner = link.signer == null ? "" : link.signer.substring(0, Math.min(12, link.signer.length()));
+                label.setText(link.packageName + "\n" + shortSigner);
+                label.setTextSize(11);
+                label.setTextColor(Ui.muted(host));
+                row.addView(label, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                Button revoke = new Button(host);
+                revoke.setText(T.s("settings.revoke_agent", en));
+                revoke.setAllCaps(false);
+                revoke.setTextSize(11);
+                revoke.setOnClickListener(view -> {
+                    SubstrateService.revokeAgent(link.identity);
+                    host.storeRef().forgetAgentLink(link.identity);
+                    host.toast(T.s("settings.agent_revoked", en));
+                    host.refreshAfterSync();
+                });
+                row.addView(revoke, new LinearLayout.LayoutParams(host.dpRef(120), host.dpRef(40)));
+                root.addView(row);
+            }
+        }
         root.addView(Ui.section(host, T.s("settings.section_data", en)));
 
         int unreadable = host.storeRef().countUnreadableRows();

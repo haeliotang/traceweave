@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-07",
+  "scope": "decision register round 4: agent visibility/revocation, archive audit trimming, monotonic clock, documented decisions",
+  "items": {
+    "A1_agent_review": {
+      "change": "schema 17 agent_links records every registered agent identity; registration posts a low-importance notification with package + signer prefix; settings lists connected agents with a revoke action that drops sessions and broker grants; at most 4 sessions per UID",
+      "not_done": "no explicit consent dialog before registration, because it would break the current SDK call sequence"
+    },
+    "B1_archive_caps": {
+      "change": "an audit trail that would exceed the 20k record cap exports only the newest rows that fit, marks the archive auditTrimmed, and tells the user in the export confirmation that older events stay on the device; verification starts from the first included row's prevHash",
+      "not_done": "no chain compaction (that would rewrite history)"
+    },
+    "C1_monotonic_clock": {
+      "change": "nextLocalClock() keeps the largest issued timestamp in prefs and returns max(now, last+1), so a wall-clock correction cannot produce an older edit; the {actor: timestamp} encoding and merge logic are unchanged"
+    },
+    "C3_C1_D1_D2_docs": {
+      "sync_model": "README (both languages) states the single-writer assumption and that cross-device sync is unverified",
+      "signing": "docs/production_signing_decision.md section 8 records the decision to stay on development-key side loads with no store distribution, and the migration path if that changes",
+      "downgrade": "README install steps and the release process state that the schema only moves forward"
+    }
+  },
+  "verification": {
+    "host_tests": "93 pass",
+    "device_suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "device_migration": "schema 16 -> 17 applied on the Pixel 6a; the audit page stays green and a memory detail opens with 2 history versions",
+    "preflight": "ok"
+  }
+}

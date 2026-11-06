@@ -33,6 +33,8 @@ Every published build is a **development-key side load**, not a store build and 
    ```
 
 4. Install with `adb install -r traceweave-<version>.apk`, or copy it to the device and open it.
+   **Do not downgrade**: the database schema only moves forward and an older APK refuses to open
+   a newer database. Export an archive before switching back.
    The app is signed with the development key
    `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`; compare it with
    `apksigner verify --print-certs` if you care about the exact identity.
@@ -115,7 +117,7 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 | **Traceweave Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
 | **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
-| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync is validated on two installs of one device and ships in the app; cross-device sync and the background sync job are not verified |
+| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing + sync ships in the app and is validated on two installs of one device. **Single-writer assumption**: merge is tombstone-first vector-clock; two devices editing the same memory at once is unverified. Cross-device sync is unverified. The sync seed is wrapped by a non-exportable Keystore key |
 | **Traceweave Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
 
 ---

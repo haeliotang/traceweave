@@ -103,3 +103,20 @@
 1. 口令的离线副本是否存在、是否可用，只能靠持有人自查——仓库无法验证；
 2. Keychain 访问需要人工放行（`security` 曾返回 161），自动化流程仍需一次交互；
 3. 密钥轮换、吊销与第二设备恢复仍未演练（见 [signing_recovery_drill_20261030](../artifacts/agent_os/next_stage/signing_recovery_drill_20261030.json) 的限制项）。
+
+---
+
+## 8. 分发路线与降级语义（2026-11-07 决定）
+
+**D1 分发路线：暂时保持开发密钥侧载，不申请应用商店。**
+
+- 现有 v0.1.0–v0.1.3 全部由开发密钥 `9effee32…` 签名，属于侧载分发；每个 Release 正文都带侧载标注与指纹。
+- 不选 Play App Signing 的理由：本项目仍是原型，没有稳定的用户支持承诺；把密钥交给商店托管会在没有运营能力的前提下制造"正式发布"的预期。
+- 这意味着：**没有自动更新、没有商店审核背书、密钥泄露或丢失的恢复依赖 [signing_custody_checklist.md](signing_custody_checklist.md)**。
+- 若未来转为正式分发，需要一次性迁移：申请 Play → 用现有密钥作为上传密钥 → 走 Play App Signing 的密钥升级流程 → 发布说明中标注签名变更与档案迁移路径。
+
+**D2 降级语义：schema 只前进，不提供降级。**
+
+- `DATABASE_VERSION` 升级后，旧 APK 会在 `onUpgrade` 里报"没有该版本的迁移"并拒绝启动（`onDowngrade` 直接抛异常）。
+- 正确的回退姿势：先在新版导出 `.taos` 档案 → 卸载 → 安装旧版 → 导入档案。旧版只接受它认识的档案 schema。
+- 发布说明与首次启动提示都应写明这一点；`docs/agent_os_release_process.md` 的发布步骤也要求正文包含该提醒。
