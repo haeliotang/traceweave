@@ -42,9 +42,8 @@ public final class TaskDetailActivity extends Activity {
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setBackgroundColor(Ui.background(this));
-        int statusBar = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        int topInset = statusBar > 0 ? getResources().getDimensionPixelSize(statusBar) : dp(24);
-        page.setPadding(dp(16), topInset + dp(8), dp(16), dp(12));
+        page.setPadding(dp(16), dp(8), dp(16), dp(12));
+        Ui.padForInsets(page, dp(16), dp(8), dp(16), dp(12));
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -64,6 +63,7 @@ public final class TaskDetailActivity extends Activity {
         back.setOnClickListener(view -> finish());
         page.addView(back, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48)));
 
+        Ui.edgeToEdge(this);
         setContentView(page);
         render();
         ticker.postDelayed(refreshLoop, 1500);

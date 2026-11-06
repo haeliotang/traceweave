@@ -794,6 +794,13 @@ public final class T {
         add("audit.rebuild_done", "Anchors rebuilt for %d events", "已为 %d 条事件重建锚点");
         add("audit.rebuild_failed", "Anchor rebuild failed", "重建锚点失败");
         add("audit.integrity_unanchored", "Chain intact, but %d events have no device-key anchor", "链完整，但有 %d 条事件没有设备密钥锚点");
+        add("overlay.channel_name", "Floating capsule", "悬浮胶囊");
+        add("overlay.channel_description", "Keeps the capsule running while you use other apps.", "在你使用其他应用时保持胶囊运行。");
+        add("overlay.channel_title", "Traceweave capsule is running", "Traceweave 胶囊运行中");
+        add("overlay.channel_text", "Tap to open Traceweave; hide the capsule from the diagnostics hub.", "点按回到 Traceweave；可在诊断面板隐藏胶囊。");
+        add("settings.unreadable_rows", "%d records cannot be decrypted on this device (the Keystore key does not travel with a copied database).", "有 %d 条记录在本机无法解密（Keystore 密钥不会随数据库一起迁移）。");
+        add("settings.reset_database", "Reset local database", "重置本地数据库");
+        add("settings.reset_database_confirm", "This deletes the local tasks, memories and audit trail. Export an archive first if you still have a device that can read them. Continue?", "这会删除本机任务、记忆与审计记录。如果还有能读取它们的设备，请先导出档案。继续吗？");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

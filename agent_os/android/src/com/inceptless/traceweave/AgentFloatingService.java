@@ -1,5 +1,9 @@
 package com.inceptless.traceweave;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +27,10 @@ import android.widget.Toast;
 
 public final class AgentFloatingService extends Service {
     private static final String TAG = "AgentFloatingService";
+    private static final String CAPSULE_CHANNEL = "floating_capsule";
+    private static final int CAPSULE_NOTIFICATION_ID = 4801;
+    /** Whether the capsule is currently shown; survives configuration changes. */
+    private boolean capsuleVisible;
     private final android.os.Handler sensorHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable sensorRefresh = new Runnable() {
         @Override public void run() {
@@ -470,6 +478,7 @@ public final class AgentFloatingService extends Service {
 
     private void rebuildForCurrentTheme() {
         boolean wasExpanded = isExpanded;
+        boolean wasVisible = capsuleVisible;
         int x = floatingParams == null ? dp(16) : floatingParams.x;
         int y = floatingParams == null ? dp(110) : floatingParams.y;
         tearDownView();
@@ -485,6 +494,8 @@ public final class AgentFloatingService extends Service {
         }
         isExpanded = !wasExpanded; // toggleExpansion() flips the flag
         toggleExpansion();
+        capsuleVisible = wasVisible;
+        if (floatingView != null) floatingView.setVisibility(wasVisible ? View.VISIBLE : View.GONE);
         updateLocaleTexts();
     }
 
@@ -515,6 +526,60 @@ public final class AgentFloatingService extends Service {
         btnVision = null;
         btnPtt = null;
         btnOpenApp = null;
+    }
+
+    /**
+     * The overlay is an ordinary service today, which means Android freezes or kills it as
+     * soon as the app leaves the foreground. Entering the foreground keeps the capsule (and
+     * its optional microphone use) alive and gives the user a visible way to stop it.
+     */
+    private void enterCapsuleForeground() {
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (manager == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CAPSULE_CHANNEL,
+                T.s("overlay.channel_name", isEnglish()), NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(T.s("overlay.channel_description", isEnglish()));
+            channel.setShowBadge(false);
+            manager.createNotificationChannel(channel);
+        }
+        Intent open = new Intent(this, MainActivity.class);
+        open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, open, flags);
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? new Notification.Builder(this, CAPSULE_CHANNEL) : new Notification.Builder(this);
+        Notification notification = builder
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setContentTitle(T.s("overlay.channel_title", isEnglish()))
+            .setContentText(T.s("overlay.channel_text", isEnglish()))
+            .setContentIntent(contentIntent)
+            .setOngoing(true)
+            .setShowWhen(false)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .build();
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(CAPSULE_NOTIFICATION_ID, notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+            } else {
+                startForeground(CAPSULE_NOTIFICATION_ID, notification);
+            }
+        } catch (Exception error) {
+            Log.w(TAG, "startForeground refused: " + error.getMessage());
+        }
+    }
+
+    private void leaveCapsuleForeground() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_REMOVE);
+            } else {
+                stopForeground(true);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void toggleExpansion() {
@@ -652,10 +717,16 @@ public final class AgentFloatingService extends Service {
             } else {
                 floatingView.setVisibility(View.VISIBLE);
             }
+            capsuleVisible = floatingView != null && floatingView.getVisibility() == View.VISIBLE;
+            if (capsuleVisible) enterCapsuleForeground();
+            else leaveCapsuleForeground();
         } else if (ACTION_HIDE.equals(action)) {
+            capsuleVisible = false;
+            leaveCapsuleForeground();
             if (floatingView != null) {
                 floatingView.setVisibility(View.GONE);
             }
+            stopSelf();
         } else if (ACTION_UPDATE_STEP.equals(action)) {
             String title = intent.getStringExtra(EXTRA_TASK_TITLE);
             int step = intent.getIntExtra(EXTRA_STEP_INDEX, 0);

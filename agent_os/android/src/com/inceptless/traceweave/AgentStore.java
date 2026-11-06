@@ -185,6 +185,55 @@ final class AgentStore extends SQLiteOpenHelper {
         this.appContext = context.getApplicationContext();
     }
 
+    /**
+     * Deletes the local database so a device that received a copy without the Keystore key can
+     * start again. Callers must warn the user first: this drops tasks, memories and the audit
+     * trail that lives in this database.
+     */
+    void resetLocalDatabase() {
+        close();
+        appContext.deleteDatabase(DATABASE_NAME);
+    }
+
+    /** Counts rows that fail to decrypt, without keeping the decrypted payloads. */
+    int countUnreadableRows() {
+        int unreadable = 0;
+        try {
+            unreadable += listTasks().isEmpty() ? 0 : 0;
+            unreadable += skippedUndecryptable;
+            listMemories();
+            unreadable += skippedUndecryptable;
+        } catch (Exception ignored) {
+        }
+        skippedUndecryptable = 0;
+        return unreadable;
+    }
+
+    /** Cheap counters for the home screen; these never decrypt a payload. */
+    int countTasks() {
+        try (Cursor cursor = getReadableDatabase().rawQuery("SELECT COUNT(*) FROM tasks", null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
+    }
+
+    int countMemories() {
+        try (Cursor cursor = getReadableDatabase().rawQuery("SELECT COUNT(*) FROM memories", null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
+    }
+
+    /**
+     * Changes whenever a task row is created, updated or advanced. The home screen polls this
+     * instead of decrypting every task once a second.
+     */
+    String taskListSignature() {
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT COUNT(*), COALESCE(MAX(updated_at), 0), COALESCE(MAX(execution_step), 0) FROM tasks", null)) {
+            if (cursor.moveToFirst()) return cursor.getInt(0) + ":" + cursor.getLong(1) + ":" + cursor.getInt(2);
+        }
+        return "";
+    }
+
     /** Current schema version; tests and the audit page use it instead of literals. */
     static int currentSchemaVersion() {
         return DATABASE_VERSION;
@@ -695,16 +744,27 @@ final class AgentStore extends SQLiteOpenHelper {
 
     List<Task> listTasks() throws Exception {
         ArrayList<Task> tasks = new ArrayList<>();
+        skippedUndecryptable = 0;
         try (Cursor cursor = getReadableDatabase().query(
                 "tasks", new String[]{"id", "created_at", "updated_at", "status", "sealed_payload",
                     "job_id", "execution_version", "execution_step"},
                 null, null, null, null, "updated_at DESC")) {
             while (cursor.moveToNext()) {
-                tasks.add(taskFromCursor(cursor));
+                try {
+                    tasks.add(taskFromCursor(cursor));
+                } catch (Exception unreadable) {
+                    // One unreadable payload (lost Keystore key, half-migrated database) used to
+                    // hide the whole list; keep the rest and report the count.
+                    skippedUndecryptable++;
+                    android.util.Log.w("AgentStore", "Skipping unreadable task row: " + unreadable.getMessage());
+                }
             }
         }
         return tasks;
     }
+
+    /** Rows the last list/export call could not decrypt; surfaced in diagnostics. */
+    int skippedUndecryptable;
 
     Task getTask(String taskId) throws Exception {
         try (Cursor cursor = getReadableDatabase().query(
@@ -2189,10 +2249,16 @@ final class AgentStore extends SQLiteOpenHelper {
         try (Cursor cursor = getReadableDatabase().query(
                 "memories", new String[]{"id", "kind", "created_at", "updated_at", "sealed_payload"},
                 null, null, null, null, "updated_at DESC")) {
+            skippedUndecryptable = 0;
             while (cursor.moveToNext()) {
                 String id = cursor.getString(0);
-                memories.add(memoryFromPayload(id, cursor.getString(1), cursor.getLong(2), cursor.getLong(3),
-                    unseal(memoryAad(id), cursor.getBlob(4))));
+                try {
+                    memories.add(memoryFromPayload(id, cursor.getString(1), cursor.getLong(2), cursor.getLong(3),
+                        unseal(memoryAad(id), cursor.getBlob(4))));
+                } catch (Exception unreadable) {
+                    skippedUndecryptable++;
+                    android.util.Log.w("AgentStore", "Skipping unreadable memory row: " + unreadable.getMessage());
+                }
             }
         }
         return memories;

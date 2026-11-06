@@ -141,14 +141,23 @@ public final class MainActivity extends Activity implements MemoryHost {
         updateFloatPermStatus();
         expireRemoteUriGrant();
         if (syncPanel != null) syncPanel.maybeAutoSync();
-        try {
-            store.recoverExternalActions();
-            int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
-            if (recoveredJobs > 0)
-                settingsPanel.setRecoveryMessage(T.format("settings.recovered_jobs", isEnglish(), recoveredJobs));
-        } catch (Exception error) {
-            showError(error);
-        }
+        // Database writes and the JobScheduler binder call stay off the main thread; the list
+        // refresh below is cheap now (one COUNT/MAX query).
+        io.execute(() -> {
+            try {
+                store.recoverExternalActions();
+                int recoveredJobs = AgentScheduler.reconcileActiveTasks(this, store);
+                if (recoveredJobs > 0) {
+                    mainHandler.post(() -> {
+                        if (destroyed) return;
+                        settingsPanel.setRecoveryMessage(
+                            T.format("settings.recovered_jobs", isEnglish(), recoveredJobs));
+                    });
+                }
+            } catch (Exception error) {
+                mainHandler.post(() -> showError(error));
+            }
+        });
         // Coming back from the detail page or the vault must show what changed there.
         refreshTasks();
         refreshMemories();
@@ -378,7 +387,8 @@ public final class MainActivity extends Activity implements MemoryHost {
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
-        page.setPadding(dp(16), dp(46), dp(16), dp(16));
+        page.setPadding(dp(16), dp(8), dp(16), dp(16));
+        Ui.padForInsets(page, dp(16), dp(8), dp(16), dp(16));
 
         boolean en = isEnglish();
 
@@ -649,7 +659,7 @@ public final class MainActivity extends Activity implements MemoryHost {
             Button chip = createCompactActionButton(entry[1], entry[0].equals(taskFilter)
                 ? 0xFF0F172A : Ui.secondaryBg(this),
                 entry[0].equals(taskFilter) ? 0xFFFFFFFF : Ui.secondaryFg(this),
-                view -> { taskFilter = entry[0]; refreshTasks(); });
+                view -> { taskFilter = entry[0]; renderTasks(); });
             chip.setTextSize(11);
             LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(0, dp(40), 1f);
             chipLp.setMargins(0, 0, dp(4), 0);
@@ -672,7 +682,7 @@ public final class MainActivity extends Activity implements MemoryHost {
             @Override public void beforeTextChanged(CharSequence text, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence text, int start, int before, int count) {
                 taskQuery = text.toString().trim().toLowerCase(java.util.Locale.ROOT);
-                refreshTasks();
+                renderTasks();
             }
             @Override public void afterTextChanged(android.text.Editable text) {}
         });
@@ -728,6 +738,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         scroller.setFillViewport(true);
         scroller.addView(page);
         CrashLog.install(this);
+        Ui.edgeToEdge(this);
         setContentView(scroller);
     }
 
@@ -1072,13 +1083,49 @@ public final class MainActivity extends Activity implements MemoryHost {
 
 
 
+    private List<AgentStore.Task> loadedTasks;
+    private String lastTaskSignature = "";
+
+    /**
+     * Polled once a second while a task is running. Reading the whole table (and decrypting
+     * every payload) here used to run on the main thread every second; now a single COUNT/MAX
+     * query decides whether anything changed, and the expensive load runs off the main thread.
+     */
     private void refreshTasks() {
         if (taskList == null || store == null) return;
+        String signature;
+        try {
+            signature = store.taskListSignature();
+        } catch (Exception error) {
+            showError(error);
+            return;
+        }
+        if (signature.equals(lastTaskSignature) && loadedTasks != null) return;
+        lastTaskSignature = signature;
+        io.execute(() -> {
+            final List<AgentStore.Task> tasks;
+            try {
+                tasks = store.listTasks();
+            } catch (Exception error) {
+                mainHandler.post(() -> showError(error));
+                return;
+            }
+            mainHandler.post(() -> {
+                if (destroyed) return;
+                loadedTasks = tasks;
+                renderTasks();
+            });
+        });
+    }
+
+    /** Rebuilds the list from memory: used by the filter chips and the search box. */
+    private void renderTasks() {
+        if (taskList == null || loadedTasks == null) return;
         try {
             taskButtons.clear();
             taskList.removeAllViews();
             List<AgentStore.Task> tasks = new ArrayList<>();
-            for (AgentStore.Task task : store.listTasks()) {
+            for (AgentStore.Task task : loadedTasks) {
                 if (!matchesTaskFilter(task)) continue;
                 tasks.add(task);
             }
@@ -1189,7 +1236,7 @@ public final class MainActivity extends Activity implements MemoryHost {
         if (onboardingCard == null || store == null) return;
         boolean empty;
         try {
-            empty = store.listTasks().isEmpty() && store.listMemories().isEmpty();
+            empty = store.countTasks() == 0 && store.countMemories() == 0;
         } catch (Exception ignored) {
             empty = false;
         }
@@ -1200,11 +1247,20 @@ public final class MainActivity extends Activity implements MemoryHost {
         if (bottomSummary == null || store == null) return;
         boolean en = isEnglish();
         try {
-            int memories = store.listMemories().size();
-            int tasks = store.listTasks().size();
+            int memories = store.countMemories();
+            int tasks = store.countTasks();
             String peers = T.format("summary.peers", en, store.listPairings().size());
             bottomSummary.setText(T.format("summary.line", en, memories, tasks) + "\n" + peers);
         } catch (Exception ignored) {}
+    }
+
+    /** Restarts the activity after the local database was deleted. */
+    void restartForReset() {
+        android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+        Runtime.getRuntime().exit(0);
     }
 
     private void showInfoCard(String title, String body) {

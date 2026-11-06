@@ -33,9 +33,9 @@ public final class AuditActivity extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Ui.background(this));
-        int statusBar = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        int topInset = statusBar > 0 ? getResources().getDimensionPixelSize(statusBar) : Ui.dp(this, 24);
-        root.setPadding(Ui.dp(this, 12), topInset + Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
+        Ui.edgeToEdge(this);
+        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
+        Ui.padForInsets(root, Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
         ScrollView scroll = new ScrollView(this);
         scroll.setBackgroundColor(Ui.background(this));
         scroll.addView(root);
@@ -367,6 +367,7 @@ public final class AuditActivity extends Activity {
                     .put("message", entry.message));
             }
             report.put("crash_history", crashes);
+            report.put("skipped_undecryptable_rows", store.skippedUndecryptable);
             report.put("note", "No memory contents, task texts or device identifiers are included.");
             return report;
         }

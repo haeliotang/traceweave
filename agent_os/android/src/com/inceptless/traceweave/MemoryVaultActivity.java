@@ -42,9 +42,8 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
         page.setBackgroundColor(Ui.dark(this) ? 0xFF0B1220 : 0xFFF8FAFC);
-        int statusBar = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        int topInset = statusBar > 0 ? getResources().getDimensionPixelSize(statusBar) : dpRef(24);
-        page.setPadding(dpRef(16), topInset + dpRef(8), dpRef(16), dpRef(12));
+        page.setPadding(dpRef(16), dpRef(8), dpRef(16), dpRef(12));
+        Ui.padForInsets(page, dpRef(16), dpRef(8), dpRef(16), dpRef(12));
 
         LinearLayout topRow = new LinearLayout(this);
         topRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -125,6 +124,7 @@ public final class MemoryVaultActivity extends Activity implements MemoryHost {
         page.addView(scroller, new LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
+        Ui.edgeToEdge(this);
         setContentView(page);
     }
 

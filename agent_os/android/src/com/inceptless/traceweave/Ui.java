@@ -87,6 +87,65 @@ final class Ui {
         styleContent(context, dialog.getWindow().getDecorView());
     }
 
+    /**
+     * targetSdk 35 draws edge-to-edge whether or not the app asks: without insets the gesture
+     * bar covers the last row of content and the status bar icons take the wrong colour.
+     */
+    static void edgeToEdge(android.app.Activity activity) {
+        if (activity == null || activity.getWindow() == null) return;
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            activity.getWindow().setDecorFitsSystemWindows(false);
+        } else {
+            activity.getWindow().getDecorView().setSystemUiVisibility(
+                android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        }
+        setBarIconAppearance(activity);
+    }
+
+    /** Keeps system-bar icons readable against our own light/dark surfaces. */
+    static void setBarIconAppearance(android.app.Activity activity) {
+        if (activity == null || activity.getWindow() == null) return;
+        android.view.View decor = activity.getWindow().getDecorView();
+        int flags = decor.getSystemUiVisibility();
+        if (dark(activity)) {
+            flags &= ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (android.os.Build.VERSION.SDK_INT >= 26) flags &= ~android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        } else {
+            flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (android.os.Build.VERSION.SDK_INT >= 26) flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        decor.setSystemUiVisibility(flags);
+    }
+
+    /** Applies system-bar, cutout and keyboard insets on top of the view's own padding. */
+    static void padForInsets(final android.view.View view, final int baseLeft, final int baseTop,
+                             final int baseRight, final int baseBottom) {
+        if (view == null) return;
+        view.setOnApplyWindowInsetsListener((target, insets) -> {
+            int left = baseLeft, top = baseTop, right = baseRight, bottom = baseBottom;
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets bars = insets.getInsets(
+                    android.view.WindowInsets.Type.systemBars()
+                        | android.view.WindowInsets.Type.displayCutout());
+                android.graphics.Insets ime = insets.getInsets(android.view.WindowInsets.Type.ime());
+                left += bars.left;
+                top += bars.top;
+                right += bars.right;
+                bottom += Math.max(bars.bottom, ime.bottom);
+            } else {
+                left += insets.getSystemWindowInsetLeft();
+                top += insets.getSystemWindowInsetTop();
+                right += insets.getSystemWindowInsetRight();
+                bottom += insets.getSystemWindowInsetBottom();
+            }
+            target.setPadding(left, top, right, bottom);
+            return insets;
+        });
+        view.requestApplyInsets();
+    }
+
     /** Text field that follows the theme, including inside dialogs. */
     static android.widget.EditText input(Context context, String hint) {
         android.widget.EditText field = new android.widget.EditText(context);

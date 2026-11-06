@@ -41,6 +41,32 @@ final class SettingsPanel {
         root.addView(titleRow);
         root.addView(Ui.section(host, T.s("settings.section_data", en)));
 
+        int unreadable = host.storeRef().countUnreadableRows();
+        if (unreadable > 0) {
+            TextView warning = new TextView(host);
+            warning.setText(T.format("settings.unreadable_rows", en, unreadable));
+            warning.setTextSize(12);
+            warning.setTextColor(0xFFB91C1C);
+            warning.setPadding(0, host.dpRef(4), 0, host.dpRef(4));
+            root.addView(warning);
+            Button reset = new Button(host);
+            reset.setText(T.s("settings.reset_database", en));
+            reset.setAllCaps(false);
+            reset.setTextSize(12);
+            reset.setBackgroundColor(Ui.secondaryBg(host));
+            reset.setTextColor(Ui.secondaryFg(host));
+            reset.setOnClickListener(view -> new AlertDialog.Builder(host)
+                .setMessage(T.s("settings.reset_database_confirm", en))
+                .setNegativeButton(T.s("common.cancel", en), null)
+                .setPositiveButton(T.s("settings.reset_database", en), (dialog, which) -> {
+                    host.storeRef().resetLocalDatabase();
+                    host.restartForReset();
+                })
+                .show());
+            root.addView(reset, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, host.dpRef(48)));
+        }
+
         LinearLayout archiveActions = new LinearLayout(host);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
         archiveActions.setPadding(0, host.dpRef(10), 0, host.dpRef(6));

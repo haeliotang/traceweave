@@ -38,8 +38,10 @@ public final class LocalModelActivity extends Activity {
         en = "en".equals(getSharedPreferences("agent_os_prefs", 0).getString("app_lang", "zh"));
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 40), Ui.dp(this, 12), Ui.dp(this, 12));
+        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
+        Ui.padForInsets(root, Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
         root.setBackgroundColor(Ui.background(this));
+        Ui.edgeToEdge(this);
         setContentView(root);
 
         TextView title = Ui.title(this, T.s("localmodel.on_device_draft_model", en));

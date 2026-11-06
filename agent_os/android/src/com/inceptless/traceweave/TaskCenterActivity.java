@@ -37,12 +37,9 @@ public final class TaskCenterActivity extends Activity {
         scroll = new ScrollView(this);
         scroll.setBackgroundColor(Ui.background(this));
         scroll.addView(root);
-        scroll.setOnApplyWindowInsetsListener((view, insets) -> {
-            root.setBackgroundColor(Ui.background(this));
-        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 12) + insets.getSystemWindowInsetTop(),
-                Ui.dp(this, 12), Ui.dp(this, 12) + insets.getSystemWindowInsetBottom());
-            return insets;
-        });
+        root.setPadding(Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
+        Ui.padForInsets(root, Ui.dp(this, 12), Ui.dp(this, 8), Ui.dp(this, 12), Ui.dp(this, 12));
+        Ui.edgeToEdge(this);
         setContentView(scroll);
 
         TextView heading = Ui.title(this, T.s("taskcenter.heading", en));
