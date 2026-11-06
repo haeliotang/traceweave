@@ -287,10 +287,10 @@ final class SyncPanel {
             } finally {
                 call.shutdownNow();
             }
-            android.util.Log.i("AgentOsPairing", "pair_dial result=" + (payload == null ? "null" : payload));
+            android.util.Log.i("AgentOsPairing", "pair_dial finished ok=" + (payload != null));
             final String json = payload;
             host.uiRef().post(() -> {
-                android.util.Log.i("AgentOsPairing", "pair_dial show destroyed=" + host.isDestroyedRef() + " json=" + json);
+                android.util.Log.i("AgentOsPairing", "pair_dial show destroyed=" + host.isDestroyedRef());
                 if (!host.isDestroyedRef()) showPairResult(json, en, address);
             });
         });
@@ -334,7 +334,7 @@ final class SyncPanel {
 
     private void showPairResult(String json, boolean en, String address) {
         SyncActions.Session session = SyncActions.session(json);
-        android.util.Log.i("AgentOsPairing", "show_pair_result session=" + (session == null ? "null" : session.sas));
+        android.util.Log.i("AgentOsPairing", "show_pair_result ok=" + (session != null));
         if (session == null) {
             String detail = SyncActions.error(json);
             host.toast((T.s("pair.failed", en)) + (detail.isEmpty() ? "" : ": " + detail));

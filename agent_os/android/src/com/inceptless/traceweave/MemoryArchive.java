@@ -48,6 +48,9 @@ final class MemoryArchive {
         /** Chain head of the audit rows inside this archive, so an outside copy can be checked. */
         String auditHead = "";
         int auditCount;
+        /** False when the archive's history could not be verified (pre-chain archive). */
+        boolean auditVerified;
+        String auditVerification = "";
     }
 
     private MemoryArchive() {}
@@ -218,8 +221,13 @@ final class MemoryArchive {
         root.put("memories", memories);
         JSONArray audit = new JSONArray();
         for (AgentStore.AuditEvent event : data.audit) {
-            audit.put(new JSONObject().put("id", event.id).put("taskId", event.taskId)
-                .put("occurredAt", event.occurredAt).put("event", event.event));
+            JSONObject item = new JSONObject().put("id", event.id).put("taskId", event.taskId)
+                .put("occurredAt", event.occurredAt).put("event", event.event);
+            if (event.hash != null && !event.hash.isEmpty()) {
+                item.put("prevHash", event.prevHash).put("hash", event.hash)
+                    .put("digestVersion", event.digestVersion);
+            }
+            audit.put(item);
         }
         root.put("audit", audit);
         JSONArray tombstones = new JSONArray();
@@ -349,7 +357,14 @@ final class MemoryArchive {
             if (!auditIds.add(id) || !taskIds.contains(taskId) || event.trim().isEmpty()
                     || event.length() > AgentStore.MAX_AUDIT_EVENT_LENGTH)
                 throw new IOException("The archive contains an invalid task history record");
-            data.audit.add(new AgentStore.AuditEvent(id, taskId, occurredAt, event));
+            String hash = item.optString("hash", "");
+            String prevHash = item.optString("prevHash", "");
+            int digestVersion = item.has("digestVersion") ? item.getInt("digestVersion")
+                : AuditChain.DIGEST_VERSION_LEGACY;
+            if (digestVersion != AuditChain.DIGEST_VERSION_LEGACY
+                    && digestVersion != AuditChain.DIGEST_VERSION_LENGTH_PREFIXED)
+                throw new IOException("The archive contains an unknown audit digest version");
+            data.audit.add(new AgentStore.AuditEvent(id, taskId, occurredAt, event, prevHash, hash, digestVersion));
         }
         return data;
     }

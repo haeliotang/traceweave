@@ -100,8 +100,17 @@ public final class AgentAccessibilityService extends AccessibilityService {
                 String resId = node.getViewIdResourceName();
                 json.put("id", resId != null ? resId : "node_" + count);
                 json.put("class_name", node.getClassName() != null ? node.getClassName().toString() : "");
-                json.put("text", node.getText() != null ? node.getText().toString() : JSONObject.NULL);
-                json.put("content_description", node.getContentDescription() != null ? node.getContentDescription().toString() : JSONObject.NULL);
+                // Password fields and FLAG_SECURE windows must never hand their text to an agent
+                // or to a screenshot request; expose the shape of the screen, not the secrets.
+                boolean secret = node.isPassword();
+                json.put("is_password", secret);
+                if (secret) {
+                    json.put("text", JSONObject.NULL);
+                    json.put("content_description", JSONObject.NULL);
+                } else {
+                    json.put("text", node.getText() != null ? node.getText().toString() : JSONObject.NULL);
+                    json.put("content_description", node.getContentDescription() != null ? node.getContentDescription().toString() : JSONObject.NULL);
+                }
 
                 node.getBoundsInScreen(bounds);
                 JSONArray boundsArr = new JSONArray();

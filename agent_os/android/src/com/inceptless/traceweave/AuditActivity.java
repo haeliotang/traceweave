@@ -356,8 +356,8 @@ public final class AuditActivity extends Activity {
                 report.put("last_crash", org.json.JSONObject.NULL);
             } else {
                 report.put("last_crash", new org.json.JSONObject()
-                    .put("summary", CrashLog.summarize(crash))
-                    .put("raw", crash));
+                    .put("summary", CrashLog.sanitize(CrashLog.summarize(crash)))
+                    .put("raw_sanitized", CrashLog.sanitize(crash)));
             }
             org.json.JSONArray crashes = new org.json.JSONArray();
             for (CrashLog.Entry entry : CrashLog.history(this)) {
@@ -368,7 +368,8 @@ public final class AuditActivity extends Activity {
             }
             report.put("crash_history", crashes);
             report.put("skipped_undecryptable_rows", store.skippedUndecryptable);
-            report.put("note", "No memory contents, task texts or device identifiers are included.");
+            report.put("note", "Best effort: crash messages are sanitized (no exception text, no absolute "
+                + "paths) and no memory or task payloads are read, but review the file before sharing.");
             return report;
         }
     }

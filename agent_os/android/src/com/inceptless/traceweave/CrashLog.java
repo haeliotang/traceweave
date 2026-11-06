@@ -25,6 +25,30 @@ final class CrashLog {
         return text.length() > MAX_BYTES ? text.substring(0, MAX_BYTES) : text;
     }
 
+    /**
+     * Strips the parts of a stack trace that most often carry user content: the exception
+     * message (which can quote parsed JSON, file names or record text) and absolute paths.
+     * The summary keeps the exception type and the top frame, which is what actually helps.
+     */
+    static String sanitize(String summary) {
+        if (summary == null || summary.isEmpty()) return "";
+        String[] lines = summary.split("\n");
+        StringBuilder clean = new StringBuilder();
+        for (String line : lines) {
+            String text = line.trim();
+            if (text.isEmpty()) continue;
+            int colon = text.indexOf(':');
+            // "java.lang.IllegalStateException: <user content>" -> keep the type only.
+            if (colon > 0 && text.substring(0, colon).matches("[A-Za-z_$][A-Za-z0-9_$.]*")) {
+                text = text.substring(0, colon);
+            }
+            // Absolute paths can name the user's directories or files.
+            text = text.replaceAll("(/[A-Za-z0-9._-]+){2,}", "<path>");
+            clean.append(text).append('\n');
+        }
+        return clean.toString().trim();
+    }
+
     /** Short, human-readable summary: exception type, message and the first few frames. */
     static String summarize(String raw) {
         if (raw == null || raw.isEmpty()) return "";

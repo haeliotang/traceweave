@@ -34,7 +34,17 @@ fn get_email_regex() -> &'static Regex {
 
 fn get_secret_regex() -> &'static Regex {
     SECRET_REGEX.get_or_init(|| {
-        Regex::new(r"(?i)(sk-[a-zA-Z0-9_\-]{16,}|Bearer\s+[a-zA-Z0-9_\-\.]{16,}|api[_-]?key[\x22'\s:=]+[a-zA-Z0-9_\-]{16,})").unwrap()
+        // Must stay in step with ContextRedactor.java: the Java path is the fallback when the
+        // native core is unavailable, and a narrower Rust rule leaked password/token/secret.
+        Regex::new(concat!(
+            r"(?i)(",
+            r"sk-[a-zA-Z0-9_\-]{16,}",
+            r"|Bearer\s+[a-zA-Z0-9_\-\.]{16,}",
+            r"|(?:api[_-]?key|token|password|passwd|secret|密码|口令)\s*[:=]\s*['\x22]?[^\s'\x22]{8,}['\x22]?",
+            r"|AKIA[0-9A-Z]{16}",
+            r"|eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}",
+            r")"
+        )).unwrap()
     })
 }
 
@@ -138,6 +148,34 @@ mod tests {
         let res = redact("身份证 110101199003072345 绑定卡号 6222021234567890123");
         assert_eq!(res.redacted_text, "身份证 1101********2345 绑定卡号 6222********0123");
         assert_eq!(res.redactions_count, 2);
+    }
+
+    #[test]
+    fn test_key_value_secrets_match_the_java_rules() {
+        // The Java fallback redacts these; the native path leaked them before this change.
+        for text in [
+            "password: hunter2hunter2",
+            "PASSWORD=correcthorsebattery",
+            "token=abcdefgh12345678",
+            "passwd: s3cr3t-value",
+            "secret: 0f9e8d7c6b5a",
+            "密码: 我的很长口令123456",
+            "口令=anotherlongvalue",
+        ] {
+            let res = redact(text);
+            assert!(res.has_redactions(), "should redact: {}", text);
+            assert!(!res.redacted_text.contains("hunter2"), "leaked: {}", res.redacted_text);
+            assert!(!res.redacted_text.contains("correcthorse"), "leaked: {}", res.redacted_text);
+        }
+    }
+
+    #[test]
+    fn test_aws_key_and_jwt() {
+        let res = redact("aws key AKIAIOSFODNN7EXAMPLE");
+        assert!(res.redacted_text.contains("[REDACTED_SECRET]"));
+        let jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
+        let res = redact(jwt);
+        assert!(res.redacted_text.contains("[REDACTED_SECRET]"), "{}", res.redacted_text);
     }
 
     #[test]

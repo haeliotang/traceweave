@@ -75,7 +75,7 @@ public final class VisionAgentManager {
         String hierarchyJson = a11y.dumpScreenHierarchyJson();
         try {
             JSONArray nodes = new JSONArray(hierarchyJson);
-            Log.i(TAG, "Screen hierarchy returned " + nodes.length() + " nodes for query: " + query);
+            Log.i(TAG, "Screen hierarchy returned " + nodes.length() + " nodes");
             JSONObject scene = new JSONObject();
             scene.put("screen_width", 1080);
             scene.put("screen_height", 2400);
@@ -90,8 +90,6 @@ public final class VisionAgentManager {
                 if (text == null || text.trim().isEmpty() || "null".equals(text)) {
                     continue;
                 }
-
-                Log.d(TAG, "Found screen node text: " + text);
 
                 JSONArray b = node.optJSONArray("bounds");
                 if (b == null || b.length() < 4) continue;

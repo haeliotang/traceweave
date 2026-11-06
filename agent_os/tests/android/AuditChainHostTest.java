@@ -2,48 +2,43 @@ import com.inceptless.traceweave.AuditChain;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Host check for the audit hash chain, run by test_audit_chain.py. */
+/** Host check for digest versioning, run by test_audit_chain.py. */
 public final class AuditChainHostTest {
     private static int checks = 0;
 
-    private static void check(boolean condition, String message) {
-        if (!condition) throw new IllegalStateException("FAIL " + message);
+    private static void check(boolean condition, String label) {
+        if (!condition) throw new IllegalStateException("FAIL " + label);
         checks++;
     }
 
-    private static AuditChain.Row row(String previous, String id, long when, String event) {
-        return new AuditChain.Row(id, "task-1", when, event, previous,
-            AuditChain.digest(previous, id, "task-1", when, event));
-    }
-
     public static void main(String[] args) {
-        String first = AuditChain.digest(AuditChain.GENESIS, "a", "task-1", 1000, "task_created");
-        List<AuditChain.Row> good = new ArrayList<>();
-        good.add(new AuditChain.Row("a", "task-1", 1000, "task_created", AuditChain.GENESIS, first));
-        good.add(row(first, "b", 2000, "status_active"));
-        check(AuditChain.firstBrokenIndex(good) == -1, "intact chain verifies");
+        // The legacy ambiguity the auditor found: two different (taskId, occurredAt, event)
+        // tuples joined with '|' produce the same preimage.
+        String legacy = AuditChain.digestV1("", "id", "x|1000", 2000, "e");
+        String shifted = AuditChain.digestV1("", "id", "x", 1000, "2000|e");
+        check(legacy.equals(shifted), "v1 is ambiguous by construction");
 
-        List<AuditChain.Row> edited = new ArrayList<>(good);
-        edited.set(1, new AuditChain.Row("b", "task-1", 2000, "status_completed", first,
-            good.get(1).hash));
-        check(AuditChain.firstBrokenIndex(edited) == 1, "edited event breaks at its row");
+        String v2 = AuditChain.digestV2("", "id", "x|1000", 2000, "e");
+        String v2shifted = AuditChain.digestV2("", "id", "x", 1000, "2000|e");
+        check(!v2.equals(v2shifted), "v2 separates the fields");
 
-        List<AuditChain.Row> removed = new ArrayList<>();
-        removed.add(good.get(0));
-        check(AuditChain.firstBrokenIndex(removed) == -1, "a shortened chain still verifies on its own");
-        removed.add(good.get(1));
-        removed.remove(1);
-        check(removed.size() == 1, "removal leaves a verifiable prefix, documented limitation");
+        // Existing v1 rows must still verify after the upgrade.
+        List<AuditChain.Row> rows = new ArrayList<>();
+        String firstHash = AuditChain.digestV1("", "a", "task", 1, "task_created");
+        rows.add(new AuditChain.Row("a", "task", 1, "task_created", "", firstHash));
+        String secondHash = AuditChain.digest(firstHash, "b", "task", 2, "task_succeeded");
+        rows.add(new AuditChain.Row("b", "task", 2, "task_succeeded", firstHash, secondHash,
+            AuditChain.CURRENT_DIGEST_VERSION));
+        check(AuditChain.firstBrokenIndex(rows) == -1, "mixed v1/v2 chain verifies");
 
-        List<AuditChain.Row> resealed = new ArrayList<>();
-        String forged = AuditChain.digest(first, "b", "task-1", 2000, "status_completed");
-        resealed.add(good.get(0));
-        resealed.add(new AuditChain.Row("b", "task-1", 2000, "status_completed", first, forged));
-        check(AuditChain.firstBrokenIndex(resealed) == -1,
-            "a fully re-sealed chain verifies; tamper-evident is not tamper-proof");
+        // A rewritten v1 row is still detected because the hash is committed.
+        List<AuditChain.Row> tampered = new ArrayList<>(rows);
+        tampered.set(0, new AuditChain.Row("a", "other", 1, "task_created", "", firstHash));
+        check(AuditChain.firstBrokenIndex(tampered) == 0, "tampered row detected");
 
-        check(!AuditChain.digest("", "a", "task-1", 1000, "x")
-            .equals(AuditChain.digest("", "a", "task-1", 1001, "x")), "timestamp is covered by the hash");
+        // Empty chain is intact.
+        check(AuditChain.firstBrokenIndex(new ArrayList<>()) == -1, "empty chain");
+
         System.out.println("PASS audit_chain checks=" + checks);
     }
 }
