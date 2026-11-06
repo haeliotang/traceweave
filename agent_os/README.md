@@ -1,3 +1,11 @@
+> **工程入口文档（部分内容为历史记录）。** 产品叙事、当前能力与限制以根目录
+> [README.md](../README.md) 为准；本文中的 schema 版本、包名与签名身份如与代码不一致，
+> 以 `AgentStore.DATABASE_VERSION`、`AndroidManifest.xml` 与
+> [production_signing_decision.md](../docs/production_signing_decision.md) 为准。
+>
+> 当前事实：包名 `com.inceptless.traceweave`、schema **13**、已发布 v0.1.0–v0.1.3（开发密钥侧载）、
+> 开发签名密钥别名 `agent-os-rotation-20261025`、Keychain service `com.inceptless.traceform.agentos.signing`。
+
 # Agent OS Android prototype
 
 This is an independent Android application prototype in the Traceform repository. It does not modify Traceform's Android app, permissions, or data store.

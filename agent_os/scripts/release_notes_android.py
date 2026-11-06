@@ -58,6 +58,12 @@ def main():
         "",
         f"- 构建报告：{pathlib.Path(args.report).name}",
         f"- 发布校验：{pathlib.Path(args.verification).name}",
+        "",
+        "---",
+        "",
+        "> **开发密钥侧载 / Development-key side load**：本包由开发用签名密钥"
+        f"（SHA-256 `{signer}`）签名，属于侧载分发，**不是**生产签名或应用商店签名。"
+        "安装前请用同版本 `SHA256SUMS` 校验 APK。",
     ]
     pathlib.Path(args.output).write_text("\n".join(notes) + "\n")
     print(f"release notes written to {args.output}")

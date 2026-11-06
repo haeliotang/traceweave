@@ -16,7 +16,36 @@ See [CHANGELOG.md](CHANGELOG.md) for what changed between releases.
 [![Security: Prototype, not certified](https://img.shields.io/badge/Security-Prototype_Not_Certified-475569.svg)]()
 [![Device checks: Dated receipts](https://img.shields.io/badge/Device_checks-Dated_receipts-16A34A.svg)](docs/agent_os_model_document_acceptance.md)
 
+
 ---
+
+## 0. Download and Install
+
+Every published build is a **development-key side load**, not a store build and not a production signing identity.
+
+1. Open the [latest release](https://github.com/haeliotang/traceweave/releases/latest).
+2. Download `traceweave-<version>.apk` and `SHA256SUMS` from the same release.
+3. Verify before installing:
+
+   ```bash
+   shasum -a 256 -c SHA256SUMS --ignore-missing
+   sha256sum traceweave-<version>.apk   # expected value is in SHA256SUMS
+   ```
+
+4. Install with `adb install -r traceweave-<version>.apk`, or copy it to the device and open it.
+   The app is signed with the development key
+   `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`; compare it with
+   `apksigner verify --print-certs` if you care about the exact identity.
+5. Data written by 0.1.x uses schema 13. Older builds cannot open a migrated database, so keep
+   the previous APK until the new one has started successfully.
+
+**Permissions the app can request:** `INTERNET` (optional cloud planning, only after a per-request
+preview), `RECORD_AUDIO` (voice input, only while you hold the mic), `POST_NOTIFICATIONS`
+(approval and capsule notifications), `SYSTEM_ALERT_WINDOW` / `HIDE_OVERLAY_WINDOWS` (the floating
+capsule), `BIND_ACCESSIBILITY_SERVICE` (opt-in screen reading for the voice/vision flows),
+`BLUETOOTH_*` (optional pairing helpers), `RECEIVE_BOOT_COMPLETED` (re-scheduling the sync job),
+and the signature-protected Edge provider permissions. Nothing is uploaded unless you configure a
+cloud endpoint and approve the exact payload.
 
 ## 1. Executive Summary
 
@@ -86,7 +115,7 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 | **Traceweave Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
 | **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
-| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync is validated; optional background sync runs only while the app is open and a peer is paired |
+| **Traceweave protocol** | JSON schemas, Android Binder, experimental Rust sync | Daemon IPC is disabled | Manual pairing/sync is validated on two installs of one device and ships in the app; cross-device sync and the background sync job are not verified |
 | **Traceweave Research** | Python research package | Recurrence and dynamical-systems methods | Research metrics require their own reproducible evidence |
 
 ---
@@ -152,14 +181,14 @@ The Android Broker mediates the prototype's registered capabilities. A request i
 ### 5.2 Optional Local Context Bridge
 The `TraceweaveProvider` ([`TraceweaveProvider.java`](agent_os/android/src/com/inceptless/traceweave/TraceweaveProvider.java)) is an optional local context adapter in the Android prototype:
 - **Signature Protection**: Bound to `android:protectionLevel="signature"`. The bridge requires matching APK signing identity. Agent OS and the Edge app now share one signing identity, and the bridge has been enabled and exercised on the device. No HSM release-signing process is implemented.
-- **Current validation**: The Pixel 6a test used the Traceweave Provider's bounded synthetic local-history summary. It did not read private database files, calendars, or notifications.
+- **Current validation**: The Pixel 6a tests cover (a) a bounded synthetic local-history summary and (b) one **real production read** through the scoped Binder service on 2026-10-31, authorised by the user for five minutes. That read returned structural fields only (counts such as `history_records = 3461`); no history rows, personal content, calendars or notifications were read or recorded, and the receipt notes that Edge reported a stale initial state so no prediction could be evaluated.
 - **Privacy Boundary**: The provider returns data through a signature-protected Binder interface. The app declares `INTERNET` for optional cloud reasoning; global configuration alone does not authorize transmission. Each cloud planning request requires an exact payload preview and single-use user approval; subsequent execution observations remain local.
 
 ---
 
 ## 6. Practical Application Scenarios & Real-World Use Cases
 
-This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or unattended background device-to-device sync. A manual pairing-and-sync entry exists in the app source and was validated on two isolated installs; the sync runtime is now part of the local production candidate and its packaging is checked by the release verifier (no released version bump yet). The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
+This section describes product hypotheses and experimental components, not capabilities delivered by the current app prototype. The repository does not contain an AOSP/GrapheneOS fork, a deployed third-party daemon, cross-app autonomous control, continuous sensor monitoring, wearable integration, or unattended background device-to-device sync. A manual pairing-and-sync entry ships in the released app and was validated on two isolated installs of one device; cross-device sync has not been verified. The sync runtime is included in every release and its packaging is checked by the release verifier. The Rust daemon is disabled pending authenticated IPC and encrypted persistence; performance and power figures below are not release guarantees.
 
 ### 6.1 Third-Party Agent & Standalone Bot Ecosystem Integration
 
@@ -175,7 +204,7 @@ External-agent interoperability is a future direction. Current validation covers
 
 3. **Personal E2EE Memory Substrate & Zero-Trust Context Vault**
    - *Problem*: Users interact with multiple specialized agents (e.g., coding copilots, financial advisors, medical trackers) but cannot risk uploading sensitive personal records, financial history, and home addresses to disparate cloud providers.
-   - *Prototype status*: The Android app encrypts its local task and memory payloads and exports a passphrase-protected archive. Vector-clock merge with tombstone priority and conflict candidates is implemented and device-tested; the manual sync entry is not yet packaged in production builds, and the Rust file-backed store rejects persistent writes in release builds.
+   - *Prototype status*: The Android app encrypts its local task and memory payloads and exports a passphrase-protected archive. Vector-clock merge with tombstone priority and conflict candidates is implemented and device-tested; the manual sync entry ships in every release. Cross-device sync has not been verified, and the Rust file-backed store rejects persistent writes in release builds.
 
 4. **Heterogeneous Dual-Brain Orchestration (Edge-Cloud Cost & Latency Optimization)**
    - *Problem*: Routing all conversational turns and routine device inquiries to cloud frontier models incurs high API token costs and introduces 1-3 second round-trip latencies.
@@ -277,8 +306,8 @@ PY
 # 3. Install the isolated validation package on a test device
 adb install -r agent_os/build/phase1-validation/agent-os.apk
 
-# 4. Launch the validation app; its package is not org.traceweave.agentos
-adb shell am start -n org.traceweave.agentos.validation.target/org.traceweave.agentos.MainActivity
+# 4. Launch the validation app; its package is not com.inceptless.traceweave
+adb shell am start -n com.inceptless.traceweave.validation.target/com.inceptless.traceweave.DeviceValidationActivity
 ```
 
 ---
