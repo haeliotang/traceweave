@@ -669,6 +669,8 @@ public final class T {
         add("archive.export_title", "Encrypted export", "加密导出");
         add("archive.choose_location", "Choose location", "选择保存位置");
         add("archive.passphrase_mismatch", "The two passphrases do not match", "两次输入的口令不一致");
+        add("archive.retry_export", "Encrypt and save", "加密并保存");
+        add("archive.retry_note", "The activity was recreated, so the passphrase must be entered again.", "界面已重建，请重新输入口令。");
         add("archive.passphrase_short", "The passphrase needs at least 12 characters", "口令至少需要 12 个字符");
         add("archive.picking_location", "Choose where to save the archive", "请选择档案保存位置");
         add("archive.no_save_location", "No system file saver is available", "系统没有可用的文件保存位置");
@@ -787,6 +789,7 @@ public final class T {
         add("audit.event.sync_auto_completed.arg", "Background sync finished: %s", "后台同步完成：%s");
         add("audit.event.sync_auto_failed.arg", "Background sync failed: %s", "后台同步失败：%s");
         add("audit.event.sync_auto_error.arg", "Background sync error: %s", "后台同步出错：%s");
+        add("audit.integrity_anchor_problem", "Tamper check failed: anchor problem %s", "防篡改校验失败：锚点异常 %s");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

@@ -73,6 +73,7 @@ public final class MainActivity extends Activity implements MemoryHost {
     private static final int REQ_NOTIFICATIONS = 7002;
     private static final int SYNC_PORT = 47960;
     private char[] pendingExportPassphrase;
+    private Uri pendingExportUri;
     private boolean busy;
     private boolean destroyed;
     private String pendingRemoteStatusTaskId;
@@ -299,6 +300,14 @@ public final class MainActivity extends Activity implements MemoryHost {
         if (requestCode == CREATE_ARCHIVE_REQUEST) {
             char[] passphrase = pendingExportPassphrase;
             pendingExportPassphrase = null;
+            if (passphrase == null) {
+                // The activity was recreated while the document picker was open, so the
+                // passphrase typed before the picker no longer exists. Ask again instead of
+                // failing the export with an exception message.
+                pendingExportUri = data.getData();
+                promptExportPassphrase();
+                return;
+            }
             if (resultCode != RESULT_OK || data == null || data.getData() == null) {
                 clear(passphrase);
                 setBusy(false, T.s("archive.export_cancelled", isEnglish()));
@@ -1935,13 +1944,14 @@ public final class MainActivity extends Activity implements MemoryHost {
 
     void promptExportPassphrase() {
         if (busy) return;
+        final Uri retryUri = pendingExportUri;
         LinearLayout fields = new LinearLayout(this);
         fields.setOrientation(LinearLayout.VERTICAL);
         fields.setPadding(dp(24), dp(8), dp(24), 0);
         EditText first = passwordField(T.s("archive.passphrase_new", isEnglish()));
         EditText second = passwordField(T.s("archive.passphrase_again", isEnglish()));
         fields.addView(first);
-        fields.addView(second);
+        if (retryUri == null) fields.addView(second);
         String exportNote = isEnglish()
             ? "Use and retain a passphrase of at least 12 characters. To restore this archive, the destination must run Agent OS 0.6.0 or later."
             : T.s("archive.passphrase_note", false);
@@ -1954,9 +1964,10 @@ public final class MainActivity extends Activity implements MemoryHost {
         AlertDialog exportDialog = new AlertDialog.Builder(this)
             .setView(fields)
             .setNegativeButton(T.s("common.cancel", isEnglish()), null)
-            .setPositiveButton(T.s("archive.choose_location", isEnglish()), (dialog, which) -> {
+            .setPositiveButton(T.s(retryUri == null ? "archive.choose_location" : "archive.retry_export", isEnglish()), (dialog, which) -> {
                 char[] passphrase = first.getText().toString().toCharArray();
-                char[] confirmation = second.getText().toString().toCharArray();
+                char[] confirmation = retryUri == null
+                    ? second.getText().toString().toCharArray() : passphrase.clone();
                 first.setText("");
                 second.setText("");
                 if (!Arrays.equals(passphrase, confirmation)) {
@@ -1969,6 +1980,12 @@ public final class MainActivity extends Activity implements MemoryHost {
                 if (Character.codePointCount(passphrase, 0, passphrase.length) < 12) {
                     clear(passphrase);
                     showMessage(T.s("archive.passphrase_short", isEnglish()));
+                    return;
+                }
+                if (retryUri != null) {
+                    // The destination was already chosen before the activity was recreated.
+                    pendingExportUri = null;
+                    writeArchive(retryUri, passphrase);
                     return;
                 }
                 pendingExportPassphrase = passphrase;

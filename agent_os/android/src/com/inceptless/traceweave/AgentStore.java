@@ -185,6 +185,11 @@ final class AgentStore extends SQLiteOpenHelper {
         this.appContext = context.getApplicationContext();
     }
 
+    /** Current schema version; tests and the audit page use it instead of literals. */
+    static int currentSchemaVersion() {
+        return DATABASE_VERSION;
+    }
+
     @Override
     public void onCreate(SQLiteDatabase database) {
         createTaskTables(database);
@@ -448,30 +453,6 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
-    /**
-     * Rows written before the anchor table existed get their anchors on first
-     * verification, so an upgraded install is not stuck without any anchor.
-     */
-    private void ensureAnchors(java.util.List<AuditChain.Row> rows) {
-        javax.crypto.SecretKey key = AnchorKey.get();
-        if (key == null || rows.isEmpty()) return;
-        java.util.HashSet<Integer> anchored = new java.util.HashSet<>();
-        try (Cursor cursor = getReadableDatabase().rawQuery("SELECT idx FROM audit_anchors", null)) {
-            while (cursor.moveToNext()) anchored.add(cursor.getInt(0));
-        }
-        SQLiteDatabase database = getWritableDatabase();
-        for (int index = 0; index < rows.size(); index++) {
-            if (anchored.contains(index)) continue;
-            AuditChain.Row row = rows.get(index);
-            ContentValues values = new ContentValues();
-            values.put("idx", index);
-            values.put("hash", row.hash);
-            values.put("anchored_at", row.occurredAt);
-            values.put("mac", AnchorMac.compute(key, index, row.hash, row.occurredAt));
-            database.insertWithOnConflict("audit_anchors", null, values, SQLiteDatabase.CONFLICT_REPLACE);
-        }
-    }
-
     /** Verifies the whole chain and reports the first row that does not match. */
     java.util.Map<String, Object> auditIntegrity() {
         java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
@@ -493,10 +474,33 @@ final class AgentStore extends SQLiteOpenHelper {
                 anchors.add(new AnchorMac.Entry(cursor.getInt(0), cursor.getString(1), cursor.getLong(2), cursor.getString(3)));
             }
         }
-        ensureAnchors(rows);
         javax.crypto.SecretKey key = AnchorKey.get();
         boolean macsValid = key != null && AnchorMac.allValid(key, anchors);
         int mismatch = AnchorMac.firstMismatched(anchors, hashes);
+
+        AuditAnchorState.Snapshot state = AuditAnchorState.read(appContext);
+        String stateProblem = null;
+        Integer stateCount = null;
+        String stateHead = null;
+        if (state.present) {
+            if (!state.valid) stateProblem = "anchor_state_corrupt";
+            else {
+                stateCount = state.count;
+                stateHead = state.head;
+            }
+        }
+        String anchorProblem = stateProblem != null ? stateProblem
+            : AuditAnchorVerifier.check(rows.size(), hashes, anchors, stateCount, stateHead);
+        boolean adopted = false;
+        if (anchorProblem == null && !state.present && key != null && !rows.isEmpty()
+                && anchors.size() >= rows.size()) {
+            // Installs that predate the state file establish the baseline exactly once; the
+            // audit trail records it so a silently re-established baseline is visible.
+            AuditAnchorState.adopt(appContext, rows.size(), hashes.get(hashes.size() - 1),
+                rows.get(rows.size() - 1).occurredAt);
+            adopted = true;
+            appendSystemAudit("audit_anchor_baseline_established");
+        }
 
         java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
         report.put("checked", rows.size());
@@ -504,7 +508,12 @@ final class AgentStore extends SQLiteOpenHelper {
         report.put("anchors", anchors.size());
         report.put("anchorMacsValid", macsValid);
         report.put("anchorMismatchAt", mismatch);
-        report.put("ok", broken < 0 && mismatch < 0 && (anchors.isEmpty() || macsValid));
+        report.put("anchorStatePresent", state.present);
+        report.put("anchorStateCount", stateCount == null ? -1 : stateCount);
+        report.put("anchorProblem", anchorProblem);
+        report.put("anchorBaselineAdopted", adopted);
+        report.put("ok", broken < 0 && mismatch < 0 && macsValid
+            && (anchors.isEmpty() || anchors.size() >= rows.size()) && anchorProblem == null);
         return report;
     }
 
@@ -571,7 +580,7 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
-    private static void upgradeTasksForExecutor(SQLiteDatabase database) {
+    private void upgradeTasksForExecutor(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE tasks ADD COLUMN job_id INTEGER NOT NULL DEFAULT 0");
         database.execSQL("ALTER TABLE tasks ADD COLUMN execution_version INTEGER NOT NULL DEFAULT 0");
         database.execSQL("ALTER TABLE tasks ADD COLUMN execution_step INTEGER NOT NULL DEFAULT 0");
@@ -1455,7 +1464,9 @@ final class AgentStore extends SQLiteOpenHelper {
             addTombstone(database, "task", taskId, now);
             int deleted = database.delete("tasks", "id=?", new String[]{taskId});
             if (deleted == 0) throw new IllegalArgumentException("Task no longer exists");
-            database.delete("audit", "task_id=?", new String[]{taskId});
+            // History is append-only: deleting the rows would break the hash chain and make
+            // every later verification look like tampering.
+            appendAudit(database, taskId, "task_deleted", now);
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
@@ -1702,9 +1713,10 @@ final class AgentStore extends SQLiteOpenHelper {
         database.delete("memory_candidates", "memory_id=?", new String[]{memoryId});
     }
 
-    /** Memories that already carry a version, plus memory tombstones. Legacy unversioned rows are skipped. */
+    /** Memories that carry a version, plus memory tombstones. Unversioned rows are counted and audited. */
     List<SyncRecord> exportSyncRecords() throws Exception {
         ArrayList<SyncRecord> records = new ArrayList<>();
+        int unversioned = 0;
         try (Cursor cursor = getReadableDatabase().query("memories",
                 new String[]{"id", "kind", "updated_at", "sealed_payload"}, null, null, null, null, null)) {
             while (cursor.moveToNext()) {
@@ -1725,7 +1737,10 @@ final class AgentStore extends SQLiteOpenHelper {
                 }
                 String hash = sha256Hex(content);
                 java.util.TreeMap<String, Long> clock = versionClock(id, hash);
-                if (clock == null) continue;
+                if (clock == null) {
+                    unversioned++;
+                    continue;
+                }
                 records.add(new SyncRecord(id, cursor.getString(1), content, source, reference, expiresAt, clock, hash, false));
             }
         }
@@ -1751,7 +1766,13 @@ final class AgentStore extends SQLiteOpenHelper {
                 java.util.TreeMap<String, Long> clock = versionClock(id, null);
                 if (clock != null)
                     records.add(new SyncRecord(id, MEMORY_FACT, null, MEMORY_SOURCE_USER, "", 0, clock, null, true));
+                else unversioned++;
             }
+        }
+        if (unversioned > 0) {
+            // Visible in the audit trail: records exist locally but cannot be merged because
+            // they have no version row.
+            appendSystemAudit("sync_export_skipped_unversioned:" + unversioned);
         }
         return records;
     }
@@ -2109,6 +2130,12 @@ final class AgentStore extends SQLiteOpenHelper {
             values.put("updated_at", now);
             values.put("sealed_payload", sealed);
             database.update("memories", values, "id=?", new String[]{current.id});
+            // Without a version row the edit would be invisible to sync, and the next merge
+            // from a peer would silently restore the old content.
+            java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+            clock.put(localActor(), now);
+            replaceMemoryVersions(database, current.id, java.util.Collections.singletonList(
+                new MemoryMerge.Version(clock, sha256Hex(normalized), false)));
             database.setTransactionSuccessful();
         } finally { database.endTransaction(); }
     }
@@ -2135,6 +2162,10 @@ final class AgentStore extends SQLiteOpenHelper {
             addTombstone(database, "memory", memoryId, now);
             int deleted = database.delete("memories", "id=?", new String[]{memoryId});
             if (deleted == 0) throw new IllegalArgumentException("Memory no longer exists");
+            java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+            clock.put(localActor(), now);
+            replaceMemoryVersions(database, memoryId, java.util.Collections.singletonList(
+                new MemoryMerge.Version(clock, null, true)));
             database.setTransactionSuccessful();
         } finally {
             database.endTransaction();
@@ -2158,6 +2189,10 @@ final class AgentStore extends SQLiteOpenHelper {
             for (Memory item : expected) {
                 addTombstone(database, "memory", item.id, now);
                 database.delete("memories", "id=?", new String[]{item.id});
+                java.util.TreeMap<String, Long> clock = new java.util.TreeMap<>();
+                clock.put(localActor(), now);
+                replaceMemoryVersions(database, item.id, java.util.Collections.singletonList(
+                    new MemoryMerge.Version(clock, null, true)));
             }
             database.setTransactionSuccessful();
         } finally { database.endTransaction(); }
@@ -2354,6 +2389,32 @@ final class AgentStore extends SQLiteOpenHelper {
             && a.expiresAt == b.expiresAt && a.userEdited == b.userEdited;
     }
 
+    /**
+     * Imported events are history from another device; they still have to join this
+     * device's chain, otherwise the first imported row starts with an empty hash and
+     * every verification reports tampering.
+     */
+    private void appendImportedAudit(SQLiteDatabase database, AuditEvent event) {
+        try (Cursor existing = database.rawQuery("SELECT 1 FROM audit WHERE id=?", new String[]{event.id})) {
+            if (existing.moveToFirst()) return;
+        }
+        String previous = AuditChain.GENESIS;
+        try (Cursor cursor = database.rawQuery("SELECT hash FROM audit ORDER BY rowid DESC LIMIT 1", null)) {
+            if (cursor.moveToFirst()) previous = cursor.getString(0);
+        }
+        String hash = AuditChain.digest(previous, event.id, event.taskId, event.occurredAt, event.event);
+        ContentValues values = new ContentValues();
+        values.put("id", event.id);
+        values.put("task_id", event.taskId);
+        values.put("occurred_at", event.occurredAt);
+        values.put("event", event.event);
+        values.put("prev_hash", previous);
+        values.put("hash", hash);
+        database.insertOrThrow("audit", null, values);
+        anchorHead(database, hash, event.occurredAt);
+        AuditAnchorState.save(appContext, rowCount(database), hash, event.occurredAt);
+    }
+
     private ImportResult importArchiveData(MemoryArchive.Data data, boolean preferArchiveMemories,
             ArchiveReview review, Map<String, Boolean> choices) throws Exception {
         SQLiteDatabase database = getWritableDatabase();
@@ -2380,7 +2441,8 @@ final class AgentStore extends SQLiteOpenHelper {
                 int deleted;
                 if ("task".equals(tombstone.entityType)) {
                     deleted = database.delete("tasks", "id=?", new String[]{tombstone.entityId});
-                    database.delete("audit", "task_id=?", new String[]{tombstone.entityId});
+                    if (deleted > 0) appendAudit(database, tombstone.entityId, "task_deleted_from_archive",
+                        System.currentTimeMillis());
                 } else {
                     deleted = database.delete("memories", "id=?", new String[]{tombstone.entityId});
                 }
@@ -2445,12 +2507,7 @@ final class AgentStore extends SQLiteOpenHelper {
             }
             for (AuditEvent event : data.audit) {
                 if (!importedTaskIds.contains(event.taskId)) continue;
-                ContentValues auditValues = new ContentValues();
-                auditValues.put("id", event.id);
-                auditValues.put("task_id", event.taskId);
-                auditValues.put("occurred_at", event.occurredAt);
-                auditValues.put("event", event.event);
-                database.insertWithOnConflict("audit", null, auditValues, SQLiteDatabase.CONFLICT_IGNORE);
+                appendImportedAudit(database, event);
             }
 
             for (Memory memory : data.memories) {
@@ -2475,6 +2532,10 @@ final class AgentStore extends SQLiteOpenHelper {
                     values.put("sealed_payload", seal(memoryAad(memory.id), memoryPayload(
                         memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                     database.update("memories", values, "id=?", new String[]{memory.id});
+                    java.util.TreeMap<String, Long> replacedClock = new java.util.TreeMap<>();
+                    replacedClock.put(localActor(), System.currentTimeMillis());
+                    replaceMemoryVersions(database, memory.id, java.util.Collections.singletonList(
+                        new MemoryMerge.Version(replacedClock, sha256Hex(memory.content), false)));
                     memoriesReplaced++;
                     continue;
                 }
@@ -2486,6 +2547,10 @@ final class AgentStore extends SQLiteOpenHelper {
                 values.put("sealed_payload", seal(memoryAad(memory.id), memoryPayload(
                     memory.content, memory.source, memory.sourceReference, memory.expiresAt, memory.userEdited)));
                 database.insertOrThrow("memories", null, values);
+                java.util.TreeMap<String, Long> importedClock = new java.util.TreeMap<>();
+                importedClock.put(localActor(), System.currentTimeMillis());
+                replaceMemoryVersions(database, memory.id, java.util.Collections.singletonList(
+                    new MemoryMerge.Version(importedClock, sha256Hex(memory.content), false)));
                 memoriesImported++;
             }
             database.setTransactionSuccessful();
@@ -2599,7 +2664,7 @@ final class AgentStore extends SQLiteOpenHelper {
         appendAudit(getWritableDatabase(), "system", event, System.currentTimeMillis());
     }
 
-    private static void appendAudit(SQLiteDatabase database, String taskId, String event, long occurredAt) {
+    private void appendAudit(SQLiteDatabase database, String taskId, String event, long occurredAt) {
         if (event == null || event.isEmpty() || event.length() > MAX_AUDIT_EVENT_LENGTH)
             throw new IllegalArgumentException("Task history event is invalid or too long");
         String previous = AuditChain.GENESIS;
@@ -2617,6 +2682,13 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("hash", hash);
         database.insertOrThrow("audit", null, values);
         anchorHead(database, hash, occurredAt);
+        AuditAnchorState.save(appContext, rowCount(database), hash, occurredAt);
+    }
+
+    private static int rowCount(SQLiteDatabase database) {
+        try (Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM audit", null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
     }
 
     public static boolean initVault(String vaultPath, String passphrase) {

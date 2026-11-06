@@ -1,11 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.traceform.demoagent"
+    package="com.inceptless.traceweave.demoagent"
     android:versionCode="1"
     android:versionName="1.0.0">
     <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
     <queries>
-        <package android:name="org.traceform.agentos" />
+        <package android:name="com.inceptless.traceweave" />
+        <intent>
+            <action android:name="com.inceptless.traceweave.action.BIND_SUBSTRATE" />
+        </intent>
     </queries>
+    <uses-permission android:name="com.inceptless.traceweave.permission.BIND_SUBSTRATE" />
     <application
         android:allowBackup="false"
         android:label="Demo Third-Party Agent"

@@ -268,7 +268,7 @@ public final class DeviceValidationActivity extends Activity {
             }
 
             SQLiteDatabase database = migrated.getReadableDatabase();
-            if (database.getVersion() != 6 || !tableExists(database, "memories")
+            if (database.getVersion() != AgentStore.currentSchemaVersion() || !tableExists(database, "memories")
                     || !tableExists(database, "tombstones") || auditCount(database, task.id) != 3) {
                 throw new IllegalStateException("The version 1 to 6 migration did not preserve schema and audit data");
             }
@@ -276,7 +276,7 @@ public final class DeviceValidationActivity extends Activity {
             migrated.close();
         }
 
-        return "PASS: database v1→v6 migration preserved the encrypted task and audit history, assigned a job ID, "
+        return "PASS: database v1→current migration preserved the encrypted task and audit history, assigned a job ID, "
             + "and re-queued a legacy active journal entry.";
     }
 
@@ -311,7 +311,7 @@ public final class DeviceValidationActivity extends Activity {
             AgentStore.Memory migrated = findMemory(store.listMemories(), legacy.id);
             if (migrated == null || !"SYNTHETIC legacy memory stays private".equals(migrated.content)
                     || !AgentStore.MEMORY_SOURCE_USER.equals(migrated.source) || !migrated.sourceReference.isEmpty()
-                    || store.getReadableDatabase().getVersion() != 6) {
+                    || store.getReadableDatabase().getVersion() != AgentStore.currentSchemaVersion()) {
                 throw new IllegalStateException("The v3 memory migration did not preserve content and mark its source");
             }
 

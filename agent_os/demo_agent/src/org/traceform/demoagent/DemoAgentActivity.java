@@ -23,8 +23,8 @@ import org.traceform.agentos.IAgentSubstrate;
 
 public class DemoAgentActivity extends Activity {
     private static final String TAG = "DemoAgentActivity";
-    private static final String SUBSTRATE_PKG = "org.traceform.agentos";
-    private static final String SUBSTRATE_ACTION = "org.traceform.agentos.action.BIND_SUBSTRATE";
+    private static final String SUBSTRATE_PKG = "com.inceptless.traceweave";
+    private static final String SUBSTRATE_ACTION = "com.inceptless.traceweave.action.BIND_SUBSTRATE";
 
     private TextView statusView;
     private TextView logView;

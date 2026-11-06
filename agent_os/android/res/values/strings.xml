@@ -6,4 +6,6 @@
     <string name="shortcut_task_long">从系统入口新建任务</string>
     <string name="shortcut_center_short">任务中心</string>
     <string name="shortcut_center_long">查看等待你处理的任务</string>
+    <string name="permission_bind_substrate">connect to Traceweave agents</string>
+    <string name="permission_bind_substrate_description">Allows this app to register as an agent with Traceweave. Every capability still needs its own five-minute approval.</string>
 </resources>

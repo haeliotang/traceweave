@@ -247,7 +247,8 @@ public final class ActionFlowValidationActivity extends Activity {
         store.close();
         try (AgentStore upgraded = new AgentStore(this)) {
             AgentStore.Task task = upgraded.getTask(legacy.id);
-            check(upgraded.getReadableDatabase().getVersion() == 6, "database upgraded to version 6");
+            check(upgraded.getReadableDatabase().getVersion() == AgentStore.currentSchemaVersion(),
+                "database upgraded to the current schema version");
             check(AgentStore.OUTCOME_UNKNOWN.equals(task.status) && task.executionStep == 0, "historical false success normalized");
             check(ExecutionPlan.STEP_UNKNOWN.equals(task.plan.steps.get(0).status), "historical external step normalized");
             JSONObject observation = new JSONObject(task.plan.steps.get(0).observation);

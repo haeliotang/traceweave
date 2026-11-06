@@ -6,4 +6,6 @@
     <string name="shortcut_task_long">Start a task from the system entry point</string>
     <string name="shortcut_center_short">Task center</string>
     <string name="shortcut_center_long">Review tasks waiting for you</string>
+    <string name="permission_bind_substrate">connect to Traceweave agents</string>
+    <string name="permission_bind_substrate_description">Allows this app to register as an agent with Traceweave. Every capability still needs its own five-minute approval.</string>
 </resources>

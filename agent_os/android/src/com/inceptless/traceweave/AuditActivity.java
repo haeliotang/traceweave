@@ -151,9 +151,13 @@ public final class AuditActivity extends Activity {
             int checked = ((Number) report.get("checked")).intValue();
             int anchors = report.get("anchors") == null ? 0 : ((Number) report.get("anchors")).intValue();
             boolean macsValid = !Boolean.FALSE.equals(report.get("anchorMacsValid"));
-            if (!ok) {
-                integrityLine.setText(T.format("audit.integrity_broken", en,
-                    ((Number) report.get("brokenAt")).intValue() + 1));
+            String anchorProblem = report.get("anchorProblem") == null ? null
+                : String.valueOf(report.get("anchorProblem"));
+            int brokenAt = ((Number) report.get("brokenAt")).intValue();
+            if (!ok && brokenAt >= 0) {
+                integrityLine.setText(T.format("audit.integrity_broken", en, brokenAt + 1));
+            } else if (!ok && anchorProblem != null) {
+                integrityLine.setText(T.format("audit.integrity_anchor_problem", en, anchorProblem));
             } else if (anchors > 0 && macsValid) {
                 integrityLine.setText(T.format("audit.integrity_anchored", en, checked, anchors));
             } else {

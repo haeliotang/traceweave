@@ -23,13 +23,20 @@ In your third-party `AndroidManifest.xml`, declare query intent and Substrate pe
     package="com.example.myagent">
 
     <queries>
-        <package android:name="org.traceform.agentos" />
+        <package android:name="com.inceptless.traceweave" />
         <intent>
-            <action android:name="org.traceform.agentos.action.BIND_SUBSTRATE" />
+            <action android:name="com.inceptless.traceweave.action.BIND_SUBSTRATE" />
         </intent>
     </queries>
 
+    <!-- The host protects its Binder service with this permission; the user must grant it. -->
+    <uses-permission android:name="com.inceptless.traceweave.permission.BIND_SUBSTRATE" />
+
 ```
+
+Request `com.inceptless.traceweave.permission.BIND_SUBSTRATE` at runtime before binding
+(`ActivityCompat.requestPermissions`); `bindService` fails without it, and the system shows
+the grant dialog with the host-provided label and description.
 
 The host derives each Agent identity as `android-package:<package>:sha256:<current-signer-fingerprint>`; each Binder session is separately bound to the caller UID. It verifies that the package is the sole package associated with that UID, reads the installed APK signing certificate through `PackageManager`, and rechecks caller UID, package ownership, and signer fingerprint on every session call. The manifest's Agent ID is descriptive metadata, not identity. The legacy `agentPublicKeyHash` AIDL argument remains in the wire shape but is ignored; it is not proof of key ownership. Each APK package is one Agent identity, so multiple in-app agents share grants and audit identity. Shared-UID packages and APKs with multiple current signers are unsupported. A signer change creates a new identity and requires registration again. Requesting a capability posts a system notification that shows the package and signer SHA-256; the user must approve the five-minute grant. Denials and notification-permission failures fail closed. Session tokens are secrets and must not be logged.
 
