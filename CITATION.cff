@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "Traceweave: a device-independent personal computing substrate"
+message: "If you reference this prototype, cite the repository and the commit you used."
+type: software
+authors:
+  - name: "Inceptless"
+repository-code: "https://github.com/haeliotang/traceweave"
+license: Apache-2.0
+abstract: >-
+  An Android application, Rust core and Python tooling exploring user-sovereign personal
+  computing: local rule-based planning, an encrypted memory vault, an append-only audit trail
+  anchored in the device Keystore, and experimental device-to-device sync. Prototype software;
+  published builds are development-key side loads.
+keywords:
+  - personal computing
+  - agent substrate
+  - android
+  - rust

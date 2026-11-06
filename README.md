@@ -347,6 +347,10 @@ We actively encourage community participation, issues, and security feedback:
 
 ## 10. Contributing
 
+Project governance, the code of conduct and how to cite this repository are documented in
+[GOVERNANCE.md](GOVERNANCE.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and
+[CITATION.cff](CITATION.cff).
+
 Contributions from systems engineers, machine learning researchers, and security practitioners are warmly welcomed. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, synthetic fixtures and reproducible checks. Traceweave follows a structured development workflow:
 
 ### Development Workflow

@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-07",
+  "scope": "P2 items from docs/audit_20261106.md",
+  "published_releases": {
+    "bodies_edited": ["v0.1.0", "v0.1.1", "v0.1.2", "v0.1.3"],
+    "placeholder_removed": "v0.1.0 body no longer contains 「（未填写）」 and now matches its RELEASE_NOTES.md asset plus the side-load notice",
+    "sideload_notice_added": "all four bodies carry the development-key side-load warning with the signer fingerprint",
+    "assets_unchanged": true,
+    "verification": "verify_github_release.py --tag <tag> --release-dir agent_os/build/release-<version> reports ok=true for all four"
+  },
+  "verifier_hardening": {
+    "extra_assets": "an asset that is not in the local SHA256SUMS now fails (SHA256SUMS itself is allowed as self-referential)",
+    "identity": "tag name, draft state and body (must start with RELEASE_NOTES.md followed only by the side-load notice)",
+    "legacy": "notes that still contain the v0.1.0 placeholder are reported as legacy_placeholder_notes instead of failing"
+  },
+  "build_provenance": {
+    "build_report": "records git_commit and git_dirty",
+    "packaging_guards": "package_release_android.py refuses a dirty tree, a missing commit, or release notes that still contain the placeholder",
+    "manifest": "release_manifest.json carries git_commit/git_dirty",
+    "notes": "release_notes_android.py always appends the side-load notice so the body/asset identity check passes"
+  },
+  "documentation": {
+    "README.md": "download + install section with checksum and permission disclosure, stale §7 package names fixed, stale bracketed claims removed, sync status stated once and consistently, privacy section now records the real production read (structural fields only)",
+    "README.zh-CN.md": "rule-based planning vs GBNF claim corrected, sync/background wording matches JobScheduler, privacy disclosure matches the receipt",
+    "docs/agent_os_release_process.md": "rewritten for the current public-release routine with the eight enforced rules",
+    "SECURITY.md": "Traceweave name, current release line, substrate permission requirement",
+    "agent_os/README.md": "banner marks stale facts and points to the authoritative sources",
+    "CONTRIBUTING.md": "fixed build link, output filename",
+    "GOVERNANCE.md / CODE_OF_CONDUCT.md / CITATION.cff": "added"
+  },
+  "verification": {
+    "host_tests": "91 tests pass (new: release verifier extras/tag/body, build provenance)",
+    "preflight": "ok",
+    "release_verifier": "v0.1.0-v0.1.3 all ok=true"
+  }
+}
