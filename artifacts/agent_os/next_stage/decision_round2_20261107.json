@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-07",
+  "scope": "decision register round 2: wrapped sync seed, typed pairing code, visible unreadable rows, migration guidance, audit origin, baseline marker",
+  "items": {
+    "A2_sync_seed": {
+      "change": "SeedVault wraps the 32-byte Ed25519 seed with a non-exportable Android Keystore AES-256-GCM key (prefs key sync_seed_wrapped); the plaintext sync_seed is migrated once and removed; MainActivity and SyncTransport both go through the vault",
+      "failure_mode": "if the Keystore key is gone the seed is not silently replaced, because peers still hold the old pairing; it logs and returns an empty seed",
+      "limits": "a full app-data clone that also carries the Keystore cannot be defended against; this removes the plaintext copy, not the identity model"
+    },
+    "A4_pairing_code": {
+      "change": "both pairing paths require the user to type the 6-digit code shown on the other device; SyncPairing.confirm compares constant-time and rejects empty codes",
+      "limits": "the Java fallback code is still derived from the two public fingerprints, so a peer that relays both codes can still pass; the Rust SAS path binds the transfer keys"
+    },
+    "C2_unreadable_rows": {
+      "change": "the home summary shows 'N records cannot be decrypted on this device' in red as soon as a row is skipped, instead of hiding the state in settings"
+    },
+    "B4_migration_guidance": {
+      "change": "the data section states that device migration goes through the encrypted archive and why backups/device transfer are excluded"
+    },
+    "B2_audit_origin": {
+      "change": "schema 15 adds audit.origin; local rows are 'local', archive-imported rows are 'imported' and are rendered with a [imported] marker and in the TSV export",
+      "why": "imported history previously looked identical to local evidence"
+    },
+    "A3_baseline_marker": {
+      "change": "the audit page permanently shows that the anchor baseline was rebuilt once, instead of a one-off toast"
+    },
+    "audit_tsv": "tab/CR/newline are replaced and formula-leading characters are quoted so an imported event cannot inject columns or formulas"
+  },
+  "device_evidence": {
+    "migration": "schema 14 -> 15 on the Pixel 6a; audit page reports 10 events chain intact and shows the rebuilt-baseline notice",
+    "suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+  },
+  "verification": {"host_tests": "93 pass", "preflight": "ok"}
+}

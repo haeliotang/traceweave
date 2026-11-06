@@ -143,16 +143,28 @@ final class SyncPanel {
                         byte[] nonce = SyncPairing.pairingNonce(local, remoteValue);
                         String code = SyncPairing.code(local, remoteValue, nonce);
                         String deviceId = "peer-" + remoteValue.substring(0, 16);
+                        android.widget.EditText typed = Ui.input(host, T.s("pair.type_code", en));
+                        typed.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                        LinearLayout compareBody = new LinearLayout(host);
+                        compareBody.setOrientation(LinearLayout.VERTICAL);
+                        compareBody.setPadding(host.dpRef(24), host.dpRef(8), host.dpRef(24), 0);
+                        compareBody.addView(Ui.dialogBody(host, T.s("sync.compare_this_code", en),
+                            T.s("sync.code", en) + code + "\n" + T.s("pair.same_code", en), 13));
+                        compareBody.addView(typed);
                         AlertDialog compareDialog = new AlertDialog.Builder(host)
-                            .setView(Ui.dialogBody(host, T.s("sync.compare_this_code", en),
-                                T.s("sync.code", en) + code + "\n" + T.s("pair.same_code", en), 13))
+                            .setView(compareBody)
                             .setNegativeButton(T.s("common.cancel", en), null)
                             .setPositiveButton(T.s("pair.confirm", en), (inner, ignored) -> {
+                                char[] typedCode = typed.getText().toString().toCharArray();
+                                typed.setText("");
                                 try {
-                                    SyncPairing.confirm(host.storeRef(), local, remoteValue, deviceId, peerId, code, code);
+                                    SyncPairing.confirm(host.storeRef(), local, remoteValue, deviceId, peerId,
+                                        code, new String(typedCode).trim());
+                                    java.util.Arrays.fill(typedCode, '\0');
                                     host.toast(T.s("pair.done", en));
                                     host.refreshAfterSync();
                                 } catch (Exception error) {
+                                    java.util.Arrays.fill(typedCode, '\0');
                                     host.failWith(error);
                                 }
                             }).create();
@@ -355,18 +367,27 @@ final class SyncPanel {
         message.setTextColor(Ui.text(host));
         message.setPadding(0, host.dpRef(4), 0, 0);
         body.addView(message);
+        android.widget.EditText typed = Ui.input(host, T.s("pair.type_code", en));
+        typed.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        body.addView(typed);
         AlertDialog result = new AlertDialog.Builder(host)
             .setView(body)
             .setNegativeButton(T.s("common.cancel", en), null)
             .setPositiveButton(T.s("pair.confirm", en), (dialog, which) -> {
+                char[] typedCode = typed.getText().toString().toCharArray();
+                typed.setText("");
                 try {
                     String deviceId = "peer-" + remoteFingerprint.substring(0, 16);
                     SyncPairing.confirm(host.storeRef(), DeviceIdentity.fingerprint(), remoteFingerprint,
-                        deviceId, peerId, sas, sas);
+                        deviceId, peerId, sas, new String(typedCode).trim());
+                    java.util.Arrays.fill(typedCode, '\0');
                     rememberPeerAddress(deviceId, address);
                     host.refreshAfterSync();
                     host.toast(T.s("pair.done", en));
-                } catch (Exception error) { host.failWith(error); }
+                } catch (Exception error) {
+                    java.util.Arrays.fill(typedCode, '\0');
+                    host.failWith(error);
+                }
             })
             .create();
         result.show();

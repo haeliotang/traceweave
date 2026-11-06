@@ -801,6 +801,11 @@ public final class T {
         add("settings.unreadable_rows", "%d records cannot be decrypted on this device (the Keystore key does not travel with a copied database).", "有 %d 条记录在本机无法解密（Keystore 密钥不会随数据库一起迁移）。");
         add("settings.reset_database", "Reset local database", "重置本地数据库");
         add("settings.reset_database_confirm", "This deletes the local tasks, memories and audit trail. Export an archive first if you still have a device that can read them. Continue?", "这会删除本机任务、记忆与审计记录。如果还有能读取它们的设备，请先导出档案。继续吗？");
+        add("pair.type_code", "Type the 6-digit code shown on the other device", "输入对端显示的 6 位码");
+        add("summary.unreadable", "%d records cannot be decrypted on this device", "本机有 %d 条记录无法解密");
+        add("settings.migration_note", "Moving to a new device: export an encrypted archive here and import it on the new device. Backups and device transfer are excluded because the Keystore key does not leave this phone.", "换机请在这里导出加密档案，再在新设备导入。系统备份与设备迁移被排除，因为 Keystore 密钥不会离开本机。");
+        add("audit.imported_marker", "[imported] ", "[导入] ");
+        add("audit.baseline_rebuilt", "Note: the anchor baseline was rebuilt once on this device (see audit_anchors_rebuilt).", "注意：本机曾一次性重建锚点基线（见 audit_anchors_rebuilt 事件）。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

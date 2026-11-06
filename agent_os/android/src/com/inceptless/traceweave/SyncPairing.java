@@ -74,7 +74,12 @@ final class SyncPairing {
         if (!validFingerprint(localFingerprint) || !validFingerprint(remoteFingerprint))
             throw new IllegalArgumentException("Invalid device fingerprint");
         if (localFingerprint.equals(remoteFingerprint)) throw new IllegalStateException("A device cannot pair with itself");
-        if (localCode == null || remoteCode == null || !localCode.equals(remoteCode))
+        if (localCode == null || remoteCode == null || localCode.isEmpty() || remoteCode.isEmpty())
+            throw new IllegalStateException("Enter the code shown on the other device");
+        // Constant-time compare: this value decides whether a peer is trusted.
+        if (!java.security.MessageDigest.isEqual(
+                localCode.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                remoteCode.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
             throw new IllegalStateException("Pairing codes do not match; do not trust this device");
         if (remoteDeviceId == null || remoteDeviceId.isEmpty()) throw new IllegalArgumentException("Missing remote device id");
         store.savePairing(remoteDeviceId, remoteFingerprint, remotePeerId == null ? "" : remotePeerId, STATUS_ACTIVE);

@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 14;
+    private static final int DATABASE_VERSION = 15;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -142,13 +142,19 @@ final class AgentStore extends SQLiteOpenHelper {
         final String prevHash;
         final String hash;
         final int digestVersion;
+        final String origin;
 
         AuditEvent(String id, String taskId, long occurredAt, String event) {
-            this(id, taskId, occurredAt, event, "", "", AuditChain.DIGEST_VERSION_LEGACY);
+            this(id, taskId, occurredAt, event, "", "", AuditChain.DIGEST_VERSION_LEGACY, "");
         }
 
         AuditEvent(String id, String taskId, long occurredAt, String event,
                    String prevHash, String hash, int digestVersion) {
+            this(id, taskId, occurredAt, event, prevHash, hash, digestVersion, "");
+        }
+
+        AuditEvent(String id, String taskId, long occurredAt, String event,
+                   String prevHash, String hash, int digestVersion, String origin) {
             this.id = id;
             this.taskId = taskId;
             this.occurredAt = occurredAt;
@@ -156,6 +162,11 @@ final class AgentStore extends SQLiteOpenHelper {
             this.prevHash = prevHash == null ? "" : prevHash;
             this.hash = hash == null ? "" : hash;
             this.digestVersion = digestVersion;
+            this.origin = origin == null ? "" : origin;
+        }
+
+        boolean imported() {
+            return "imported".equals(origin);
         }
     }
 
@@ -315,7 +326,8 @@ final class AgentStore extends SQLiteOpenHelper {
             + "prev_hash TEXT NOT NULL DEFAULT '', "
             + "hash TEXT NOT NULL DEFAULT '', "
             + "digest_version INTEGER NOT NULL DEFAULT "
-            + AuditChain.DIGEST_VERSION_LEGACY + ")");
+            + AuditChain.DIGEST_VERSION_LEGACY + ", "
+            + "origin TEXT NOT NULL DEFAULT '')");
         database.execSQL("CREATE TABLE audit_anchors ("
             + "idx INTEGER PRIMARY KEY NOT NULL, "
             + "hash TEXT NOT NULL, "
@@ -446,6 +458,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 13) {
                 upgradeAuditDigestVersion(database);
                 version = 14;
+            } else if (version == 14) {
+                upgradeAuditOrigin(database);
+                version = 15;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -456,6 +471,11 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void upgradeAuditDigestVersion(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE audit ADD COLUMN digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY);
+    }
+
+    /** Version 14 -> 15: record where an audit row came from (local device or an archive). */
+    private static void upgradeAuditOrigin(SQLiteDatabase database) {
+        database.execSQL("ALTER TABLE audit ADD COLUMN origin TEXT NOT NULL DEFAULT ''");
     }
 
     private static void createAnchorTable(SQLiteDatabase database) {
@@ -534,7 +554,8 @@ final class AgentStore extends SQLiteOpenHelper {
     int rebuildAnchors() {
         java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
         try (Cursor cursor = getReadableDatabase().rawQuery(
-                "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version FROM audit ORDER BY rowid", null)) {
+                "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version, origin "
+                    + "FROM audit ORDER BY rowid", null)) {
             while (cursor.moveToNext()) {
                 rows.add(new AuditChain.Row(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
                     cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getInt(6)));
@@ -570,7 +591,8 @@ final class AgentStore extends SQLiteOpenHelper {
     java.util.Map<String, Object> auditIntegrity() {
         java.util.ArrayList<AuditChain.Row> rows = new java.util.ArrayList<>();
         try (Cursor cursor = getReadableDatabase().rawQuery(
-                "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version FROM audit ORDER BY rowid", null)) {
+                "SELECT id, task_id, occurred_at, event, prev_hash, hash, digest_version, origin "
+                    + "FROM audit ORDER BY rowid", null)) {
             while (cursor.moveToNext()) {
                 rows.add(new AuditChain.Row(cursor.getString(0), cursor.getString(1), cursor.getLong(2),
                     cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getInt(6)));
@@ -615,10 +637,16 @@ final class AgentStore extends SQLiteOpenHelper {
             appendSystemAudit("audit_anchor_baseline_established");
         }
 
+        boolean baselineRebuilt = false;
+        try (Cursor cursor = getReadableDatabase().rawQuery(
+                "SELECT 1 FROM audit WHERE event LIKE 'audit_anchors_rebuilt:%' LIMIT 1", null)) {
+            baselineRebuilt = cursor.moveToFirst();
+        }
         boolean reconcilable = !state.present && broken < 0 && key != null && !rows.isEmpty()
             && anchorProblem != null;
         java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
         report.put("reconcilable", reconcilable);
+        report.put("anchorBaselineRebuilt", baselineRebuilt);
         report.put("checked", rows.size());
         report.put("brokenAt", broken);
         report.put("anchors", anchors.size());
@@ -1558,11 +1586,12 @@ final class AgentStore extends SQLiteOpenHelper {
     List<AuditEvent> listRecentAuditEvents(int limit) {
         java.util.ArrayList<AuditEvent> events = new java.util.ArrayList<>();
         try (Cursor cursor = getReadableDatabase().query("audit",
-                new String[]{"id", "task_id", "occurred_at", "event"}, null, null, null, null,
-                "occurred_at DESC", String.valueOf(Math.max(1, Math.min(limit, 500))))) {
+                new String[]{"id", "task_id", "occurred_at", "event", "origin"}, null, null, null, null,
+                "rowid DESC", String.valueOf(Math.max(1, Math.min(limit, 500))))) {
             while (cursor.moveToNext()) {
                 events.add(new AuditEvent(cursor.getString(0), cursor.getString(1),
-                    cursor.getLong(2), cursor.getString(3)));
+                    cursor.getLong(2), cursor.getString(3), "", "", AuditChain.DIGEST_VERSION_LEGACY,
+                    cursor.getString(4)));
             }
         }
         return events;
@@ -2558,6 +2587,8 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("prev_hash", previous);
         values.put("hash", hash);
         values.put("digest_version", AuditChain.CURRENT_DIGEST_VERSION);
+        // History imported from an archive is shown with its origin, never as local evidence.
+        values.put("origin", "imported");
         database.insertOrThrow("audit", null, values);
         anchorHead(database, hash, event.occurredAt);
         AuditAnchorState.save(appContext, rowCount(database), hash, event.occurredAt);
@@ -2834,6 +2865,7 @@ final class AgentStore extends SQLiteOpenHelper {
         String hash = AuditChain.digest(previous, id, taskId, occurredAt, event);
         values.put("hash", hash);
         values.put("digest_version", AuditChain.CURRENT_DIGEST_VERSION);
+        values.put("origin", "local");
         database.insertOrThrow("audit", null, values);
         anchorHead(database, hash, occurredAt);
         AuditAnchorState.save(appContext, rowCount(database), hash, occurredAt);

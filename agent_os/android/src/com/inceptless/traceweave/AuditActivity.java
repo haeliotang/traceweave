@@ -22,6 +22,7 @@ public final class AuditActivity extends Activity {
     private LinearLayout chipRow;
     private TextView integrityLine;
     private Button rebuildButton;
+    private TextView baselineLine;
     private TextView countLine;
     private String category = "all";
     private String query = "";
@@ -105,6 +106,12 @@ public final class AuditActivity extends Activity {
         countLine = Ui.meta(this, "");
         root.addView(countLine);
 
+        baselineLine = new TextView(this);
+        baselineLine.setText(T.s("audit.baseline_rebuilt", en));
+        baselineLine.setTextSize(11);
+        baselineLine.setTextColor(0xFFB45309);
+        baselineLine.setVisibility(View.GONE);
+        root.addView(baselineLine);
         rebuildButton = new Button(this);
         rebuildButton.setText(T.s("audit.rebuild_anchors", en));
         rebuildButton.setAllCaps(false);
@@ -177,6 +184,7 @@ public final class AuditActivity extends Activity {
             int anchors = report.get("anchors") == null ? 0 : ((Number) report.get("anchors")).intValue();
             boolean macsValid = !Boolean.FALSE.equals(report.get("anchorMacsValid"));
             rebuildButton.setVisibility(Boolean.TRUE.equals(report.get("reconcilable")) ? View.VISIBLE : View.GONE);
+            baselineLine.setVisibility(Boolean.TRUE.equals(report.get("anchorBaselineRebuilt")) ? View.VISIBLE : View.GONE);
             String anchorProblem = report.get("anchorProblem") == null ? null
                 : String.valueOf(report.get("anchorProblem"));
             int brokenAt = ((Number) report.get("brokenAt")).intValue();
@@ -244,7 +252,9 @@ public final class AuditActivity extends Activity {
             row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(0, Ui.dp(this, 5), 0, Ui.dp(this, 5));
             TextView line = new TextView(this);
-            line.setText(AuditText.describe(event.event, en));
+            String description = AuditText.describe(event.event, en);
+            if (event.imported()) description = T.s("audit.imported_marker", en) + description;
+            line.setText(description);
             line.setTextSize(12);
             line.setTextColor(Ui.text(this));
             row.addView(line);
@@ -259,13 +269,25 @@ public final class AuditActivity extends Activity {
         }
     }
 
+    private static String tsvSafe(String value) {
+        if (value == null) return "";
+        String text = value.replace("\r", " ").replace("\n", " ").replace("\t", " ");
+        if (text.startsWith("=") || text.startsWith("+") || text.startsWith("-") || text.startsWith("@"))
+            text = "'" + text;
+        return text;
+    }
+
     private void export() {
         try {
             java.util.List<AgentStore.AuditEvent> events = store.listRecentAuditEvents(500);
             StringBuilder out = new StringBuilder();
             for (AgentStore.AuditEvent event : events) {
-                out.append(event.occurredAt).append('\t').append(event.taskId).append('\t')
-                   .append(event.event.replace('\n', ' ')).append('\n');
+                // Quote tab/newline/carriage-return so an imported event cannot add columns.
+                String subject = tsvSafe(event.taskId);
+                String description = tsvSafe(event.imported()
+                    ? T.s("audit.imported_marker", false) + event.event : event.event);
+                out.append(event.occurredAt).append('\t').append(subject).append('\t')
+                   .append(description).append('\n');
             }
             String range = events.isEmpty() ? "-" : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                 .format(new java.util.Date(events.get(events.size() - 1).occurredAt))

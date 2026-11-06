@@ -70,6 +70,12 @@ final class SettingsPanel {
         LinearLayout archiveActions = new LinearLayout(host);
         archiveActions.setOrientation(LinearLayout.HORIZONTAL);
         archiveActions.setPadding(0, host.dpRef(10), 0, host.dpRef(6));
+        TextView migration = new TextView(host);
+        migration.setText(T.s("settings.migration_note", en));
+        migration.setTextSize(11);
+        migration.setTextColor(Ui.muted(host));
+        migration.setPadding(0, host.dpRef(2), 0, host.dpRef(6));
+        root.addView(migration);
         host.addActionButton(archiveActions, T.s("settingspanel.2", en), view -> host.confirmExportScope());
         host.addActionButton(archiveActions, T.s("settingspanel.3", en), view -> host.chooseArchiveToImport());
         root.addView(archiveActions);

@@ -11,17 +11,28 @@ final class SyncTransport {
 
     private SyncTransport() {}
 
-    /** Device sync seed; the same hex string the UI derives. */
+    /** Device sync seed, wrapped by a non-exportable Keystore key (see SeedVault). */
     static String seed(android.content.Context context) {
-        android.content.SharedPreferences prefs = context.getSharedPreferences("agent_os_prefs", 0);
-        String seed = prefs.getString("sync_seed", "");
-        if (!seed.isEmpty()) return seed;
+        try {
+            String existing = SeedVault.read(context);
+            if (existing != null && !existing.isEmpty()) return existing;
+        } catch (Exception error) {
+            // A missing Keystore key means this install cannot prove its old identity; do not
+            // silently mint a new one, because peers still hold the old pairing.
+            android.util.Log.e("SyncTransport", "Unable to unwrap the sync seed: " + error.getMessage());
+            return "";
+        }
         byte[] raw = new byte[32];
         new java.security.SecureRandom().nextBytes(raw);
         StringBuilder builder = new StringBuilder();
         for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
-        seed = builder.toString();
-        prefs.edit().putString("sync_seed", seed).apply();
+        String seed = builder.toString();
+        try {
+            SeedVault.write(context, seed);
+        } catch (Exception error) {
+            android.util.Log.e("SyncTransport", "Unable to wrap the sync seed: " + error.getMessage());
+            return "";
+        }
         return seed;
     }
 

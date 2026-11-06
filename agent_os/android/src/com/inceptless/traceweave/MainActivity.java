@@ -795,17 +795,8 @@ public final class MainActivity extends Activity implements MemoryHost {
     }
 
     private String syncSeed() {
-        android.content.SharedPreferences prefs = getSharedPreferences("agent_os_prefs", 0);
-        String seed = prefs.getString("sync_seed", "");
-        if (seed.isEmpty()) {
-            byte[] raw = new byte[32];
-            new java.security.SecureRandom().nextBytes(raw);
-            StringBuilder builder = new StringBuilder();
-            for (byte item : raw) builder.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
-            seed = builder.toString();
-            prefs.edit().putString("sync_seed", seed).apply();
-        }
-        return seed;
+        // The seed is Keystore-wrapped; the UI must not mint or store a plaintext copy.
+        return SyncTransport.seed(this);
     }
 
     private final SyncPanel syncPanel = new SyncPanel(this);
@@ -1249,8 +1240,12 @@ public final class MainActivity extends Activity implements MemoryHost {
         try {
             int memories = store.countMemories();
             int tasks = store.countTasks();
+            int unreadable = store.skippedUndecryptable;
             String peers = T.format("summary.peers", en, store.listPairings().size());
-            bottomSummary.setText(T.format("summary.line", en, memories, tasks) + "\n" + peers);
+            String line = T.format("summary.line", en, memories, tasks) + "\n" + peers;
+            if (unreadable > 0) line += "\n" + T.format("summary.unreadable", en, unreadable);
+            bottomSummary.setText(line);
+            bottomSummary.setTextColor(unreadable > 0 ? 0xFFB91C1C : Ui.muted(this));
         } catch (Exception ignored) {}
     }
 
