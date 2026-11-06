@@ -184,6 +184,9 @@ public final class AuditActivity extends Activity {
                 integrityLine.setText(T.format("audit.integrity_broken", en, brokenAt + 1));
             } else if (!ok && anchorProblem != null) {
                 integrityLine.setText(T.format("audit.integrity_anchor_problem", en, anchorProblem));
+            } else if (!ok && anchors < checked) {
+                // The chain itself is intact but the device key could not seal every row.
+                integrityLine.setText(T.format("audit.integrity_unanchored", en, checked - anchors));
             } else if (anchors > 0 && macsValid) {
                 integrityLine.setText(T.format("audit.integrity_anchored", en, checked, anchors));
             } else {

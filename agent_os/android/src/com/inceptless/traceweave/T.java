@@ -793,6 +793,7 @@ public final class T {
         add("audit.rebuild_anchors", "Rebuild anchors once (legacy install)", "一次性重建锚点（旧版本遗留）");
         add("audit.rebuild_done", "Anchors rebuilt for %d events", "已为 %d 条事件重建锚点");
         add("audit.rebuild_failed", "Anchor rebuild failed", "重建锚点失败");
+        add("audit.integrity_unanchored", "Chain intact, but %d events have no device-key anchor", "链完整，但有 %d 条事件没有设备密钥锚点");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
