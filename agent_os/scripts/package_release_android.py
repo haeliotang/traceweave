@@ -35,6 +35,24 @@ def main():
         print("preflight did not pass; refusing to package", file=sys.stderr)
         sys.exit(2)
 
+    build_report_path = source / "build_report.json"
+    build_report = json.loads(build_report_path.read_text()) if build_report_path.exists() else {}
+    # A release built from a dirty tree cannot be reproduced from the tag it will point at.
+    if build_report.get("git_dirty"):
+        print("the APK was built from a dirty working tree; commit first, then rebuild",
+              file=sys.stderr)
+        sys.exit(2)
+    if not build_report.get("git_commit"):
+        print("the build report does not record a git commit; rebuild with a current script",
+              file=sys.stderr)
+        sys.exit(2)
+
+    notes = source / "release_notes.md"
+    if notes.exists() and "- （未填写）" in notes.read_text(encoding="utf-8"):
+        print("release notes still contain the placeholder; pass --changes-from or edit them",
+              file=sys.stderr)
+        sys.exit(2)
+
     apk_source = source / "agent-os.apk"
     apk_target = target / f"traceweave-{args.version}.apk"
     shutil.copy2(apk_source, apk_target)
@@ -64,6 +82,8 @@ def main():
         "files": {path.name: sha256(path) for path in sorted(target.iterdir())
                   if path.name not in ("SHA256SUMS", "release_manifest.json")},
         "preflight_ok": True,
+        "git_commit": build_report.get("git_commit"),
+        "git_dirty": build_report.get("git_dirty"),
     }
     (target / "release_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
 

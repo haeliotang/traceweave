@@ -18,6 +18,12 @@ prepare_spec.loader.exec_module(preparer)
 
 
 class BuildReportTests(unittest.TestCase):
+    def report(self):
+        report_path = Path(os.environ.get("AGENT_OS_BUILD_REPORT", ROOT / "agent_os/build/workflow-validation/build_report.json"))
+        if not report_path.exists():
+            self.skipTest("Build an APK first or set AGENT_OS_BUILD_REPORT")
+        return json.loads(report_path.read_text())
+
     def test_build_report_covers_packaged_resources(self):
         report_path = Path(os.environ.get("AGENT_OS_BUILD_REPORT", ROOT / "agent_os/build/workflow-validation/build_report.json"))
         if not report_path.exists():
@@ -112,6 +118,13 @@ class BuildReportTests(unittest.TestCase):
             source.write_bytes(b"modified source")
             with self.assertRaises(ValueError):
                 preparer.validate_model_runtime(runtime, root)
+
+    def test_build_report_records_provenance(self):
+        """A released APK must be traceable to the commit that produced it."""
+        report = self.report()
+        self.assertIn("git_commit", report)
+        self.assertRegex(report["git_commit"], r"^[0-9a-f]{40}$")
+        self.assertIn("git_dirty", report)
 
 
 if __name__ == "__main__":

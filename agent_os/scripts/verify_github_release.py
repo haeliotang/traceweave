@@ -29,7 +29,27 @@ def compare(local_sums, remote_assets):
     extra = sorted(name for name in remote if name not in local_sums)
     return {"missing": missing, "mismatched": mismatched,
             "unknown_digest": unknown_digest, "extra": extra,
-            "ok": not missing and not mismatched and not unknown_digest}
+            # An extra asset is a failure: someone can add a second APK to a release and the
+            # old check would still call it verified.
+            "ok": not missing and not mismatched and not unknown_digest and not extra}
+
+
+def check_identity(report, tag, payload, notes_path):
+    """The tag must match and the release body must be the packaged notes verbatim."""
+    problems = []
+    if payload.get("tagName") != tag:
+        problems.append("tag mismatch: %s" % payload.get("tagName"))
+    if payload.get("isDraft"):
+        problems.append("release is still a draft")
+    if notes_path and pathlib.Path(notes_path).is_file():
+        notes = pathlib.Path(notes_path).read_text().strip()
+        body = (payload.get("body") or "").strip()
+        if body != notes:
+            problems.append("release body differs from RELEASE_NOTES.md")
+    report["identity_problems"] = problems
+    if problems:
+        report["ok"] = False
+    return report
 
 
 def main():
@@ -41,7 +61,8 @@ def main():
     args = parser.parse_args()
 
     sums = parse_sums(pathlib.Path(args.release_dir) / "SHA256SUMS")
-    result = subprocess.run([args.gh, "release", "view", args.tag, "--json", "assets,isDraft,tagName"],
+    result = subprocess.run([args.gh, "release", "view", args.tag,
+                            "--json", "assets,isDraft,tagName,body"],
                             capture_output=True, text=True, check=False)
     if result.returncode != 0:
         print(result.stderr.strip(), file=sys.stderr)
@@ -50,9 +71,12 @@ def main():
     report = compare(sums, payload["assets"])
     report["tag"] = payload.get("tagName")
     report["draft"] = payload.get("isDraft")
+    notes = pathlib.Path(args.release_dir) / "RELEASE_NOTES.md"
+    check_identity(report, args.tag, payload, notes if notes.is_file() else None)
     if args.output:
         pathlib.Path(args.output).write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({k: report[k] for k in ("ok", "missing", "mismatched", "draft")}))
+    print(json.dumps({k: report[k] for k in ("ok", "missing", "mismatched", "extra", "draft",
+        "identity_problems")}, ensure_ascii=False))
     sys.exit(0 if report["ok"] else 1)
 
 

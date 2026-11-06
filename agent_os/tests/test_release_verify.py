@@ -15,6 +15,32 @@ class ReleaseVerifyTests(unittest.TestCase):
         report = MODULE.compare(local, remote)
         self.assertTrue(report["ok"])
 
+    def test_extra_asset_fails_the_check(self):
+        """An attacker adding a second APK to the release must not pass verification."""
+        local = {"a.apk": "abc"}
+        remote = [{"name": "a.apk", "digest": "sha256:abc"},
+                  {"name": "evil.apk", "digest": "sha256:999"}]
+        report = MODULE.compare(local, remote)
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["extra"], ["evil.apk"])
+
+    def test_identity_checks(self):
+        local = {"a.apk": "abc"}
+        remote = [{"name": "a.apk", "digest": "sha256:abc"}]
+        report = MODULE.compare(local, remote)
+        MODULE.check_identity(report, "v1", {"tagName": "v2", "isDraft": False, "body": "x"}, None)
+        self.assertFalse(report["ok"])
+        self.assertIn("tag mismatch: v2", report["identity_problems"][0])
+
+        report = MODULE.compare(local, remote)
+        MODULE.check_identity(report, "v1", {"tagName": "v1", "isDraft": True, "body": "x"}, None)
+        self.assertFalse(report["ok"])
+        self.assertTrue(any("draft" in item for item in report["identity_problems"]))
+
+        report = MODULE.compare(local, remote)
+        MODULE.check_identity(report, "v1", {"tagName": "v1", "isDraft": False, "body": "x"}, None)
+        self.assertTrue(report["ok"])
+
     def test_missing_and_mismatch(self):
         local = {"a.apk": "abc", "b.json": "111"}
         remote = [{"name": "a.apk", "digest": "sha256:zzz"}]

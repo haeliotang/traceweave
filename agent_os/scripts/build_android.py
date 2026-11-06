@@ -116,6 +116,13 @@ def main():
                 pass
         return "external/" + path.name
 
+    def git(*arguments):
+        try:
+            return subprocess.run(["git"] + list(arguments), cwd=root, capture_output=True,
+                                  text=True, check=True).stdout.strip()
+        except Exception:
+            return ""
+
     manifest_attributes = ET.parse(manifest).getroot().attrib
     android_namespace = "{http://schemas.android.com/apk/res/android}"
     report = {
@@ -130,6 +137,8 @@ def main():
             for path in tracked_sources
         },
         "scope": args.scope,
+        "git_commit": git("rev-parse", "HEAD"),
+        "git_dirty": bool(git("status", "--porcelain")),
     }
     (build / "build_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"apk": str(apk), "apk_bytes": report["apk_bytes"]}))
