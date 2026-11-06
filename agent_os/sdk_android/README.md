@@ -43,9 +43,9 @@ The host derives each Agent identity as `android-package:<package>:sha256:<curre
 ## Usage Example
 
 ```java
-import org.traceform.agentos.sdk.AgentManifest;
-import org.traceform.agentos.sdk.SubstrateCallback;
-import org.traceform.agentos.sdk.SubstrateClient;
+import com.inceptless.traceweave.sdk.AgentManifest;
+import com.inceptless.traceweave.sdk.SubstrateCallback;
+import com.inceptless.traceweave.sdk.SubstrateClient;
 
 // 1. Initialize client
 SubstrateClient client = new SubstrateClient(context);

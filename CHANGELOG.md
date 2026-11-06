@@ -6,7 +6,20 @@ what changed between versions; the prototype disclaimer from the README still ap
 
 ## Unreleased
 
-- Nothing yet.
+- Audit trail is append-only again: deleting a task or importing an archive no longer removes
+  audit rows, so the hash chain stays valid and the tamper check stops reporting false alarms.
+- Anchoring can no longer be reset: the highest anchored index is kept outside the database in
+  a Keystore-MAC'd preference, and read-time re-signing (`ensureAnchors`) is gone. Legacy
+  installs get an explicit one-time "rebuild anchors" action on the audit page.
+- Memory edits, deletions and archive imports now write version rows, so an edit is no longer
+  rolled back by the next sync and a deletion actually propagates. Unversioned records are
+  reported as an audit event instead of being silently dropped from sync.
+- Device migration checks compare against the real schema constant instead of a hardcoded v6,
+  and a host test fails when a new schema version lacks an upgrade branch.
+- The Binder agent service now requires the user-granted
+  `com.inceptless.traceweave.permission.BIND_SUBSTRATE`; the SDK and demo agent declare it.
+- Export no longer fails when the app is recreated while the document picker is open: the
+  passphrase is requested again and written to the already chosen destination.
 
 ## 0.1.3 — 2026-11-04
 

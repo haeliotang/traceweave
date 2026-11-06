@@ -1,4 +1,4 @@
-package org.traceform.agentos;
+package com.inceptless.traceweave.agentos;
 
 interface IAgentSubstrate {
     // The host derives identity from the Binder caller UID, package, and installed APK signer.

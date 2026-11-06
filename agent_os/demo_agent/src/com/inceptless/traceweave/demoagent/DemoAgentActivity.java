@@ -1,4 +1,4 @@
-package org.traceform.demoagent;
+package com.inceptless.traceweave.demoagent;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.traceform.agentos.IAgentSubstrate;
+import com.inceptless.traceweave.agentos.IAgentSubstrate;
 
 public class DemoAgentActivity extends Activity {
     private static final String TAG = "DemoAgentActivity";
@@ -67,7 +67,7 @@ public class DemoAgentActivity extends Activity {
         root.addView(header);
 
         TextView subHeader = new TextView(this);
-        subHeader.setText("Package: org.traceform.demoagent\nConnecting to Host Substrate: org.traceform.agentos");
+        subHeader.setText("Package: com.inceptless.traceweave.demoagent\nConnecting to Host Substrate: com.inceptless.traceweave");
         subHeader.setTextSize(13);
         subHeader.setTextColor(Color.parseColor("#4B5563"));
         subHeader.setPadding(0, 8, 0, 24);
@@ -132,9 +132,9 @@ public class DemoAgentActivity extends Activity {
         new Thread(() -> {
             try {
                 // 1. Register Agent
-                appendLog("[Step 3] Registering Agent: org.traceform.demoagent...");
+                appendLog("[Step 3] Registering Agent: com.inceptless.traceweave.demoagent...");
                 String regRes = substrate.registerAgent(
-                    "org.traceform.demoagent",
+                    "com.inceptless.traceweave.demoagent",
                     "",
                     "{\"name\":\"DemoResearchAgent\",\"version\":\"1.0.0\",\"type\":\"external_agent\"}"
                 );
@@ -178,8 +178,8 @@ public class DemoAgentActivity extends Activity {
                     statusView.setTextColor(Color.parseColor("#15803D"));
                     appendLog("\n=========================================");
                     appendLog("PASS: Personal Agent Substrate Phase 1 Verified!");
-                    appendLog("External Agent ID: org.traceform.demoagent");
-                    appendLog("Substrate Host: org.traceform.agentos");
+                    appendLog("External Agent ID: com.inceptless.traceweave.demoagent");
+                    appendLog("Substrate Host: com.inceptless.traceweave");
                     appendLog("JIT Capability Access & Invocation: SUCCESS");
                     appendLog("=========================================");
                 });
