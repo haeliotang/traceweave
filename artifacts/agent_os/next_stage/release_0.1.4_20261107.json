@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-07",
+  "version": "0.1.4",
+  "version_code": 5,
+  "tag": "v0.1.4",
+  "commit": "ca2cffadda583d8b32abcf56b3c880a2a2a3d603",
+  "apk": {
+    "path": "agent_os/build/release-0.1.4/traceweave-0.1.4.apk",
+    "sha256": "cb714a5d126e7f424bd9b5489702d792def75d51b85433d6894659bdd278a36b",
+    "bytes": 3953851,
+    "signer_sha256": "9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db"
+  },
+  "schema_version": 17,
+  "preflight": {
+    "ok": true,
+    "skipped": [],
+    "upgrade_from_previous_apk": "checked against 0.1.3"
+  },
+  "release": {
+    "url": "https://github.com/haeliotang/traceweave/releases/tag/v0.1.4",
+    "assets": ["RELEASE_NOTES.md", "SHA256SUMS", "build_report.json", "release_manifest.json", "release_verification.json", "traceweave-0.1.4.apk"],
+    "verifier": "ok=true (assets, tag, non-draft, body starts with RELEASE_NOTES.md)",
+    "body_checks": "no placeholder, side-load notice present"
+  },
+  "device": {
+    "installed": "versionName=0.1.4 versionCode=5 on the Pixel 6a",
+    "suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+  },
+  "notes": [
+    "the first device run timed out because the device slept; it passed after waking",
+    "RELEASE_NOTES.md was uploaded after the release was created, then the verifier passed"
+  ]
+}
