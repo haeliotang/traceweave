@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-07",
+  "scope": "decision register round 1: log hygiene, redaction parity, audit digest v2, archive verification, serialised writes",
+  "items": {
+    "A5_log_hygiene": {
+      "pairing": "SyncPanel no longer logs the pairing payload or the SAS",
+      "screen_text": "VisionAgentManager no longer logs node text; it logs only node counts",
+      "diagnostics": "crash export uses a sanitizer (exception type only, absolute paths removed) and the note now says 'best effort' instead of promising no content"
+    },
+    "accessibility_secrets": {
+      "change": "password nodes are masked (is_password, text/content_description null) before leaving the service",
+      "screenshot": "takeScreenshot is API 30+ only; the platform already refuses FLAG_SECURE windows"
+    },
+    "redaction_parity": {
+      "change": "pure RedactionRules extracted from ContextRedactor; Rust rule widened to the same keys (password/passwd/token/secret/密码/口令, AKIA, JWT)",
+      "tests": "Java host test (test_redaction_parity.py) + Rust unit tests share the same corpus cases"
+    },
+    "audit_digest": {
+      "change": "schema 14 adds digest_version; new rows use length-prefixed v2, old rows keep v1 so existing chains and anchors stay valid",
+      "why": "v1 joins fields with '|', so (taskId='x|1000', occurredAt=2000) and (taskId='x', occurredAt=1000, event='2000|e') hash the same string"
+    },
+    "archive_verification": {
+      "change": "export writes audit rows in rowid (chain) order with per-row prevHash/hash/digestVersion; import verifies link by link, checks auditCount and the declared head; archives without a head are imported but marked unverified",
+      "root_cause_fixed": "export used ORDER BY occurred_at while the head came from ORDER BY rowid, so archives could fail their own verification after a clock skew",
+      "compat": "pre-schema-14 archives keep working; audit subjects that are not UUIDs (system rows) are accepted with a safe-character check"
+    },
+    "serialised_writes": "appendAudit/appendImportedAudit take a process-wide lock so two AgentStore instances cannot read the same tail and fork the chain"
+  },
+  "device_evidence": {
+    "migration": "schema 13 -> 14 on the Pixel 6a; audit page reports 10 events chain intact, 10 heads anchored",
+    "archive_round_trip": "exported agent-os-memory-20261107.taos, imported it back: review passed per-row verification and reported '档案已导入'",
+    "logs": "grep of logcat for the old pairing/SAS and node-text lines returns 0",
+    "suite": "RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS"
+  },
+  "verification": {
+    "host_tests": "93 tests (new: audit_chain, redaction_parity, extended archive_audit)",
+    "rust_tests": "92 pass",
+    "preflight": "ok"
+  }
+}

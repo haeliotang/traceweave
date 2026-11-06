@@ -351,10 +351,13 @@ final class MemoryArchive {
         for (int index = 0; index < audit.length(); index++) {
             JSONObject item = audit.getJSONObject(index);
             String id = validId(item.getString("id"));
-            String taskId = validId(item.getString("taskId"));
+            String taskId = validAuditSubject(item.getString("taskId"));
             long occurredAt = nonNegative(item.getLong("occurredAt"), "audit.occurredAt");
             String event = item.getString("event");
-            if (!auditIds.add(id) || !taskIds.contains(taskId) || event.trim().isEmpty()
+            // The audit trail is append-only, so it can reference a task this archive does not
+            // carry (the task was deleted and only its history remains). The importer drops
+            // events for tasks it does not import.
+            if (!auditIds.add(id) || event.trim().isEmpty()
                     || event.length() > AgentStore.MAX_AUDIT_EVENT_LENGTH)
                 throw new IOException("The archive contains an invalid task history record");
             String hash = item.optString("hash", "");
@@ -386,6 +389,21 @@ final class MemoryArchive {
             if (!UUID.fromString(value).toString().equals(value)) throw new IOException("The archive contains an invalid ID");
         } catch (IllegalArgumentException error) {
             throw new IOException("The archive contains an invalid ID");
+        }
+        return value;
+    }
+
+    /**
+     * Audit rows can point at synthetic subjects such as {@code system}; they are not UUIDs,
+     * so they get a safe-character check instead of the UUID shape check.
+     */
+    private static String validAuditSubject(String value) throws IOException {
+        if (value == null || value.isEmpty() || value.length() > 64) throw new IOException("The archive contains an invalid task history subject");
+        for (int index = 0; index < value.length(); index++) {
+            char ch = value.charAt(index);
+            boolean safe = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+                || (ch >= '0' && ch <= '9') || ch == '-' || ch == '_' || ch == '.' || ch == ':';
+            if (!safe) throw new IOException("The archive contains an invalid task history subject");
         }
         return value;
     }

@@ -2159,7 +2159,12 @@ public final class MainActivity extends Activity implements MemoryHost {
             Exception error = failure;
             mainHandler.post(() -> {
                 if (destroyed) return;
-                if (error != null) { setBusy(false, ""); showError(error); return; }
+                if (error != null) {
+                    setBusy(false, "");
+                    settingsPanel.setRecoveryMessage("");
+                    showError(error);
+                    return;
+                }
                 reviewArchiveConflict(result, new java.util.ArrayList<>(result.conflicts.keySet()), 0, new java.util.LinkedHashMap<>());
             });
         });
