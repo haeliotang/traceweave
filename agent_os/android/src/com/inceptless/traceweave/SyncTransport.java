@@ -113,11 +113,11 @@ final class SyncTransport {
     }
 
     static TransportBinding.Opened verifyRequest(byte[] envelope, String localFingerprint,
-                                                 String peerFingerprint, String expectedChallengeHex) {
+                                                 String peerFingerprint) {
         if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
             throw new IllegalStateException("pairing_not_p256_bound");
-        return TransportBinding.verifyRequest(envelope, peerFingerprint, localFingerprint,
-            decodeChallenge(expectedChallengeHex), NONCES, System.currentTimeMillis());
+        return TransportBinding.verifyEnvelope(envelope, peerFingerprint, localFingerprint, NONCES,
+            System.currentTimeMillis());
     }
 
     /** Local Android Keystore fingerprint; the identity the peer paired with. */
@@ -132,6 +132,9 @@ final class SyncTransport {
     static native String nativePeerId(String seedHex);
 
     static native String nativeServeOnce(String seedHex, int port, String allowedCsv, Handler handler);
+
+    /** Serves one session on an explicit multiaddr so a paired LAN peer can connect. */
+    static native String nativeServeAddressOnce(String seedHex, String address, String allowedCsv, Handler handler);
 
     static native byte[] nativeDialOnce(String seedHex, int port, String expectedPeerHex, byte[] payload);
 

@@ -9,7 +9,7 @@ use crate::transport::{dial, dial_payload, loopback, serve, serve_with, Ed25519B
 use jni::objects::{GlobalRef, JByteArray, JClass, JObject, JString};
 use jni::sys::{jboolean, jint, jlong, jstring, JNI_FALSE, JNI_TRUE};
 use jni::{JNIEnv, JavaVM};
-use libp2p::PeerId;
+use libp2p::{Multiaddr, PeerId};
 use std::time::Duration;
 
 static VERIFIER: Ed25519BindingVerifier = Ed25519BindingVerifier;
@@ -189,6 +189,87 @@ pub extern "system" fn Java_com_inceptless_traceweave_SyncProbe_nativePeerId(
         Ok(value) => value.into_raw(),
         Err(_) => std::ptr::null_mut(),
     }
+}
+
+
+/// Shared serve body: listens on the given multiaddr and runs one bounded session.
+fn serve_once_at(
+    env: &mut JNIEnv,
+    seed_hex: String,
+    listen: Multiaddr,
+    allowed_csv: String,
+    handler: JObject,
+) -> jstring {
+    let Some(seed) = seed_from_hex(&seed_hex) else {
+        return std::ptr::null_mut();
+    };
+    let mut allowed = Vec::new();
+    for item in allowed_csv.split(',') {
+        match peer_from_hex(item.trim()) {
+            Some(peer) => allowed.push(peer),
+            None => return std::ptr::null_mut(),
+        }
+    }
+    if allowed.is_empty() {
+        return std::ptr::null_mut();
+    }
+    let vm = match env.get_java_vm() {
+        Ok(vm) => vm,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let object = match env.new_global_ref(&handler) {
+        Ok(value) => value,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let identity = DeviceIdentity::from_bytes(seed);
+    let runtime = match tokio::runtime::Builder::new_multi_thread().enable_all().build() {
+        Ok(runtime) => runtime,
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let result = runtime.block_on(serve_with(
+        identity,
+        allowed,
+        listen,
+        &VERIFIER,
+        Box::new(JniHandler { vm, object }),
+        Duration::from_secs(30),
+    ));
+    let message = match result {
+        Ok(summary) => format!("OK {} {}", summary.frames, summary.bytes),
+        Err(error) => format!("FAIL {error}"),
+    };
+    match env.new_string(message) {
+        Ok(value) => value.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+/// Serves one session on an explicit LAN multiaddr (used for real cross-device sync).
+#[no_mangle]
+pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativeServeAddressOnce(
+    mut env: JNIEnv,
+    _class: JClass,
+    seed: JString,
+    address: JString,
+    allowed_csv: JString,
+    handler: JObject,
+) -> jstring {
+    let seed: String = match env.get_string(&seed) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let address: String = match env.get_string(&address) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let allowed_csv: String = match env.get_string(&allowed_csv) {
+        Ok(value) => value.into(),
+        Err(_) => return std::ptr::null_mut(),
+    };
+    let Ok(listen) = address.parse::<Multiaddr>() else {
+        return std::ptr::null_mut();
+    };
+    serve_once_at(&mut env, seed, listen, allowed_csv, handler)
 }
 
 #[no_mangle]

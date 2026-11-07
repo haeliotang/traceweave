@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-07",
+  "scope": "0.1.5 pre-release P0: LAN listening + address plumbing, lost-response challenge recovery, Proof 1 scope",
+  "P0_1_lan": {
+    "problem": "nativeServeOnce listened on /ip4/127.0.0.1 only, the pairing card address was not persisted, and manual sync always dialed loopback, so two phones could never connect",
+    "rust": "new JNI entry SyncTransport.nativeServeAddressOnce(seed, address, allowedCsv, handler) built on the same serve_with path (Noise + Ed25519 binding + allow-list); library rebuilt for aarch64-linux-android",
+    "android": "serve listens on /ip4/0.0.0.0/tcp/47960; dial uses sync_cursor.last_address when it is a /ip4/ multiaddr and falls back to loopback otherwise; the address used is written back on success (no more 127.0.0.1 overwrite); the pairing card now carries the local site-local IPv4 and a pasted address is persisted with the pairing",
+    "build_note": "the documented build command failed on this machine because the Homebrew rustc shadows the rustup one; docs/sync_android_build.md now pins RUSTC=$HOME/.cargo/bin/rustc",
+    "verification": "library rebuilt (alignment still 0x4000 for all four LOAD segments), symbol present, APK built and installed"
+  },
+  "P0_2_recovery": {
+    "problem": "the responder persisted its new challenge before the response could be delivered; a lost response left the requester on the old challenge and every retry failed with challenge_mismatch",
+    "design": "keep the last three issued challenges (schema 20 previous_challenges); a request echoing a historical challenge is accepted in recovery mode, which re-issues the current challenge without advancing; unknown challenges still fail closed",
+    "why_not_reset": "resetting the chain on mismatch would reopen the replay window the previous round closed",
+    "idempotence": "a retry re-applies the same records, which the vector-clock/tombstone merge already treats idempotently",
+    "tests": "new ChallengeChainHostTest + test_challenge_chain: bootstrap, normal advance, recovery accept, recovery must not advance, converged retry advances, unknown challenge rejected"
+  },
+  "scope": {
+    "proof1": "narrowed to cross-device memory continuity and sync trust; tasks, grants and full audit history are separate proofs",
+    "added_fault_steps": ["lost response in one direction", "lost response in both directions", "restart then retry", "address must not be overwritten by 127.0.0.1"]
+  },
+  "verification": {
+    "host_tests": "96 pass",
+    "preflight": "ok, upgrade check 0.1.4 -> 0.1.5 ran",
+    "device": "0.1.5 installed; schema 19 -> 20 migrated; audit page reports 10 events chain intact; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "not_verified": "no second phone, so LAN dial/serve, lost-response recovery and the new fault steps have not been executed between two real devices"
+  }
+}

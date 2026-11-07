@@ -17,9 +17,10 @@ TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/darwin-x86_64
 export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$TOOLCHAIN/bin/aarch64-linux-android29-clang
 export CC_aarch64_linux_android=$TOOLCHAIN/bin/aarch64-linux-android29-clang
 export AR_aarch64_linux_android=$TOOLCHAIN/bin/llvm-ar
-TC=$HOME/.rustup/toolchains/stable-aarch64-apple-darwin
-export RUSTC=$TC/bin/rustc
-CARGO_HOME=../.cargo-home $TC/bin/cargo build --release --target aarch64-linux-android --lib
+# 必须用 rustup 的 rustc：PATH 里的 Homebrew rustc 没有 Android target，
+# 直接跑 cargo 会报 "can't find crate for core"。
+export RUSTC=$HOME/.cargo/bin/rustc
+CARGO_HOME=../.cargo-home $HOME/.cargo/bin/cargo build --release --target aarch64-linux-android --lib
 ```
 
 产物：`target/aarch64-linux-android/release/libtraceweave_sync.so`。

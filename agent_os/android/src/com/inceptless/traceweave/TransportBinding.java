@@ -148,13 +148,20 @@ public final class TransportBinding {
         return out.toByteArray();
     }
 
-    /** Verifies a request: challenge must match the value this device issued last. */
+    /** Verifies everything except the challenge value; the responder applies the recovery rules. */
+    public static Opened verifyEnvelope(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
+                                        NonceCache nonces, long nowMillis) {
+        Opened opened = verify(envelope, expectedPeerFingerprint, localFingerprint, nonces, nowMillis);
+        if (!MessageDigest.isEqual(ZERO, opened.ack)) throw reject("unexpected_ack");
+        return opened;
+    }
+
+    /** Verifies a request and requires an exact challenge match (used by the host tests). */
     public static Opened verifyRequest(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
                                        byte[] expectedChallenge, NonceCache nonces, long nowMillis) {
-        Opened opened = verify(envelope, expectedPeerFingerprint, localFingerprint, nonces, nowMillis);
+        Opened opened = verifyEnvelope(envelope, expectedPeerFingerprint, localFingerprint, nonces, nowMillis);
         byte[] expected = expectedChallenge == null ? ZERO : expectedChallenge;
         if (!MessageDigest.isEqual(expected, opened.challenge)) throw reject("challenge_mismatch");
-        if (!MessageDigest.isEqual(ZERO, opened.ack)) throw reject("unexpected_ack");
         return opened;
     }
 

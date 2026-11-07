@@ -123,7 +123,7 @@ final class SyncPanel {
 
             Button cardButton = compact(T.s("pair.card_copy", en), view -> {
                 try {
-                    String card = PairingCard.encode(DeviceIdentity.fingerprint(), localSyncId(), "");
+                    String card = PairingCard.encode(DeviceIdentity.fingerprint(), localSyncId(), localLanAddress());
                     android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
                         host.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
                     if (clipboard == null) { host.toast(T.s("pair.clipboard_unavailable", en)); return; }
@@ -179,6 +179,8 @@ final class SyncPanel {
                             try {
                                 SyncPairing.pairOutOfBand(host.storeRef(), local, remoteValue, deviceId, peerId,
                                     remoteValue);
+                                String address = remoteAddress.getText().toString().trim();
+                                if (!address.isEmpty()) rememberPeerAddress(deviceId, address);
                                 host.toast(T.s("pair.done", en));
                                 host.refreshAfterSync();
                             } catch (Exception error) {
@@ -205,6 +207,32 @@ final class SyncPanel {
             startSyncDial(host.english());
         } catch (Throwable ignored) {
         }
+    }
+
+    /** Best-effort site-local IPv4 multiaddr for the pairing card; empty when unavailable. */
+    private String localLanAddress() {
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> interfaces =
+                java.net.NetworkInterface.getNetworkInterfaces();
+            while (interfaces != null && interfaces.hasMoreElements()) {
+                java.net.NetworkInterface network = interfaces.nextElement();
+                if (!network.isUp() || network.isLoopback()) continue;
+                java.util.Enumeration<java.net.InetAddress> addresses = network.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    java.net.InetAddress address = addresses.nextElement();
+                    if (address instanceof java.net.Inet4Address && address.isSiteLocalAddress())
+                        return "/ip4/" + address.getHostAddress() + "/tcp/" + SYNC_PORT;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return "";
+    }
+
+    private static boolean containsChallenge(String csv, String challengeHex) {
+        if (csv == null || csv.isEmpty() || challengeHex == null || challengeHex.isEmpty()) return false;
+        for (String item : csv.split(",")) if (challengeHex.equals(item.trim())) return true;
+        return false;
     }
 
     private Button compact(String label, android.view.View.OnClickListener listener) {
@@ -427,16 +455,26 @@ final class SyncPanel {
                         });
                         return;
                     }
-                    String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
+                    String result = SyncTransport.nativeServeAddressOnce(syncSeed(),
+                        "/ip4/0.0.0.0/tcp/" + SYNC_PORT, target.peerId,
                         request -> {
                             TransportBinding.Opened opened = SyncTransport.verifyRequest(request, localFingerprint,
-                                target.p256Fingerprint, host.storeRef().getExpectedChallenge(target.deviceId));
-                            byte[] body = SyncRecords.handle(host.storeRef(), opened.body);
+                                target.p256Fingerprint);
+                            String expected = host.storeRef().getExpectedChallenge(target.deviceId);
+                            String previous = host.storeRef().getPreviousChallenges(target.deviceId);
                             byte[] next = TransportBinding.freshChallenge();
-                            host.storeRef().setExpectedChallenge(target.deviceId,
-                                SyncTransport.encodeChallenge(next));
+                            ChallengeChain.Decision decision = ChallengeChain.decide(expected, previous,
+                                opened.challenge, next);
+                            if (!decision.accepted) throw new IllegalStateException(decision.reason);
+                            if (decision.advance) {
+                                host.storeRef().recordIssuedChallenge(target.deviceId,
+                                    ChallengeChain.encode(decision.responseChallenge),
+                                    ChallengeChain.nextHistory(expected, previous));
+                            }
+                            byte[] responseChallenge = decision.responseChallenge;
+                            byte[] body = SyncRecords.handle(host.storeRef(), opened.body);
                             return SyncTransport.prepareResponse(localFingerprint, target.p256Fingerprint,
-                                body, next, opened.nonce).envelope;
+                                body, responseChallenge, opened.nonce).envelope;
                         });
                     outcome = result != null && result.startsWith("OK")
                         ? (T.s("sync.peer_synced", en))
@@ -468,8 +506,19 @@ final class SyncPanel {
                             target.p256Fingerprint,
                             SyncTransport.decodeChallenge(host.storeRef().getNextChallenge(target.deviceId)),
                             SyncRecords.encode(host.storeRef().exportSyncRecords()));
-                        byte[] envelope = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId,
-                            request.envelope);
+                        AgentStore.SyncCursor cursor = host.storeRef().syncCursor(target.deviceId);
+                        String address = cursor == null ? "" : cursor.lastAddress;
+                        String usedAddress;
+                        byte[] envelope;
+                        if (address.startsWith("/ip4/")) {
+                            usedAddress = address;
+                            envelope = SyncTransport.nativeDialAddressOnce(syncSeed(), address, target.peerId,
+                                request.envelope);
+                        } else {
+                            usedAddress = "/ip4/127.0.0.1/tcp/" + SYNC_PORT;
+                            envelope = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId,
+                                request.envelope);
+                        }
                         byte[] response = null;
                         if (envelope != null) {
                             try {
@@ -487,7 +536,7 @@ final class SyncPanel {
                         if (response != null) {
                             int applied = SyncRecords.merge(host.storeRef(), response);
                             host.storeRef().recordSyncCursor(target.deviceId, System.currentTimeMillis(),
-                                "127.0.0.1", SYNC_PORT, "ok:" + applied);
+                                usedAddress, SYNC_PORT, "ok:" + applied);
                             outcome = T.format("sync.changes_applied", en, applied);
                         } else if (outcome == null) {
                             outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);

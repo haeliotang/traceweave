@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 19;
+    private static final int DATABASE_VERSION = 20;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -234,6 +234,36 @@ final class AgentStore extends SQLiteOpenHelper {
 
     String getNextChallenge(String deviceId) {
         return bindingValue(deviceId, "next_challenge");
+    }
+
+    /** Challenges this device issued before the current one, comma separated, newest first. */
+    String getPreviousChallenges(String deviceId) {
+        return bindingValue(deviceId, "previous_challenges");
+    }
+
+    /** Advances the issued-challenge history; keeps at most three entries. */
+    void recordIssuedChallenge(String deviceId, String expectedHex, String previousCsv) {
+        SQLiteDatabase database = getWritableDatabase();
+        database.execSQL("INSERT INTO sync_binding(device_id, expected_challenge, next_challenge, previous_challenges) "
+            + "VALUES(?, '', '', '') ON CONFLICT(device_id) DO NOTHING", new Object[]{deviceId});
+        database.execSQL("UPDATE sync_binding SET expected_challenge=?, previous_challenges=? WHERE device_id=?",
+            new Object[]{expectedHex == null ? "" : expectedHex,
+                trimChallenges(previousCsv), deviceId});
+    }
+
+    private static String trimChallenges(String csv) {
+        if (csv == null || csv.isEmpty()) return "";
+        String[] items = csv.split(",");
+        StringBuilder out = new StringBuilder();
+        int kept = 0;
+        for (String item : items) {
+            String value = item.trim();
+            if (value.isEmpty()) continue;
+            if (out.length() > 0) out.append(',');
+            out.append(value);
+            if (++kept >= 3) break;
+        }
+        return out.toString();
     }
 
     void setNextChallenge(String deviceId, String challengeHex) {
@@ -445,7 +475,8 @@ final class AgentStore extends SQLiteOpenHelper {
         database.execSQL("CREATE TABLE sync_binding ("
             + "device_id TEXT PRIMARY KEY NOT NULL, "
             + "expected_challenge TEXT NOT NULL DEFAULT '', "
-            + "next_challenge TEXT NOT NULL DEFAULT '')");
+            + "next_challenge TEXT NOT NULL DEFAULT '', "
+            + "previous_challenges TEXT NOT NULL DEFAULT '')");
         database.execSQL("CREATE TABLE agent_links ("
             + "identity TEXT PRIMARY KEY NOT NULL, "
             + "pkg TEXT NOT NULL, "
@@ -607,6 +638,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 18) {
                 createSyncBinding(database);
                 version = 19;
+            } else if (version == 19) {
+                upgradeChallengeHistory(database);
+                version = 20;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -619,12 +653,21 @@ final class AgentStore extends SQLiteOpenHelper {
             + AuditChain.DIGEST_VERSION_LEGACY);
     }
 
+    /**
+     * Version 19 -> 20: remember recently issued challenges so a lost response can be recovered
+     * by re-issuing the current challenge instead of resetting the chain.
+     */
+    private static void upgradeChallengeHistory(SQLiteDatabase database) {
+        database.execSQL("ALTER TABLE sync_binding ADD COLUMN previous_challenges TEXT NOT NULL DEFAULT ''");
+    }
+
     /** Version 18 -> 19: persist the rolling challenge state used by the P-256 binding. */
     private static void createSyncBinding(SQLiteDatabase database) {
         database.execSQL("CREATE TABLE IF NOT EXISTS sync_binding ("
             + "device_id TEXT PRIMARY KEY NOT NULL, "
             + "expected_challenge TEXT NOT NULL DEFAULT '', "
-            + "next_challenge TEXT NOT NULL DEFAULT '')");
+            + "next_challenge TEXT NOT NULL DEFAULT '', "
+            + "previous_challenges TEXT NOT NULL DEFAULT '')");
     }
 
     /**
