@@ -10,15 +10,15 @@ import java.util.Locale;
  * yourself is what makes it out-of-band: nothing on the network can alter it.
  *
  * <pre>
- * TRACEWEAVE-PAIRING-CARD-1
+ * TRACEWEAVE-PAIRING-CARD-2
  * fingerprint=&lt;64 lowercase hex&gt;
  * peerId=&lt;1..128 lowercase hex&gt;
  * address=&lt;optional multiaddr&gt;
- * checksum=&lt;first 8 hex of SHA-256("fingerprint|peerId")&gt;
+ * checksum=&lt;first 8 hex over all fields, see checksum()&gt;
  * </pre>
  */
 public final class PairingCard {
-    public static final String MAGIC = "TRACEWEAVE-PAIRING-CARD-1";
+    public static final String MAGIC = "TRACEWEAVE-PAIRING-CARD-2";
     private static final int MAX_TEXT_BYTES = 2048;
     private static final String ADDRESS_PATTERN = "^(/(ip4|ip6|dns4|dns6)/[A-Za-z0-9.:_-]{1,64}/(tcp|udp)/[0-9]{1,5})?$";
 
@@ -45,7 +45,7 @@ public final class PairingCard {
             + "fingerprint=" + fingerprint + "\n"
             + "peerId=" + peerId + "\n"
             + "address=" + target + "\n"
-            + "checksum=" + checksum(fingerprint, peerId) + "\n";
+            + "checksum=" + checksum(fingerprint, peerId, target) + "\n";
     }
 
     /** Parses a card; throws IllegalArgumentException with a short machine reason. */
@@ -78,15 +78,26 @@ public final class PairingCard {
         requireFingerprint(fingerprint);
         requirePeerId(peerId);
         if (!address.matches(ADDRESS_PATTERN)) throw new IllegalArgumentException("invalid_address");
-        if (!checksum.equals(checksum(fingerprint, peerId))) throw new IllegalArgumentException("checksum_mismatch");
+        if (!checksum.equals(checksum(fingerprint, peerId, address))) throw new IllegalArgumentException("checksum_mismatch");
         return new Card(fingerprint, peerId, address);
     }
 
-    /** First 8 hex characters of SHA-256("fingerprint|peerId"); a typo check, not a secret. */
-    public static String checksum(String fingerprint, String peerId) {
+    /**
+     * First 8 hex characters over a length-prefixed, domain-separated encoding of every field
+     * (including the address). This is a copy/typo check, not authentication: anyone can rebuild
+     * a card and recompute it, so only an out-of-band source makes the fingerprint trustworthy.
+     */
+    public static String checksum(String fingerprint, String peerId, String address) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = digest.digest((fingerprint + "|" + peerId).getBytes(StandardCharsets.UTF_8));
+            digest.update("traceweave-pairing-card-v2\0".getBytes(StandardCharsets.UTF_8));
+            for (String field : new String[]{fingerprint, peerId, address == null ? "" : address}) {
+                byte[] bytes = field.getBytes(StandardCharsets.UTF_8);
+                digest.update((byte) ((bytes.length >>> 8) & 0xFF));
+                digest.update((byte) (bytes.length & 0xFF));
+                digest.update(bytes);
+            }
+            byte[] hashed = digest.digest();
             StringBuilder result = new StringBuilder();
             for (int index = 0; index < 4; index++) result.append(String.format(Locale.ROOT, "%02x", hashed[index] & 255));
             return result.toString();

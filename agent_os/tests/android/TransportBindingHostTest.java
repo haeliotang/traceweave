@@ -15,10 +15,9 @@ public final class TransportBindingHostTest {
         checks++;
     }
 
-    private static void expectReject(String reason, byte[] envelope, String peerFp,
-                                     TransportBinding.NonceCache cache, String label) {
+    private static void expectReject(String reason, Runnable action, String label) {
         try {
-            TransportBinding.open(envelope, peerFp, PEER, cache, System.currentTimeMillis());
+            action.run();
             throw new IllegalStateException("FAIL accepted: " + label);
         } catch (IllegalStateException error) {
             check(reason.equals(error.getMessage()), label + " -> " + reason + " (got " + error.getMessage() + ")");
@@ -31,6 +30,7 @@ public final class TransportBindingHostTest {
         KeyPair pair = generator.generateKeyPair();
         byte[] spki = pair.getPublic().getEncoded();
         String fingerprint = TransportBinding.fingerprint(spki);
+        long now = System.currentTimeMillis();
         TransportBinding.Signer signer = message -> {
             java.security.Signature signature = java.security.Signature.getInstance("SHA256withECDSA");
             signature.initSign(pair.getPrivate());
@@ -39,50 +39,73 @@ public final class TransportBindingHostTest {
         };
 
         byte[] body = "{\"records\":[]}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        byte[] envelope = TransportBinding.wrap(fingerprint, PEER, spki, body, signer);
+        byte[] challenge = TransportBinding.freshChallenge();
+        byte[] request = TransportBinding.request(fingerprint, PEER, spki, body, TransportBinding.ZERO, signer);
         TransportBinding.NonceCache cache = new TransportBinding.NonceCache();
-        byte[] opened = TransportBinding.open(envelope, fingerprint, PEER, cache, System.currentTimeMillis());
-        check(Arrays.equals(body, opened), "valid envelope opens");
 
-        // A different device key must not pass as the paired peer.
-        KeyPair other = generator.generateKeyPair();
-        byte[] otherEnvelope = TransportBinding.wrap(TransportBinding.fingerprint(other.getPublic().getEncoded()),
-            PEER, other.getPublic().getEncoded(), body, message -> {
-                java.security.Signature signature = java.security.Signature.getInstance("SHA256withECDSA");
-                signature.initSign(other.getPrivate());
-                signature.update(message);
-                return signature.sign();
-            });
-        expectReject("fingerprint_mismatch", otherEnvelope, fingerprint, cache, "other key rejected");
+        // Bootstrap request (no challenge known yet) verifies, then the response ack must match.
+        TransportBinding.Opened opened = TransportBinding.verifyRequest(request, fingerprint, PEER,
+            TransportBinding.ZERO, cache, now);
+        check(Arrays.equals(body, opened.body), "bootstrap request verifies");
+        byte[] response = TransportBinding.response(fingerprint, PEER, spki, body, challenge, opened.nonce, signer);
+        TransportBinding.Opened reply = TransportBinding.verifyResponse(response, fingerprint, PEER,
+            opened.nonce, cache, now);
+        check(Arrays.equals(challenge, reply.challenge), "response carries the next challenge");
 
-        // The claimed fingerprint cannot be faked by sending a different SPKI.
-        expectReject("fingerprint_mismatch", envelope, TransportBinding.fingerprint(other.getPublic().getEncoded()), cache,
-            "wrong expected fingerprint rejected");
+        // The next request must echo that challenge.
+        byte[] chained = TransportBinding.request(fingerprint, PEER, spki, body, reply.challenge, signer);
+        TransportBinding.Opened chainedOpened = TransportBinding.verifyRequest(chained, fingerprint, PEER,
+            reply.challenge, cache, now);
+        check(chainedOpened != null, "chained request verifies");
 
-        // Any change to the body invalidates the signature.
-        byte[] tampered = envelope.clone();
+        // A fresh bootstrap request no longer matches the expected challenge (replay of the first request).
+        expectReject("challenge_mismatch",
+            () -> TransportBinding.verifyRequest(request, fingerprint, PEER, reply.challenge,
+                new TransportBinding.NonceCache(), now), "old request replay");
+
+        // A response can only answer the request it acknowledges.
+        expectReject("ack_mismatch",
+            () -> TransportBinding.verifyResponse(response, fingerprint, PEER, chainedOpened.nonce,
+                new TransportBinding.NonceCache(), now), "response replayed against another request");
+
+        // Wrong expected fingerprint.
+        expectReject("fingerprint_mismatch",
+            () -> TransportBinding.verifyRequest(request, "cc".repeat(32), PEER,
+                TransportBinding.ZERO, new TransportBinding.NonceCache(), now), "wrong peer fingerprint");
+
+        // Tampered body.
+        byte[] tampered = request.clone();
         tampered[tampered.length - 3] ^= 0x01;
-        expectReject("signature_invalid", tampered, fingerprint, cache, "tampered body rejected");
+        expectReject("signature_invalid",
+            () -> TransportBinding.verifyRequest(tampered, fingerprint, PEER, TransportBinding.ZERO,
+                new TransportBinding.NonceCache(), now), "tampered body");
 
-        // A nonce is accepted once.
-        TransportBinding.NonceCache replayCache = new TransportBinding.NonceCache();
-        TransportBinding.open(envelope, fingerprint, PEER, replayCache, System.currentTimeMillis());
-        expectReject("nonce_replayed", envelope, fingerprint, replayCache, "replayed envelope rejected");
+        // Stale and future timestamps are rejected even with a valid signature, so a captured
+        // payload cannot be replayed after the nonce cache expired or the process restarted.
+        // Evaluate the same payload as if two minutes had passed, and as if our clock were behind.
+        long stale = now + TransportBinding.MAX_AGE_MS + 5_000;
+        expectReject("stale_timestamp",
+            () -> TransportBinding.verifyRequest(request, fingerprint, PEER, TransportBinding.ZERO,
+                new TransportBinding.NonceCache(), stale), "stale timestamp");
+        long future = now - TransportBinding.MAX_SKEW_MS - 5_000;
+        expectReject("future_timestamp",
+            () -> TransportBinding.verifyRequest(request, fingerprint, PEER, TransportBinding.ZERO,
+                new TransportBinding.NonceCache(), future), "future timestamp");
 
-        // A valid signature for the other direction does not transfer.
-        // Signed with the roles swapped: the receiver recomputes its own direction.
-        byte[] reversed = TransportBinding.wrap(PEER, fingerprint, spki, body, message -> {
-            java.security.Signature signature = java.security.Signature.getInstance("SHA256withECDSA");
-            signature.initSign(pair.getPrivate());
-            signature.update(message);
-            return signature.sign();
-        });
-        expectReject("signature_invalid", reversed, fingerprint, new TransportBinding.NonceCache(),
-            "other direction rejected");
+        // Same nonce twice.
+        TransportBinding.NonceCache replay = new TransportBinding.NonceCache();
+        TransportBinding.verifyRequest(request, fingerprint, PEER, TransportBinding.ZERO, replay, now);
+        expectReject("nonce_replayed",
+            () -> TransportBinding.verifyRequest(request, fingerprint, PEER, TransportBinding.ZERO, replay, now),
+            "replayed nonce");
 
-        // The old (unbound) payload format is refused instead of being treated as raw data.
-        expectReject("not_bound", body, fingerprint, cache, "legacy payload rejected");
-        expectReject("bad_envelope", new byte[]{'T', 'W', 'X', '2', 0}, fingerprint, cache, "truncated envelope rejected");
+        // Legacy payloads and truncation.
+        expectReject("not_bound",
+            () -> TransportBinding.verifyRequest(body, fingerprint, PEER, TransportBinding.ZERO,
+                new TransportBinding.NonceCache(), now), "legacy payload");
+        expectReject("bad_envelope",
+            () -> TransportBinding.verifyRequest(new byte[]{'T', 'W', 'X', '3', 0}, fingerprint, PEER,
+                TransportBinding.ZERO, new TransportBinding.NonceCache(), now), "truncated envelope");
 
         System.out.println("PASS transport_binding checks=" + checks);
     }

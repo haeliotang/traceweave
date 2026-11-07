@@ -28,16 +28,21 @@ final class AutoSync {
             String localFingerprint = SyncTransport.localFingerprint();
             if (!target.p256Bound())
                 return record(store, "skipped: pairing has no P-256 binding; re-pair by fingerprint");
-            byte[] request = SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint,
+            SyncTransport.Prepared request = SyncTransport.prepareRequest(localFingerprint,
+                target.p256Fingerprint, SyncTransport.decodeChallenge(store.getNextChallenge(target.deviceId)),
                 SyncRecords.encode(store.exportSyncRecords()));
             byte[] envelope = cursor.lastAddress.startsWith("/ip4/")
                 ? SyncTransport.nativeDialAddressOnce(SyncTransport.seed(context), cursor.lastAddress,
-                    target.peerId, request)
-                : SyncTransport.nativeDialOnce(SyncTransport.seed(context), cursor.lastPort, target.peerId, request);
+                    target.peerId, request.envelope)
+                : SyncTransport.nativeDialOnce(SyncTransport.seed(context), cursor.lastPort, target.peerId,
+                    request.envelope);
             byte[] response = null;
             if (envelope != null) {
                 try {
-                    response = SyncTransport.openPayload(envelope, localFingerprint, target.p256Fingerprint);
+                    TransportBinding.Opened opened = SyncTransport.verifyResponse(envelope, localFingerprint,
+                        target.p256Fingerprint, request.nonce);
+                    store.setNextChallenge(target.deviceId, SyncTransport.encodeChallenge(opened.challenge));
+                    response = opened.body;
                 } catch (IllegalStateException rejected) {
                     store.appendSystemAudit("sync_binding_rejected:" + rejected.getMessage());
                     return record(store, "failed: peer binding rejected (" + rejected.getMessage() + ")");

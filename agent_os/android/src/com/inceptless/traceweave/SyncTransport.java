@@ -50,6 +50,76 @@ final class SyncTransport {
 
     private static final TransportBinding.NonceCache NONCES = new TransportBinding.NonceCache();
 
+    /** An outbound request: the signed envelope plus the nonce the response must acknowledge. */
+    static final class Prepared {
+        final byte[] envelope;
+        final byte[] nonce;
+
+        Prepared(byte[] envelope, byte[] nonce) {
+            this.envelope = envelope;
+            this.nonce = nonce;
+        }
+    }
+
+    static byte[] decodeChallenge(String hex) {
+        if (hex == null || hex.isEmpty()) return TransportBinding.ZERO;
+        byte[] value = new byte[hex.length() / 2];
+        for (int index = 0; index < value.length; index++)
+            value[index] = (byte) Integer.parseInt(hex.substring(index * 2, index * 2 + 2), 16);
+        if (value.length != TransportBinding.CHALLENGE_BYTES) return TransportBinding.ZERO;
+        return value;
+    }
+
+    static String encodeChallenge(byte[] challenge) {
+        StringBuilder result = new StringBuilder(challenge.length * 2);
+        for (byte item : challenge) result.append(String.format(java.util.Locale.ROOT, "%02x", item & 255));
+        return result.toString();
+    }
+
+    static Prepared prepareRequest(String localFingerprint, String peerFingerprint, byte[] challenge, byte[] body) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        try {
+            byte[] envelope = TransportBinding.request(localFingerprint, peerFingerprint,
+                DeviceIdentity.publicKey(), body, challenge, message -> DeviceIdentity.sign(message));
+            // The request nonce is inside the envelope; read it back for the response check.
+            TransportBinding.Parsed parsed = TransportBinding.parse(envelope);
+            return new Prepared(envelope, parsed.nonce);
+        } catch (Exception error) {
+            throw new IllegalStateException("binding_unavailable", error);
+        }
+    }
+
+    static TransportBinding.Opened verifyResponse(byte[] envelope, String localFingerprint,
+                                                  String peerFingerprint, byte[] requestNonce) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        return TransportBinding.verifyResponse(envelope, peerFingerprint, localFingerprint, requestNonce,
+            NONCES, System.currentTimeMillis());
+    }
+
+    static Prepared prepareResponse(String localFingerprint, String peerFingerprint, byte[] body,
+                                    byte[] challenge, byte[] requestNonce) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        try {
+            byte[] envelope = TransportBinding.response(localFingerprint, peerFingerprint,
+                DeviceIdentity.publicKey(), body, challenge, requestNonce, message -> DeviceIdentity.sign(message));
+            TransportBinding.Parsed parsed = TransportBinding.parse(envelope);
+            return new Prepared(envelope, parsed.nonce);
+        } catch (Exception error) {
+            throw new IllegalStateException("binding_unavailable", error);
+        }
+    }
+
+    static TransportBinding.Opened verifyRequest(byte[] envelope, String localFingerprint,
+                                                 String peerFingerprint, String expectedChallengeHex) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        return TransportBinding.verifyRequest(envelope, peerFingerprint, localFingerprint,
+            decodeChallenge(expectedChallengeHex), NONCES, System.currentTimeMillis());
+    }
+
     /** Local Android Keystore fingerprint; the identity the peer paired with. */
     static String localFingerprint() {
         try {
@@ -57,25 +127,6 @@ final class SyncTransport {
         } catch (Exception error) {
             throw new IllegalStateException("device_identity_unavailable", error);
         }
-    }
-
-    /** Wraps a sync payload with the P-256 channel binding. */
-    static byte[] bindPayload(String localFingerprint, String peerFingerprint, byte[] body) {
-        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
-            throw new IllegalStateException("pairing_not_p256_bound");
-        try {
-            return TransportBinding.wrap(localFingerprint, peerFingerprint, DeviceIdentity.publicKey(), body,
-                message -> DeviceIdentity.sign(message));
-        } catch (Exception error) {
-            throw new IllegalStateException("binding_unavailable", error);
-        }
-    }
-
-    /** Verifies a peer payload against the P-256 fingerprint recorded at pairing. */
-    static byte[] openPayload(byte[] envelope, String localFingerprint, String peerFingerprint) {
-        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
-            throw new IllegalStateException("pairing_not_p256_bound");
-        return TransportBinding.open(envelope, peerFingerprint, localFingerprint, NONCES, System.currentTimeMillis());
     }
 
     static native String nativePeerId(String seedHex);

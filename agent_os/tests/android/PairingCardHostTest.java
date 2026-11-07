@@ -31,7 +31,10 @@ public final class PairingCardHostTest {
         check("".equals(PairingCard.parse(withoutAddress).address), "address is optional");
 
         expectReject("bad_magic", card.replace("TRACEWEAVE", "TRACEWAVES"), "bad magic");
-        expectReject("checksum_mismatch", card.replace(PairingCard.checksum(FP, PEER), "00000000"), "checksum");
+        expectReject("checksum_mismatch", card.replace(PairingCard.checksum(FP, PEER, "/ip4/192.168.1.20/tcp/45871"), "00000000"), "checksum");
+        // An edited address must fail the checksum now that every field is covered.
+        expectReject("checksum_mismatch", card.replace("192.168.1.20", "192.168.1.21"), "address tamper");
+        expectReject("checksum_mismatch", PairingCard.encode(FP, PEER, "").replace("address=\n", "address=/ip4/10.0.0.1/tcp/1\n"), "address injection");
         expectReject("invalid_fingerprint", card.replace(FP, "AB".repeat(32)), "uppercase fingerprint");
         expectReject("invalid_peer_id", card.replace(PEER, "not-hex"), "invalid peer id");
         expectReject("invalid_address", card.replace("/ip4/192.168.1.20", "/ip4/evil host"), "invalid address");

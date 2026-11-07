@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-07",
+  "scope": "0.1.5 pre-release hardening: cross-session replay, pairing-card checksum, document drift",
+  "review_issues_addressed": [
+    "proof1 plan still required 0.1.4 and listed P-256 binding as future work",
+    "sync_protocol_design 12 and decision A2 still claimed code-based pairings carry no P-256 fingerprint",
+    "pairing card checksum did not cover the address field",
+    "signed payloads were not bound to a session, had no timestamp, and the replay cache lived only in memory"
+  ],
+  "replay_fix": {
+    "format": "TWX3 | spki | nonce[32] | ts(u64) | challenge[32] | ack[32] | sig | body",
+    "signed": "domain | sender fp | receiver fp | nonce | ts | challenge | ack | SHA-256(body)",
+    "timestamp": "rejected when older than 120 s or more than 60 s in the future",
+    "challenge_chain": "a request must echo the challenge the responder issued last; the responder issues a fresh one in every response",
+    "ack": "a response echoes the request nonce, so an old response cannot answer a different request",
+    "persistence": "schema 19 table sync_binding stores expected_challenge and next_challenge per paired device; a new pairing resets it",
+    "replay_window": "a captured payload stops being valid after two minutes; within the window the nonce cache and the challenge chain still reject it"
+  },
+  "card_fix": {
+    "format": "TRACEWEAVE-PAIRING-CARD-2",
+    "checksum": "first 8 hex of SHA-256 over a length-prefixed, domain-separated encoding of fingerprint, peerId and address",
+    "explicit_note": "the checksum is a copy/typo check, not authentication; anyone can rebuild a card and recompute it, so the fingerprint is only trustworthy if the card came through a channel the user controls"
+  },
+  "verification": {
+    "host_tests": "95 pass; test_transport_binding covers bootstrap, challenge chaining, challenge mismatch, ack mismatch, fingerprint mismatch, tampered body, stale timestamp, future timestamp, nonce replay, legacy payload, truncated envelope; test_pairing_card covers address tampering and address injection",
+    "preflight": "ok, upgrade check 0.1.4 -> 0.1.5 ran",
+    "device": "0.1.5 installed; schema 18 -> 19 migrated; audit page reports 10 events chain intact; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "not_verified": "no two-device exchange, so the challenge chain has not been exercised across two real peers; no independent replay attempt on hardware"
+  }
+}

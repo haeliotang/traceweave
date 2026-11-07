@@ -429,9 +429,14 @@ final class SyncPanel {
                     }
                     String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
                         request -> {
-                            byte[] body = SyncTransport.openPayload(request, localFingerprint, target.p256Fingerprint);
-                            byte[] response = SyncRecords.handle(host.storeRef(), body);
-                            return SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint, response);
+                            TransportBinding.Opened opened = SyncTransport.verifyRequest(request, localFingerprint,
+                                target.p256Fingerprint, host.storeRef().getExpectedChallenge(target.deviceId));
+                            byte[] body = SyncRecords.handle(host.storeRef(), opened.body);
+                            byte[] next = TransportBinding.freshChallenge();
+                            host.storeRef().setExpectedChallenge(target.deviceId,
+                                SyncTransport.encodeChallenge(next));
+                            return SyncTransport.prepareResponse(localFingerprint, target.p256Fingerprint,
+                                body, next, opened.nonce).envelope;
                         });
                     outcome = result != null && result.startsWith("OK")
                         ? (T.s("sync.peer_synced", en))
@@ -459,14 +464,20 @@ final class SyncPanel {
                     if (!target.p256Bound()) {
                         outcome = T.s("sync.pairing_not_p256_bound", en);
                     } else {
-                        byte[] payload = SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint,
+                        SyncTransport.Prepared request = SyncTransport.prepareRequest(localFingerprint,
+                            target.p256Fingerprint,
+                            SyncTransport.decodeChallenge(host.storeRef().getNextChallenge(target.deviceId)),
                             SyncRecords.encode(host.storeRef().exportSyncRecords()));
-                        byte[] envelope = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
+                        byte[] envelope = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId,
+                            request.envelope);
                         byte[] response = null;
                         if (envelope != null) {
                             try {
-                                response = SyncTransport.openPayload(envelope, localFingerprint,
-                                    target.p256Fingerprint);
+                                TransportBinding.Opened opened = SyncTransport.verifyResponse(envelope,
+                                    localFingerprint, target.p256Fingerprint, request.nonce);
+                                host.storeRef().setNextChallenge(target.deviceId,
+                                    SyncTransport.encodeChallenge(opened.challenge));
+                                response = opened.body;
                             } catch (IllegalStateException rejected) {
                                 host.storeRef().appendSystemAudit(
                                     "sync_binding_rejected:" + rejected.getMessage());

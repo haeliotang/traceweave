@@ -14,9 +14,15 @@ what changed between versions; the prototype disclaimer from the README still ap
   sync until they are re-paired by fingerprint.
 - Rejected bindings are recorded in the audit trail as `sync_binding_rejected:<reason>`;
   successful background syncs no longer fall back to unbound payloads.
-- Out-of-band pairing: the pairing dialog can copy a `TRACEWEAVE-PAIRING-CARD-1` card
+- The binding is bound to a session, not just to a payload: it now carries a signed timestamp
+  (two-minute window), a rolling challenge the peer must echo, and an acknowledgement of the
+  request nonce (schema 19 persists the challenge state). A captured payload can no longer be
+  replayed after a restart or after the in-memory nonce cache expires.
+- Out-of-band pairing: the pairing dialog can copy a `TRACEWEAVE-PAIRING-CARD-2` card
   (fingerprint, sync id, optional LAN address, checksum) and paste it on the other device, so
-  the peer identity travels through a channel you control instead of the network.
+  the peer identity travels through a channel you control instead of the network. The card's
+  checksum now covers every field (including the address); it detects copy errors but is not
+  authentication, so only a card the user carried personally is trustworthy.
 - The manual pairing path no longer shows a display-only six-digit code. It asks you to confirm
   the full fingerprint and states plainly that the fingerprint is only trustworthy if you
   carried it yourself; code-based (SAS) pairing already binds both P-256 fingerprints and both

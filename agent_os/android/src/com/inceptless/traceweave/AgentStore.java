@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 18;
+    private static final int DATABASE_VERSION = 19;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -224,6 +224,42 @@ final class AgentStore extends SQLiteOpenHelper {
         }
     }
 
+    String getExpectedChallenge(String deviceId) {
+        return bindingValue(deviceId, "expected_challenge");
+    }
+
+    void setExpectedChallenge(String deviceId, String challengeHex) {
+        setBindingValue(deviceId, "expected_challenge", challengeHex);
+    }
+
+    String getNextChallenge(String deviceId) {
+        return bindingValue(deviceId, "next_challenge");
+    }
+
+    void setNextChallenge(String deviceId, String challengeHex) {
+        setBindingValue(deviceId, "next_challenge", challengeHex);
+    }
+
+    private String bindingValue(String deviceId, String column) {
+        try (Cursor cursor = getReadableDatabase().query("sync_binding", new String[]{column},
+                "device_id=?", new String[]{deviceId}, null, null, null)) {
+            return cursor.moveToFirst() && cursor.getString(0) != null ? cursor.getString(0) : "";
+        }
+    }
+
+    private void setBindingValue(String deviceId, String column, String value) {
+        SQLiteDatabase database = getWritableDatabase();
+        database.execSQL("INSERT INTO sync_binding(device_id, expected_challenge, next_challenge) "
+            + "VALUES(?, '', '') ON CONFLICT(device_id) DO NOTHING", new Object[]{deviceId});
+        database.execSQL("UPDATE sync_binding SET " + column + "=? WHERE device_id=?",
+            new Object[]{value == null ? "" : value, deviceId});
+    }
+
+    /** A new pairing starts the challenge chain from scratch. */
+    private void clearBindingState(SQLiteDatabase database, String deviceId) {
+        database.delete("sync_binding", "device_id=?", new String[]{deviceId});
+    }
+
     int auditRowCount() {
         try (Cursor cursor = getReadableDatabase().rawQuery("SELECT COUNT(*) FROM audit", null)) {
             return cursor.moveToFirst() ? cursor.getInt(0) : 0;
@@ -406,6 +442,10 @@ final class AgentStore extends SQLiteOpenHelper {
             + "digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY + ", "
             + "origin TEXT NOT NULL DEFAULT '')");
+        database.execSQL("CREATE TABLE sync_binding ("
+            + "device_id TEXT PRIMARY KEY NOT NULL, "
+            + "expected_challenge TEXT NOT NULL DEFAULT '', "
+            + "next_challenge TEXT NOT NULL DEFAULT '')");
         database.execSQL("CREATE TABLE agent_links ("
             + "identity TEXT PRIMARY KEY NOT NULL, "
             + "pkg TEXT NOT NULL, "
@@ -564,6 +604,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 17) {
                 upgradePairingP256(database);
                 version = 18;
+            } else if (version == 18) {
+                createSyncBinding(database);
+                version = 19;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -574,6 +617,14 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void upgradeAuditDigestVersion(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE audit ADD COLUMN digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY);
+    }
+
+    /** Version 18 -> 19: persist the rolling challenge state used by the P-256 binding. */
+    private static void createSyncBinding(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS sync_binding ("
+            + "device_id TEXT PRIMARY KEY NOT NULL, "
+            + "expected_challenge TEXT NOT NULL DEFAULT '', "
+            + "next_challenge TEXT NOT NULL DEFAULT '')");
     }
 
     /**
@@ -1813,7 +1864,9 @@ final class AgentStore extends SQLiteOpenHelper {
         if (!p256.isEmpty() && !p256.matches("[0-9a-f]{64}"))
             throw new IllegalArgumentException("Invalid P-256 pairing fingerprint");
         values.put("p256_fingerprint", p256);
-        getWritableDatabase().insertWithOnConflict("pairings", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        SQLiteDatabase database = getWritableDatabase();
+        database.insertWithOnConflict("pairings", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        clearBindingState(database, deviceId);
     }
 
     List<Pairing> listPairings() {
@@ -1856,7 +1909,9 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     void deletePairing(String deviceId) {
-        getWritableDatabase().delete("pairings", "device_id=?", new String[]{deviceId});
+        SQLiteDatabase database = getWritableDatabase();
+        database.delete("pairings", "device_id=?", new String[]{deviceId});
+        clearBindingState(database, deviceId);
     }
 
     void setPairingStatus(String deviceId, String status) {

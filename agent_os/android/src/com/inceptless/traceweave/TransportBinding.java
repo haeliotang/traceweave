@@ -15,23 +15,39 @@ import java.util.Map;
  * P-256 channel binding for sync payloads.
  *
  * <p>The sync transport authenticates with an Ed25519 seed that lives in app storage. Copying
- * that seed (root, forensic image, restored backup) used to be enough to impersonate a paired
- * device. Every payload now carries the sender's P-256 public key (the exact key whose SHA-256
- * fingerprint is stored at pairing time), a fresh nonce and a signature over the payload; the
- * receiver rejects anything that does not prove possession of the Keystore private key.
+ * that seed was enough to impersonate a paired device, so every payload proves possession of
+ * the Keystore P-256 key whose fingerprint was recorded at pairing time.
+ *
+ * <p>A captured signed payload must not be replayable after a process restart or after the
+ * in-memory nonce cache expires, so the signature also covers:
+ * <ul>
+ *   <li>a millisecond timestamp (accepted within a two-minute window),</li>
+ *   <li>a rolling challenge: the request must echo the challenge the responder issued last,
+ *       and the response carries a new one the requester stores for its next request,</li>
+ *   <li>an acknowledgement: the response echoes the request nonce, so an old response cannot
+ *       be replayed against a different request.</li>
+ * </ul>
+ * The challenge and acknowledgement state is persisted per peer, so a restart does not reset it.
  *
  * <p>Wire format (binary, inside the encrypted Noise channel):
- * {@code "TWX2" | u16 spkiLen | spki | nonce[32] | u16 sigLen | sig | u32 bodyLen | body}.
+ * {@code "TWX3" | u16 spkiLen | spki | nonce[32] | u64 ts | challenge[32] | ack[32]
+ * | u16 sigLen | sig | u32 bodyLen | body}.
  */
 public final class TransportBinding {
-    public static final int VERSION = 2;
-    private static final byte[] MAGIC = {'T', 'W', 'X', '2'};
-    private static final byte[] DOMAIN = "traceweave-sync-binding-v2\0".getBytes(StandardCharsets.UTF_8);
+    public static final int VERSION = 3;
+    private static final byte[] MAGIC = {'T', 'W', 'X', '3'};
+    private static final byte[] DOMAIN = "traceweave-sync-binding-v3\0".getBytes(StandardCharsets.UTF_8);
     public static final int NONCE_BYTES = 32;
+    public static final int CHALLENGE_BYTES = 32;
+    /** Past this window a signed payload is stale. */
+    public static final long MAX_AGE_MS = 120_000L;
+    /** Small allowance for a peer whose clock runs slightly ahead. */
+    public static final long MAX_SKEW_MS = 60_000L;
     private static final int MAX_SPKI_BYTES = 512;
     private static final int MAX_SIGNATURE_BYTES = 512;
     private static final int MAX_BODY_BYTES = 4 * 1024 * 1024;
     private static final long NONCE_WINDOW_MS = 5 * 60 * 1000L;
+    public static final byte[] ZERO = new byte[CHALLENGE_BYTES];
 
     private TransportBinding() {}
 
@@ -40,25 +56,36 @@ public final class TransportBinding {
         byte[] sign(byte[] message) throws Exception;
     }
 
-    /** A verified or to-be-verified envelope. */
-    public static final class Envelope {
-        public final byte[] spki;
-        public final byte[] nonce;
-        public final byte[] signature;
+    /** A verified envelope. */
+    public static final class Opened {
         public final byte[] body;
+        public final byte[] nonce;
+        public final byte[] challenge;
+        public final byte[] ack;
+        public final long timestamp;
 
-        Envelope(byte[] spki, byte[] nonce, byte[] signature, byte[] body) {
-            this.spki = spki;
-            this.nonce = nonce;
-            this.signature = signature;
+        Opened(byte[] body, byte[] nonce, byte[] challenge, byte[] ack, long timestamp) {
             this.body = body;
+            this.nonce = nonce;
+            this.challenge = challenge;
+            this.ack = ack;
+            this.timestamp = timestamp;
         }
     }
 
-    /** The exact bytes that are signed. The body is committed by its SHA-256. */
-    public static byte[] message(String senderFingerprint, String receiverFingerprint, byte[] nonce, byte[] body) {
+    public static byte[] freshChallenge() {
+        byte[] challenge = new byte[CHALLENGE_BYTES];
+        new SecureRandom().nextBytes(challenge);
+        return challenge;
+    }
+
+    /** The exact bytes that are signed. */
+    public static byte[] message(String senderFingerprint, String receiverFingerprint, byte[] nonce,
+                                 long timestamp, byte[] challenge, byte[] ack, byte[] body) {
         if (senderFingerprint == null || receiverFingerprint == null) throw new IllegalArgumentException("Fingerprints are required");
         if (nonce == null || nonce.length != NONCE_BYTES) throw new IllegalArgumentException("A 32-byte nonce is required");
+        if (challenge == null || challenge.length != CHALLENGE_BYTES) throw new IllegalArgumentException("A 32-byte challenge is required");
+        if (ack == null || ack.length != CHALLENGE_BYTES) throw new IllegalArgumentException("A 32-byte acknowledgement is required");
         byte[] sender = senderFingerprint.getBytes(StandardCharsets.UTF_8);
         byte[] receiver = receiverFingerprint.getBytes(StandardCharsets.UTF_8);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -68,6 +95,9 @@ public final class TransportBinding {
         writeShort(out, receiver.length);
         out.write(receiver, 0, receiver.length);
         out.write(nonce, 0, nonce.length);
+        for (int shift = 56; shift >= 0; shift -= 8) out.write((int) (timestamp >>> shift) & 0xFF);
+        out.write(challenge, 0, challenge.length);
+        out.write(ack, 0, ack.length);
         byte[] digest = sha256(body == null ? new byte[0] : body);
         out.write(digest, 0, digest.length);
         return out.toByteArray();
@@ -77,14 +107,29 @@ public final class TransportBinding {
         return hex(sha256(spki));
     }
 
-    /** Builds an envelope signed by this device. */
-    public static byte[] wrap(String localFingerprint, String peerFingerprint, byte[] spki, byte[] body, Signer signer) {
+    /** Builds a signed request envelope (challenge echoes the peer's last challenge). */
+    public static byte[] request(String localFingerprint, String peerFingerprint, byte[] spki, byte[] body,
+                                 byte[] challenge, Signer signer) {
+        return build(localFingerprint, peerFingerprint, spki, body, challenge, ZERO, signer);
+    }
+
+    /** Builds a signed response envelope (new challenge for the peer, ack = request nonce). */
+    public static byte[] response(String localFingerprint, String peerFingerprint, byte[] spki, byte[] body,
+                                  byte[] challenge, byte[] ack, Signer signer) {
+        if (ack == null || ack.length != NONCE_BYTES) throw new IllegalArgumentException("A 32-byte request nonce is required");
+        return build(localFingerprint, peerFingerprint, spki, body, challenge, ack, signer);
+    }
+
+    private static byte[] build(String localFingerprint, String peerFingerprint, byte[] spki, byte[] body,
+                                byte[] challenge, byte[] ack, Signer signer) {
         if (signer == null) throw new IllegalArgumentException("A signer is required");
         byte[] nonce = new byte[NONCE_BYTES];
         new SecureRandom().nextBytes(nonce);
+        long timestamp = System.currentTimeMillis();
         byte[] signature;
         try {
-            signature = signer.sign(message(localFingerprint, peerFingerprint, nonce, body));
+            signature = signer.sign(message(localFingerprint, peerFingerprint, nonce, timestamp,
+                challenge, ack, body));
         } catch (Exception error) {
             throw new IllegalStateException("Unable to sign the sync payload", error);
         }
@@ -93,6 +138,9 @@ public final class TransportBinding {
         writeShort(out, spki.length);
         out.write(spki, 0, spki.length);
         out.write(nonce, 0, nonce.length);
+        for (int shift = 56; shift >= 0; shift -= 8) out.write((int) (timestamp >>> shift) & 0xFF);
+        out.write(challenge, 0, challenge.length);
+        out.write(ack, 0, ack.length);
         writeShort(out, signature.length);
         out.write(signature, 0, signature.length);
         writeInt(out, body.length);
@@ -100,48 +148,33 @@ public final class TransportBinding {
         return out.toByteArray();
     }
 
-    /** Parses and structurally validates an envelope. Throws with a short reason code. */
-    public static Envelope parse(byte[] envelope) {
-        if (envelope == null || envelope.length < MAGIC.length) throw reject("not_bound");
-        for (int index = 0; index < MAGIC.length; index++)
-            if (envelope[index] != MAGIC[index]) throw reject("not_bound");
-        if (envelope.length < MAGIC.length + 2) throw reject("bad_envelope");
-        int offset = MAGIC.length;
-        int spkiLength = readShort(envelope, offset);
-        offset += 2;
-        if (spkiLength <= 0 || spkiLength > MAX_SPKI_BYTES || offset + spkiLength > envelope.length)
-            throw reject("bad_envelope");
-        byte[] spki = Arrays.copyOfRange(envelope, offset, offset + spkiLength);
-        offset += spkiLength;
-        if (offset + NONCE_BYTES > envelope.length) throw reject("bad_envelope");
-        byte[] nonce = Arrays.copyOfRange(envelope, offset, offset + NONCE_BYTES);
-        offset += NONCE_BYTES;
-        if (offset + 2 > envelope.length) throw reject("bad_envelope");
-        int signatureLength = readShort(envelope, offset);
-        offset += 2;
-        if (signatureLength <= 0 || signatureLength > MAX_SIGNATURE_BYTES || offset + signatureLength > envelope.length)
-            throw reject("bad_envelope");
-        byte[] signature = Arrays.copyOfRange(envelope, offset, offset + signatureLength);
-        offset += signatureLength;
-        if (offset + 4 > envelope.length) throw reject("bad_envelope");
-        int bodyLength = readInt(envelope, offset);
-        offset += 4;
-        if (bodyLength < 0 || bodyLength > MAX_BODY_BYTES || offset + bodyLength != envelope.length)
-            throw reject("bad_envelope");
-        byte[] body = Arrays.copyOfRange(envelope, offset, offset + bodyLength);
-        return new Envelope(spki, nonce, signature, body);
+    /** Verifies a request: challenge must match the value this device issued last. */
+    public static Opened verifyRequest(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
+                                       byte[] expectedChallenge, NonceCache nonces, long nowMillis) {
+        Opened opened = verify(envelope, expectedPeerFingerprint, localFingerprint, nonces, nowMillis);
+        byte[] expected = expectedChallenge == null ? ZERO : expectedChallenge;
+        if (!MessageDigest.isEqual(expected, opened.challenge)) throw reject("challenge_mismatch");
+        if (!MessageDigest.isEqual(ZERO, opened.ack)) throw reject("unexpected_ack");
+        return opened;
     }
 
-    /**
-     * Verifies an envelope belongs to the paired device and returns its body.
-     * Throws IllegalStateException with a short reason code on any failure.
-     */
-    public static byte[] open(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
-                              NonceCache nonces, long nowMillis) {
-        Envelope parsed = parse(envelope);
+    /** Verifies a response: ack must echo the request nonce we sent. */
+    public static Opened verifyResponse(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
+                                        byte[] requestNonce, NonceCache nonces, long nowMillis) {
+        Opened opened = verify(envelope, expectedPeerFingerprint, localFingerprint, nonces, nowMillis);
+        if (!MessageDigest.isEqual(requestNonce, opened.ack)) throw reject("ack_mismatch");
+        return opened;
+    }
+
+    private static Opened verify(byte[] envelope, String expectedPeerFingerprint, String localFingerprint,
+                                 NonceCache nonces, long nowMillis) {
+        Parsed parsed = parse(envelope);
         String actual = fingerprint(parsed.spki);
         if (!constantTimeEquals(actual, expectedPeerFingerprint)) throw reject("fingerprint_mismatch");
-        byte[] signed = message(expectedPeerFingerprint, localFingerprint, parsed.nonce, parsed.body);
+        if (nowMillis - parsed.timestamp > MAX_AGE_MS) throw reject("stale_timestamp");
+        if (parsed.timestamp - nowMillis > MAX_SKEW_MS) throw reject("future_timestamp");
+        byte[] signed = message(expectedPeerFingerprint, localFingerprint, parsed.nonce, parsed.timestamp,
+            parsed.challenge, parsed.ack, parsed.body);
         try {
             Signature verifier = Signature.getInstance("SHA256withECDSA");
             verifier.initVerify(KeyFactory.getInstance("EC")
@@ -154,7 +187,58 @@ public final class TransportBinding {
             throw reject("signature_invalid");
         }
         if (nonces != null && !nonces.accept(parsed.nonce, nowMillis)) throw reject("nonce_replayed");
-        return parsed.body;
+        return new Opened(parsed.body, parsed.nonce, parsed.challenge, parsed.ack, parsed.timestamp);
+    }
+
+    static final class Parsed {
+        byte[] spki;
+        byte[] nonce;
+        long timestamp;
+        byte[] challenge;
+        byte[] ack;
+        byte[] signature;
+        byte[] body;
+    }
+
+    /** Parses and structurally validates an envelope. */
+    static Parsed parse(byte[] envelope) {
+        if (envelope == null || envelope.length < MAGIC.length) throw reject("not_bound");
+        for (int index = 0; index < MAGIC.length; index++)
+            if (envelope[index] != MAGIC[index]) throw reject("not_bound");
+        if (envelope.length < MAGIC.length + 2) throw reject("bad_envelope");
+        int offset = MAGIC.length;
+        int spkiLength = readShort(envelope, offset);
+        offset += 2;
+        if (spkiLength <= 0 || spkiLength > MAX_SPKI_BYTES || offset + spkiLength > envelope.length)
+            throw reject("bad_envelope");
+        Parsed parsed = new Parsed();
+        parsed.spki = Arrays.copyOfRange(envelope, offset, offset + spkiLength);
+        offset += spkiLength;
+        if (offset + NONCE_BYTES + 8 + 2 * CHALLENGE_BYTES > envelope.length) throw reject("bad_envelope");
+        parsed.nonce = Arrays.copyOfRange(envelope, offset, offset + NONCE_BYTES);
+        offset += NONCE_BYTES;
+        long timestamp = 0;
+        for (int index = 0; index < 8; index++) timestamp = (timestamp << 8) | (envelope[offset + index] & 0xFFL);
+        parsed.timestamp = timestamp;
+        offset += 8;
+        parsed.challenge = Arrays.copyOfRange(envelope, offset, offset + CHALLENGE_BYTES);
+        offset += CHALLENGE_BYTES;
+        parsed.ack = Arrays.copyOfRange(envelope, offset, offset + CHALLENGE_BYTES);
+        offset += CHALLENGE_BYTES;
+        if (offset + 2 > envelope.length) throw reject("bad_envelope");
+        int signatureLength = readShort(envelope, offset);
+        offset += 2;
+        if (signatureLength <= 0 || signatureLength > MAX_SIGNATURE_BYTES || offset + signatureLength > envelope.length)
+            throw reject("bad_envelope");
+        parsed.signature = Arrays.copyOfRange(envelope, offset, offset + signatureLength);
+        offset += signatureLength;
+        if (offset + 4 > envelope.length) throw reject("bad_envelope");
+        int bodyLength = readInt(envelope, offset);
+        offset += 4;
+        if (bodyLength < 0 || bodyLength > MAX_BODY_BYTES || offset + bodyLength != envelope.length)
+            throw reject("bad_envelope");
+        parsed.body = Arrays.copyOfRange(envelope, offset, offset + bodyLength);
+        return parsed;
     }
 
     /** Bounded replay cache: a nonce is accepted once inside a five-minute window. */
