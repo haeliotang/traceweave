@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-07",
+  "version": "0.1.5 (versionCode 6, not released)",
+  "scope": "P-256 channel binding for sync payloads",
+  "problem": "the sync transport authenticated with an Ed25519 seed stored in app data; copying that seed (root, forensic image, restored backup) was enough to impersonate a paired device even after the seed was wrapped by the Keystore",
+  "design": {
+    "format": "TWX2 | u16 spkiLen | SPKI | nonce[32] | u16 sigLen | ECDSA-SHA256 signature | u32 bodyLen | body",
+    "signed": "domain | u16 senderP256 | u16 receiverP256 | nonce | SHA-256(body)",
+    "verify": "SHA-256(SPKI) must equal the peer P-256 fingerprint stored at pairing (constant-time); signature over the fixed direction; nonce single-use within 5 minutes; max 4 MiB body",
+    "storage": "schema 18 adds pairings.p256_fingerprint",
+    "fail_closed": "no payload is processed on failure; audit event sync_binding_rejected:<reason>"
+  },
+  "compatibility": {
+    "fingerprint_pairings": "bound; sync works",
+    "code_based_sas_pairings": "no P-256 fingerprint is available, so these pairings refuse to sync and ask for re-pairing by fingerprint",
+    "legacy_peers": "<=0.1.4 send raw payloads and are rejected with not_bound; both ends must be >=0.1.5"
+  },
+  "verification": {
+    "host_tests": "94 pass, including test_transport_binding (valid envelope, other key, wrong expected fingerprint, tampered body, replayed nonce, reversed direction, legacy payload, truncated envelope)",
+    "preflight": "ok, upgrade check 0.1.4 -> 0.1.5 ran (skipped empty)",
+    "device": "0.1.5 installed on the Pixel 6a; schema 17 -> 18 migrated; audit page still reports 10 events chain intact; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "not_verified": "no second physical device, so the cross-device bound exchange itself has not been executed end to end"
+  },
+  "known_gaps": [
+    "pairing itself has no out-of-band MITM protection; the fingerprint path relies on the user comparing 64 hex characters",
+    "code-based pairing cannot bind P-256 until the pairing payload carries it",
+    "Proof 1 (two physical devices) still outstanding"
+  ]
+}
