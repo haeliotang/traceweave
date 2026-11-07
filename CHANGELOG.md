@@ -14,6 +14,9 @@ what changed between versions; the prototype disclaimer from the README still ap
   sync until they are re-paired by fingerprint.
 - Rejected bindings are recorded in the audit trail as `sync_binding_rejected:<reason>`;
   successful background syncs no longer fall back to unbound payloads.
+- A lost response during the **first** sync is recoverable too: while no challenge chain exists
+  only the predefined all-zero challenge is accepted, and the bootstrap round records it as an
+  accepted historical value, so a retry converges instead of failing forever.
 - The binding is bound to a session, not just to a payload: it now carries a signed timestamp
   (two-minute window), a rolling challenge the peer must echo, and an acknowledgement of the
   request nonce (schema 19 persists the challenge state). A captured payload can no longer be

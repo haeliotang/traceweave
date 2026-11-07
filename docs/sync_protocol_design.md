@@ -200,7 +200,12 @@ record = {
 同步成功后回写实际使用的地址，**不会用 127.0.0.1 覆盖已知的 LAN 地址**。
 
 **失步恢复**：接收端在正常接受请求后会把新 challenge 写入 `sync_binding`。如果响应丢失，发起方
-仍持有旧 challenge。为避免"只能删配对重来"，接收端保留最近三次已签发的 challenge（`previous_challenges`）：
+仍持有旧 challenge。为避免"只能删配对重来"，接收端保留最近三次已签发的 challenge（`previous_challenges`）。
+
+**首轮 bootstrap 也在这个范围内**：链条未建立时（`expected_challenge` 为空）只接受预定义的
+32 字节全零 challenge，并把该零值作为一个"历史已接受值"记录。这样首次响应丢失后，重试携带的
+零 challenge 会命中恢复模式，接收端重发 C1，双方收敛——否则首轮丢失会永久卡在
+`challenge_mismatch`。非零 challenge 在链条未建立时一律拒绝（`bootstrap_challenge_invalid`）。
 
 - 请求携带当前 challenge → 正常推进，签发新 challenge；
 - 请求携带历史 challenge → **恢复模式**：接受，但把当前 challenge 重新签发回去，不推进状态；

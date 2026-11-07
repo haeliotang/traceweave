@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-07",
+  "scope": "fix the first-sync lost-response gap found in review round 4",
+  "problem": "when the chain was not established, the responder accepted the bootstrap request, issued C1 and persisted it, but recorded an empty history. A lost first response left the requester with the all-zero challenge, and every retry failed with challenge_mismatch.",
+  "fix": {
+    "bootstrap_acceptance": "while expected_challenge is empty only the predefined 32-byte all-zero challenge is accepted; anything else fails with bootstrap_challenge_invalid",
+    "bootstrap_history": "the bootstrap round records the all-zero challenge as an accepted historical value, so a lost first response enters the same constrained recovery path as later losses",
+    "scope": "no reset path was added; unknown challenges still fail closed"
+  },
+  "tests": {
+    "host": "ChallengeChainHostTest now uses the real 32-byte zero challenge, asserts non-zero bootstrap rejection, covers first-response loss (bootstrap -> retry -> recovery -> converge -> normal advance), ordinary loss, and unknown-challenge rejection",
+    "regression_shape": "bootstrap accepted -> first response lost -> persisted state reloaded (the test passes the persisted expected/history strings back in) -> retry succeeds without duplicate advancement"
+  },
+  "verification": {
+    "host_tests": "96 pass",
+    "preflight": "ok, upgrade check 0.1.4 -> 0.1.5 ran",
+    "device": "0.1.5 installed; audit page reports 10 events chain intact; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "not_verified": "still no second phone; the two-device lost-response scenarios (first sync and established chain) remain part of Proof 1"
+  }
+}

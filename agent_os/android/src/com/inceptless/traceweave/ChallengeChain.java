@@ -14,6 +14,15 @@ import java.security.MessageDigest;
  * the chain (which would reopen the replay window).
  */
 public final class ChallengeChain {
+    /** The all-zero 32-byte challenge a fresh pairing starts from. */
+    public static final String ZERO_HEX = zeroHex();
+
+    private static String zeroHex() {
+        StringBuilder result = new StringBuilder(64);
+        for (int index = 0; index < 32; index++) result.append("00");
+        return result.toString();
+    }
+
     private ChallengeChain() {}
 
     public static final class Decision {
@@ -42,7 +51,9 @@ public final class ChallengeChain {
         String expected = expectedHex == null ? "" : expectedHex;
         String actual = encode(received);
         if (expected.isEmpty()) {
-            // First request after pairing: accept the empty challenge and start the chain.
+            // No chain yet: only the predefined all-zero challenge may start it. Anything else
+            // would let a peer pick its own starting point.
+            if (!ZERO_HEX.equals(actual)) return new Decision(false, false, null, "bootstrap_challenge_invalid");
             return new Decision(true, true, next, "bootstrap");
         }
         if (constantTimeEquals(expected, actual)) return new Decision(true, true, next, "normal");
@@ -53,11 +64,15 @@ public final class ChallengeChain {
         return new Decision(false, false, null, "challenge_mismatch");
     }
 
-    /** The history to persist after a normal advance (newest first, at most three). */
+    /**
+     * The history to persist after a normal advance (newest first). The bootstrap round records
+     * the all-zero challenge, so losing the very first response is recoverable too.
+     */
     public static String nextHistory(String expectedHex, String previousHex) {
         String expected = expectedHex == null ? "" : expectedHex;
-        if (expected.isEmpty()) return "";
-        return previousHex == null || previousHex.isEmpty() ? expected : expected + "," + previousHex;
+        String previous = previousHex == null ? "" : previousHex;
+        if (expected.isEmpty()) return previous.isEmpty() ? ZERO_HEX : ZERO_HEX + "," + previous;
+        return previous.isEmpty() ? expected : expected + "," + previous;
     }
 
     public static boolean listed(String csv, String challengeHex) {
