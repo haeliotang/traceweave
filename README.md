@@ -33,12 +33,10 @@ Every published build is a **development-key side load**, not a store build and 
    ```
 
 4. Install with `adb install -r traceweave-<version>.apk`, or copy it to the device and open it.
-   **Do not downgrade**: the database schema only moves forward and an older APK refuses to open
-   a newer database. Export an archive before switching back.
    The app is signed with the development key
    `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`; compare it with
    `apksigner verify --print-certs` if you care about the exact identity.
-5. **Data schema moves forward only.** The mapping is exact, not approximate:
+5. **Do not downgrade — the data schema only moves forward.** The mapping is exact, not approximate:
 
    | Release | Database schema |
    | :--- | :--- |
