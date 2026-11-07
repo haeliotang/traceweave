@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-07",
+  "scope": "out-of-band pairing: pairing card transfer, explicit trust confirmation, SAS P-256 fix",
+  "fix": {
+    "problem": "the previous round stored an empty P-256 fingerprint for code-based (Rust SAS) pairings, so those pairings refused to sync",
+    "cause": "the Android side passes DeviceIdentity.fingerprint() (P-256) into nativePairDial/nativePairServe, and the Rust SAS binds both fingerprints plus both transport keys, so the peer P-256 fingerprint was available all along",
+    "change": "code-based pairing now records remoteFingerprint as the P-256 identity; both pairing paths are channel-bound"
+  },
+  "out_of_band": {
+    "card": "TRACEWEAVE-PAIRING-CARD-1 text block with fingerprint, peerId, optional multiaddr and an 8-hex checksum; copy/paste through the system clipboard so the user carries it between devices",
+    "confirmation": "the manual path no longer derives a display-only 6-digit code; it shows an explicit 'trust this fingerprint?' dialog that states the fingerprint is only safe if the user carried it out of band",
+    "removed": "SyncPairing.pairingNonce/code (they were a typo aid presented next to a fingerprint field, not an authentication step); the fingerprint path now uses SyncPairing.pairOutOfBand"
+  },
+  "verification": {
+    "host_tests": "95 pass, including test_pairing_card (round-trip, optional address, bad magic, checksum, uppercase fingerprint, invalid peer id/address, malformed/unknown field, truncated card)",
+    "preflight": "ok, upgrade check 0.1.4 -> 0.1.5 ran",
+    "device": "0.1.5 installed; pairing dialog shows the card buttons; copying then pasting filled the remote fields; the OOB confirmation dialog rendered with the warning; cancelling left 0 paired devices; RUN_SUITE 48 / TASK_CENTER 10 / RUN_DOCUMENTS 20 PASS",
+    "not_verified": "an actual two-device card exchange and code-based pairing still need the second phone"
+  },
+  "known_gaps": [
+    "the pairing card trusts the channel the user carries it through; clipboard leaks (e.g. clipboard history apps) are outside the app's control",
+    "no QR code or camera scanning; transfer is clipboard/manual",
+    "the Rust SAS exchange still runs over LAN discovery, which needs multicast to work on the shared network"
+  ]
+}

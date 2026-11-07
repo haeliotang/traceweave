@@ -820,7 +820,15 @@ public final class T {
         add("sync.peer_binding_rejected", "Peer rejected the channel binding: %s", "对端拒绝了通道绑定：%s");
         add("pairing.p256_bound", "P-256 bound", "P-256 已绑定");
         add("pairing.p256_unbound", "no P-256 binding (re-pair by fingerprint)", "无 P-256 绑定（需用指纹重新配对）");
-        add("pair.done_no_p256", "Paired. This code-based pairing has no P-256 binding; re-pair by fingerprint before syncing.", "已配对。该码配对不带 P-256 绑定；同步前请用指纹配对重新配对。");
+        add("pair.card_copy", "Copy pairing card (out-of-band)", "复制配对卡（带外）");
+        add("pair.card_paste", "Paste pairing card", "粘贴配对卡");
+        add("pair.card_copied", "Pairing card copied; move it to the other device yourself", "配对卡已复制；请自己把它送到另一台设备");
+        add("pair.card_pasted", "Pairing card imported into the fields above", "配对卡已填入上方字段");
+        add("pair.card_invalid", "Pairing card rejected: %s", "配对卡无效：%s");
+        add("pair.clipboard_unavailable", "Clipboard is unavailable", "剪贴板不可用");
+        add("pair.oob_title", "Trust this fingerprint?", "确认信任这个指纹？");
+        add("pair.oob_message", "You are about to trust:\n\n%s\n\nThis is safe only if you carried it from the other device yourself (pairing card, or reading its screen). A network relay can replace a fingerprint you did not verify out of band.", "你即将信任：\n\n%s\n\n只有当这个指纹是你亲自从另一台设备带过来的（配对卡，或直接看它的屏幕），这一步才安全。没有经过带外的指纹可能被网络中继替换。");
+        add("pair.oob_confirm", "I verified it", "我已核对");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

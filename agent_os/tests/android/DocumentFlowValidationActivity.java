@@ -994,10 +994,7 @@ public final class DocumentFlowValidationActivity extends Activity {
         DeviceIdentity.create();
         String local = DeviceIdentity.fingerprint();
         String remote = shortHash("revoke-remote");
-        byte[] nonce = new byte[32];
-        new java.util.Random(31).nextBytes(nonce);
-        String code = SyncPairing.code(local, remote, nonce);
-        SyncPairing.confirm(store, local, remote, "revoke-1", "peer-1", code, code);
+        SyncPairing.pairOutOfBand(store, local, remote, "revoke-1", "peer-1", remote);
         check(SyncPairing.isActive(store, "revoke-1", remote), "fresh pairing is active");
         SyncPairing.revoke(store, "revoke-1");
         check(!SyncPairing.isActive(store, "revoke-1", remote), "revoked pairing is inactive");
@@ -1023,10 +1020,7 @@ public final class DocumentFlowValidationActivity extends Activity {
         DeviceIdentity.create();
         String local = DeviceIdentity.fingerprint();
         String fresh = shortHash("rotated-remote");
-        byte[] nonce = new byte[32];
-        new java.util.Random(37).nextBytes(nonce);
-        String code = SyncPairing.code(local, fresh, nonce);
-        SyncPairing.confirm(store, local, fresh, "rotate-2", "peer-2", code, code);
+        SyncPairing.pairOutOfBand(store, local, fresh, "rotate-2", "peer-2", fresh);
         java.util.List<AgentStore.Pairing> active = store.activePairings();
         check(active.size() == 1 && "rotate-2".equals(active.get(0).deviceId), "only the rotated device stays active");
         check(SyncPairing.STATUS_REVOKED.equals(store.pairing("revoke-1").status), "old device stays revoked after rotation");
@@ -1044,18 +1038,25 @@ public final class DocumentFlowValidationActivity extends Activity {
         DeviceIdentity.create();
         String local = DeviceIdentity.fingerprint();
         String remote = shortHash("remote-device");
-        byte[] nonce = new byte[32];
-        new java.util.Random(11).nextBytes(nonce);
-        String code = SyncPairing.code(local, remote, nonce);
-        check(code.matches("[0-9]{6}"), "pairing code has six digits");
-        check(code.equals(SyncPairing.code(local, remote, nonce)), "pairing code is deterministic for the same inputs");
-        check(!code.equals(SyncPairing.code(local, shortHash("other-remote"), nonce)), "a different peer changes the code");
-        java.util.Random random = new java.util.Random(21);
-        for (int index = 0; index < 64; index++) {
-            byte[] sample = new byte[32];
-            random.nextBytes(sample);
-            check(SyncPairing.code(local, remote, sample).matches("[0-9]{6}"), "pairing code is always six digits");
+        String card = PairingCard.encode(remote, "0011223344556677", "/ip4/192.168.1.20/tcp/45871");
+        PairingCard.Card parsed = PairingCard.parse(card);
+        check(remote.equals(parsed.fingerprint), "pairing card carries the fingerprint");
+        check("0011223344556677".equals(parsed.peerId), "pairing card carries the sync id");
+        check("/ip4/192.168.1.20/tcp/45871".equals(parsed.address), "pairing card carries the address");
+        boolean rejected = false;
+        try {
+            PairingCard.parse(card.replace("192.168.1.20", "192.168.1.21"));
+        } catch (IllegalArgumentException error) {
+            rejected = true;
         }
+        check(rejected, "an edited pairing card fails its checksum");
+        rejected = false;
+        try {
+            PairingCard.parse(PairingCard.MAGIC + "\nfingerprint=" + local + "\n");
+        } catch (IllegalArgumentException error) {
+            rejected = true;
+        }
+        check(rejected, "a truncated pairing card is rejected");
     }
 
     private void pairCreate(AgentStore store) throws Exception {
@@ -1063,24 +1064,20 @@ public final class DocumentFlowValidationActivity extends Activity {
         DeviceIdentity.create();
         String local = DeviceIdentity.fingerprint();
         String remote = shortHash("remote-device");
-        byte[] nonce = new byte[32];
-        new java.util.Random(13).nextBytes(nonce);
-        String code = SyncPairing.code(local, remote, nonce);
-        SyncPairing.confirm(store, local, remote, "remote-1", "peer-1", code, code);
+        SyncPairing.pairOutOfBand(store, local, remote, "remote-1", "peer-1", remote);
         java.util.List<AgentStore.Pairing> pairings = store.listPairings();
         check(pairings.size() == 1 && remote.equals(pairings.get(0).fingerprint)
             && SyncPairing.STATUS_ACTIVE.equals(pairings.get(0).status), "pairing record stored");
-        String wrong = "000000".equals(code) ? "000001" : "000000";
         boolean rejected = false;
         try {
-            SyncPairing.confirm(store, local, remote, "remote-2", "peer-2", code, wrong);
-        } catch (IllegalStateException error) {
+            SyncPairing.pairOutOfBand(store, local, remote, "remote-2", "peer-2", shortHash("other-p256"));
+        } catch (IllegalArgumentException error) {
             rejected = true;
         }
-        check(rejected, "mismatched pairing codes are rejected");
+        check(rejected, "a verified fingerprint that is not the P-256 identity is rejected");
         rejected = false;
         try {
-            SyncPairing.confirm(store, local, local, "remote-3", "peer-3", code, code);
+            SyncPairing.pairOutOfBand(store, local, local, "remote-3", "peer-3", local);
         } catch (IllegalStateException error) {
             rejected = true;
         }

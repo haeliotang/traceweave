@@ -121,6 +121,37 @@ final class SyncPanel {
             holder.addView(remoteSync);
             holder.addView(remoteAddress);
 
+            Button cardButton = compact(T.s("pair.card_copy", en), view -> {
+                try {
+                    String card = PairingCard.encode(DeviceIdentity.fingerprint(), localSyncId(), "");
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                        host.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                    if (clipboard == null) { host.toast(T.s("pair.clipboard_unavailable", en)); return; }
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("traceweave-pairing", card));
+                    host.toast(T.s("pair.card_copied", en));
+                } catch (Exception error) {
+                    host.failWith(error);
+                }
+            });
+            Button pasteButton = compact(T.s("pair.card_paste", en), view -> {
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                    host.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                CharSequence text = clipboard == null || !clipboard.hasPrimaryClip()
+                    || clipboard.getPrimaryClip() == null || clipboard.getPrimaryClip().getItemCount() == 0
+                    ? null : clipboard.getPrimaryClip().getItemAt(0).coerceToText(host);
+                try {
+                    PairingCard.Card card = PairingCard.parse(text == null ? null : text.toString());
+                    remote.setText(card.fingerprint);
+                    remoteSync.setText(card.peerId);
+                    remoteAddress.setText(card.address);
+                    host.toast(T.s("pair.card_pasted", en));
+                } catch (IllegalArgumentException error) {
+                    host.toast(T.format("pair.card_invalid", en, error.getMessage()));
+                }
+            });
+            holder.addView(cardButton);
+            holder.addView(pasteButton);
+
             Button discoverButton = compact(T.s("pair.find", en), view -> startPairDiscovery(en));
             Button waitButton = compact(T.s("pair.wait", en), view -> startPairServe(en));
             Button connectButton = compact(T.s("pair.connect", en),
@@ -139,40 +170,23 @@ final class SyncPanel {
                         return;
                     }
                     String peerId = remoteSync.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
-                    try {
-                        byte[] nonce = SyncPairing.pairingNonce(local, remoteValue);
-                        String code = SyncPairing.code(local, remoteValue, nonce);
-                        String deviceId = "peer-" + remoteValue.substring(0, 16);
-                        android.widget.EditText typed = Ui.input(host, T.s("pair.type_code", en));
-                        typed.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-                        LinearLayout compareBody = new LinearLayout(host);
-                        compareBody.setOrientation(LinearLayout.VERTICAL);
-                        compareBody.setPadding(host.dpRef(24), host.dpRef(8), host.dpRef(24), 0);
-                        compareBody.addView(Ui.dialogBody(host, T.s("sync.compare_this_code", en),
-                            T.s("sync.code", en) + code + "\n" + T.s("pair.same_code", en), 13));
-                        compareBody.addView(typed);
-                        AlertDialog compareDialog = new AlertDialog.Builder(host)
-                            .setView(compareBody)
-                            .setNegativeButton(T.s("common.cancel", en), null)
-                            .setPositiveButton(T.s("pair.confirm", en), (inner, ignored) -> {
-                                char[] typedCode = typed.getText().toString().toCharArray();
-                                typed.setText("");
-                                try {
-                                    SyncPairing.confirm(host.storeRef(), local, remoteValue, deviceId, peerId,
-                                        code, new String(typedCode).trim(), remoteValue);
-                                    java.util.Arrays.fill(typedCode, '\0');
-                                    host.toast(T.s("pair.done", en));
-                                    host.refreshAfterSync();
-                                } catch (Exception error) {
-                                    java.util.Arrays.fill(typedCode, '\0');
-                                    host.failWith(error);
-                                }
-                            }).create();
-                        compareDialog.show();
-                        Ui.themeDialog(compareDialog, host);
-                    } catch (Exception error) {
-                        host.failWith(error);
-                    }
+                    String deviceId = "peer-" + remoteValue.substring(0, 16);
+                    String message = T.format("pair.oob_message", en, remoteValue);
+                    AlertDialog confirmDialog = new AlertDialog.Builder(host)
+                        .setView(Ui.dialogBody(host, T.s("pair.oob_title", en), message, 13))
+                        .setNegativeButton(T.s("common.cancel", en), null)
+                        .setPositiveButton(T.s("pair.oob_confirm", en), (inner, ignored) -> {
+                            try {
+                                SyncPairing.pairOutOfBand(host.storeRef(), local, remoteValue, deviceId, peerId,
+                                    remoteValue);
+                                host.toast(T.s("pair.done", en));
+                                host.refreshAfterSync();
+                            } catch (Exception error) {
+                                host.failWith(error);
+                            }
+                        }).create();
+                    confirmDialog.show();
+                    Ui.themeDialog(confirmDialog, host);
                 })
                 .create();
             pairDialog.show();
@@ -378,14 +392,15 @@ final class SyncPanel {
                 typed.setText("");
                 try {
                     String deviceId = "peer-" + remoteFingerprint.substring(0, 16);
-                    // The Rust session only carries the Ed25519 transport fingerprint, so this
-                    // pairing cannot prove P-256 possession; the user must pair by fingerprint.
+                    // nativePairDial/Serve pass the Android P-256 fingerprint into the offer, and
+                    // the Rust SAS binds both fingerprints and both transport keys, so this
+                    // exchange already authenticates the P-256 identity out of band.
                     SyncPairing.confirm(host.storeRef(), DeviceIdentity.fingerprint(), remoteFingerprint,
-                        deviceId, peerId, sas, new String(typedCode).trim(), "");
+                        deviceId, peerId, sas, new String(typedCode).trim(), remoteFingerprint);
                     java.util.Arrays.fill(typedCode, '\0');
                     rememberPeerAddress(deviceId, address);
                     host.refreshAfterSync();
-                    host.toast(T.s("pair.done_no_p256", en));
+                    host.toast(T.s("pair.done", en));
                 } catch (Exception error) {
                     java.util.Arrays.fill(typedCode, '\0');
                     host.failWith(error);
