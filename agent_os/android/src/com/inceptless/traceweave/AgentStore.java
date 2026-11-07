@@ -28,7 +28,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -496,7 +496,8 @@ final class AgentStore extends SQLiteOpenHelper {
             + "fingerprint TEXT NOT NULL, "
             + "peer_id TEXT NOT NULL, "
             + "status TEXT NOT NULL, "
-            + "paired_at INTEGER NOT NULL)");
+            + "paired_at INTEGER NOT NULL, "
+            + "p256_fingerprint TEXT NOT NULL DEFAULT '')");
     }
 
     private static void createMemoryVersionTable(SQLiteDatabase database) {
@@ -560,6 +561,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 16) {
                 createAgentLinks(database);
                 version = 17;
+            } else if (version == 17) {
+                upgradePairingP256(database);
+                version = 18;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -570,6 +574,15 @@ final class AgentStore extends SQLiteOpenHelper {
     private static void upgradeAuditDigestVersion(SQLiteDatabase database) {
         database.execSQL("ALTER TABLE audit ADD COLUMN digest_version INTEGER NOT NULL DEFAULT "
             + AuditChain.DIGEST_VERSION_LEGACY);
+    }
+
+    /**
+     * Version 17 -> 18: store the peer's P-256 fingerprint separately from the transport
+     * fingerprint. Pairings made before this cannot prove P-256 possession and must be renewed
+     * before channel-bound sync accepts them.
+     */
+    private static void upgradePairingP256(SQLiteDatabase database) {
+        database.execSQL("ALTER TABLE pairings ADD COLUMN p256_fingerprint TEXT NOT NULL DEFAULT ''");
     }
 
     /** Version 16 -> 17: remember which apps registered as agents, so they can be reviewed and revoked. */
@@ -1757,17 +1770,34 @@ final class AgentStore extends SQLiteOpenHelper {
         final String peerId;
         final String status;
         final long pairedAt;
+        /** The peer's Android Keystore P-256 fingerprint, empty for legacy pairings. */
+        final String p256Fingerprint;
 
         Pairing(String deviceId, String fingerprint, String peerId, String status, long pairedAt) {
+            this(deviceId, fingerprint, peerId, status, pairedAt, "");
+        }
+
+        Pairing(String deviceId, String fingerprint, String peerId, String status, long pairedAt,
+                String p256Fingerprint) {
             this.deviceId = deviceId;
             this.fingerprint = fingerprint;
             this.peerId = peerId;
             this.status = status;
             this.pairedAt = pairedAt;
+            this.p256Fingerprint = p256Fingerprint == null ? "" : p256Fingerprint;
+        }
+
+        boolean p256Bound() {
+            return p256Fingerprint.matches("[0-9a-f]{64}");
         }
     }
 
     void savePairing(String deviceId, String fingerprint, String peerId, String status) throws Exception {
+        savePairing(deviceId, fingerprint, peerId, status, "");
+    }
+
+    void savePairing(String deviceId, String fingerprint, String peerId, String status, String p256Fingerprint)
+            throws Exception {
         if (deviceId == null || deviceId.isEmpty() || deviceId.length() > 64
                 || fingerprint == null || !fingerprint.matches("[0-9a-f]{64}")
                 || peerId == null || peerId.length() > 128
@@ -1779,17 +1809,21 @@ final class AgentStore extends SQLiteOpenHelper {
         values.put("peer_id", peerId);
         values.put("status", status);
         values.put("paired_at", System.currentTimeMillis());
+        String p256 = p256Fingerprint == null ? "" : p256Fingerprint;
+        if (!p256.isEmpty() && !p256.matches("[0-9a-f]{64}"))
+            throw new IllegalArgumentException("Invalid P-256 pairing fingerprint");
+        values.put("p256_fingerprint", p256);
         getWritableDatabase().insertWithOnConflict("pairings", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     List<Pairing> listPairings() {
         ArrayList<Pairing> pairings = new ArrayList<>();
         try (Cursor cursor = getReadableDatabase().query("pairings",
-                new String[]{"device_id", "fingerprint", "peer_id", "status", "paired_at"},
+                new String[]{"device_id", "fingerprint", "peer_id", "status", "paired_at", "p256_fingerprint"},
                 null, null, null, null, "paired_at")) {
             while (cursor.moveToNext())
                 pairings.add(new Pairing(cursor.getString(0), cursor.getString(1), cursor.getString(2),
-                    cursor.getString(3), cursor.getLong(4)));
+                    cursor.getString(3), cursor.getLong(4), cursor.getString(5)));
         }
         return pairings;
     }

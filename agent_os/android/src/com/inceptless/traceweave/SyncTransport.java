@@ -48,6 +48,36 @@ final class SyncTransport {
         return loaded;
     }
 
+    private static final TransportBinding.NonceCache NONCES = new TransportBinding.NonceCache();
+
+    /** Local Android Keystore fingerprint; the identity the peer paired with. */
+    static String localFingerprint() {
+        try {
+            return DeviceIdentity.fingerprint();
+        } catch (Exception error) {
+            throw new IllegalStateException("device_identity_unavailable", error);
+        }
+    }
+
+    /** Wraps a sync payload with the P-256 channel binding. */
+    static byte[] bindPayload(String localFingerprint, String peerFingerprint, byte[] body) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        try {
+            return TransportBinding.wrap(localFingerprint, peerFingerprint, DeviceIdentity.publicKey(), body,
+                message -> DeviceIdentity.sign(message));
+        } catch (Exception error) {
+            throw new IllegalStateException("binding_unavailable", error);
+        }
+    }
+
+    /** Verifies a peer payload against the P-256 fingerprint recorded at pairing. */
+    static byte[] openPayload(byte[] envelope, String localFingerprint, String peerFingerprint) {
+        if (peerFingerprint == null || !peerFingerprint.matches("[0-9a-f]{64}"))
+            throw new IllegalStateException("pairing_not_p256_bound");
+        return TransportBinding.open(envelope, peerFingerprint, localFingerprint, NONCES, System.currentTimeMillis());
+    }
+
     static native String nativePeerId(String seedHex);
 
     static native String nativeServeOnce(String seedHex, int port, String allowedCsv, Handler handler);

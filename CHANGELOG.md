@@ -4,6 +4,17 @@ Every release is also published with build reports and checksums on the
 [releases page](https://github.com/haeliotang/traceweave/releases). This file records
 what changed between versions; the prototype disclaimer from the README still applies.
 
+## Unreleased
+
+- Sync payloads now carry a P-256 channel binding: every request and response includes the
+  sender's Android Keystore public key, a fresh 32-byte nonce and a signature over both device
+  fingerprints, the nonce and the payload digest. A copied sync seed alone can no longer sync.
+- Pairings record the peer's P-256 fingerprint (schema 18). Pairings made before this, and
+  pairings completed through the code-based (SAS) flow, show "no P-256 binding" and refuse to
+  sync until they are re-paired by fingerprint.
+- Rejected bindings are recorded in the audit trail as `sync_binding_rejected:<reason>`;
+  successful background syncs no longer fall back to unbound payloads.
+
 ## 0.1.4 — 2026-11-07
 
 这次发布主要是"把承诺变成真的"：审计、记忆、同步、权限几处原来只在文档里成立的东西，现在有代码与设备验证。

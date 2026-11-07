@@ -816,6 +816,11 @@ public final class T {
         add("settings.revoke_agent", "Revoke", "撤销");
         add("settings.agent_revoked", "Agent revoked and its grants cleared", "已撤销该 Agent 并清除其授权");
         add("export.audit_trimmed", "Audit rows: %d. Only the newest %d travel with this archive; older events stay on this device.", "审计记录 %d 条，本档案只携带最新 %d 条；更早的事件仍保留在本机。");
+        add("sync.pairing_not_p256_bound", "This pairing predates P-256 binding. Re-pair by fingerprint to enable channel-bound sync.", "该配对早于 P-256 绑定。请用指纹配对重新配对后再同步。");
+        add("sync.peer_binding_rejected", "Peer rejected the channel binding: %s", "对端拒绝了通道绑定：%s");
+        add("pairing.p256_bound", "P-256 bound", "P-256 已绑定");
+        add("pairing.p256_unbound", "no P-256 binding (re-pair by fingerprint)", "无 P-256 绑定（需用指纹重新配对）");
+        add("pair.done_no_p256", "Paired. This code-based pairing has no P-256 binding; re-pair by fingerprint before syncing.", "已配对。该码配对不带 P-256 绑定；同步前请用指纹配对重新配对。");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");

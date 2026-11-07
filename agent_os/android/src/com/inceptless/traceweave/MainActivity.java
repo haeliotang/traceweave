@@ -762,7 +762,9 @@ public final class MainActivity extends Activity implements MemoryHost {
                     ? T.s("pair.never_synced", en)
                     : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                         .format(new Date(cursor.lastSyncedAt)) + " · " + SyncResultText.describe(cursor.lastResult, en);
-                labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…\n" + last;
+                String binding = T.s(pairing.p256Bound() ? "pairing.p256_bound" : "pairing.p256_unbound", en);
+                labels[index] = pairing.deviceId + "\n" + pairing.fingerprint.substring(0, 16) + "…\n"
+                    + last + " · " + binding;
             }
             new AlertDialog.Builder(this)
                 .setTitle(T.s("ui.paired_devices", en))

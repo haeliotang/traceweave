@@ -25,11 +25,24 @@ final class AutoSync {
             AgentStore.SyncCursor cursor = store.syncCursor(target.deviceId);
             if (cursor == null || cursor.lastAddress.isEmpty())
                 return record(store, "skipped: no known address for " + target.deviceId);
-            byte[] request = SyncRecords.encode(store.exportSyncRecords());
-            byte[] response = cursor.lastAddress.startsWith("/ip4/")
+            String localFingerprint = SyncTransport.localFingerprint();
+            if (!target.p256Bound())
+                return record(store, "skipped: pairing has no P-256 binding; re-pair by fingerprint");
+            byte[] request = SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint,
+                SyncRecords.encode(store.exportSyncRecords()));
+            byte[] envelope = cursor.lastAddress.startsWith("/ip4/")
                 ? SyncTransport.nativeDialAddressOnce(SyncTransport.seed(context), cursor.lastAddress,
                     target.peerId, request)
                 : SyncTransport.nativeDialOnce(SyncTransport.seed(context), cursor.lastPort, target.peerId, request);
+            byte[] response = null;
+            if (envelope != null) {
+                try {
+                    response = SyncTransport.openPayload(envelope, localFingerprint, target.p256Fingerprint);
+                } catch (IllegalStateException rejected) {
+                    store.appendSystemAudit("sync_binding_rejected:" + rejected.getMessage());
+                    return record(store, "failed: peer binding rejected (" + rejected.getMessage() + ")");
+                }
+            }
             boolean ok = response != null;
             int applied = ok ? SyncRecords.merge(store, response) : 0;
             store.recordSyncCursor(target.deviceId, System.currentTimeMillis(), cursor.lastAddress, cursor.lastPort,

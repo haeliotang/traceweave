@@ -71,6 +71,16 @@ final class SyncPairing {
     /** Pair only when both sides derived the same code and the fingerprints differ. */
     static void confirm(AgentStore store, String localFingerprint, String remoteFingerprint, String remoteDeviceId,
                         String remotePeerId, String localCode, String remoteCode) throws Exception {
+        confirm(store, localFingerprint, remoteFingerprint, remoteDeviceId, remotePeerId, localCode, remoteCode, "");
+    }
+
+    /**
+     * @param remoteP256Fingerprint the peer's Android Keystore key fingerprint, when known.
+     *        Pairings made without it can be listed but cannot sync under channel binding.
+     */
+    static void confirm(AgentStore store, String localFingerprint, String remoteFingerprint, String remoteDeviceId,
+                        String remotePeerId, String localCode, String remoteCode,
+                        String remoteP256Fingerprint) throws Exception {
         if (!validFingerprint(localFingerprint) || !validFingerprint(remoteFingerprint))
             throw new IllegalArgumentException("Invalid device fingerprint");
         if (localFingerprint.equals(remoteFingerprint)) throw new IllegalStateException("A device cannot pair with itself");
@@ -82,6 +92,7 @@ final class SyncPairing {
                 remoteCode.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
             throw new IllegalStateException("Pairing codes do not match; do not trust this device");
         if (remoteDeviceId == null || remoteDeviceId.isEmpty()) throw new IllegalArgumentException("Missing remote device id");
-        store.savePairing(remoteDeviceId, remoteFingerprint, remotePeerId == null ? "" : remotePeerId, STATUS_ACTIVE);
+        store.savePairing(remoteDeviceId, remoteFingerprint, remotePeerId == null ? "" : remotePeerId,
+            STATUS_ACTIVE, remoteP256Fingerprint);
     }
 }

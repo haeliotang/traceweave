@@ -159,7 +159,7 @@ final class SyncPanel {
                                 typed.setText("");
                                 try {
                                     SyncPairing.confirm(host.storeRef(), local, remoteValue, deviceId, peerId,
-                                        code, new String(typedCode).trim());
+                                        code, new String(typedCode).trim(), remoteValue);
                                     java.util.Arrays.fill(typedCode, '\0');
                                     host.toast(T.s("pair.done", en));
                                     host.refreshAfterSync();
@@ -378,12 +378,14 @@ final class SyncPanel {
                 typed.setText("");
                 try {
                     String deviceId = "peer-" + remoteFingerprint.substring(0, 16);
+                    // The Rust session only carries the Ed25519 transport fingerprint, so this
+                    // pairing cannot prove P-256 possession; the user must pair by fingerprint.
                     SyncPairing.confirm(host.storeRef(), DeviceIdentity.fingerprint(), remoteFingerprint,
-                        deviceId, peerId, sas, new String(typedCode).trim());
+                        deviceId, peerId, sas, new String(typedCode).trim(), "");
                     java.util.Arrays.fill(typedCode, '\0');
                     rememberPeerAddress(deviceId, address);
                     host.refreshAfterSync();
-                    host.toast(T.s("pair.done", en));
+                    host.toast(T.s("pair.done_no_p256", en));
                 } catch (Exception error) {
                     java.util.Arrays.fill(typedCode, '\0');
                     host.failWith(error);
@@ -403,8 +405,19 @@ final class SyncPanel {
             host.ioRef().execute(() -> {
                 String outcome;
                 try {
+                    final String localFingerprint = SyncTransport.localFingerprint();
+                    if (!target.p256Bound()) {
+                        host.uiRef().post(() -> {
+                            if (!host.isDestroyedRef()) host.toast(T.s("sync.pairing_not_p256_bound", en));
+                        });
+                        return;
+                    }
                     String result = SyncTransport.nativeServeOnce(syncSeed(), SYNC_PORT, target.peerId,
-                        request -> SyncRecords.handle(host.storeRef(), request));
+                        request -> {
+                            byte[] body = SyncTransport.openPayload(request, localFingerprint, target.p256Fingerprint);
+                            byte[] response = SyncRecords.handle(host.storeRef(), body);
+                            return SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint, response);
+                        });
                     outcome = result != null && result.startsWith("OK")
                         ? (T.s("sync.peer_synced", en))
                         : T.format("sync.wait_failed", en, result);
@@ -425,17 +438,34 @@ final class SyncPanel {
             final AgentStore.Pairing target = syncTarget();
             if (target == null) { host.toast(T.s("sync.pair_a_device_and_add_its_sync_id_firs", en)); return; }
             host.ioRef().execute(() -> {
-                String outcome;
+                String outcome = null;
                 try {
-                    byte[] payload = SyncRecords.encode(host.storeRef().exportSyncRecords());
-                    byte[] response = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
-                    if (response == null) {
-                        outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);
+                    String localFingerprint = SyncTransport.localFingerprint();
+                    if (!target.p256Bound()) {
+                        outcome = T.s("sync.pairing_not_p256_bound", en);
                     } else {
-                        int applied = SyncRecords.merge(host.storeRef(), response);
-                        host.storeRef().recordSyncCursor(target.deviceId, System.currentTimeMillis(),
-                            "127.0.0.1", SYNC_PORT, "ok:" + applied);
-                        outcome = T.format("sync.changes_applied", en, applied);
+                        byte[] payload = SyncTransport.bindPayload(localFingerprint, target.p256Fingerprint,
+                            SyncRecords.encode(host.storeRef().exportSyncRecords()));
+                        byte[] envelope = SyncTransport.nativeDialOnce(syncSeed(), SYNC_PORT, target.peerId, payload);
+                        byte[] response = null;
+                        if (envelope != null) {
+                            try {
+                                response = SyncTransport.openPayload(envelope, localFingerprint,
+                                    target.p256Fingerprint);
+                            } catch (IllegalStateException rejected) {
+                                host.storeRef().appendSystemAudit(
+                                    "sync_binding_rejected:" + rejected.getMessage());
+                                outcome = T.format("sync.peer_binding_rejected", en, rejected.getMessage());
+                            }
+                        }
+                        if (response != null) {
+                            int applied = SyncRecords.merge(host.storeRef(), response);
+                            host.storeRef().recordSyncCursor(target.deviceId, System.currentTimeMillis(),
+                                "127.0.0.1", SYNC_PORT, "ok:" + applied);
+                            outcome = T.format("sync.changes_applied", en, applied);
+                        } else if (outcome == null) {
+                            outcome = T.s("sync.sync_failed_no_response_from_the_peer", en);
+                        }
                     }
                 } catch (Throwable error) {
                     outcome = (T.s("sync.sync_failed", en)) + error.getMessage();
