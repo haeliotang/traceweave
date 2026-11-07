@@ -14,6 +14,13 @@ what changed between versions; the prototype disclaimer from the README still ap
   sync until they are re-paired by fingerprint.
 - Rejected bindings are recorded in the audit trail as `sync_binding_rejected:<reason>`;
   successful background syncs no longer fall back to unbound payloads.
+- Out-of-band pairing: the pairing dialog can copy a `TRACEWEAVE-PAIRING-CARD-1` card
+  (fingerprint, sync id, optional LAN address, checksum) and paste it on the other device, so
+  the peer identity travels through a channel you control instead of the network.
+- The manual pairing path no longer shows a display-only six-digit code. It asks you to confirm
+  the full fingerprint and states plainly that the fingerprint is only trustworthy if you
+  carried it yourself; code-based (SAS) pairing already binds both P-256 fingerprints and both
+  transport keys. Code-based pairings now record the peer's P-256 fingerprint, so they can sync.
 
 ## 0.1.4 — 2026-11-07
 
