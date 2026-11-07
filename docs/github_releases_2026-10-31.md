@@ -1,5 +1,9 @@
 # GitHub Releases 分发流程（2026-10-31）
 
+> **历史文档（2026-10-31 时点）**：本文记录 v0.6.x 时期的 GitHub Releases 流程，其中的版本号、
+> 包名与"尚未公开"字样均已过时。**当前流程见 [agent_os_release_process.md](agent_os_release_process.md)**；
+> 当前版本与能力见 [README](../README.md) 与 [CHANGELOG](../CHANGELOG.md)。
+
 按你的决定：**先走 GitHub Releases**，Play 作为后续。这份文档给出从候选包到公开下载的完整步骤，以及每一步的校验。
 
 ## 1. 产物布局

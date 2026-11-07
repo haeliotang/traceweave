@@ -38,8 +38,16 @@ Every published build is a **development-key side load**, not a store build and 
    The app is signed with the development key
    `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db`; compare it with
    `apksigner verify --print-certs` if you care about the exact identity.
-5. Data written by 0.1.x uses schema 13. Older builds cannot open a migrated database, so keep
-   the previous APK until the new one has started successfully.
+5. **Data schema moves forward only.** The mapping is exact, not approximate:
+
+   | Release | Database schema |
+   | :--- | :--- |
+   | 0.1.0 – 0.1.3 | 13 |
+   | 0.1.4 | 17 |
+
+   An older APK refuses to open a newer database (`onUpgrade` has no path and `onDowngrade`
+   throws). To go back to an older build: export an encrypted archive first, uninstall, install
+   the old APK, then import. Keep the previous APK until the new one has started successfully.
 
 **Permissions the app can request:** `INTERNET` (optional cloud planning, only after a per-request
 preview), `RECORD_AUDIO` (voice input, only while you hold the mic), `POST_NOTIFICATIONS`

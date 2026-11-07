@@ -16,7 +16,40 @@
 [![Security: Prototype, not certified](https://img.shields.io/badge/Security-Prototype_Not_Certified-475569.svg)]()
 [![Device checks: Dated receipts](https://img.shields.io/badge/Device_checks-Dated_receipts-16A34A.svg)](docs/agent_os_model_document_acceptance.md)
 
+
 ---
+
+## 0. 下载与安装
+
+每个已发布的版本都是**开发密钥签名的侧载包**，不是商店构建，也不是生产签名身份。
+
+1. 打开 [最新 Release](https://github.com/haeliotang/traceweave/releases/latest)。
+2. 从同一个 Release 下载 `traceweave-<版本>.apk` 与 `SHA256SUMS`。
+3. 安装前先校验：
+
+   ```bash
+   shasum -a 256 -c SHA256SUMS --ignore-missing
+   ```
+
+4. 用 `adb install -r traceweave-<版本>.apk` 安装，或把 APK 复制到设备后打开。
+   应用由开发密钥 `9effee32f57b35c256529e97cd8db435813e84025d48601c00770b6adf95a6db` 签名；
+   需要精确身份时用 `apksigner verify --print-certs` 比对。
+5. **数据格式只前进，不回退**，对应关系是精确的：
+
+   | 版本 | 数据库 schema |
+   | :--- | :--- |
+   | 0.1.0 – 0.1.3 | 13 |
+   | 0.1.4 | 17 |
+
+   旧版 APK 打不开新库（`onUpgrade` 没有对应路径，`onDowngrade` 直接抛异常）。要回退：
+   先导出加密档案 → 卸载 → 安装旧版 → 导入档案。
+
+**应用可能请求的权限**：`INTERNET`（可选云端规划，仅在逐次预览并批准后）、`RECORD_AUDIO`
+（语音输入，仅在按住麦克风时）、`POST_NOTIFICATIONS`（授权与胶囊通知）、
+`SYSTEM_ALERT_WINDOW` / `HIDE_OVERLAY_WINDOWS`（悬浮胶囊）、`BIND_ACCESSIBILITY_SERVICE`
+（可选屏幕朗读，用于语音/视觉流程）、`BLUETOOTH_*`（可选配对辅助）、`RECEIVE_BOOT_COMPLETED`
+（重排同步任务），以及签名受保护的 Edge Provider 权限。除非你配置云端端点并批准该次请求，
+否则不会有任何上传。
 
 ## 1. 概述
 
