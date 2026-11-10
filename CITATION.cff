@@ -5,7 +5,7 @@ type: software
 authors:
   - name: "Inceptless"
 repository-code: "https://github.com/haeliotang/traceweave"
-license: Apache-2.0
+license: AGPL-3.0-or-later
 abstract: >-
   An Android application, Rust core and Python tooling exploring user-sovereign personal
   computing: local rule-based planning, an encrypted memory vault, an append-only audit trail

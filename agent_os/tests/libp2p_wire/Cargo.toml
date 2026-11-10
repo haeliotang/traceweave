@@ -5,6 +5,7 @@
 name = "traceform-libp2p-eval"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
 
 [dependencies]
 futures = "0.3"

@@ -12,6 +12,7 @@ description = "Traceform Research: Latent Manifold & Representation Discovery (I
 authors = [{ name = "Inceptless" }]
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "AGPL-3.0-or-later" }
 dependencies = [
     "numpy",
     "scipy"
