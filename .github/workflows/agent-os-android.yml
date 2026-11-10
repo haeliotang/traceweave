@@ -83,12 +83,20 @@ jobs:
         with:
           persist-credentials: false
       - name: Check REUSE licensing metadata
+        # Ubuntu 24.04 marks the system Python as externally managed (PEP 668), so a
+        # pinned venv is used instead of pip install --user.
         run: |
-          python3 -m pip install --user "reuse[charset-normalizer]"
-          python3 -m reuse lint
+          python3 -m venv "$RUNNER_TEMP/reuse-venv"
+          "$RUNNER_TEMP/reuse-venv/bin/pip" install "reuse[charset-normalizer]==6.3.0"
+          "$RUNNER_TEMP/reuse-venv/bin/reuse" lint
       - name: Check dependency licences with cargo-deny
         run: |
           cargo install cargo-deny --version 0.20.2 --locked
           for crate in agent_os/core agent_os/sync native/zk_alignment agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
             (cd "$crate" && cargo deny check licenses)
+          done
+      - name: Apache-licensed components keep a permissive dependency closure
+        run: |
+          for crate in agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
+            (cd "$crate" && cargo deny --config "$GITHUB_WORKSPACE/deny-permissive.toml" check licenses)
           done
