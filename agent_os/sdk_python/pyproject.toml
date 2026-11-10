@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 name = "traceform-substrate"
 version = "1.0.0"
 authors = [
-  { name="Traceform Team" },
+  { name="Inceptless", email="support@inceptless.com" },
 ]
 description = "Official Python SDK for Personal Agent Substrate"
 readme = "README.md"

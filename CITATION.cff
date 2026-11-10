@@ -4,6 +4,7 @@ message: "If you reference this prototype, cite the repository and the commit yo
 type: software
 authors:
   - name: "Inceptless"
+    email: "support@inceptless.com"
 repository-code: "https://github.com/haeliotang/traceweave"
 license: AGPL-3.0-or-later
 abstract: >-

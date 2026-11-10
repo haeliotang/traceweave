@@ -5,6 +5,7 @@
 name = "traceform-libp2p-eval"
 version = "0.1.0"
 edition = "2021"
+authors = ["Inceptless <support@inceptless.com>"]
 license = "Apache-2.0"
 
 [dependencies]

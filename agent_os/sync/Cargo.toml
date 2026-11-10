@@ -5,6 +5,7 @@
 name = "traceweave-sync"
 version = "0.1.0"
 edition = "2021"
+authors = ["Inceptless <support@inceptless.com>"]
 license = "AGPL-3.0-or-later"
 description = "Traceweave cross-device sync transport (default off, synthetic tests only)"
 
