@@ -22,5 +22,7 @@ notice. Published assets are immutable.
 
 ## Contributions
 
-Contributions are accepted under Apache-2.0 (see [CONTRIBUTING.md](CONTRIBUTING.md)). By
-submitting a pull request you confirm you have the right to license the change under those terms.
+Contributions require signing the Inceptless Contributor License Agreement (see
+[CLA.md](CLA.md) and [CONTRIBUTING.md](CONTRIBUTING.md)) so that the project can stay open
+source and also be offered under other terms. Until the CLA is formally in force, external
+contributions are not merged.

@@ -41,4 +41,6 @@ research/traceform/
 
 ## License
 
-Licensed under the Apache License, Version 2.0. Copyright (c) 2026 Inceptless.
+Licensed under the GNU Affero General Public License, version 3 or later
+(`AGPL-3.0-or-later`). Copyright (c) 2026 Inceptless. See the repository
+[LICENSING.md](../LICENSING.md) for the layer table and licence history.

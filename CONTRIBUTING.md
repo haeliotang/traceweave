@@ -2,6 +2,24 @@
 
 The supported product path is the Android application in `agent_os/android`; research and Rust experiments have separate evidence boundaries. Read the relevant source, tests and [current acceptance](docs/agent_os_documents_privacy_acceptance.md) before proposing changes.
 
+
+## Contributor License Agreement
+
+Contributions require signing the **Inceptless Contributor License Agreement** ([CLA.md](CLA.md)).
+It lets the project stay open source and also be offered under other terms; you keep the
+copyright in your contribution. The signing tool is not published yet:
+
+> TODO(maintainer): link the CLA signing tool here once it is installed. The CLA signing record
+> has to name the CLA version the contributor accepted.
+
+**Until CLA 1.0 is formally in force, external contributions are not merged.** Issues, bug
+reports and reproduction records are welcome in the meantime.
+
+By opening a pull request you confirm that you have the right to submit the change, that any
+third-party material is identified with its licence, and that new files carry SPDX headers or
+are covered by `REUSE.toml` (`reuse lint` must pass). Do not add a `Signed-off-by` line; the
+CLA replaces the DCO.
+
 ## Changes and evidence
 
 - Keep changes focused. Reproduce bugs with a failing behavior test before fixing them.

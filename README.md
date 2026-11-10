@@ -9,7 +9,7 @@ See [CHANGELOG.md](CHANGELOG.md) for what changed between releases.
 
 > **Prototype, not production software.** Expect missing pieces, rough edges and breaking changes before 1.0.
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Hardware Validation: Google Pixel 6a](https://img.shields.io/badge/Hardware-Google_Pixel_6a_(Tensor_G1)-059669.svg)]()
 [![Platform: GrapheneOS Pixel 6a test device](https://img.shields.io/badge/Platform-GrapheneOS_Pixel_6a-0284C7.svg)]()
 [![Runtime: Rust and Android app prototype](https://img.shields.io/badge/Runtime-Rust_%2B_Android_Prototype-0D9488.svg)]()
@@ -325,7 +325,7 @@ adb shell am start -n com.inceptless.traceweave.validation.target/com.inceptless
 ```
 .
 ├── README.md               Master architectural specification and project documentation
-├── LICENSE                 Official Apache License 2.0
+├── LICENSE                 Licence text (AGPL-3.0-or-later); layers in LICENSING.md
 ├── agent_os/               Agent OS Android app prototype and experimental Rust components
 │   ├── android/            Android app services, activities, overlay, and providers
 │   ├── core/               Rust native library; agentosd runtime is disabled
@@ -375,9 +375,13 @@ Contributions from systems engineers, machine learning researchers, and security
 
 ## 11. Open Source License
 
-Traceweave is released under the **Apache License, Version 2.0**.
+Traceweave is licensed in layers: the application, runtime and services are
+**AGPL-3.0-or-later**; the client SDKs, protocol schemas and conformance tests are
+**Apache-2.0**; documentation is **CC-BY-4.0**.
 
-The root [LICENSE](LICENSE) applies to project code. Third-party components retain their own licenses; preserve their notices when redistributing dependencies or binaries.
+See [LICENSING.md](LICENSING.md) for the path-to-licence table, the licence history
+(earlier releases stay Apache-2.0) and the brand-asset terms. Third-party components keep
+their own licences; see [NOTICE](NOTICE).
 
 ---
 
@@ -388,4 +392,4 @@ Traceweave is initiated, engineered, and governed by **Inceptless**.
 - Parent Entity: Inceptless
 - Core Product: Traceweave
 - Subsystems: Traceweave OS, Traceweave Runtime, Traceweave Protocol, Traceweave Research
-- Copyright: (c) 2026 Inceptless. Licensed under the Apache License 2.0 (see [LICENSE](LICENSE)); "Traceweave" and the Traceweave marks remain trademarks of Inceptless.
+- Copyright: (c) 2026 Inceptless. Code and documentation are licensed as described in [LICENSING.md](LICENSING.md); the project name, logo and icons are brand assets (`LicenseRef-Inceptless-Brand`) and are not covered by the source licences.
