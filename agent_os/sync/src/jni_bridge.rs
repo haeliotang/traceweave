@@ -611,3 +611,42 @@ pub extern "system" fn Java_com_inceptless_traceweave_SyncTransport_nativePairDi
     };
     match env.new_string(text) { Ok(value) => value.into_raw(), Err(_) => std::ptr::null_mut() }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::verify_p256;
+
+    /// Wire-compatibility vectors captured with p256 0.13.6 (before the upgrade to 0.14):
+    /// a fixed secret key, the SEC1/SPKI public key and the RFC 6979 signature over the
+    /// message. p256 0.14 must accept exactly these bytes, because Android Keystore keeps
+    /// producing DER ECDSA signatures and SPKI public keys.
+    const SPKI_HEX: &str = "3059301306072a8648ce3d020106082a8648ce3d0301070342000460fed4ba255a9d31c961eb74c6356d68c049b8923b61fa6ce669622e60f29fb67903fe1008b8bc99a41ae9e95628bc64f2f1b20c2d7e9f5177a3c294d4462299";
+    const SIG_HEX: &str = "3044022040d95816a52215af2db3dec634811704813f58d0ea5a1bc41a658246d5028a26022030c007c5514d3aa73541c16de9b9e06cca9fde6f9ac49968ca165ecaa563a236";
+    const MESSAGE: &[u8] = b"traceweave-p256-wire-compat-v1";
+
+    fn decode(hex: &str) -> Vec<u8> {
+        let bytes = hex.as_bytes();
+        (0..bytes.len() / 2)
+            .map(|index| {
+                let pair = std::str::from_utf8(&bytes[index * 2..index * 2 + 2]).unwrap();
+                u8::from_str_radix(pair, 16).unwrap()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn verifies_p256_keystore_der_vectors_from_p256_0_13() {
+        assert!(verify_p256(MESSAGE, &decode(SIG_HEX), &decode(SPKI_HEX)));
+    }
+
+    #[test]
+    fn rejects_tampered_der_signature_and_spki() {
+        let mut signature = decode(SIG_HEX);
+        signature[10] ^= 0x01;
+        assert!(!verify_p256(MESSAGE, &signature, &decode(SPKI_HEX)));
+        let mut spki = decode(SPKI_HEX);
+        spki[40] ^= 0x01;
+        assert!(!verify_p256(MESSAGE, &decode(SIG_HEX), &spki));
+        assert!(!verify_p256(b"other message", &decode(SIG_HEX), &decode(SPKI_HEX)));
+    }
+}
