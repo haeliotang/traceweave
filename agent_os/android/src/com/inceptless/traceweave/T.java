@@ -832,6 +832,10 @@ public final class T {
         add("pair.oob_title", "Trust this fingerprint?", "确认信任这个指纹？");
         add("pair.oob_message", "You are about to trust:\n\n%s\n\nThis is safe only if you carried it from the other device yourself (pairing card, or reading its screen). A network relay can replace a fingerprint you did not verify out of band.", "你即将信任：\n\n%s\n\n只有当这个指纹是你亲自从另一台设备带过来的（配对卡，或直接看它的屏幕），这一步才安全。没有经过带外的指纹可能被网络中继替换。");
         add("pair.oob_confirm", "I verified it", "我已核对");
+        add("settings.section_about", "About and licence", "关于与许可");
+        add("settings.source_line", "Source: %s", "源码：%s");
+        add("settings.source_button", "Source (AGPL section 13)", "源码（AGPL 第 13 条）");
+        add("settings.source_unavailable", "No browser is available to open the source link", "没有可用于打开源码链接的浏览器");
         add("sync.wait_peer", "Wait for peer", "等待对端");
         add("sync.now", "Sync now", "同步现在");
         add("sync.auto", "Automatic sync while the app is open", "应用打开时自动同步");
