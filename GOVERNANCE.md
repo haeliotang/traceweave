@@ -24,5 +24,5 @@ notice. Published assets are immutable.
 
 Contributions require signing the Inceptless Contributor License Agreement (see
 [CLA.md](CLA.md) and [CONTRIBUTING.md](CONTRIBUTING.md)) so that the project can stay open
-source and also be offered under other terms. Until the CLA is formally in force, external
-contributions are not merged.
+source and also be offered under other terms. A pull request is merged only after the CLA
+check (`license/cla`) passes; see [CONTRIBUTING.md](CONTRIBUTING.md).

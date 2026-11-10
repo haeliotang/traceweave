@@ -14,7 +14,8 @@ runtime stay copyleft.
 | `docs/`, `README.md`, `README.zh-CN.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CITATION.cff`, `LICENSING.md`, `CLA.md` | `CC-BY-4.0` | Documentation, specifications and design text. |
 | `agent_os/branding/` | `LicenseRef-Inceptless-Brand` | Logo and icon files are brand assets and are not covered by the source licences; see `LICENSES/LicenseRef-Inceptless-Brand.txt`. |
 | `artifacts/`, `field_telemetry/`, `pixel_physical/` | `CC-BY-4.0` | Published measurement records and receipts; frozen byte-for-byte so they can be cited. This includes evidence code (e.g. `artifacts/agent_os/phase1/Phase1EvidenceActivity.java`) and `.patch` files: they are evidence records, not reusable source, so they follow the record licence. |
-| `data/` | `Apache-2.0` | Published measurement fixtures and the helper scripts that produced them; frozen byte-for-byte. |
+| `data/**/ACCEPTANCE.txt`、`data/**/SHA256SUMS` | `CC-BY-4.0` | Published measurement records, same kind as `artifacts/`; frozen byte-for-byte. |
+| `data/**/*.py` | `AGPL-3.0-or-later` | Collection/operations scripts, so they follow the application layer; frozen byte-for-byte. |
 | Third-party vendored code and assets | their own licences | Kept as-is; see the file headers and `REUSE.toml`. |
 
 If a file has no header, `REUSE.toml` declares its licensing. The
