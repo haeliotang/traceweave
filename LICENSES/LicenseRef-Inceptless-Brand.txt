@@ -1,0 +1,15 @@
+Inceptless brand assets are not licensed under the open-source licences of
+this repository.
+
+The project name, logo, icons, wordmarks and the Inceptless name and marks
+(collectively "the Brand") are excluded from the licences granted for the
+source code and documentation. You may use the Brand to refer truthfully to
+this project (for example, to say that your software implements a protocol
+from this repository, or that it is based on Traceweave), but you may not use
+it in a way that suggests an official status, sponsorship, certification or
+endorsement by Inceptless.
+
+Brand files in this repository are covered by `SPDX-License-Identifier:
+LicenseRef-Inceptless-Brand` (see `REUSE.toml` and `agent_os/branding/`).
+
+Questions about brand use: support@inceptless.com
