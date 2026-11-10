@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
     parser.add_argument("--native-lib", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--source-commit", default="", help="commit hash for the AGPL source link (defaults to HEAD)")
     parser.add_argument("--scope", default="local_executor_job_scheduler_encrypted_checkpoint_archive_and_user_confirmed_demo_capability_broker")
     args = parser.parse_args()
 
@@ -89,10 +90,33 @@ def main():
     apk = build / "agent-os.apk"
 
     res_dir = root / "agent_os/android/res"
+
+    def git(*arguments):
+        try:
+            return subprocess.run(["git"] + list(arguments), cwd=root, capture_output=True,
+                                  text=True, check=True).stdout.strip()
+        except Exception:
+            return ""
+
+    # AGPL section 13: bake the exact commit into the app so the Source link points at
+    # the running build, not at a tag that may not exist yet for development builds.
+    source_commit = args.source_commit or git("rev-parse", "HEAD")
+    generated_res = build / "generated-res"
+    if generated_res.exists():
+        shutil.rmtree(generated_res)
+    (generated_res / "values").mkdir(parents=True)
+    escaped_commit = source_commit.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    (generated_res / "values" / "source_commit.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
+        '    <string name="source_commit" translatable="false">' + escaped_commit + '</string>\n'
+        '</resources>\n', encoding="utf-8")
     if res_dir.is_dir():
         compiled_res = build / "compiled_res.zip"
+        compiled_generated = build / "compiled_generated_res.zip"
         run([tools["aapt2"], "compile", "--dir", res_dir, "-o", compiled_res])
-        run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-R", compiled_res, "--auto-add-overlay", "-o", unsigned])
+        run([tools["aapt2"], "compile", "--dir", generated_res, "-o", compiled_generated])
+        run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest,
+             "-R", compiled_res, "-R", compiled_generated, "--auto-add-overlay", "-o", unsigned])
     else:
         run([tools["aapt2"], "link", "-I", android_jar, "--manifest", manifest, "-o", unsigned])
     with zipfile.ZipFile(unsigned, "a", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -119,13 +143,6 @@ def main():
                 pass
         return "external/" + path.name
 
-    def git(*arguments):
-        try:
-            return subprocess.run(["git"] + list(arguments), cwd=root, capture_output=True,
-                                  text=True, check=True).stdout.strip()
-        except Exception:
-            return ""
-
     manifest_attributes = ET.parse(manifest).getroot().attrib
     android_namespace = "{http://schemas.android.com/apk/res/android}"
     report = {
@@ -142,6 +159,7 @@ def main():
         "scope": args.scope,
         "git_commit": git("rev-parse", "HEAD"),
         "git_dirty": bool(git("status", "--porcelain")),
+        "source_commit": source_commit,
     }
     (build / "build_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"apk": str(apk), "apk_bytes": report["apk_bytes"]}))
