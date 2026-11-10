@@ -59,4 +59,4 @@ Before publishing changes, run `git diff --check` and a redacted secret scan (`g
 - Test archive boundary/error cases without introducing any inherited permissions.
 - Improve bilingual user-facing errors while preserving the underlying failure behavior.
 
-For security issues use [SECURITY.md](SECURITY.md), not a public issue. Project contributions use the root Apache-2.0 license; preserve third-party notices.
+For security issues use [SECURITY.md](SECURITY.md), not a public issue. Contributions are accepted under the Inceptless CLA (see the section above); the code layers are licensed as described in [LICENSING.md](LICENSING.md). Preserve third-party notices.

@@ -10,10 +10,16 @@ SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = ["data/**"]
+path = ["data/**/*.txt", "data/**/SHA256SUMS"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
-SPDX-License-Identifier = "Apache-2.0"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["data/**/*.py"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
 path = ["docs/**"]
@@ -45,6 +51,12 @@ path = ["agent_os/branding/**", "agent_os/android/res/mipmap*/**", "agent_os/and
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "LicenseRef-Inceptless-Brand"
+
+[[annotations]]
+path = ["deny.toml", "deny-permissive.toml"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
 path = ["agent_os/android/res/**"]
@@ -104,7 +116,7 @@ SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["NOTICE", "deny.toml", ".github/pull_request_template.md"]
+path = ["NOTICE", ".github/pull_request_template.md"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "CC-BY-4.0"

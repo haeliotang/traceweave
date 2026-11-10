@@ -8,12 +8,12 @@ runtime stay copyleft.
 
 | Path | SPDX identifier | Why |
 | --- | --- | --- |
-| `LICENSE`, `agent_os/android/`, `android/`, `native/`, `agent_os/core/`, `agent_os/sync/`, `agent_os/packaging/`, `agent_os/ts_plugins/`, `scripts/`, `research/`, `tests/`, `agent_os/tests/` (except `libp2p*`), `agent_os/demo_agent/` is an example and is Apache-2.0 (see below) | `AGPL-3.0-or-later` | Applications, runtime, services, CLI, native code, build and operations scripts. |
-| `agent_os/sdk_python/`, `agent_os/sdk_android/`, `agent_os/demo_agent/`, `agent_os/tests/libp2p*/` | `Apache-2.0` | Client SDKs, an example agent and protocol conformance tests exist so that third parties can implement or talk to the protocol without adopting our copyleft. |
+| `LICENSE`, `agent_os/android/`, `android/`, `native/`, `agent_os/core/`, `agent_os/sync/`, `agent_os/packaging/`, `agent_os/ts_plugins/`, `scripts/`, `research/`, `tests/`, `agent_os/tests/` (except `libp2p*`) | `AGPL-3.0-or-later` | Applications, runtime, services, CLI, native code, build and operations scripts. |
+| `agent_os/sdk_python/`, `agent_os/sdk_android/`, `agent_os/demo_agent/`, `agent_os/tests/libp2p*/`, `agent_os/android/src/**/IAgentSubstrate.aidl` | `Apache-2.0` | Client SDKs, an example agent, the Binder contract and the transport conformance probes exist so that third parties can implement or talk to the protocol without adopting our copyleft. |
 | `docs/protocol/*.schema.json` | `Apache-2.0` | JSON Schema is a protocol contract; independent implementations must be able to copy it. |
 | `docs/`, `README.md`, `README.zh-CN.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CITATION.cff`, `LICENSING.md`, `CLA.md` | `CC-BY-4.0` | Documentation, specifications and design text. |
 | `agent_os/branding/` | `LicenseRef-Inceptless-Brand` | Logo and icon files are brand assets and are not covered by the source licences; see `LICENSES/LicenseRef-Inceptless-Brand.txt`. |
-| `artifacts/`, `field_telemetry/`, `pixel_physical/` | `CC-BY-4.0` | Published measurement records and receipts; frozen byte-for-byte so they can be cited. |
+| `artifacts/`, `field_telemetry/`, `pixel_physical/` | `CC-BY-4.0` | Published measurement records and receipts; frozen byte-for-byte so they can be cited. This includes evidence code (e.g. `artifacts/agent_os/phase1/Phase1EvidenceActivity.java`) and `.patch` files: they are evidence records, not reusable source, so they follow the record licence. |
 | `data/` | `Apache-2.0` | Published measurement fixtures and the helper scripts that produced them; frozen byte-for-byte. |
 | Third-party vendored code and assets | their own licences | Kept as-is; see the file headers and `REUSE.toml`. |
 
