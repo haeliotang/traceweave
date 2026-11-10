@@ -57,7 +57,7 @@ retroactive.
 | Version / tag | Licence | Notes |
 | --- | --- | --- |
 | `v0.1.0` – `v0.1.4` (and every earlier commit) | `Apache-2.0` | Published releases remain Apache-2.0 forever. |
-| Commit that introduces this file (`license: …` series on branch `license/agpl-split`) and later | `AGPL-3.0-or-later` for the layers above | The first released version that carries the split licence will be noted in its release notes. |
+| From merge commit `90b8389` onward | `AGPL-3.0-or-later` for the layers above | The first released version that carries the split licence will be noted in its release notes. |
 
 Until that first release, `main` carries the split licence but the published
 artefacts (`v0.1.4` and earlier) remain Apache-2.0. Do not re-upload or re-tag
