@@ -49,11 +49,3 @@ You sign by accepting this agreement through the CLA signing tool linked from th
 ## 9. Versions
 
 Inceptless may publish new versions of this agreement. A new version applies only to Contributions made after You accept it; Contributions made under this version stay under this version.
-
----
-
-### Notes for the reviewer (remove before publication)
-
-- **Purpose**: allow dual licensing (open-source copyleft plus a commercial licence) while keeping contributors' copyright, following the shape of the Apache Individual CLA and the Harmony "licence" variant. Section 4 is the outbound promise that protects contributors from the Project being closed.
-- **Who receives the rights (most important)**: if Inceptless is not yet a registered legal entity, the grantee must be the founder personally (for example "[full legal name], doing business as Inceptless"), with a clause allowing assignment to a future Inceptless company. The same applies to the "Copyright 2026 Inceptless" lines in the repositories.
-- **Open questions**: governing law and venue (not stated); the legal entity name and registration of "Inceptless" (only the domain inceptless.com is registered; no company or trademark registration is assumed); whether an entity CLA needs a separate document; minors as contributors.

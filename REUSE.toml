@@ -108,3 +108,12 @@ path = ["NOTICE", "deny.toml", ".github/pull_request_template.md"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = [
+    "android/src/com/inceptless/traceweave/edge/ReferenceFeatureKinds.java",
+    "android/src/com/inceptless/traceweave/edge/StaticallyUnobservableFeatures.java",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
