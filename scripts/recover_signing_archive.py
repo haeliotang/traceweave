@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Recover the signing keystores from an encrypted .edgea backup and prove they work.
 
 The drill is read-only against the archive and never prints key material: it

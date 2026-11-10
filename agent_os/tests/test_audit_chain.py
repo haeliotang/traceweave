@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The audit digest must be unambiguous for new rows and still verify old ones."""
 import pathlib
 import subprocess

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Centralized synthetic sixteen-node proof of an already discovered statement.
 //! The input contains both fake owners' witnesses: this is never a private prover.
 use ark_bls12_381::{Bls12_381, Fr};

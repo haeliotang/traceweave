@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 use agent_os_core::causal_memory::{merge, resolve, Clock, Version};
 
 fn version(entries: &[(&str, u64)], text: Option<&str>) -> Version {

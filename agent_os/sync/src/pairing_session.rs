@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! One-shot LAN pairing session: exchange offers over Noise, derive the SAS.
 //!
 //! Pairing is unauthenticated by design: the 6-digit SAS the two users compare

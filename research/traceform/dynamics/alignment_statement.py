@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Exact bounded arithmetic relation for a future private GW proof backend.
 
 This validates plaintext witnesses locally. It is not a zero-knowledge proof.

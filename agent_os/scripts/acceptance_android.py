@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Build and verify a candidate, run isolated device regression and migration, optionally install it.
 
 Requires an explicit device serial and existing signing key. Never uninstalls or clears

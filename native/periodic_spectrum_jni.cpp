@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 #include "periodic_spectrum.h"
 #include "traceform_core.h"
 #include <jni.h>

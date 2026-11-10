@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Build the on-device parity fixture for SyntheticReferenceParityReceiver.
 
 engine_frames: observations with the raw values the Python extractor computes (reference).

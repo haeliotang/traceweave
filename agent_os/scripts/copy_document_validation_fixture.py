@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Copy the synthetic EXPORT_MIGRATION fixture between installed debug test packages."""
 
 import argparse

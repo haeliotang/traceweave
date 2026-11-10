@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Traceform Edge Manifold Daemon (DETM & Online CSD Tipping Detector).
 

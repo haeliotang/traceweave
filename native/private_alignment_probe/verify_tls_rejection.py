@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Reject synthetic wrong TLS identities before MPC output; explicit local probe."""
 import argparse,subprocess,ssl,hashlib,time,json
 from pathlib import Path

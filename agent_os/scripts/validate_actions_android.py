@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Run synthetic action checks against the installed isolated Android test package.
 
 RUN_SUITE and legacy DeviceValidationActivity cases reset only the isolated test DB.

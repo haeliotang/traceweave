@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Bounded bootstrap retry for a synthetic TLS client over ADB forwarding.
 
 ADB may accept TCP before the remote listener exists. Retry only the initial

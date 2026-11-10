@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Structural checks for the grammar-capable native runtime.
 
 The bare-grammar sampler aborted the process once; these checks keep the

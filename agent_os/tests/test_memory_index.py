@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Memory search must behave like a substring search, not a whole-word lookup."""
 import pathlib
 import subprocess

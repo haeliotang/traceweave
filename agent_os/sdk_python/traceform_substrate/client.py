@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 """Substrate Client: Native Python client implementation for Personal Agent Substrate."""
 
 import base64

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Compatibility probe only; this is not the Traceform private GW circuit.
 #include <emp-tool/emp-tool.h>
 #include <emp-ag2pc/emp-ag2pc.h>

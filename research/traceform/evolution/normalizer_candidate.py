@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Offline helpers for evaluating a candidate normalizer against stored observations.
 
 Raw continuous features do not depend on the scaling parameters, so each stored

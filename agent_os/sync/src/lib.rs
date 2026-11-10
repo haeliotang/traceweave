@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Traceweave cross-device sync transport.
 //!
 //! Scope: framing limits, device binding transcripts and a libp2p/Noise transport.

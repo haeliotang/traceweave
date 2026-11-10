@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // Isolated SHA adapter check before integration into the feasible GW relation.
 #include "commitment.h"
 #include <emp-tool/execution/plain_prot.h>

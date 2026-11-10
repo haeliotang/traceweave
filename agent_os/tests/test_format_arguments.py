@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Every T.format call site must supply as many arguments as the template needs.
 
 A mismatch only shows up at runtime as MissingFormatArgumentException, so this

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Compare circuit output with an externally authenticated public statement.
 
 Matching bytes do not authenticate owners or verify a cryptographic proof.

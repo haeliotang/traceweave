@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Parity of ReferenceDigitalProbe.java with the real DigitalSensoriumProbe.
 
 The Python probe is exercised unmodified: ``subprocess.run`` and ``shutil.which`` are patched to return

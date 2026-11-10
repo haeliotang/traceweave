@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Ratchet against new hardcoded Chinese literals outside the catalog.
 
 The bilingual catalog is the only place user-facing text should live. The

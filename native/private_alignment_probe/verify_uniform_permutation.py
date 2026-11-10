@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Check recorded uniform-permutation gates against independent integer witnesses.
 
 This evaluates plaintext synthetic gates, not a private protocol execution.

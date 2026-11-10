@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Local-network discovery for pairing (mDNS only, no relay).
 
 use crate::identity::DeviceIdentity;

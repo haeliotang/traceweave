@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: Apache-2.0
+
 // IAgentSubstrate.aidl
 // Substrate Protocol v1.0 standard AIDL definition for Android IPC
 package com.inceptless.traceweave;

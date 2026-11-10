@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 [target.aarch64-linux-android]
 linker = "Library/Android/sdk/ndk/26.3.11579264/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang"
 rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]

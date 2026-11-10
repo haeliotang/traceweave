@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package com.inceptless.traceweave;
 
 /** Pure scheduling policy so the rules can be tested on the host. */

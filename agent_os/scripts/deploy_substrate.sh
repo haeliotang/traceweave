@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Universal Deployment and Management Tool for Personal Agent Substrate Daemon (agentosd)
 # Supports Android (ADB), macOS (launchd), Linux (systemd), and Magisk packaging.
 

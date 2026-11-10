@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import com.inceptless.traceweave.ArchiveCompat;
 
 /** Host check for the pre-rename archive rules, run by test_archive_compat.py. */

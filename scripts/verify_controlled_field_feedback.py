@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """One authorized 100ms pulse and a real ten-minute private feedback window.
 
 Uses a separate diagnostic ledger. It does not propose a natural intervention,

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Android JNI surface for the sync transport probe.
 //!
 //! The crate is not started by the app; these entry points exist so the pairing

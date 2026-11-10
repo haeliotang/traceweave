@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Unit tests for the 128D Canonical Super-Cube Sensorium (2^7 Hyper-Manifold).
 

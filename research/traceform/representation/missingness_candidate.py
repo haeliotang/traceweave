@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Offline five-coordinate candidate; never used by the production normalizer.
 
 Validities remain separate from the state vector. Missing direct GNSS observations

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Isolated synthetic guarded MPC, CPU abort and discovered-proof USB validation.
 
 Requires the rebuilt probe installed in com.inceptless.traceweave.edge.synthetic. All keys

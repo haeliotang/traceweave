@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Join static dataflow, runtime input evidence and the native source index per dimension.
 
 The ledger classifies how much evidence each of the 128 dimensions has that its

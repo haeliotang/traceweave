@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Experimental merge for versions of one memory. Not connected to Android or a transport.
 //! A tombstone permanently deletes its ID; a deliberate new memory needs a new ID.
 
