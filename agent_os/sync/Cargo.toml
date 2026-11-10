@@ -23,5 +23,5 @@ futures = "0.3"
 libp2p = { version = "=0.57.1", default-features = false, features = ["tokio", "tcp", "noise", "yamux", "ed25519", "request-response", "cbor", "mdns"] }
 sha2 = "0.10"
 jni = "0.21"
-p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
+p256 = { version = "0.14", features = ["ecdsa", "pkcs8"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync", "io-std"] }
