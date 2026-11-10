@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import argparse,json,zipfile,sqlite3,tempfile,subprocess,time,shlex,re,secrets,xml.etree.ElementTree as ET,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]

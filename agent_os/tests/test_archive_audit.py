@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """An archive declares the head of its own audit chain; imports must verify it."""
 import pathlib
 import subprocess

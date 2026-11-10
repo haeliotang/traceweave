@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 name: Agent OS Android checks
 
 on:
@@ -71,3 +74,29 @@ jobs:
             --android-jar "$ANDROID_HOME/platforms/android-35/android.jar" \
             --build-tools "$ANDROID_HOME/build-tools/35.0.0" \
             --model-runtime agent_os/build/model-runtime-ci/libtraceweave_local_model.so
+
+  license:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check REUSE licensing metadata
+        # Ubuntu 24.04 marks the system Python as externally managed (PEP 668), so a
+        # pinned venv is used instead of pip install --user.
+        run: |
+          python3 -m venv "$RUNNER_TEMP/reuse-venv"
+          "$RUNNER_TEMP/reuse-venv/bin/pip" install "reuse[charset-normalizer]==6.3.0"
+          "$RUNNER_TEMP/reuse-venv/bin/reuse" lint
+      - name: Check dependency licences with cargo-deny
+        run: |
+          cargo install cargo-deny --version 0.20.2 --locked
+          for crate in agent_os/core agent_os/sync native/zk_alignment agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
+            (cd "$crate" && cargo deny check licenses)
+          done
+      - name: Apache-licensed components keep a permissive dependency closure
+        run: |
+          for crate in agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
+            (cd "$crate" && cargo deny --config "$GITHUB_WORKSPACE/deny-permissive.toml" check licenses)
+          done

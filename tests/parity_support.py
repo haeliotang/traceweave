@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Python-versus-Java parity harness for ported feature extraction.
 
 A deterministic observation sequence is fed to the Python reference

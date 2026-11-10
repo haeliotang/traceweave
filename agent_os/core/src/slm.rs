@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 use crate::plan::{ExecutionPlan, Step};
 use std::collections::HashMap;
 use std::sync::OnceLock;

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """One local-day snapshot of the edge store, kept for a fixed number of days.
 
 The hot tier holds only 48 hours of raw frames, so later evaluations over several independent days

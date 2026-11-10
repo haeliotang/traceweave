@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test an old synthetic archive between isolated debug packages, never production."""
 import argparse
 from datetime import datetime, timezone

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Build an Edge update preserving the installed APK's existing code, assets and native library.
 
 This only builds and verifies a candidate; it never reads Edge's database or installs an APK.

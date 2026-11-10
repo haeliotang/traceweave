@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Length-prefixed framing with per-frame and per-session limits.
 
 use crate::{MAX_FRAME_BYTES, MAX_SESSION_BYTES, MAX_SESSION_FRAMES};

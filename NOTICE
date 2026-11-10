@@ -1,0 +1,32 @@
+Traceweave
+Copyright 2026 Inceptless <support@inceptless.com>
+
+This repository is licensed layer by layer; see LICENSING.md for the authoritative
+path-to-licence table.
+
+  * Application, runtime, services, CLI, native code, build and operations
+    scripts: AGPL-3.0-or-later (LICENSES/AGPL-3.0-or-later.txt)
+  * Client SDKs, the example agent, protocol schemas and conformance tests:
+    Apache-2.0 (LICENSES/Apache-2.0.txt)
+  * Documentation: CC-BY-4.0 (LICENSES/CC-BY-4.0.txt)
+  * Project name, logos and icons: LicenseRef-Inceptless-Brand
+    (LICENSES/LicenseRef-Inceptless-Brand.txt) — not covered by the source licences
+
+Third-party components
+----------------------
+
+The Android app bundles or links third-party components under their own licences,
+including:
+
+  * llama.cpp / ggml — MIT License, Copyright (c) 2023-2026 The ggml authors.
+    The full text ships in the app as res/raw/llama_cpp_license.txt and in
+    LICENSES/MIT.txt.
+  * Rust crates listed in the Cargo.lock files (libp2p, tokio, serde, sha2,
+    ed25519-dalek, ring, rusqlite and others) — permissive licences (MIT,
+    Apache-2.0, BSD, ISC, Unicode-3.0, Zlib). Dependency licence checks are part
+    of the CI gate; see deny.toml.
+
+Nothing in this NOTICE changes the terms of those third-party licences.
+
+Releases published before the split licence (tags v0.1.0 through v0.1.4) remain
+Apache-2.0; see the "Licence history" section of LICENSING.md.

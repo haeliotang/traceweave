@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Re-run hosted CI runs that failed while the account was blocked.
 
 Lists failed runs since a date and re-runs them; dry-run by default so the list

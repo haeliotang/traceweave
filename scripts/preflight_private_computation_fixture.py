@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Check isolated synthetic unknown-score fixtures before USB dispatch.
 
 Fixture DER keys are test identities, not production owner enrollment. This

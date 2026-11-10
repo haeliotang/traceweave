@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package com.inceptless.traceweave.edge;
 
 /** Strictly decreasing training nearest-pair nonadjacency via coordinate swaps. */

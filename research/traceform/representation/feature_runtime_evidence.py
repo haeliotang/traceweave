@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Aggregate runtime evidence about the 128 continuous dimensions from stored frames.
 
 Reads one SQLite hot-tier snapshot read-only and reports, for each observation

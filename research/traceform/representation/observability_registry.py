@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Which of the 128 dimensions the current acquisition can inform, with the basis for each claim.
 
 Two kinds of evidence are kept apart:

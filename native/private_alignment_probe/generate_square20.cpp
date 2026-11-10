@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 #include <emp-tool/emp-tool.h>
 #include <emp-tool/execution/plain_prot.h>
 #include "square20.h"

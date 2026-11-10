@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Local entropic Gromov-Wasserstein alignment of metric structures.
 
 Distance matrices are sensitive derived data. This is not a cryptographic protocol.

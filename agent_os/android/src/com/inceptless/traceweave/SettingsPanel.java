@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package com.inceptless.traceweave;
 
 import android.app.AlertDialog;
@@ -169,6 +172,18 @@ final class SettingsPanel {
         root.addView(cloudModelConfigButton, cmLp);
         refreshCloud();
 
+        root.addView(Ui.section(host, T.s("settings.section_about", en)));
+        TextView sourceLine = new TextView(host);
+        sourceLine.setText(T.format("settings.source_line", en, sourceLabel(en)));
+        sourceLine.setTextSize(11);
+        sourceLine.setTextColor(Ui.muted(host));
+        sourceLine.setPadding(0, host.dpRef(2), 0, host.dpRef(6));
+        root.addView(sourceLine);
+        Button sourceButton = host.createCompactActionButton(T.s("settings.source_button", en),
+            0xFFF1F5F9, 0xFF334155, view -> openSource());
+        root.addView(sourceButton, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, host.dpRef(34)));
+
         scroll.addView(root);
         builder.setView(scroll);
         builder.setPositiveButton(T.s("settingspanel.9", en), null);
@@ -327,4 +342,52 @@ final class SettingsPanel {
         Ui.themeDialog(cloudDialog, host);
     }
 
+
+    /** Build-configuration values first, then a runtime preference, then the default. */
+    private String sourceRepository() {
+        String configured = host.getSharedPreferences("agent_os_prefs", 0).getString("source_repository", "");
+        if (configured != null && !configured.isEmpty()) return configured;
+        try {
+            return host.getResources().getString(
+                host.getResources().getIdentifier("source_repository", "string", host.getPackageName()));
+        } catch (Exception ignored) {
+            return SourceInfo.DEFAULT_REPOSITORY;
+        }
+    }
+
+    private String sourceCommit() {
+        String configured = host.getSharedPreferences("agent_os_prefs", 0).getString("source_commit", "");
+        if (configured != null && !configured.isEmpty()) return configured;
+        try {
+            return host.getResources().getString(
+                host.getResources().getIdentifier("source_commit", "string", host.getPackageName()));
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private String sourceVersion() {
+        try {
+            return host.getPackageManager().getPackageInfo(host.getPackageName(), 0).versionName;
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    /** Version, licence and the AGPL section 13 link to the running build's source. */
+    private String sourceLabel(boolean en) {
+        String version = sourceVersion();
+        return (version == null || version.isEmpty() ? "" : version + " · ") + SourceInfo.LICENSE + " · "
+            + SourceInfo.url(sourceRepository(), version, sourceCommit());
+    }
+
+    private void openSource() {
+        try {
+            String url = SourceInfo.url(sourceRepository(), sourceVersion(), sourceCommit());
+            host.startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse(url)));
+        } catch (Exception error) {
+            host.toast(T.s("settings.source_unavailable", host.english()));
+        }
+    }
 }

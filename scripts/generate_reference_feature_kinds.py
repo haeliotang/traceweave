@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Generate ReferenceFeatureKinds.java: which ported outputs are 'proxy' and which 'derived'.
 
 An output is 'derived' when every observation field its formula can read is one the native

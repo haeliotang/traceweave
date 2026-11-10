@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Sample battery level and temperature on an unplugged device and estimate drain.
 
 Refuses to run while the device is charging, because charging samples cannot be

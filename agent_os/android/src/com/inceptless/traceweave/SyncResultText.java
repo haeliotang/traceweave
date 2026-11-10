@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 package com.inceptless.traceweave;
 
 /** Pure mapping from a stored sync result to readable text. */

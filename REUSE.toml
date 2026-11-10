@@ -1,0 +1,131 @@
+# REUSE annotations for files that cannot carry SPDX headers (generated,
+# binary, JSON/XML, frozen evidence) or where a bulk declaration is clearer.
+# Header information in individual files always takes precedence.
+version = 1
+
+[[annotations]]
+path = ["artifacts/**", "field_telemetry/**", "pixel_physical/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["data/**/*.txt", "data/**/SHA256SUMS"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["data/**/*.py"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["docs/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["docs/protocol/agent-manifest.schema.json"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "README.md", "README.zh-CN.md", "CHANGELOG.md", "CONTRIBUTING.md",
+    "GOVERNANCE.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CITATION.cff",
+    "LICENSING.md", "CLA.md", "agent_os/README.md", "agent_os/sdk_android/README.md",
+    "agent_os/sdk_python/README.md", "agent_os/branding/README.md",
+    "native/private_alignment_probe/README.md", "native/zk_alignment/README.md",
+    "research/README.md",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["agent_os/branding/**", "agent_os/android/res/mipmap*/**", "agent_os/android/res/drawable*/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "LicenseRef-Inceptless-Brand"
+
+[[annotations]]
+path = ["deny.toml", "deny-permissive.toml"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["agent_os/android/res/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["agent_os/android/res/raw/llama_cpp_license.txt"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2023-2026 The ggml authors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+    "agent_os/android/AndroidManifest.xml", "android/AndroidManifest.xml",
+    "android/lifecycle_probe/AndroidManifest.xml", "android/security_probe/AndroidManifest.xml",
+    "agent_os/tests/android/*.xml", "agent_os/tests/automerge/AndroidManifest.xml",
+    "agent_os/tests/android/*.patch", "agent_os/tests/data/**",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["agent_os/demo_agent/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["agent_os/core/Cargo.lock", "agent_os/sync/Cargo.lock", "native/zk_alignment/Cargo.lock"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["agent_os/tests/libp2p/Cargo.lock", "agent_os/tests/libp2p_live_binding/Cargo.lock", "agent_os/tests/libp2p_retry/Cargo.lock", "agent_os/tests/libp2p_wire/Cargo.lock"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    ".gitignore", "agent_os/ts_plugins/.gitignore", "pytest.ini",
+    "agent_os/ts_plugins/package.json", "agent_os/ts_plugins/package-lock.json",
+    "agent_os/ts_plugins/tsconfig.json", "native/private_alignment_probe/dependencies.json",
+    "agent_os/packaging/linux/agentosd.service", "agent_os/packaging/macos/org.traceform.agentosd.plist",
+    "agent_os/packaging/magisk/META-INF/com/google/android/update-binary",
+    "agent_os/packaging/magisk/META-INF/com/google/android/updater-script",
+    "agent_os/packaging/magisk/module.prop",
+    "agent_os/packaging/magisk/system/etc/init/agentosd.rc",
+    "agent_os/packaging/selinux/file_contexts", "agent_os/packaging/selinux/agentosd.te",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["NOTICE", ".github/pull_request_template.md"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = [
+    "android/src/com/inceptless/traceweave/edge/ReferenceFeatureKinds.java",
+    "android/src/com/inceptless/traceweave/edge/StaticallyUnobservableFeatures.java",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

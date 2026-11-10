@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 """traceform-substrate: Official Python SDK for Personal Agent Substrate."""
 
 from .client import SubstrateClient

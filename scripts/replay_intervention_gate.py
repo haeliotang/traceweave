@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Replay the daemon's intervention gate offline on a stored hot tier (read-only, aggregates only).
 
 The live daemon proposes an intervention only when, at a newly inserted CSD_TIPPING or PROLONGED_DWELL event, the dwell

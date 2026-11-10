@@ -1,7 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 [package]
 name = "traceform-libp2p-eval"
 version = "0.1.0"
 edition = "2021"
+authors = ["Inceptless <support@inceptless.com>"]
+license = "Apache-2.0"
 
 [dependencies]
 futures = "0.3"

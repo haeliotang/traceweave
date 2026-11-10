@@ -1,8 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 [package]
 name = "agent-os-core"
 version = "0.1.0"
 edition = "2021"
-authors = ["Agent OS Authors"]
+license = "AGPL-3.0-or-later"
+authors = ["Inceptless <support@inceptless.com>"]
 description = "Native high-performance core engine for Agent OS: SLM inference, context redaction, and memory consolidation"
 
 [lib]

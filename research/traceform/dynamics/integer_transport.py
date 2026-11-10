@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Exact integer reference for bounded private transport descent.
 
 This module sees plaintext models. It is an oracle for a future circuit,

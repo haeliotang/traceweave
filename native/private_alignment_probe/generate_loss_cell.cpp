@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 // One bounded loss contribution, not a complete GW or commitment circuit.
 #include <emp-tool/emp-tool.h>
 #include <emp-tool/execution/plain_prot.h>

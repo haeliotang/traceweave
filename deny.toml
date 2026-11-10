@@ -1,0 +1,25 @@
+# cargo-deny licence policy for Traceweave.
+# The rules follow LICENSING.md: our own code is AGPL-3.0-or-later, the
+# permissive dependencies below are compatible with it, and anything copyleft
+# that is weaker than the AGPL (LGPL, MPL) is allowed only as a dependency.
+[licenses]
+allow = [
+    "AGPL-3.0-or-later",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "ISC",
+    "LGPL-2.1-or-later",
+    "LGPL-3.0-or-later",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.9
+exceptions = []

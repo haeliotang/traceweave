@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 """Multi-Agent collaborative isolation and audit scenario test using traceform-substrate SDK."""
 
 import unittest

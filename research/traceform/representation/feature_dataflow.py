@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Static dataflow analysis of the normalizer's 128 continuous outputs.
 
 For each output the analysis reports which observation fields can influence its

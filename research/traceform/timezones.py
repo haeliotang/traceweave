@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Time zone lookup that does not depend on the caller having set PYTHONTZPATH.
 
 Termux ships no system zoneinfo; the deployment installs the TZif files it needs under its own

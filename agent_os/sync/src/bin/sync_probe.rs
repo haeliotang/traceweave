@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! Two-process loopback probe for the sync transport.
 //!
 //! Usage: `sync-probe server <port>` and `sync-probe client <port>`.

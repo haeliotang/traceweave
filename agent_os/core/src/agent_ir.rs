@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use crate::redactor;
 use sha2::{Digest, Sha256};

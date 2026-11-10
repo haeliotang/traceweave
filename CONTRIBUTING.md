@@ -2,6 +2,23 @@
 
 The supported product path is the Android application in `agent_os/android`; research and Rust experiments have separate evidence boundaries. Read the relevant source, tests and [current acceptance](docs/agent_os_documents_privacy_acceptance.md) before proposing changes.
 
+
+## Contributor License Agreement
+
+Contributions require signing the **Inceptless Contributor License Agreement** ([CLA.md](CLA.md))
+through the signing tool at
+[cla-assistant.io/haeliotang/traceweave](https://cla-assistant.io/haeliotang/traceweave).
+It lets the project stay open source and also be offered under other terms; you keep the
+copyright in your contribution.
+
+A pull request is merged only after the CLA check (`license/cla`) passes. Issues, bug reports
+and reproduction records from people who have not signed yet are still welcome.
+
+By opening a pull request you confirm that you have the right to submit the change, that any
+third-party material is identified with its licence, and that new files carry SPDX headers or
+are covered by `REUSE.toml` (`reuse lint` must pass). Do not add a `Signed-off-by` line; the
+CLA replaces the DCO.
+
 ## Changes and evidence
 
 - Keep changes focused. Reproduce bugs with a failing behavior test before fixing them.
@@ -41,4 +58,4 @@ Before publishing changes, run `git diff --check` and a redacted secret scan (`g
 - Test archive boundary/error cases without introducing any inherited permissions.
 - Improve bilingual user-facing errors while preserving the underlying failure behavior.
 
-For security issues use [SECURITY.md](SECURITY.md), not a public issue. Project contributions use the root Apache-2.0 license; preserve third-party notices.
+For security issues use [SECURITY.md](SECURITY.md), not a public issue. Contributions are accepted under the Inceptless CLA (see the section above); the code layers are licensed as described in [LICENSING.md](LICENSING.md). Preserve third-party notices.

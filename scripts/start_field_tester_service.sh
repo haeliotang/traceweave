@@ -1,4 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Start Traceform Complete Field Tester Runtime on Pixel 6a
 # 1. Runs Edge Manifold Daemon in background (live real-time quantization + haptics)
 # 2. Generates local field telemetry without remote synchronization

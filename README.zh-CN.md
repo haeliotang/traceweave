@@ -9,7 +9,7 @@
 
 > **这是原型，不是可生产使用的软件。** 在 1.0 之前会有缺失、粗糙和破坏性变更。
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Hardware Validation: Google Pixel 6a](https://img.shields.io/badge/Hardware-Google_Pixel_6a_(Tensor_G1)-059669.svg)]()
 [![Platform: GrapheneOS Pixel 6a test device](https://img.shields.io/badge/Platform-GrapheneOS_Pixel_6a-0284C7.svg)]()
 [![Runtime: Rust and Android app prototype](https://img.shields.io/badge/Runtime-Rust_%2B_Android_Prototype-0D9488.svg)]()
@@ -215,7 +215,7 @@ python3 agent_os/scripts/release_preflight_android.py \
 .
 ├── README.md               英文版总览
 ├── README.zh-CN.md         中文版总览（本文件）
-├── LICENSE                 Apache License 2.0
+├── LICENSE                 许可全文（AGPL-3.0-or-later）；分层见 LICENSING.md
 ├── agent_os/               Agent OS 原型与实验性 Rust 组件
 │   ├── android/            Android 应用（服务、界面、悬浮窗、Provider）
 │   ├── core/               Rust 原生库（守护进程关闭）
@@ -249,7 +249,9 @@ python3 agent_os/scripts/release_preflight_android.py \
 
 ## 11. 开源许可
 
-以 **Apache License, Version 2.0** 发布，见 [LICENSE](LICENSE)。第三方组件保留各自许可，分发时请保留其声明。
+采用分层许可：应用、运行时与服务为 **AGPL-3.0-or-later**；客户端 SDK、协议 Schema 与一致性测试为 **Apache-2.0**；文档为 **CC-BY-4.0**。
+
+逐路径对照表、许可历史（旧版本仍为 Apache-2.0）与品牌资产条款见 [LICENSING.md](LICENSING.md)。第三方组件保留各自许可，见 [NOTICE](NOTICE)。
 
 ---
 
@@ -260,4 +262,4 @@ Traceweave 由 **Inceptless** 发起、工程化并治理。
 - 母实体：Inceptless
 - 核心产品：Traceweave
 - 子系统：Traceweave OS、Traceweave Runtime、Traceweave Protocol、Traceweave Research
-- 版权：(c) 2026 Inceptless。代码以 Apache License 2.0 授权（见 [LICENSE](LICENSE)）；「Traceweave」名称与标识仍为 Inceptless 的商标。
+- 版权：(c) 2026 Inceptless。代码与文档按 [LICENSING.md](LICENSING.md) 分层授权；项目名称、Logo 与图标属于品牌资产（`LicenseRef-Inceptless-Brand`），不在源码许可范围内。

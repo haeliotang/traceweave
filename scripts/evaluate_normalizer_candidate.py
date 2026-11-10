@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Evaluate a robust-range normalizer candidate against the stored hot tier (read-only).
 
 Stored observations are replayed once; raw features are scaled under the baseline

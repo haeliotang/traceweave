@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /* Isolated pressure: admission/running cap 768 MiB, cached LMK cap 1024 MiB.
  * Admission uses 32/256, running uses 16/208 and LMK uses 16/160 MiB steps/kernel floor.
  * Floors check kernel MemAvailable before each allocation, not Android MemoryInfo.

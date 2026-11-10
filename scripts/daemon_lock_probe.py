@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Report whether the edge manifold daemon holds its single-instance lock.
 
 Exit status: 0 = lock held (daemon running), 1 = lock free, 2 = indeterminate.

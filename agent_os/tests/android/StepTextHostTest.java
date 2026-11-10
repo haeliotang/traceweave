@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import com.inceptless.traceweave.StepText;
 
 /** Host check for step title and observation wording, run by test_step_text.py. */

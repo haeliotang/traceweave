@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Check whether digital_context fields are exact functions of other stored fields.
 
 The edge daemon builds digital_context from ``dumpsys`` text and fixed formulas

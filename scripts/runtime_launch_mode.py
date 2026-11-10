@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Decide how an unattended relaunch of the edge daemon should run.
 
 Prints ``silent`` or ``active ACTION...``. Active is chosen only when all of these hold: the stop

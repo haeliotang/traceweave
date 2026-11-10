@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -6,11 +9,12 @@ build-backend = "setuptools.build_meta"
 name = "traceform-substrate"
 version = "1.0.0"
 authors = [
-  { name="Traceform Team" },
+  { name="Inceptless", email="support@inceptless.com" },
 ]
 description = "Official Python SDK for Personal Agent Substrate"
 readme = "README.md"
 requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

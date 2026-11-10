@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: Apache-2.0
+
 use futures::StreamExt;
 use libp2p::{allow_block_list::{AllowedPeers, Behaviour as Allow}, identity, noise,
     request_response::{self, cbor, Message, ProtocolSupport}, swarm::{NetworkBehaviour, SwarmEvent},

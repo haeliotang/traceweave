@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //! LAN pairing: offer encoding plus a direction-independent 6-digit SAS.
 //!
 //! The SAS binds both device fingerprints, both transport public keys and the

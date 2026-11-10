@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: Apache-2.0
+
 """Data models and type definitions for Substrate protocol entities."""
 
 from dataclasses import dataclass, field

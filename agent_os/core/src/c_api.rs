@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use crate::{redactor, slm, task};

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """End to end: native-shaped samples -> ReferenceFeatureSupplier (Java) versus the Python reference.
 
 Java builds the observation from FeatureReadings, the usage window and the Android-side inputs, runs
