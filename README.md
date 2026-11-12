@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="agent_os/branding/traceweave-mono-dark.svg">
+    <img src="agent_os/branding/traceweave-mono.svg" width="96" height="98" alt="Traceweave — Many traces, one thread">
+  </picture>
+</p>
+
 # Traceweave
 
 > A sovereign personal computing system independent of any single device, model, or provider.  

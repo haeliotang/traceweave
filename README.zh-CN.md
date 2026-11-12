@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="agent_os/branding/traceweave-mono-dark.svg">
+    <img src="agent_os/branding/traceweave-mono.svg" width="96" height="98" alt="Traceweave — Many traces, one thread">
+  </picture>
+</p>
+
 # Traceweave
 
 > 一套不依赖单一设备、单一模型或单一服务商的主权个人计算系统。  
