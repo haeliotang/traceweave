@@ -28,6 +28,7 @@ traceweave-node begin-effect     --dir D --task ID --operation OP --capability C
 traceweave-node finish-effect    --dir D --task ID --operation OP --outcome succeeded|failed|unknown
 traceweave-node reconcile-effect --dir D --task ID --operation OP --outcome succeeded|failed
 traceweave-node complete-step    --dir D --task ID --index N
+traceweave-node effect-execute   --dir D --task ID --operation OP --scope FILE --content TEXT [--crash-after-write true]
 traceweave-node resume   --dir D --task ID
 traceweave-node verify  --dir D
 ```

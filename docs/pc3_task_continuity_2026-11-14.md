@@ -40,3 +40,22 @@ a fresh authorization.
    adapter participated.
 3. Grants never travel; the receiving node must re-authorize (demonstrated).
 4. Not Proof 1; the two-Android-device release gate remains `BLOCKED_BY_HARDWARE`.
+
+## Real capability: a file write happens exactly once
+
+The first PC-3 run simulated the external effect. A second run with the node's `file.write`
+capability made the effect real:
+
+| Step | Result |
+| --- | --- |
+| `effect-execute` without a grant | REFUSED: `capability denied: NoGrant`; no file written |
+| grant, `effect-execute --crash-after-write true` | file `effects/report.md` written (16 B, sha256 `010bc6e3…`), then process exits 1 with `simulated crash after external write` |
+| export A → import B | task moved, grant dropped; B sees `effects_needing_reconciliation=["write-1"]` |
+| B retry before reconciliation | REFUSED: `NeedsReconciliation("write-1")`; B wrote no file |
+| B reconcile as succeeded, retry | REFUSED: `AlreadyPerformed("write-1")`; B wrote no file |
+| B `verify` | ok (state sha256 `0791a2ef…`) |
+
+This is a real filesystem side effect that happened exactly once across two nodes; the substrate
+stopped both a blind retry and a reconciled replay.
+
+Receipt (local): `agent_os/build/pc3-real-20261114/receipt.json`.

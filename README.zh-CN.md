@@ -118,7 +118,7 @@ Traceweave 由「可移植基底 + 可替换适配器」组成，而不是一个
 | **PC-0 可移植核心** | 已启动：[`agent_os/portable/`](agent_os/portable) —— 记录、策略、检查点、审计、带身份的状态格式 v2、golden 字节、与现有 Rust 核心的语义对齐、身份/撤销/恢复模拟，30 项测试 | 不需要 |
 | **PC-1 参考节点** | 已启动：[`agent_os/node/`](agent_os/node) —— 无界面一次性节点、P-256 设备身份、加密状态交换、重启后恢复、Android 档案提取，5 项 CLI 验收测试；**Proof H v1–v3 已通过**：真实 Pixel 档案迁移、Keystore 签名 handoff、真实数据签名并在 macOS 验签（[记录](docs/proof_h_heterogeneous_2026-11-13.md)） | 不需要 |
 | **PC-2 身份与恢复** | 设计 + 宿主模拟：[portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) —— PRS 派生个人身份、设备注册/撤销/轮换、恢复清空授权、身份并入规范状态封套（10 项身份/状态测试） | 仅设计与模拟 |
-| **PC-3 任务连续性** | 已启动：[`agent_os/node/`](agent_os/node) 任务命令 —— 跨设备恢复、未知结果先核对、成功副作用不重放、接收设备重新授权（[模拟记录](docs/pc3_task_continuity_2026-11-14.md)） | 仅模拟 |
+| **PC-3 任务连续性** | 已启动：[`agent_os/node/`](agent_os/node) 任务命令 —— 跨设备恢复、未知结果先核对、成功副作用不重放、接收设备重新授权；真实 `file.write` 在两节点间**恰好执行一次**（[记录](docs/pc3_task_continuity_2026-11-14.md)） | 真实能力：文件写入；模型替换仍为模拟 |
 
 PC-2 的身份边界先于 PC-1 的移植设计。完整计划、完成判据与新的 **Proof H**
 （Android ↔ macOS 记忆连续性）见

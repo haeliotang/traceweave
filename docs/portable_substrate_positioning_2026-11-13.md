@@ -170,8 +170,11 @@ This requires real capability execution to prove; simulation alone is not eviden
 **Host simulation passed 2026-11-14:** a task with an unknown-outcome effect moved between two
 nodes; the receiving node refused the effect until the outcome was reconciled, refused to replay
 a succeeded effect, and required a fresh grant (the old one was dropped on import). See
-[pc3_task_continuity_2026-11-14.md](pc3_task_continuity_2026-11-14.md). Real capability execution
-and model replacement remain the open evidence gap.
+[pc3_task_continuity_2026-11-14.md](pc3_task_continuity_2026-11-14.md). A second run replaced the
+simulated effect with the node's real `file.write` capability: the file was written once, a
+crash-like exit left the outcome unknown, and the receiving node refused both a blind retry and a
+reconciled replay without ever writing the file again. Model replacement remains the open evidence
+gap.
 
 ## 6. Proof H — Heterogeneous device continuity
 

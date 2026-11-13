@@ -578,6 +578,76 @@ fn command_complete_step(args: &Args) -> NodeResult<String> {
     Ok(serde_json::json!({"task": task_id, "step": index, "status": "completed"}).to_string())
 }
 
+/// Real capability adapter: writes a file exactly once under `D/effects/`. The substrate records
+/// the operation id before the write and only marks it succeeded after the write, so a crash
+/// between the two leaves an unknown/in-flight effect that must be reconciled, never re-run.
+fn command_effect_execute(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let capability = args.optional("capability").unwrap_or("file.write").to_string();
+    let scope = args.get("scope")?.to_string();
+    if scope.is_empty() || scope.contains('/') || scope.contains('\\') || scope == "." || scope == ".." {
+        return Err("scope must be a plain file name inside the node effects directory".to_string());
+    }
+    let content = args.get("content")?.as_bytes().to_vec();
+
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &scope,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+
+    // Persist the attempt before touching the outside world.
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .begin_effect(&operation, &capability, &scope, at)
+            .map_err(|error| format!("begin effect: {error:?}"))?;
+    }
+    node.save()?;
+
+    let effects = node.dir.join("effects");
+    fs::create_dir_all(&effects).map_err(|error| format!("create effects dir: {error}"))?;
+    let path = effects.join(&scope);
+    if path.exists() {
+        // A real duplicate would mean the substrate failed to stop a replay.
+        return Err(format!("refusing to overwrite an existing effect file: {}", path.display()));
+    }
+    fs::write(&path, &content).map_err(|error| format!("write effect: {error}"))?;
+    let digest = hex_encode(&Sha256::digest(&content));
+
+    if args.optional("crash-after-write") == Some("true") {
+        node.state.audit.append(format!("effect-written-unfinished:{operation}:{digest}").as_bytes());
+        node.save()?;
+        return Err(format!("simulated crash after external write: {digest}"));
+    }
+
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .finish_effect(&operation, EffectOutcome::Succeeded, at)
+            .map_err(|error| format!("finish effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-completed:{operation}:{digest}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({
+        "task": task_id,
+        "operation": operation,
+        "capability": capability,
+        "path": path.display().to_string(),
+        "bytes": content.len(),
+        "sha256": digest,
+    })
+    .to_string())
+}
+
 fn command_resume(args: &Args) -> NodeResult<String> {
     let mut node = Node::open(Path::new(args.get("dir")?))?;
     let task_id = args.get("task")?.to_string();
@@ -895,6 +965,7 @@ fn run(args: Args) -> NodeResult<String> {
         "finish-effect" => command_finish_effect(&args),
         "reconcile-effect" => command_reconcile_effect(&args),
         "complete-step" => command_complete_step(&args),
+        "effect-execute" => command_effect_execute(&args),
         "resume" => command_resume(&args),
         "export" => command_export(&args),
         "from-archive" => command_from_archive(&args),

@@ -620,3 +620,101 @@ fn task_continuity_resumes_on_another_node_without_replaying_effects() {
     assert_eq!(view["effects_needing_reconciliation"].as_array().unwrap().len(), 0);
     assert_eq!(json(&ok(&["verify", "--dir", b_dir.to_str().unwrap()]))["ok"], true);
 }
+
+// --- PC-3 with a real capability: a file write must happen exactly once ---
+
+#[test]
+fn real_file_effect_is_written_once_and_never_replayed() {
+    let sandbox = Sandbox::new("real-effect");
+    let a_dir = sandbox.dir("a");
+    let b_dir = sandbox.dir("b");
+    init(&a_dir, "1000");
+    init(&b_dir, "1100");
+    ok(&[
+        "add-task", "--dir", a_dir.to_str().unwrap(),
+        "--task-id", "task-1", "--goal", "write the receipt",
+        "--capability", "file.write", "--scope", "note.txt", "--at", "1200",
+    ]);
+
+    // No grant: the capability is denied before any file exists.
+    let (success, output) = node(&[
+        "effect-execute", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "file.write", "--scope", "note.txt",
+        "--content", "written exactly once", "--at", "1300",
+    ]);
+    assert!(!success, "effect must be denied without a grant: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+    assert!(!a_dir.join("effects/note.txt").exists(), "denied effect must not write");
+
+    ok(&[
+        "authorize", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--capability", "file.write", "--scope", "note.txt",
+        "--ttl-ms", "600000", "--at", "1400",
+    ]);
+    // Real side effect happens, then a crash is simulated before the result is recorded.
+    let (success, output) = node(&[
+        "effect-execute", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "file.write", "--scope", "note.txt",
+        "--content", "written exactly once", "--crash-after-write", "true", "--at", "1500",
+    ]);
+    assert!(!success, "crash path must exit non-zero: {output}");
+    assert!(output.contains("simulated crash"), "unexpected error: {output}");
+    assert_eq!(
+        std::fs::read_to_string(a_dir.join("effects/note.txt")).unwrap(),
+        "written exactly once"
+    );
+    let view = json(&ok(&["task", "--dir", a_dir.to_str().unwrap(), "--task", "task-1"]));
+    assert_eq!(view["effects_needing_reconciliation"][0], "op-1");
+
+    // Move the checkpoint to B; the grant does not travel.
+    let a_key = key(&a_dir);
+    ok(&[
+        "trust", "--dir", b_dir.to_str().unwrap(),
+        "--device-id", a_key["device_id"].as_str().unwrap(),
+        "--device-pubkey", a_key["device_pubkey"].as_str().unwrap(), "--at", "1600",
+    ]);
+    let envelope = sandbox.file("a.twpn");
+    ok(&[
+        "export", "--dir", a_dir.to_str().unwrap(),
+        "--out", envelope.to_str().unwrap(), "--passphrase", "pc3-real",
+    ]);
+    ok(&[
+        "import", "--dir", b_dir.to_str().unwrap(),
+        "--in", envelope.to_str().unwrap(), "--passphrase", "pc3-real",
+        "--from-device", a_key["device_id"].as_str().unwrap(), "--signed-at", "1500",
+    ]);
+    ok(&[
+        "authorize", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--capability", "file.write", "--scope", "note.txt",
+        "--ttl-ms", "600000", "--at", "1700",
+    ]);
+
+    // Reconciliation is required before the effect may run again, and B's directory stays empty.
+    let (success, output) = node(&[
+        "effect-execute", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "file.write", "--scope", "note.txt",
+        "--content", "duplicate", "--at", "1800",
+    ]);
+    assert!(!success, "unknown outcome must block the retry: {output}");
+    assert!(output.contains("NeedsReconciliation"), "unexpected error: {output}");
+    assert!(!b_dir.join("effects/note.txt").exists(), "blocked retry must not write");
+
+    ok(&[
+        "reconcile-effect", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1", "--outcome", "succeeded", "--at", "1900",
+    ]);
+    let (success, output) = node(&[
+        "effect-execute", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "file.write", "--scope", "note.txt",
+        "--content", "duplicate", "--at", "2000",
+    ]);
+    assert!(!success, "a succeeded effect must never replay: {output}");
+    assert!(output.contains("AlreadyPerformed"), "unexpected error: {output}");
+    assert!(!b_dir.join("effects/note.txt").exists(), "replay must not write");
+
+    assert_eq!(json(&ok(&["verify", "--dir", b_dir.to_str().unwrap()]))["ok"], true);
+}
