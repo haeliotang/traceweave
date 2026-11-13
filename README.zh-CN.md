@@ -116,7 +116,7 @@ Traceweave 由「可移植基底 + 可替换适配器」组成，而不是一个
 | 工作线 | 交付 | 是否需要第二台 Android |
 | :--- | :--- | :--- |
 | **PC-0 可移植核心** | 已启动：[`agent_os/portable/`](agent_os/portable) —— 记录、策略、检查点、审计、带身份的状态格式 v2、golden 字节、与现有 Rust 核心的语义对齐、身份/撤销/恢复模拟，30 项测试 | 不需要 |
-| **PC-1 参考节点** | 已启动：[`agent_os/node/`](agent_os/node) —— 无界面一次性节点、P-256 设备身份、加密状态交换、重启后恢复、Android 档案提取，5 项 CLI 验收测试 | 不需要 |
+| **PC-1 参考节点** | 已启动：[`agent_os/node/`](agent_os/node) —— 无界面一次性节点、P-256 设备身份、加密状态交换、重启后恢复、Android 档案提取，5 项 CLI 验收测试；**Proof H v1 已用真实 Pixel 6a 档案通过**（[记录](docs/proof_h_heterogeneous_2026-11-13.md)） | 不需要 |
 | **PC-2 身份与恢复** | 设计 + 宿主模拟：[portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) —— PRS 派生个人身份、设备注册/撤销/轮换、恢复清空授权、身份并入规范状态封套（10 项身份/状态测试） | 仅设计与模拟 |
 | **PC-3 任务连续性** | 与模型/设备无关的任务检查点，不重放外部副作用 | 仅模拟 |
 

@@ -298,8 +298,14 @@ fn android_archive_converts_and_merges_history_without_grants() {
         {"id": "mem-1", "kind": "fact", "content": "from the phone"},
         {"id": "mem-old", "kind": "fact", "content": "should stay deleted"}
       ],
-      "tombstones": [{"entityType": "memory", "entityId": "mem-old", "deletedAt": 3900}],
-      "tasks": [{"id": "task-1", "title": "book the train", "status": "waiting_for_user"}],
+      "tasks": [
+        {"id": "task-1", "title": "book the train", "status": "waiting_for_user"},
+        {"id": "task-old", "title": "deleted task", "status": "completed"}
+      ],
+      "tombstones": [
+        {"entityType": "memory", "entityId": "mem-old", "deletedAt": 3900},
+        {"entityType": "task", "entityId": "task-old", "deletedAt": 3950}
+      ],
       "audit": []
     }"#;
     let archive = sandbox.file("phone.taos");

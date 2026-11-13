@@ -206,12 +206,19 @@ fn archive_to_state(passphrase: &str, archive: &[u8], from_device: &str) -> Node
     }
 
     let mut tombstoned: BTreeSet<String> = BTreeSet::new();
+    let mut task_tombstones: BTreeSet<String> = BTreeSet::new();
     if let Some(tombstones) = root.get("tombstones").and_then(serde_json::Value::as_array) {
         for tombstone in tombstones {
-            if tombstone.get("entityType").and_then(serde_json::Value::as_str) == Some("memory") {
-                if let Some(id) = tombstone.get("entityId").and_then(serde_json::Value::as_str) {
+            let entity = tombstone.get("entityType").and_then(serde_json::Value::as_str);
+            let Some(id) = tombstone.get("entityId").and_then(serde_json::Value::as_str) else { continue };
+            match entity {
+                Some("memory") => {
                     tombstoned.insert(id.to_string());
                 }
+                Some("task") => {
+                    task_tombstones.insert(id.to_string());
+                }
+                _ => {}
             }
         }
     }
@@ -247,6 +254,9 @@ fn archive_to_state(passphrase: &str, archive: &[u8], from_device: &str) -> Node
     if let Some(tasks) = root.get("tasks").and_then(serde_json::Value::as_array) {
         for (index, task) in tasks.iter().enumerate() {
             let Some(id) = task.get("id").and_then(serde_json::Value::as_str) else { continue };
+            if task_tombstones.contains(id) {
+                continue;
+            }
             let title = task.get("title").and_then(serde_json::Value::as_str).unwrap_or("");
             let status = task.get("status").and_then(serde_json::Value::as_str).unwrap_or("");
             let mut checkpoint = TaskCheckpoint::new(id, title, Vec::new());

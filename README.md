@@ -129,7 +129,7 @@ Current status:
 | Workstream | Deliverable | Needs a second Android phone |
 | :--- | :--- | :--- |
 | **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical state format v2 with identity, golden bytes, parity with the existing Rust core, identity + revocation + recovery simulation, 30 tests | No |
-| **PC-1 reference node** | Started: [`agent_os/node/`](agent_os/node) — headless one-shot node, P-256 device identity, encrypted state exchange, post-restart recovery, Android archive extraction, 5 CLI acceptance tests | No |
+| **PC-1 reference node** | Started: [`agent_os/node/`](agent_os/node) — headless one-shot node, P-256 device identity, encrypted state exchange, post-restart recovery, Android archive extraction, 5 CLI acceptance tests; **Proof H v1 passed** on a real Pixel 6a archive ([record](docs/proof_h_heterogeneous_2026-11-13.md)) | No |
 | **PC-2 identity & recovery** | Design + host simulation: [portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) — PRS-rooted personal identity, device enrollment/revocation/rotation, recovery that clears grants, identity in the canonical envelope (10 identity/state tests) | Design and simulation only |
 | **PC-3 task continuity** | Model/device-independent task checkpoints without replaying external effects | Simulation only |
 

@@ -182,9 +182,14 @@ and restore on macOS). Task continuity and post-revocation recovery are separate
 exported by the unchanged 0.1.5 app (`TAOS`, PBKDF2-HMAC-SHA256 600k + AES-256-GCM) and converts
 memories, memory tombstones and tasks into the canonical v2 state; `merge-state` then applies the
 same device-trust/revocation checks as a network import. The converter is covered by two CLI
-acceptance tests including post-revocation rejection. **Proof H has not been run yet**: it needs
-an archive exported from the physical Android device, and the converter's synthetic clocks and
-loss of plan step detail must be recorded in the eventual receipt.
+acceptance tests including post-revocation rejection.
+
+**Proof H v1 ran on 2026-11-13 and passed with documented limitations:** a real Pixel 6a archive
+(2 memories) was merged into the macOS node; the node verified canonical state and identity, then
+refused the archive after the phone label was revoked while accepting its pre-revocation history.
+See [proof_h_heterogeneous_2026-11-13.md](proof_h_heterogeneous_2026-11-13.md). The archive is not
+device-signed, carries no vector clocks and its audit chain is not migrated; those limitations
+mean Proof H v1 does not replace Proof 1.
 
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
