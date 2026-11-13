@@ -30,10 +30,43 @@ import java.util.TreeSet;
 public final class PortableExportActivity extends Activity {
     private static final byte[] DOMAIN = "traceweave-portable-handoff-v1".getBytes(StandardCharsets.UTF_8);
 
+    private TextView status;
+    private android.widget.EditText passphraseInput;
+    private android.widget.Button exportButton;
+
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        TextView output = new TextView(this);
-        setContentView(output);
+        android.widget.LinearLayout root = new android.widget.LinearLayout(this);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+        root.setPadding(48, 96, 48, 48);
+        TextView title = new TextView(this);
+        title.setText("Sealed portable export (production key)");
+        title.setTextSize(18);
+        root.addView(title);
+        passphraseInput = new android.widget.EditText(this);
+        passphraseInput.setHint("Passphrase (12+ characters)");
+        passphraseInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+            | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        root.addView(passphraseInput);
+        exportButton = new android.widget.Button(this);
+        exportButton.setText("Export sealed handoff");
+        root.addView(exportButton);
+        status = new TextView(this);
+        root.addView(status);
+        exportButton.setOnClickListener(view -> {
+            String passphrase = passphraseInput.getText().toString();
+            if (passphrase.length() < 12) {
+                status.setText("FAIL: passphrase must be at least 12 characters");
+                return;
+            }
+            exportButton.setEnabled(false);
+            startExport(passphrase);
+        });
+        setContentView(root);
+    }
+
+    private void startExport(String passphrase) {
+        TextView output = status;
         new Thread(() -> {
             String result;
             try {
@@ -69,7 +102,6 @@ public final class PortableExportActivity extends Activity {
                     .array();
                 byte[] signature = DeviceIdentity.sign(message);
                 byte[] spki = DeviceIdentity.publicKey();
-                String passphrase = getIntent().getStringExtra("passphrase");
                 byte[] envelope;
                 if (passphrase != null && !passphrase.isEmpty()) {
                     // TWPH2: sign the canonical state, then encrypt it with the archive KDF
