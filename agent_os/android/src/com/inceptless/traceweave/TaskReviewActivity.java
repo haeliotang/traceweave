@@ -359,5 +359,8 @@ public final class TaskReviewActivity extends Activity {
         root.addView(button);
         return button;
     }
-    private void fail(Exception error) { Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show(); }
+    private void fail(Exception error) {
+        android.util.Log.e("AgentOsTaskReview", "review failed: " + error);
+        Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+    }
 }
