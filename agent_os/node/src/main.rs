@@ -648,6 +648,84 @@ fn command_effect_execute(args: &Args) -> NodeResult<String> {
     .to_string())
 }
 
+/// Model/engine adapter: run one task step on a chosen engine. The task identity, goal and
+/// evidence trail stay the same; only the executor changes, and each engine needs its own grant
+/// scope so an engine swap cannot silently reuse another engine's authority.
+fn command_engine_run(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let engine = args.get("engine")?.to_string();
+    if engine != "native" && engine != "openssl" {
+        return Err("engine must be native or openssl".to_string());
+    }
+    let input = args.get("input")?.as_bytes().to_vec();
+    let capability = "engine.run".to_string();
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &engine,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+
+    let digest = match engine.as_str() {
+        "native" => hex_encode(&Sha256::digest(&input)),
+        "openssl" => {
+            use std::io::Write;
+            use std::process::{Command, Stdio};
+            let mut child = Command::new("openssl")
+                .args(["dgst", "-sha256"])
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn()
+                .map_err(|error| format!("spawn openssl: {error}"))?;
+            child
+                .stdin
+                .as_mut()
+                .ok_or("openssl stdin")?
+                .write_all(&input)
+                .map_err(|error| format!("openssl stdin: {error}"))?;
+            let output = child.wait_with_output().map_err(|error| format!("openssl: {error}"))?;
+            if !output.status.success() {
+                return Err(format!("openssl failed: {}", String::from_utf8_lossy(&output.stderr)));
+            }
+            String::from_utf8_lossy(&output.stdout)
+                .split_whitespace()
+                .last()
+                .ok_or("openssl produced no digest")?
+                .trim()
+                .to_string()
+        }
+        _ => unreachable!(),
+    };
+
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        let step = checkpoint.steps.get_mut(0).ok_or("task has no step 0")?;
+        if step.evidence.len() >= 16 {
+            return Err("too many evidence entries on step 0".to_string());
+        }
+        step.evidence.push(format!("engine:{engine}:sha256:{digest}"));
+        step.status = StepStatus::Completed;
+        checkpoint.updated_at = at;
+    }
+    node.state.audit.append(format!("engine-run:{engine}:{digest}").as_bytes());
+    node.save()?;
+    let checkpoint = node.state.tasks.get(&task_id).ok_or("task vanished")?;
+    Ok(serde_json::json!({
+        "task_id": checkpoint.task_id,
+        "goal": checkpoint.goal,
+        "engine": engine,
+        "digest": digest,
+        "evidence": checkpoint.steps[0].evidence,
+    })
+    .to_string())
+}
+
 fn command_resume(args: &Args) -> NodeResult<String> {
     let mut node = Node::open(Path::new(args.get("dir")?))?;
     let task_id = args.get("task")?.to_string();
@@ -966,6 +1044,7 @@ fn run(args: Args) -> NodeResult<String> {
         "reconcile-effect" => command_reconcile_effect(&args),
         "complete-step" => command_complete_step(&args),
         "effect-execute" => command_effect_execute(&args),
+        "engine-run" => command_engine_run(&args),
         "resume" => command_resume(&args),
         "export" => command_export(&args),
         "from-archive" => command_from_archive(&args),

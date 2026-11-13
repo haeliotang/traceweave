@@ -718,3 +718,68 @@ fn real_file_effect_is_written_once_and_never_replayed() {
 
     assert_eq!(json(&ok(&["verify", "--dir", b_dir.to_str().unwrap()]))["ok"], true);
 }
+
+// --- PC-3: swapping the execution engine keeps identity/history, authority is per engine ---
+
+#[test]
+fn engine_swap_preserves_task_identity_and_requires_its_own_grant() {
+    let sandbox = Sandbox::new("engines");
+    let dir = sandbox.dir("node");
+    init(&dir, "1000");
+    ok(&[
+        "add-task", "--dir", dir.to_str().unwrap(),
+        "--task-id", "task-native", "--goal", "hash the report",
+        "--capability", "engine.run", "--scope", "native", "--at", "1100",
+    ]);
+    ok(&[
+        "add-task", "--dir", dir.to_str().unwrap(),
+        "--task-id", "task-openssl", "--goal", "hash the report",
+        "--capability", "engine.run", "--scope", "openssl", "--at", "1200",
+    ]);
+
+    // No grant yet: the engine refuses to run.
+    let (success, output) = node(&[
+        "engine-run", "--dir", dir.to_str().unwrap(),
+        "--task", "task-native", "--engine", "native", "--input", "same input", "--at", "1300",
+    ]);
+    assert!(!success, "engine must be denied without a grant: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+
+    ok(&[
+        "authorize", "--dir", dir.to_str().unwrap(),
+        "--task", "task-native", "--capability", "engine.run", "--scope", "native",
+        "--ttl-ms", "600000", "--at", "1400",
+    ]);
+    ok(&[
+        "authorize", "--dir", dir.to_str().unwrap(),
+        "--task", "task-openssl", "--capability", "engine.run", "--scope", "openssl",
+        "--ttl-ms", "600000", "--at", "1500",
+    ]);
+
+    let native = json(&ok(&[
+        "engine-run", "--dir", dir.to_str().unwrap(),
+        "--task", "task-native", "--engine", "native", "--input", "same input", "--at", "1600",
+    ]));
+    let openssl = json(&ok(&[
+        "engine-run", "--dir", dir.to_str().unwrap(),
+        "--task", "task-openssl", "--engine", "openssl", "--input", "same input", "--at", "1700",
+    ]));
+    assert_eq!(native["goal"], openssl["goal"], "the task identity must not depend on the engine");
+    assert_eq!(native["digest"], openssl["digest"], "both engines must produce the same result");
+    assert_ne!(native["task_id"], openssl["task_id"]);
+
+    // Authority is per engine: a native grant cannot run openssl on the same task.
+    let (success, output) = node(&[
+        "engine-run", "--dir", dir.to_str().unwrap(),
+        "--task", "task-native", "--engine", "openssl", "--input", "same input", "--at", "1800",
+    ]);
+    assert!(!success, "engine swap must not reuse another engine's grant: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+
+    // Evidence is recorded on the task and the work is complete.
+    let view = json(&ok(&["task", "--dir", dir.to_str().unwrap(), "--task", "task-native"]));
+    assert_eq!(view["open_steps"].as_array().unwrap().len(), 0);
+    let evidence = &view["task_id"];
+    assert_eq!(evidence, "task-native");
+    assert_eq!(json(&ok(&["verify", "--dir", dir.to_str().unwrap()]))["ok"], true);
+}

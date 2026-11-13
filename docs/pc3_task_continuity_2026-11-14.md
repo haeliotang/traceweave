@@ -59,3 +59,23 @@ This is a real filesystem side effect that happened exactly once across two node
 stopped both a blind retry and a reconciled replay.
 
 Receipt (local): `agent_os/build/pc3-real-20261114/receipt.json`.
+
+## Engine swap: identity and history do not depend on the executor
+
+The checkpoint must survive a model or engine change. Two engines were added to the node: a
+Rust-native SHA-256 and the external `openssl dgst -sha256` process. Two tasks with the same goal
+ran the same step on different engines:
+
+| Check | Result |
+| --- | --- |
+| No grant | REFUSED: `capability denied: NoGrant` |
+| native engine | digest `c2f99173…` for the input, evidence `engine:native:sha256:…` |
+| openssl engine | the **same** digest `c2f99173…`, evidence `engine:openssl:sha256:…` |
+| Task identity | same goal and evidence contract; task ids stay distinct |
+| Cross-engine authority | REFUSED: `ScopeMismatch` — a `native` grant cannot run `openssl` |
+| Task view / verify | open work empty; canonical state, audit chain and identity verified |
+
+So swapping the executor does not change the task's identity, its recorded evidence, or the
+permission rules; it also cannot silently reuse another engine's authority.
+
+Receipt (local): `agent_os/build/pc3-engine-20261114/receipt.json`.

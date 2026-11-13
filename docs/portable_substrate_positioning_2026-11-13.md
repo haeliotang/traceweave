@@ -173,8 +173,10 @@ a succeeded effect, and required a fresh grant (the old one was dropped on impor
 [pc3_task_continuity_2026-11-14.md](pc3_task_continuity_2026-11-14.md). A second run replaced the
 simulated effect with the node's real `file.write` capability: the file was written once, a
 crash-like exit left the outcome unknown, and the receiving node refused both a blind retry and a
-reconciled replay without ever writing the file again. Model replacement remains the open evidence
-gap.
+reconciled replay without ever writing the file again. An engine-swap run then executed the same
+task step on two engines (Rust native SHA-256 and the `openssl` CLI): same goal, same digest
+evidence, distinct task ids, and per-engine grants, so switching the executor did not change task
+identity, history or permission rules. Real LLM inference remains the open evidence gap.
 
 ## 6. Proof H — Heterogeneous device continuity
 
