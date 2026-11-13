@@ -183,3 +183,17 @@ fn tombstone_survives_later_live_records() {
     let restored = SubstrateState::from_canonical_bytes(&bytes).unwrap();
     assert!(restored.is_tombstoned("mem-1"));
 }
+
+#[test]
+fn android_java_canonical_handoff_json_stays_canonical() {
+    // Literal produced by agent_os/tests/android/SignedHandoffActivity: the Java-side encoder must
+    // stay byte-identical to the Rust canonical layout, or the macOS node would reject it.
+    let json = r#"{"version":2,"memories":{"mem-1":[{"clock":{"android":1},"value":"synthetic handoff memory"}]},"tasks":{"task-1":{"task_id":"task-1","goal":"continue on the mac","status":"waiting_for_user","steps":[{"index":0,"capability":"calendar","scope":"write","status":"pending","evidence":[]}],"effects":{},"updated_at":0,"needs_authorization":true}},"grants":[],"audit":{"entries":[]}}"#;
+    let state = SubstrateState::from_canonical_bytes(json.as_bytes()).expect("Java canonical JSON is canonical");
+    assert_eq!(state.live_memory_count(), 1);
+    assert_eq!(state.tasks.len(), 1);
+    // sha256 observed on the device for the same bytes.
+    use sha2::{Digest, Sha256};
+    let digest: String = Sha256::digest(json.as_bytes()).iter().map(|b| format!("{b:02x}")).collect();
+    assert_eq!(digest, "3ffaed9d91a7a33276077c67ee5d5b2ee7d9055bdd1bac3d3d3a94475ed82e47");
+}

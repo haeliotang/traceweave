@@ -191,6 +191,12 @@ See [proof_h_heterogeneous_2026-11-13.md](proof_h_heterogeneous_2026-11-13.md). 
 device-signed, carries no vector clocks and its audit chain is not migrated; those limitations
 mean Proof H v1 does not replace Proof 1.
 
+**Proof H v2 (same day):** a `TWPH1` handoff whose canonical state is signed by the Android
+Keystore P-256 key was verified on macOS by resolving the device from SHA-256(SPKI), rejecting a
+tampered signature and an unenrolled key, and refusing a handoff signed after revocation. The
+signed state was synthetic because 0.1.5 has no portable exporter; real user-data export is the
+next Track B step.
+
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
 

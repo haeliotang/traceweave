@@ -21,6 +21,7 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-consented synthetic power measurement" />
         </service>
         <activity android:name="com.inceptless.traceweave.AutoSyncProbe" android:exported="true" />
+        <activity android:name="com.inceptless.traceweave.SignedHandoffActivity" android:exported="true" />
         <activity android:name="com.inceptless.traceweave.MergeConflictProbe" android:exported="true" />
         <activity android:name="com.inceptless.traceweave.MainActivity" android:exported="true">
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />

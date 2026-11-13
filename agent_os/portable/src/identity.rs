@@ -324,6 +324,13 @@ impl IdentityBook {
         });
     }
 
+    /// Find a device by the SHA-256 of its SPKI public key.
+    pub fn device_for_fingerprint(&self, fingerprint: &[u8; 32]) -> Option<&DeviceEntry> {
+        self.devices
+            .values()
+            .find(|entry| &entry.fingerprint == fingerprint)
+    }
+
     pub fn trust(&self, device_id: &str) -> Trust {
         match self.devices.get(device_id) {
             None => Trust::Unknown,

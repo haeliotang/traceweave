@@ -120,6 +120,19 @@ fn spki(signing: &SigningKey) -> Vec<u8> {
         .to_vec()
 }
 
+fn verify_der(spki_der: &[u8], message: &[u8], signature_der: &[u8]) -> bool {
+    use p256::ecdsa::signature::Verifier;
+    use p256::ecdsa::{Signature, VerifyingKey};
+    use p256::pkcs8::DecodePublicKey;
+    let Ok(key) = VerifyingKey::from_public_key_der(spki_der) else {
+        return false;
+    };
+    let Ok(signature) = Signature::from_der(signature_der) else {
+        return false;
+    };
+    key.verify(message, &signature).is_ok()
+}
+
 fn sign(signing: &SigningKey, message: &[u8]) -> Vec<u8> {
     let signature: p256::ecdsa::Signature = signing.sign(message);
     signature.to_der().as_bytes().to_vec()
@@ -149,6 +162,9 @@ fn load_or_create_seed(path: &Path) -> NodeResult<Vec<u8>> {
     write_private(path, &seed)?;
     Ok(seed)
 }
+
+const HANDOFF_MAGIC: &[u8; 5] = b"TWPH1";
+const HANDOFF_DOMAIN: &[u8] = b"traceweave-portable-handoff-v1";
 
 const ARCHIVE_MAGIC: &[u8; 4] = b"TAOS";
 const ARCHIVE_HEADER_BYTES: usize = 4 + 1 + 4 + 16 + 12;
@@ -515,6 +531,68 @@ fn command_merge_state(args: &Args) -> NodeResult<String> {
     .to_string())
 }
 
+/// Import a device-signed handoff: `TWPH1 | u64 signed_at | u32 spki_len | spki |
+/// u32 state_len | state | u32 sig_len | sig`. The signature covers
+/// `domain || signed_at || state`; the device is resolved by SHA-256(spki), not by a caller label.
+fn command_import_signed(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read handoff: {error}"))?;
+    if bytes.len() < 5 + 8 + 4 + 4 + 4 || &bytes[..5] != HANDOFF_MAGIC {
+        return Err("not a TWPH1 signed handoff".to_string());
+    }
+    let mut cursor = 5;
+    let signed_at = i64::from_be_bytes(
+        bytes
+            .get(cursor..cursor + 8)
+            .ok_or("truncated handoff")?
+            .try_into()
+            .map_err(|_| "truncated signed_at")?,
+    );
+    cursor += 8;
+    let spki_len = read_u32(&bytes, &mut cursor)?;
+    let spki = bytes.get(cursor..cursor + spki_len).ok_or("truncated spki")?.to_vec();
+    cursor += spki_len;
+    let state_len = read_u32(&bytes, &mut cursor)?;
+    let state_bytes = bytes.get(cursor..cursor + state_len).ok_or("truncated state")?.to_vec();
+    cursor += state_len;
+    let sig_len = read_u32(&bytes, &mut cursor)?;
+    let signature = bytes.get(cursor..cursor + sig_len).ok_or("truncated signature")?.to_vec();
+    cursor += sig_len;
+    if cursor != bytes.len() {
+        return Err("trailing bytes in signed handoff".to_string());
+    }
+
+    let mut message = Vec::with_capacity(HANDOFF_DOMAIN.len() + 8 + state_bytes.len());
+    message.extend_from_slice(HANDOFF_DOMAIN);
+    message.extend_from_slice(&signed_at.to_be_bytes());
+    message.extend_from_slice(&state_bytes);
+    if !verify_der(&spki, &message, &signature) {
+        return Err("handoff signature does not verify".to_string());
+    }
+
+    let device_fingerprint = fingerprint(&spki);
+    let identity_book = node.state.identity.clone();
+    let device_id = identity_book
+        .as_ref()
+        .and_then(|book| book.device_for_fingerprint(&device_fingerprint))
+        .map(|entry| entry.device_id.clone())
+        .ok_or_else(|| format!("handoff device is not enrolled: {}", hex_encode(&device_fingerprint)))?;
+
+    let incoming = SubstrateState::from_canonical_bytes(&state_bytes)
+        .map_err(|error| format!("incoming state: {error}"))?;
+    let (memories, tasks, dropped) = merge_incoming(&mut node, &incoming, &device_id, signed_at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "device_id": device_id,
+        "device_fingerprint": hex_encode(&device_fingerprint),
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped,
+    })
+    .to_string())
+}
+
 fn command_key(args: &Args) -> NodeResult<String> {
     let node = Node::open(Path::new(args.get("dir")?))?;
     Ok(serde_json::json!({
@@ -671,6 +749,7 @@ fn run(args: Args) -> NodeResult<String> {
         "export" => command_export(&args),
         "from-archive" => command_from_archive(&args),
         "merge-state" => command_merge_state(&args),
+        "import-signed" => command_import_signed(&args),
         "import" => command_import(&args),
         "verify" => command_verify(&args),
         other => Err(format!("unknown command: {other}")),

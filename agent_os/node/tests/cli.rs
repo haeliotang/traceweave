@@ -390,3 +390,129 @@ fn post_revocation_archive_is_refused_but_pre_revocation_history_is_accepted() {
     ]);
     assert_eq!(json(&ok(&["show", "--dir", b_dir.to_str().unwrap()]))["memories"], 1);
 }
+
+// --- Signed handoff (Proof H v2) ---
+
+fn fake_device_signing_key(seed: u8) -> p256::ecdsa::SigningKey {
+    p256::ecdsa::SigningKey::from_slice(&[seed; 32]).unwrap()
+}
+
+fn fake_device_spki(seed: u8) -> Vec<u8> {
+    use p256::pkcs8::EncodePublicKey;
+    fake_device_signing_key(seed)
+        .verifying_key()
+        .to_public_key_der()
+        .unwrap()
+        .as_bytes()
+        .to_vec()
+}
+
+fn make_signed_handoff(seed: u8, signed_at: i64, state: &[u8]) -> Vec<u8> {
+    use p256::ecdsa::signature::Signer;
+    let key = fake_device_signing_key(seed);
+    let mut message = b"traceweave-portable-handoff-v1".to_vec();
+    message.extend_from_slice(&signed_at.to_be_bytes());
+    message.extend_from_slice(state);
+    let signature: p256::ecdsa::Signature = key.sign(&message);
+    let signature = signature.to_der().as_bytes().to_vec();
+    let spki = fake_device_spki(seed);
+
+    let mut envelope = Vec::new();
+    envelope.extend_from_slice(b"TWPH1");
+    envelope.extend_from_slice(&signed_at.to_be_bytes());
+    envelope.extend_from_slice(&(spki.len() as u32).to_be_bytes());
+    envelope.extend_from_slice(&spki);
+    envelope.extend_from_slice(&(state.len() as u32).to_be_bytes());
+    envelope.extend_from_slice(state);
+    envelope.extend_from_slice(&(signature.len() as u32).to_be_bytes());
+    envelope.extend_from_slice(&signature);
+    envelope
+}
+
+fn portable_state_with_memory(id: &str, content: &str) -> Vec<u8> {
+    use std::collections::BTreeMap;
+    use traceweave_portable::{Clock, SubstrateState, Version};
+    let mut state = SubstrateState::new();
+    let mut clock = BTreeMap::new();
+    clock.insert("android-phone".to_string(), 1u64);
+    state
+        .merge_memory(
+            id,
+            &[Version { clock: Clock(clock), value: Some(content.to_string()) }],
+        )
+        .unwrap();
+    state.canonical_bytes().unwrap()
+}
+
+#[test]
+fn signed_handoff_is_verified_against_the_enrolled_device_key() {
+    let sandbox = Sandbox::new("signed-handoff");
+    let node_dir = sandbox.dir("node");
+    init(&node_dir, "1000");
+    ok(&[
+        "trust", "--dir", node_dir.to_str().unwrap(),
+        "--device-id", "android-1", "--device-pubkey", &hex(&fake_device_spki(9)), "--at", "2000",
+    ]);
+
+    let state = portable_state_with_memory("mem-1", "signed from the phone");
+    let handoff = sandbox.file("handoff.twph");
+    std::fs::write(&handoff, make_signed_handoff(9, 4000, &state)).unwrap();
+    let imported = json(&ok(&[
+        "import-signed", "--dir", node_dir.to_str().unwrap(), "--in", handoff.to_str().unwrap(),
+    ]));
+    assert_eq!(imported["device_id"], "android-1");
+    assert_eq!(imported["memories_merged"], 1);
+    assert_eq!(json(&ok(&["show", "--dir", node_dir.to_str().unwrap()]))["memories"], 1);
+
+    // A tampered signature must not import.
+    let mut tampered = make_signed_handoff(9, 4000, &state);
+    let last = tampered.len() - 1;
+    tampered[last] ^= 1;
+    let tampered_file = sandbox.file("tampered.twph");
+    std::fs::write(&tampered_file, tampered).unwrap();
+    let (success, output) = node(&[
+        "import-signed", "--dir", node_dir.to_str().unwrap(), "--in", tampered_file.to_str().unwrap(),
+    ]);
+    assert!(!success, "tampered handoff must fail: {output}");
+    assert!(output.contains("signature"), "unexpected error: {output}");
+
+    // An unenrolled key is refused even with a valid signature.
+    let stranger = sandbox.file("stranger.twph");
+    std::fs::write(&stranger, make_signed_handoff(11, 4000, &state)).unwrap();
+    let (success, output) = node(&[
+        "import-signed", "--dir", node_dir.to_str().unwrap(), "--in", stranger.to_str().unwrap(),
+    ]);
+    assert!(!success, "unenrolled key must fail: {output}");
+    assert!(output.contains("not enrolled"), "unexpected error: {output}");
+}
+
+#[test]
+fn signed_handoff_respects_revocation_time() {
+    let sandbox = Sandbox::new("signed-revocation");
+    let node_dir = sandbox.dir("node");
+    init(&node_dir, "1000");
+    ok(&[
+        "trust", "--dir", node_dir.to_str().unwrap(),
+        "--device-id", "android-1", "--device-pubkey", &hex(&fake_device_spki(9)), "--at", "2000",
+    ]);
+    let state = portable_state_with_memory("mem-1", "history");
+    ok(&[
+        "revoke", "--dir", node_dir.to_str().unwrap(),
+        "--device-id", "android-1", "--reason", "lost", "--at", "5000",
+    ]);
+
+    let after = sandbox.file("after.twph");
+    std::fs::write(&after, make_signed_handoff(9, 6000, &state)).unwrap();
+    let (success, output) = node(&[
+        "import-signed", "--dir", node_dir.to_str().unwrap(), "--in", after.to_str().unwrap(),
+    ]);
+    assert!(!success, "post-revocation handoff must fail: {output}");
+    assert!(output.contains("untrusted"), "unexpected error: {output}");
+
+    let before = sandbox.file("before.twph");
+    std::fs::write(&before, make_signed_handoff(9, 4000, &state)).unwrap();
+    ok(&[
+        "import-signed", "--dir", node_dir.to_str().unwrap(), "--in", before.to_str().unwrap(),
+    ]);
+    assert_eq!(json(&ok(&["show", "--dir", node_dir.to_str().unwrap()]))["memories"], 1);
+}

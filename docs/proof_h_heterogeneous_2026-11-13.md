@@ -48,3 +48,28 @@ envelope, and the trust decision is PC-2's identity book.
 - Node states: `agent_os/build/proofh-20261113/node/`, `node2/`
 - Converter: `traceweave-node from-archive` / `merge-state` (see `agent_os/node/README.md`)
 - Tests covering the converter and revocation path: `agent_os/node/tests/cli.rs`
+
+## Proof H v2 — device-signed handoff (same day)
+
+v1 trusted a user-declared import label. v2 binds the handoff to the Android device's
+non-exportable P-256 Keystore key:
+
+| Step | Result |
+| --- | --- |
+| Validation activity builds a synthetic canonical v2 state (1 memory, 1 task) and signs `TWPH1` envelope with the Keystore key | PASS, 564 B, state sha256 `3ffaed9d…`, device fingerprint `a4bd377f…` |
+| macOS node `import-signed` resolves the device by SHA-256(SPKI), verifies DER signature, merges | 1 memory + 1 task merged, grants 0 |
+| Node `show` / `verify` | canonical bytes, audit chain and identity book verified |
+| Tampered signature / unenrolled key | REFUSED |
+| Revocation before `signed_at` | REFUSED (`untrusted device …`) |
+| Revocation after `signed_at` | ACCEPTED as historical record |
+
+**This still is not real user-data export**: the frozen 0.1.5 app has no portable exporter, so
+the signed state is synthetic and produced by the debug validation package (its own Keystore
+identity). A real signed export needs a Track B Android build that reads the database and signs
+the canonical state without changing the frozen schema or wire format.
+
+The Java-side canonical JSON is pinned against the Rust layout by
+`android_java_canonical_handoff_json_stays_canonical` (sha256 `3ffaed9d…`), so a format drift
+fails a host test instead of silently breaking the node.
+
+Receipt (local): `agent_os/build/proofh-20261113/receipt-v2.json`.
