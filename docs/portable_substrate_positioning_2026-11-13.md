@@ -102,7 +102,9 @@ it a standalone crate with no Android types.
 (`traceweave-portable`, no Android/JNI/Keystore/SQLite/UI dependency): memory version merge with
 tombstone priority, task checkpoints that refuse to replay external effects, order-independent
 policy decisions, a SHA-256 audit chain, adapter ports and a canonical state envelope that
-rejects non-canonical bytes. It is covered by 15 tests (13 contract + 2 adapter-parity). Still to do: move the remaining
+rejects non-canonical bytes. The identity book now travels inside the canonical envelope
+(`STATE_FORMAT_VERSION = 2`, version-1 envelopes upgrade in memory and are rejected by
+canonical-only readers). It is covered by 29 tests. Still to do: move the remaining
 Android-side semantics into this crate, add a Linux/macOS fixture run, and make the Android
 adapter consume the canonical envelope instead of its own Java state layer.
 

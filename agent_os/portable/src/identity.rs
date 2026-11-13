@@ -314,6 +314,16 @@ impl IdentityBook {
         Ok(())
     }
 
+    /// Sort the root history by effective time (and key as tie-break) so adapters cannot
+    /// influence the canonical bytes by the order they learned about rotations.
+    pub fn normalize(&mut self) {
+        self.roots.sort_by(|left, right| {
+            left.effective_at
+                .cmp(&right.effective_at)
+                .then_with(|| left.pubkey.cmp(&right.pubkey))
+        });
+    }
+
     pub fn trust(&self, device_id: &str) -> Trust {
         match self.devices.get(device_id) {
             None => Trust::Unknown,
@@ -342,11 +352,7 @@ impl IdentityBook {
         }
         // Root history order must not depend on how it was assembled by an adapter.
         let mut normalized = self.clone();
-        normalized.roots.sort_by(|left, right| {
-            left.effective_at
-                .cmp(&right.effective_at)
-                .then_with(|| left.pubkey.cmp(&right.pubkey))
-        });
+        normalized.normalize();
         let bytes = serde_json::to_vec(&normalized)
             .map_err(|error| IdentityError::Encoding(error.to_string()))?;
         Ok(bytes)
@@ -362,11 +368,7 @@ impl IdentityBook {
             return Err(IdentityError::NonCanonical);
         }
         let mut normalized = book;
-        normalized.roots.sort_by(|left, right| {
-            left.effective_at
-                .cmp(&right.effective_at)
-                .then_with(|| left.pubkey.cmp(&right.pubkey))
-        });
+        normalized.normalize();
         Ok(normalized)
     }
 }

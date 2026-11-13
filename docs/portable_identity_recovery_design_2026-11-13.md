@@ -178,5 +178,8 @@ Still open:
 
 4. A threat-model review against the table above by someone other than the author;
 5. On-device evidence of a hardware device key + enrollment record once Track B reaches PC-1;
-6. Moving identity records into the canonical `SubstrateState` envelope under a new format
-   version with a migration test (today they are a separate versioned document).
+6. ~~Moving identity records into the canonical `SubstrateState` envelope~~ — **done on
+   2026-11-13**: `STATE_FORMAT_VERSION = 2` carries an optional `IdentityBook`, version-1
+   envelopes are upgraded by `SubstrateState::from_bytes` and canonical-only readers reject
+   them; `merge_memory_from_device` enforces "revoked after, rejected; before, historical";
+   a v1 fixture migration test and a revocation-enforcement test were added.

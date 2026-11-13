@@ -32,4 +32,4 @@ pub use checkpoint::{
 pub use policy::{authorize, Decision, Grant, GrantRequest};
 pub use ports::{AuditAnchorPort, DeviceIdentityPort, StateStorePort};
 pub use record::{merge, resolve, Clock, MergeResult, Version, MAX_ACTORS, MAX_BRANCHES, MAX_CONTENT_BYTES};
-pub use state::{StateError, SubstrateState, STATE_FORMAT_VERSION};
+pub use state::{StateError, SubstrateState, LEGACY_STATE_FORMAT_VERSION, STATE_FORMAT_VERSION};

@@ -83,7 +83,7 @@ fn golden_canonical_bytes_are_stable() {
     let digest = sha256_hex(&bytes);
     assert_eq!(
         digest,
-        "bf57923ad8cfa7006d3fa3f0e85343dbe2374e047172f5603b7a42ff86506fbb",
+        "4e05e0c3224db0906fe7b64f76bf21fd7fb55dffffa79d8ae7f0222545c22caf",
         "canonical state format changed; bump STATE_FORMAT_VERSION and document the migration"
     );
 
