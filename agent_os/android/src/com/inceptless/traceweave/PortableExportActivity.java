@@ -151,11 +151,40 @@ public final class PortableExportActivity extends Activity {
             json.append('"').append(escape(task.id)).append("\":{\"task_id\":\"").append(escape(task.id))
                 .append("\",\"goal\":\"").append(escape(task.title == null ? "" : task.title))
                 .append("\",\"status\":\"").append(portableStatus(task.status))
-                .append("\",\"steps\":[],\"effects\":{},\"updated_at\":").append(task.updatedAt)
+                .append("\",\"steps\":[");
+            if (task.plan != null) {
+                boolean firstStep = true;
+                for (ExecutionPlan.Step step : task.plan.steps) {
+                    if (!firstStep) json.append(',');
+                    firstStep = false;
+                    json.append("{\"index\":").append(step.index)
+                        .append(",\"capability\":\"").append(escape(step.capability))
+                        .append("\",\"scope\":\"").append(escape(step.scope))
+                        .append("\",\"status\":\"").append(portableStepStatus(step.status))
+                        .append("\",\"evidence\":");
+                    if (step.observation == null || step.observation.isEmpty()) {
+                        json.append("[]");
+                    } else {
+                        json.append("["").append(escape(step.observation)).append(""]");
+                    }
+                    json.append('}');
+                }
+            }
+            json.append("],\"effects\":{},\"updated_at\":").append(task.updatedAt)
                 .append(",\"needs_authorization\":true}");
         }
         json.append("},\"grants\":[],\"audit\":{\"entries\":[]}}");
         return json.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String portableStepStatus(String status) {
+        if ("done".equals(status)) return "completed";
+        if ("failed".equals(status)) return "failed";
+        if ("cancelled".equals(status)) return "skipped";
+        if ("awaiting_grant".equals(status) || "handed_off".equals(status) || "outcome_unknown".equals(status))
+            return "awaiting_approval";
+        if ("running".equals(status)) return "ready";
+        return "pending";
     }
 
     private static String portableStatus(String status) {
