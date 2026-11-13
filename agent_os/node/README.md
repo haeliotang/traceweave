@@ -10,7 +10,7 @@ envelope and recover after a restart. It is **not** a daemon and not part of the
 ## Commands
 
 ```
-traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE] [--key-agent-tag TAG]
+traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE] [--secret-service SERVICE] [--key-agent-tag TAG]
 traceweave-node recover --dir D --in BACKUP --passphrase TEXT --revoke-others true [--at MS]
 traceweave-node session-create --dir D --agent NAME --capability C --scope S [--ttl-ms N]
 traceweave-node session-list   --dir D
@@ -53,6 +53,11 @@ clang -framework Security -framework CoreFoundation agent_os/node/macos/key_agen
 ```
 
 Set `TRACEWEAVE_KEY_AGENT` to use a helper in another location.
+
+With `--secret-service SERVICE` the seeds go through `secret-tool` (Linux Secret Service libraries)
+instead, keeping only `.secret-service` and `state.bin` in the node directory. Set
+`TRACEWEAVE_SECRET_TOOL` to use another `secret-tool` binary. The test suite exercises this backend
+against a stub of the `secret-tool` CLI; a real libsecret runtime has not been verified yet.
 
 ## What the acceptance tests prove
 
@@ -106,6 +111,7 @@ real capability was executed.
   an ad-hoc entitlement without a provisioning profile is killed at launch. A signed, provisioned
   app bundle is required for a real hardware-held key.
 - The key-agent backend does not yet apply `kSecAccessControl`/biometric gating.
+- The Secret Service backend is protocol-tested with a stub, not against real libsecret on Linux.
 - Passphrase is a CLI argument (shell history) and PBKDF2 rounds are fixed at 100k; this is a
   prototype, not a hardened recovery envelope.
 - `--signed-at` is supplied by the caller in this prototype; the production protocol must carry

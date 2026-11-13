@@ -134,7 +134,9 @@ one-shot host: P-256 device identity, personal-identity enrollment/revocation, c
 persisted as `state.bin`, signed memory merges, PBKDF2 + AES-256-GCM encrypted export/import and
 post-restart `verify`. Key material can live in the macOS **login Keychain** instead of state
 files (`init --keychain-service`); the node directory then holds only a service marker and
-`state.bin`. The key is still a software seed protected by the Keychain, not a Secure Enclave key;
+`state.bin`. A third backend targets Linux Secret Service through `secret-tool`
+(`init --secret-service`); its CLI contract is tested with a stub, while a real libsecret runtime
+still needs a Linux host. The key is still a software seed protected by the Keychain, not a Secure Enclave key;
 that, authenticated timestamps and Linux secret-service support are listed as limitations in the
 crate README.
 

@@ -135,6 +135,7 @@ fn verify_der(spki_der: &[u8], message: &[u8], signature_der: &[u8]) -> bool {
 }
 
 const KEY_AGENT_MARKER: &str = ".key-agent";
+const SECRET_SERVICE_MARKER: &str = ".secret-service";
 const SESSIONS_FILE: &str = "sessions.json";
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
@@ -463,6 +464,67 @@ fn security(args: &[&str]) -> NodeResult<String> {
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
 }
 
+fn secret_tool_path() -> PathBuf {
+    std::env::var("TRACEWEAVE_SECRET_TOOL")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("secret-tool"))
+}
+
+fn secret_tool(args: &[&str], stdin: Option<&str>) -> NodeResult<String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    let mut command = Command::new(secret_tool_path());
+    command
+        .args(args)
+        .stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut child = command.spawn().map_err(|error| format!("secret-tool unavailable: {error}"))?;
+    if let Some(input) = stdin {
+        child
+            .stdin
+            .as_mut()
+            .ok_or("secret-tool stdin")?
+            .write_all(input.as_bytes())
+            .map_err(|error| format!("secret-tool stdin: {error}"))?;
+    }
+    let output = child.wait_with_output().map_err(|error| format!("secret-tool: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "secret-tool {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn secret_store(service: &str, account: &str, seed: &[u8]) -> NodeResult<()> {
+    let label = format!("Traceweave {account}");
+    let value = format!("{}\n", hex_encode(seed));
+    secret_tool(
+        &["store", "--label", &label, "service", service, "account", account],
+        Some(&value),
+    )?;
+    Ok(())
+}
+
+fn secret_load(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    let hex = secret_tool(&["lookup", "service", service, "account", account], None)?;
+    hex_decode(hex.trim()).map_err(|_| "Secret Service item is not a valid key seed".to_string())
+}
+
+fn secret_seed(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    match secret_load(service, account) {
+        Ok(seed) if seed.len() == 32 => Ok(seed),
+        _ => {
+            let seed = random_bytes::<32>()?.to_vec();
+            secret_store(service, account, &seed)?;
+            Ok(seed)
+        }
+    }
+}
+
 fn keychain_store(service: &str, account: &str, seed: &[u8]) -> NodeResult<()> {
     security(&[
         "add-generic-password", "-U",
@@ -498,6 +560,13 @@ struct Node {
 }
 
 impl Node {
+    fn secret_service(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(SECRET_SERVICE_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
     fn key_agent_tag(dir: &Path) -> Option<String> {
         fs::read_to_string(dir.join(KEY_AGENT_MARKER))
             .ok()
@@ -522,6 +591,10 @@ impl Node {
                 tag: format!("{tag}-device"),
                 spki: key_agent_public(&format!("{tag}-device"))?,
             };
+            (identity, device)
+        } else if let Some(service) = Self::secret_service(dir) {
+            let identity = NodeKey::Software(signing_key_from_seed(&secret_load(&service, "traceweave-identity")?)?);
+            let device = NodeKey::Software(signing_key_from_seed(&secret_load(&service, "traceweave-device")?)?);
             (identity, device)
         } else {
             let (identity_seed, device_seed) = match Self::keychain_service(dir) {
@@ -1150,6 +1223,12 @@ fn command_init(args: &Args) -> NodeResult<String> {
         let device = NodeKey::Agent { spki: key_agent_create(&device_tag)?, tag: device_tag };
         fs::write(dir.join(KEY_AGENT_MARKER), format!("{tag}\n"))
             .map_err(|error| format!("write key-agent marker: {error}"))?;
+        (identity, device)
+    } else if let Some(service) = args.optional("secret-service") {
+        let identity = NodeKey::Software(signing_key_from_seed(&secret_seed(service, "traceweave-identity")?)?);
+        let device = NodeKey::Software(signing_key_from_seed(&secret_seed(service, "traceweave-device")?)?);
+        fs::write(dir.join(SECRET_SERVICE_MARKER), format!("{service}\n"))
+            .map_err(|error| format!("write secret-service marker: {error}"))?;
         (identity, device)
     } else {
         match args.optional("keychain-service") {

@@ -51,6 +51,18 @@ fn node(args: &[&str]) -> (bool, String) {
     (output.status.success(), format!("{stdout} {stderr}").trim().to_string())
 }
 
+fn node_with_env(args: &[&str], envs: &[(&str, &str)]) -> (bool, String) {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_traceweave-node"));
+    command.args(args);
+    for (key, value) in envs {
+        command.env(key, value);
+    }
+    let output = command.output().expect("node binary runs");
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    (output.status.success(), format!("{stdout} {stderr}").trim().to_string())
+}
+
 fn ok(args: &[&str]) -> String {
     let (success, output) = node(args);
     assert!(success, "command failed: {args:?}\n{output}");
@@ -1082,4 +1094,57 @@ fn agent_sessions_are_short_lived_and_are_not_migrated() {
     ]);
     let b_sessions = json(&ok(&["session-list", "--dir", b_dir.to_str().unwrap(), "--at", "2800"]));
     assert_eq!(b_sessions["sessions"].as_array().unwrap().len(), 0, "sessions must not migrate");
+}
+
+// --- PC-1: Linux Secret Service backend (exercised through a stub on macOS) ---
+
+fn secret_tool_stub(sandbox: &Sandbox) -> (std::path::PathBuf, std::path::PathBuf) {
+    let store = sandbox.dir("secret-store");
+    std::fs::create_dir_all(&store).unwrap();
+    let stub = sandbox.file("secret-tool");
+    let script = format!(
+        "#!/bin/bash\nset -e\nstore=\"{}\"\ncmd=\"$1\"; shift\nif [ \"$cmd\" = store ]; then\n  service=\"\"; account=\"\"\n  while [ $# -gt 0 ]; do\n    case \"$1\" in --label) shift 2;; service) service=\"$2\"; shift 2;; account) account=\"$2\"; shift 2;; *) shift;; esac\n  done\n  secret=\"$(cat)\"\n  printf '%s' \"$secret\" > \"$store/$service.$account\"\nelif [ \"$cmd\" = lookup ]; then\n  service=\"$2\"; account=\"$4\"\n  cat \"$store/$service.$account\"\nfi\n",
+        store.display()
+    );
+    std::fs::write(&stub, script).unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(&stub, std::fs::Permissions::from_mode(0o755)).unwrap();
+    (stub, store)
+}
+
+#[test]
+fn secret_service_backend_keeps_keys_out_of_the_state_directory() {
+    let sandbox = Sandbox::new("secret-service");
+    let dir = sandbox.dir("node");
+    let (stub, store) = secret_tool_stub(&sandbox);
+    let stub = stub.to_str().unwrap().to_string();
+    let store_env = store.to_str().unwrap().to_string();
+    let envs: Vec<(&str, &str)> = vec![("TRACEWEAVE_SECRET_TOOL", &stub), ("STORE_DIR", &store_env)];
+    let service = "traceweave-node-secret-test";
+
+    let (success, output) = node_with_env(
+        &["init", "--dir", dir.to_str().unwrap(), "--at", "1000", "--secret-service", service],
+        &envs,
+    );
+    assert!(success, "init failed: {output}");
+    assert!(!dir.join("identity.key").exists(), "no identity seed file");
+    assert!(!dir.join("device.key").exists(), "no device seed file");
+    assert!(!dir.join(".keychain").exists());
+    assert!(dir.join(".secret-service").exists(), "marker records the service");
+
+    let (success, output) = node_with_env(
+        &["add-memory", "--dir", dir.to_str().unwrap(), "--content", "secret service", "--at", "2000"],
+        &envs,
+    );
+    assert!(success, "add-memory failed: {output}");
+    let (success, output) = node_with_env(&["show", "--dir", dir.to_str().unwrap()], &envs);
+    assert!(success, "show failed: {output}");
+    assert_eq!(json(&output)["memories"], 1);
+    let (success, output) = node_with_env(&["verify", "--dir", dir.to_str().unwrap()], &envs);
+    assert!(success, "verify failed: {output}");
+    assert_eq!(json(&output)["ok"], true);
+
+    // Both seeds went through the Secret Service tool.
+    assert!(store.join(format!("{service}.traceweave-identity")).exists());
+    assert!(store.join(format!("{service}.traceweave-device")).exists());
 }
