@@ -12,6 +12,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.OutputStream;
+import java.security.SecureRandom;
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -66,13 +69,40 @@ public final class PortableExportActivity extends Activity {
                     .array();
                 byte[] signature = DeviceIdentity.sign(message);
                 byte[] spki = DeviceIdentity.publicKey();
-                byte[] envelope = ByteBuffer.allocate(5 + 8 + 4 + spki.length + 4 + canonical.length + 4 + signature.length)
-                    .put("TWPH1".getBytes(StandardCharsets.UTF_8))
-                    .putLong(signedAt)
-                    .putInt(spki.length).put(spki)
-                    .putInt(canonical.length).put(canonical)
-                    .putInt(signature.length).put(signature)
-                    .array();
+                String passphrase = getIntent().getStringExtra("passphrase");
+                byte[] envelope;
+                if (passphrase != null && !passphrase.isEmpty()) {
+                    // TWPH2: sign the canonical state, then encrypt it with the archive KDF
+                    // (PBKDF2-HMAC-SHA256 600k) + AES-256-GCM; the header is the AAD.
+                    byte[] salt = new byte[16];
+                    byte[] nonce = new byte[12];
+                    new SecureRandom().nextBytes(salt);
+                    new SecureRandom().nextBytes(nonce);
+                    ByteBuffer headerBuffer = ByteBuffer.allocate(5 + 8 + 4 + spki.length + 4 + signature.length + 2 + salt.length + 2 + nonce.length)
+                        .put("TWPH2".getBytes(StandardCharsets.UTF_8))
+                        .putLong(signedAt)
+                        .putInt(spki.length).put(spki)
+                        .putInt(signature.length).put(signature)
+                        .putShort((short) salt.length).put(salt)
+                        .putShort((short) nonce.length).put(nonce);
+                    byte[] header = headerBuffer.array();
+                    byte[] key = MemoryArchive.deriveKey(passphrase.toCharArray(), salt);
+                    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                    cipher.init(Cipher.ENCRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"),
+                        new GCMParameterSpec(128, nonce));
+                    cipher.updateAAD(header);
+                    byte[] ciphertext = cipher.doFinal(canonical);
+                    envelope = ByteBuffer.allocate(header.length + 4 + ciphertext.length)
+                        .put(header).putInt(ciphertext.length).put(ciphertext).array();
+                } else {
+                    envelope = ByteBuffer.allocate(5 + 8 + 4 + spki.length + 4 + canonical.length + 4 + signature.length)
+                        .put("TWPH1".getBytes(StandardCharsets.UTF_8))
+                        .putLong(signedAt)
+                        .putInt(spki.length).put(spki)
+                        .putInt(canonical.length).put(canonical)
+                        .putInt(signature.length).put(signature)
+                        .array();
+                }
                 String name = "traceweave-portable-" + signedAt + ".twph";
                 if (Build.VERSION.SDK_INT < 29) throw new IllegalStateException("Downloads export requires API 29");
                 ContentValues values = new ContentValues();
@@ -84,7 +114,8 @@ public final class PortableExportActivity extends Activity {
                 try (OutputStream stream = getContentResolver().openOutputStream(uri)) {
                     stream.write(envelope);
                 }
-                result = "PASS portable_export file=" + name
+                result = "PASS portable_export mode=" + (passphrase == null || passphrase.isEmpty() ? "signed" : "sealed")
+                    + " file=" + name
                     + " bytes=" + envelope.length
                     + " memories=" + memoryCount
                     + " tasks=" + taskCount
