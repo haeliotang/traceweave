@@ -134,6 +134,13 @@ cross-platform protocol contract tests.
 
 ### PC-2 — Personal identity and recovery contract
 
+**Design drafted 2026-11-13:** [`portable_identity_recovery_design_2026-11-13.md`](portable_identity_recovery_design_2026-11-13.md)
+separates Personal Identity (PRS-derived signing root), Device Identity (non-exportable hardware
+key, enrollable/revocable) and Agent Session (short-lived grants), and spells out enrollment,
+revocation, recovery, rotation and the "history migrates, authority does not" rule, with a
+threat-model table and open questions. Implementation comes after PC-1's port, and its
+simulation tests are listed as required evidence.
+
 Design document first, implementation later:
 
 - Personal identity key (or recovery secret) wrapping and rotation; device enrollment and

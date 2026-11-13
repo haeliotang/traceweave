@@ -103,7 +103,8 @@ jobs:
 
   portable-core:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    # The parity test compiles agent_os/core as a dev-dependency, so allow the extra build time.
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: agent_os/portable

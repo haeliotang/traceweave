@@ -128,9 +128,9 @@ Current status:
 
 | Workstream | Deliverable | Needs a second Android phone |
 | :--- | :--- | :--- |
-| **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical envelope, 15 tests | No |
+| **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical envelope, golden bytes, parity with the existing Rust core, 19 tests | No |
 | **PC-1 reference node** | Headless macOS/Linux node speaking the same protocol | No |
-| **PC-2 identity & recovery** | Personal identity separated from device identity; enrollment, revocation, recovery contract | Design and simulation only |
+| **PC-2 identity & recovery** | Design drafted: [portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) — PRS-rooted personal identity, device enrollment/revocation, recovery without inheriting grants | Design and simulation only |
 | **PC-3 task continuity** | Model/device-independent task checkpoints without replaying external effects | Simulation only |
 
 PC-2's identity boundary is designed before PC-1 ports code. The full plan, acceptance criteria
