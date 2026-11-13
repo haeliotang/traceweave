@@ -221,6 +221,12 @@ Secure Enclave key is still out of reach: the unsigned CLI fails with
 `errSecMissingEntitlement (-34018)` and an ad-hoc entitlement is killed without a provisioning
 profile, so the Enclave path needs a signed, provisioned app bundle.
 
+**PC-2 recovery contract:** `traceweave-node init --recovery-secret` derives the identity root so
+the same secret rebuilds it on a new host; `recover --revoke-others true` adopts an encrypted
+backup, refuses a mismatched identity, drops all grants, marks tasks as needing authorization,
+enrolls the new device and revokes the old ones. Host evidence: same identity fingerprint on the
+new device, old node and phone revoked, task still present and re-authorization required.
+
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
 

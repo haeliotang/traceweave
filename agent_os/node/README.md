@@ -11,6 +11,7 @@ envelope and recover after a restart. It is **not** a daemon and not part of the
 
 ```
 traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE] [--key-agent-tag TAG]
+traceweave-node recover --dir D --in BACKUP --passphrase TEXT --revoke-others true [--at MS]
 traceweave-node key     --dir D
 traceweave-node show    --dir D
 traceweave-node trust   --dir D --device-id ID --device-pubkey SPKI_HEX [--at MS]
@@ -68,6 +69,15 @@ state into a node under the same trust/revocation check as a network import. The
 no vector clocks, so the converter assigns synthetic clocks `{device: 1}` for live records and
 `{device: 2}` for tombstones; plan step detail is not reconstructed. The Android side stays
 untouched, which is exactly the Track B constraint.
+
+## Recovery (PC-2)
+
+`init --recovery-secret SECRET` derives the personal identity root from a high-entropy recovery
+secret (PBKDF2-HMAC-SHA256, 200k, fixed domain salt), so the same secret rebuilds the same identity
+on another host. `recover --in BACKUP --revoke-others true` adopts an encrypted state backup:
+it refuses a backup whose identity root does not match, drops all grants, marks every task as
+needing authorization, enrolls the local device if needed, and revokes every other device in the
+book with the identity key. **History migrates; authority does not.**
 
 ## Task continuity (PC-3)
 

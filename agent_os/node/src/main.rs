@@ -616,6 +616,73 @@ fn task_mut<'a>(node: &'a mut Node, task_id: &str) -> NodeResult<&'a mut TaskChe
         .ok_or_else(|| format!("unknown task: {task_id}"))
 }
 
+fn adopt_recovered_state(
+    node: &mut Node,
+    incoming: SubstrateState,
+    revoke_others: bool,
+    at: i64,
+) -> NodeResult<(usize, usize, usize)> {
+    let expected = node.identity.public_der();
+    let root_matches = incoming
+        .identity
+        .as_ref()
+        .and_then(|book| book.current_root())
+        .is_some_and(|root| root.pubkey == expected);
+    if !root_matches {
+        return Err("recovery secret does not match this backup".to_string());
+    }
+    let memories = incoming.live_memory_count();
+    let tasks = incoming.tasks.len();
+    let mut state = incoming;
+    state.grants.clear();
+    for checkpoint in state.tasks.values_mut() {
+        checkpoint.needs_authorization = true;
+    }
+    let mut book = state.identity.clone().ok_or("backup has no identity book")?;
+    let device_id = node.device_id.clone();
+    if !book.devices.contains_key(&device_id) {
+        let record = enrollment(&node.identity, node.device.public_der(), &device_id, at)?;
+        book.enroll(record).map_err(|error| format!("enroll recovered device: {error}"))?;
+    }
+    let mut revoked = 0usize;
+    if revoke_others {
+        let others: Vec<String> = book
+            .devices
+            .values()
+            .filter(|entry| entry.device_id != device_id && entry.revoked_at.is_none())
+            .map(|entry| entry.device_id.clone())
+            .collect();
+        for other in others {
+            let record = revocation(&node.identity, &other, at, "recovered on a new device")?;
+            book.revoke(record).map_err(|error| format!("revoke {other}: {error}"))?;
+            revoked += 1;
+        }
+    }
+    state.set_identity(book);
+    state.audit.append(format!("recovered:{device_id}").as_bytes());
+    node.state = state;
+    Ok((memories, tasks, revoked))
+}
+
+fn command_recover(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read backup: {error}"))?;
+    let plaintext = decrypt(args.get("passphrase")?, &bytes)?;
+    let incoming = SubstrateState::from_bytes(&plaintext).map_err(|error| format!("backup state: {error}"))?;
+    let revoke_others = args.optional("revoke-others") == Some("true");
+    let (memories, tasks, revoked) = adopt_recovered_state(&mut node, incoming, revoke_others, at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "memories": memories,
+        "tasks": tasks,
+        "devices_revoked": revoked,
+        "grants": node.state.grants.len(),
+    })
+    .to_string())
+}
+
 fn command_task(args: &Args) -> NodeResult<String> {
     let node = Node::open(Path::new(args.get("dir")?))?;
     let task_id = args.get("task")?.to_string();
@@ -906,7 +973,25 @@ fn command_init(args: &Args) -> NodeResult<String> {
         return Err(format!("{} already initialized", dir.display()));
     }
     let at = now_millis(args)?;
-    let (identity, device) = if let Some(tag) = args.optional("key-agent-tag") {
+    let (identity, device) = if let Some(secret) = args.optional("recovery-secret") {
+        // PRS simulation: the personal identity root is derived from a high-entropy recovery
+        // secret with a fixed domain salt, so the same secret rebuilds the same identity on a
+        // new device. Production replaces this with a 24-word mnemonic + optional passphrase.
+        let mut seed = [0u8; 32];
+        pbkdf2::pbkdf2_hmac::<Sha256>(secret.as_bytes(), b"traceweave-recovery-v1", 200_000, &mut seed);
+        let identity_path = dir.join("identity.key");
+        if identity_path.is_file() {
+            let stored = fs::read(&identity_path).map_err(|error| format!("read identity seed: {error}"))?;
+            if stored != seed {
+                return Err("this directory already has a different identity; use a fresh --dir".to_string());
+            }
+        } else {
+            write_private(&identity_path, &seed)?;
+        }
+        let identity = NodeKey::Software(signing_key_from_seed(&seed)?);
+        let device = NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?);
+        (identity, device)
+    } else if let Some(tag) = args.optional("key-agent-tag") {
         let identity_tag = format!("{tag}-identity");
         let device_tag = format!("{tag}-device");
         let identity = NodeKey::Agent { spki: key_agent_create(&identity_tag)?, tag: identity_tag };
@@ -1219,6 +1304,7 @@ fn run(args: Args) -> NodeResult<String> {
         "add-memory" => command_add_memory(&args),
         "add-task" => command_add_task(&args),
         "task" => command_task(&args),
+        "recover" => command_recover(&args),
         "authorize" => command_authorize(&args),
         "begin-effect" => command_begin_effect(&args),
         "finish-effect" => command_finish_effect(&args),

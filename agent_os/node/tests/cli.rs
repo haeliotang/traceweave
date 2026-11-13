@@ -65,6 +65,13 @@ fn init(dir: &Path, at: &str) -> serde_json::Value {
     json(&ok(&["init", "--dir", dir.to_str().unwrap(), "--at", at]))
 }
 
+fn init_with(dir: &Path, at: &str, extra: &[&str]) {
+    let dir = dir.to_str().unwrap();
+    let mut args = vec!["init", "--dir", dir, "--at", at];
+    args.extend_from_slice(extra);
+    ok(&args);
+}
+
 fn key(dir: &Path) -> serde_json::Value {
     json(&ok(&["key", "--dir", dir.to_str().unwrap()]))
 }
@@ -908,4 +915,81 @@ fn key_agent_keeps_private_keys_non_exportable() {
     let first = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
     let second = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
     assert_eq!(first["identity_pubkey"], second["identity_pubkey"]);
+}
+
+// --- PC-2: recovery secret rebuilds identity on a new device and revokes the lost ones ---
+
+#[test]
+fn recovery_secret_rebuilds_identity_and_revokes_lost_devices() {
+    let sandbox = Sandbox::new("recovery");
+    let old = sandbox.dir("old");
+    let new = sandbox.dir("new");
+    let stranger = sandbox.dir("stranger");
+    let secret = "correct horse battery staple recovery";
+    init_with(&old, "1000", &["--recovery-secret", secret]);
+    init_with(&new, "1100", &["--recovery-secret", secret]);
+    init_with(&stranger, "1200", &["--recovery-secret", "a different recovery secret"]);
+
+    let old_key = json(&ok(&["key", "--dir", old.to_str().unwrap()]));
+    let new_key = json(&ok(&["key", "--dir", new.to_str().unwrap()]));
+    let stranger_key = json(&ok(&["key", "--dir", stranger.to_str().unwrap()]));
+    assert_eq!(old_key["identity_fingerprint"], new_key["identity_fingerprint"]);
+    assert_ne!(old_key["identity_fingerprint"], stranger_key["identity_fingerprint"]);
+    assert_ne!(old_key["device_id"], new_key["device_id"]);
+
+    ok(&["add-memory", "--dir", old.to_str().unwrap(), "--content", "survives recovery", "--at", "2000"]);
+    ok(&[
+        "add-task", "--dir", old.to_str().unwrap(), "--task-id", "task-1",
+        "--goal", "finish after recovery", "--capability", "file.write", "--scope", "note.txt", "--at", "2100",
+    ]);
+    ok(&[
+        "trust", "--dir", old.to_str().unwrap(), "--device-id", "phone",
+        "--device-pubkey", &fake_device_spki_hex(9), "--at", "2200",
+    ]);
+    let backup = sandbox.file("backup.twpn");
+    ok(&[
+        "export", "--dir", old.to_str().unwrap(), "--out", backup.to_str().unwrap(),
+        "--passphrase", "backup-pass",
+    ]);
+
+    let recovered = json(&ok(&[
+        "recover", "--dir", new.to_str().unwrap(), "--in", backup.to_str().unwrap(),
+        "--passphrase", "backup-pass", "--revoke-others", "true", "--at", "3000",
+    ]));
+    assert_eq!(recovered["memories"], 1);
+    assert_eq!(recovered["tasks"], 1);
+    assert_eq!(recovered["devices_revoked"], 2, "old node and phone must be revoked");
+    assert_eq!(recovered["grants"], 0);
+
+    let show = json(&ok(&["show", "--dir", new.to_str().unwrap()]));
+    assert_eq!(show["memories"], 1);
+    assert_eq!(show["tasks"], 1);
+    assert_eq!(show["grants"], 0);
+    let view = json(&ok(&["task", "--dir", new.to_str().unwrap(), "--task", "task-1"]));
+    assert_eq!(view["needs_authorization"], true);
+    assert_eq!(json(&ok(&["verify", "--dir", new.to_str().unwrap()]))["ok"], true);
+
+    // The identity book now has the new device active and both old devices revoked.
+    use traceweave_portable::SubstrateState;
+    let state = SubstrateState::from_bytes(&std::fs::read(new.join("state.bin")).unwrap()).unwrap();
+    let book = state.identity.expect("recovered identity book");
+    let new_device = new_key["device_id"].as_str().unwrap();
+    assert!(book.devices[new_device].revoked_at.is_none());
+    assert!(book.devices[old_key["device_id"].as_str().unwrap()].revoked_at.is_some());
+    assert!(book.devices["phone"].revoked_at.is_some());
+
+    // A different recovery secret cannot adopt this backup.
+    let (success, output) = node(&[
+        "recover", "--dir", stranger.to_str().unwrap(), "--in", backup.to_str().unwrap(),
+        "--passphrase", "backup-pass", "--at", "3100",
+    ]);
+    assert!(!success, "wrong recovery secret must fail: {output}");
+    assert!(output.contains("does not match"), "unexpected error: {output}");
+
+    // Wrong backup passphrase fails before adoption.
+    let (success, output) = node(&[
+        "recover", "--dir", new.to_str().unwrap(), "--in", backup.to_str().unwrap(),
+        "--passphrase", "wrong", "--at", "3200",
+    ]);
+    assert!(!success, "wrong backup passphrase must fail: {output}");
 }

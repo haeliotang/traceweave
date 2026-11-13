@@ -183,3 +183,10 @@ Still open:
    envelopes are upgraded by `SubstrateState::from_bytes` and canonical-only readers reject
    them; `merge_memory_from_device` enforces "revoked after, rejected; before, historical";
    a v1 fixture migration test and a revocation-enforcement test were added.
+
+7. **Host recovery contract (2026-11-14)**: `traceweave-node init --recovery-secret` derived the
+   same identity fingerprint on a second directory; `recover --revoke-others true` adopted an
+   encrypted backup, refused a mismatched identity, cleared grants, marked the task as needing
+   authorization, enrolled the new device and revoked both old devices. A different recovery
+   secret and a wrong backup passphrase were refused. Receipt (local):
+   `agent_os/build/pc2-recovery-20261114/receipt.json`.
