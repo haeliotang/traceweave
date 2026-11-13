@@ -15,7 +15,7 @@
 //! - the identity book is shared out of band; the node trusts only book entries it verified
 //!   through `trust`/import commands.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -148,6 +148,148 @@ fn load_or_create_seed(path: &Path) -> NodeResult<Vec<u8>> {
     let seed = random_bytes::<32>()?.to_vec();
     write_private(path, &seed)?;
     Ok(seed)
+}
+
+const ARCHIVE_MAGIC: &[u8; 4] = b"TAOS";
+const ARCHIVE_HEADER_BYTES: usize = 4 + 1 + 4 + 16 + 12;
+const ARCHIVE_ITERATIONS: u32 = 600_000;
+const ARCHIVE_FORMAT: &str = "com.inceptless.traceweave.memory";
+const ARCHIVE_LEGACY_FORMAT: &str = "org.traceform.agentos.memory";
+
+/// Decrypt a `MemoryArchive` exported by the Android app. This reads the frozen 0.1.5 archive
+/// format; it never changes it.
+fn decrypt_archive(passphrase: &str, archive: &[u8]) -> NodeResult<Vec<u8>> {
+    if archive.len() < ARCHIVE_HEADER_BYTES + 16 || &archive[..4] != ARCHIVE_MAGIC {
+        return Err("not a TAOS memory archive".to_string());
+    }
+    let version = archive[4];
+    if !(1..=3).contains(&version) {
+        return Err(format!("unsupported archive encryption version {version}"));
+    }
+    let iterations = u32::from_be_bytes([archive[5], archive[6], archive[7], archive[8]]);
+    if iterations != ARCHIVE_ITERATIONS {
+        return Err("unsupported archive key derivation parameters".to_string());
+    }
+    let salt = &archive[9..25];
+    let nonce = &archive[25..37];
+    let header = &archive[..ARCHIVE_HEADER_BYTES];
+    let ciphertext = &archive[ARCHIVE_HEADER_BYTES..];
+
+    let mut key = [0u8; 32];
+    pbkdf2::pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, ARCHIVE_ITERATIONS, &mut key);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    cipher
+        .decrypt(Nonce::from_slice(nonce), Payload { msg: ciphertext, aad: header })
+        .map_err(|_| "wrong passphrase or corrupted archive".to_string())
+}
+
+fn archive_task_status(status: &str) -> traceweave_portable::TaskStatus {
+    use traceweave_portable::TaskStatus;
+    match status {
+        "completed" => TaskStatus::Completed,
+        "cancelled" => TaskStatus::Cancelled,
+        "failed" => TaskStatus::Failed,
+        _ => TaskStatus::WaitingForUser,
+    }
+}
+
+/// Convert a decrypted archive JSON into a canonical v2 state. The archive has no vector clocks,
+/// so each live memory receives a synthetic initial clock `{device: 1}` and each tombstone
+/// `{device: 2}`; that ordering makes deletion win without inventing merge history.
+fn archive_to_state(passphrase: &str, archive: &[u8], from_device: &str) -> NodeResult<SubstrateState> {
+    let plaintext = decrypt_archive(passphrase, archive)?;
+    let root: serde_json::Value =
+        serde_json::from_slice(&plaintext).map_err(|error| format!("archive JSON: {error}"))?;
+    let format = root.get("format").and_then(serde_json::Value::as_str).unwrap_or("");
+    if format != ARCHIVE_FORMAT && format != ARCHIVE_LEGACY_FORMAT {
+        return Err(format!("unsupported archive format: {format}"));
+    }
+
+    let mut tombstoned: BTreeSet<String> = BTreeSet::new();
+    if let Some(tombstones) = root.get("tombstones").and_then(serde_json::Value::as_array) {
+        for tombstone in tombstones {
+            if tombstone.get("entityType").and_then(serde_json::Value::as_str) == Some("memory") {
+                if let Some(id) = tombstone.get("entityId").and_then(serde_json::Value::as_str) {
+                    tombstoned.insert(id.to_string());
+                }
+            }
+        }
+    }
+
+    let mut state = SubstrateState::new();
+    let clock = |counter: u64| {
+        let mut clock = BTreeMap::new();
+        clock.insert(from_device.to_string(), counter);
+        Clock(clock)
+    };
+
+    if let Some(memories) = root.get("memories").and_then(serde_json::Value::as_array) {
+        for memory in memories {
+            let Some(id) = memory.get("id").and_then(serde_json::Value::as_str) else { continue };
+            if tombstoned.contains(id) {
+                continue;
+            }
+            let content = memory.get("content").and_then(serde_json::Value::as_str).unwrap_or("");
+            state
+                .merge_memory(
+                    id,
+                    &[Version { clock: clock(1), value: Some(content.to_string()) }],
+                )
+                .map_err(|error| format!("archive memory {id}: {error}"))?;
+        }
+    }
+    for id in &tombstoned {
+        state
+            .merge_memory(id, &[Version { clock: clock(2), value: None }])
+            .map_err(|error| format!("archive tombstone {id}: {error}"))?;
+    }
+
+    if let Some(tasks) = root.get("tasks").and_then(serde_json::Value::as_array) {
+        for (index, task) in tasks.iter().enumerate() {
+            let Some(id) = task.get("id").and_then(serde_json::Value::as_str) else { continue };
+            let title = task.get("title").and_then(serde_json::Value::as_str).unwrap_or("");
+            let status = task.get("status").and_then(serde_json::Value::as_str).unwrap_or("");
+            let mut checkpoint = TaskCheckpoint::new(id, title, Vec::new());
+            checkpoint.task_id = id.to_string();
+            checkpoint.status = archive_task_status(status);
+            checkpoint.needs_authorization = true;
+            checkpoint.updated_at = index as i64;
+            state.put_task(checkpoint).map_err(|error| format!("archive task {id}: {error}"))?;
+        }
+    }
+    Ok(state)
+}
+
+fn merge_incoming(
+    node: &mut Node,
+    incoming: &SubstrateState,
+    from_device: &str,
+    signed_at: i64,
+) -> NodeResult<(usize, usize, usize)> {
+    let identity_book = node.state.identity.clone();
+    if let Some(book) = identity_book {
+        if !book.can_accept_record(from_device, signed_at) {
+            return Err(format!("untrusted device for signed-at {signed_at}: {from_device}"));
+        }
+    }
+    let mut memories = 0usize;
+    for (memory_id, versions) in &incoming.memories {
+        node.state
+            .merge_memory_from_device(from_device, signed_at, memory_id, versions)
+            .map_err(|error| format!("merge {memory_id}: {error}"))?;
+        memories += 1;
+    }
+    let mut tasks = 0usize;
+    for (task_id, checkpoint) in &incoming.tasks {
+        if !node.state.tasks.contains_key(task_id) {
+            node.state.put_task(checkpoint.clone()).map_err(|error| format!("task {task_id}: {error}"))?;
+            tasks += 1;
+        }
+    }
+    // Grants are deliberately not imported: history migrates, authority does not.
+    let dropped = incoming.grants.len();
+    node.state.audit.append(format!("imported:{from_device}").as_bytes());
+    Ok((memories, tasks, dropped))
 }
 
 struct Node {
@@ -316,12 +458,49 @@ fn command_show(args: &Args) -> NodeResult<String> {
         "device_id": node.device_id,
         "device_fingerprint": node.fingerprint_hex(),
         "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
-        "memories": node.state.memories.len(),
+        "memories": node.state.live_memory_count(),
+        "tombstones": node.state.tombstone_count(),
         "tasks": node.state.tasks.len(),
         "grants": node.state.grants.len(),
         "audit_entries": node.state.audit.len(),
         "state_bytes": bytes.len(),
         "state_sha256": digest,
+    })
+    .to_string())
+}
+
+fn command_from_archive(args: &Args) -> NodeResult<String> {
+    let archive = fs::read(args.get("archive")?).map_err(|error| format!("read archive: {error}"))?;
+    let state = archive_to_state(args.get("passphrase")?, &archive, args.get("from-device")?)?;
+    let out = PathBuf::from(args.get("out")?);
+    let bytes = state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    fs::write(&out, &bytes).map_err(|error| format!("write {}: {error}", out.display()))?;
+    Ok(serde_json::json!({
+        "out": out.display().to_string(),
+        "from_device": args.get("from-device")?,
+        "memories": state.live_memory_count(),
+        "tombstones": state.tombstone_count(),
+        "tasks": state.tasks.len(),
+        "grants": state.grants.len(),
+        "bytes": bytes.len(),
+    })
+    .to_string())
+}
+
+fn command_merge_state(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let signed_at: i64 = args.get("signed-at")?.parse().map_err(|_| "--signed-at must be unix milliseconds".to_string())?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read state: {error}"))?;
+    let incoming = SubstrateState::from_bytes(&bytes).map_err(|error| format!("incoming: {error}"))?;
+    let from = args.get("from-device")?.to_string();
+    let (memories, tasks, dropped) = merge_incoming(&mut node, &incoming, &from, signed_at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "from_device": from,
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped,
     })
     .to_string())
 }
@@ -441,33 +620,7 @@ fn command_import(args: &Args) -> NodeResult<String> {
     let envelope = fs::read(&input).map_err(|error| format!("read {}: {error}", input.display()))?;
     let plaintext = decrypt(&passphrase, &envelope)?;
     let incoming = SubstrateState::from_bytes(&plaintext).map_err(|error| format!("incoming state: {error}"))?;
-
-    // Authority check happens before any merge: the local identity book decides whether the
-    // sending device may contribute records signed at this time.
-    let identity_book = node.state.identity.clone();
-    if let Some(book) = identity_book {
-        if !book.can_accept_record(&from_device, signed_at) {
-            return Err(format!("untrusted device for signed-at {signed_at}: {from_device}"));
-        }
-    }
-
-    let mut memories = 0usize;
-    for (memory_id, versions) in &incoming.memories {
-        node.state
-            .merge_memory_from_device(&from_device, signed_at, memory_id, versions)
-            .map_err(|error| format!("merge {memory_id}: {error}"))?;
-        memories += 1;
-    }
-    let mut tasks = 0usize;
-    for (task_id, checkpoint) in &incoming.tasks {
-        if !node.state.tasks.contains_key(task_id) {
-            node.state.put_task(checkpoint.clone()).map_err(|error| format!("task {task_id}: {error}"))?;
-            tasks += 1;
-        }
-    }
-    // Grants are deliberately not imported: history migrates, authority does not.
-    let dropped_grants = incoming.grants.len();
-    node.state.audit.append(format!("imported:{from_device}").as_bytes());
+    let (memories, tasks, dropped_grants) = merge_incoming(&mut node, &incoming, &from_device, signed_at)?;
     node.save()?;
     Ok(serde_json::json!({
         "from_device": from_device,
@@ -506,6 +659,8 @@ fn run(args: Args) -> NodeResult<String> {
         "add-memory" => command_add_memory(&args),
         "add-task" => command_add_task(&args),
         "export" => command_export(&args),
+        "from-archive" => command_from_archive(&args),
+        "merge-state" => command_merge_state(&args),
         "import" => command_import(&args),
         "verify" => command_verify(&args),
         other => Err(format!("unknown command: {other}")),

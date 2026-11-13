@@ -19,6 +19,8 @@ traceweave-node add-memory --dir D --content TEXT [--memory-id ID] [--at MS]
 traceweave-node add-task   --dir D --goal TEXT [--capability C] [--scope S] [--at MS]
 traceweave-node export  --dir D --out FILE --passphrase TEXT
 traceweave-node import  --dir D --in FILE --passphrase TEXT --from-device ID --signed-at MS
+traceweave-node from-archive --archive PHONE.taos --passphrase TEXT --from-device ID --out STATE.bin
+traceweave-node merge-state  --dir D --in STATE.bin --from-device ID --signed-at MS
 traceweave-node verify  --dir D
 ```
 
@@ -34,6 +36,16 @@ post-revocation records are refused while pre-revocation history is accepted; wr
 and tampered envelopes are rejected; `verify` checks the canonical round-trip, the audit chain and
 the identity book.
 
+## Android archive extraction (Proof H path)
+
+`from-archive` decrypts a `MemoryArchive` exported by the frozen 0.1.5 Android app
+(`TAOS`, PBKDF2-HMAC-SHA256 600k + AES-256-GCM, AAD = the 37-byte header) and converts its
+memories, memory tombstones and tasks into a canonical v2 state. `merge-state` then merges that
+state into a node under the same trust/revocation check as a network import. The archive carries
+no vector clocks, so the converter assigns synthetic clocks `{device: 1}` for live records and
+`{device: 2}` for tombstones; plan step detail is not reconstructed. The Android side stays
+untouched, which is exactly the Track B constraint.
+
 ## Research-grade limitations
 
 - Software keys, not macOS Secure Enclave keys. A real adapter will use the platform key store.
@@ -43,3 +55,5 @@ the identity book.
   an authenticated timestamp.
 - Identity books are shared out of band (`trust` requires the personal identity key). There is no
   automatic discovery or enrollment token yet.
+- Archive conversion loses plan step detail and uses synthetic clocks; a real Proof H run must
+  document that limitation. The archive version accepted is the frozen 0.1.5 one (v1–v3 header).

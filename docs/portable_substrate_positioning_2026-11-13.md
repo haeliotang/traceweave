@@ -178,6 +178,14 @@ A new, smaller proof that does not replace the Android-to-Android Proof 1:
 Scope for the first run: memory migration only (create on Android → encrypted handoff → verify
 and restore on macOS). Task continuity and post-revocation recovery are separate proofs.
 
+**Path implemented on 2026-11-13:** the node's `from-archive` command decrypts a `MemoryArchive`
+exported by the unchanged 0.1.5 app (`TAOS`, PBKDF2-HMAC-SHA256 600k + AES-256-GCM) and converts
+memories, memory tombstones and tasks into the canonical v2 state; `merge-state` then applies the
+same device-trust/revocation checks as a network import. The converter is covered by two CLI
+acceptance tests including post-revocation rejection. **Proof H has not been run yet**: it needs
+an archive exported from the physical Android device, and the converter's synthetic clocks and
+loss of plan step detail must be recorded in the eventual receipt.
+
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
 

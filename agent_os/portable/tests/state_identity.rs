@@ -156,3 +156,30 @@ fn recovery_keeps_identity_and_records_but_drops_authority() {
     assert!(restored.grants.is_empty(), "grants must not survive recovery");
     assert!(restored.tasks.values().all(|task| task.needs_authorization));
 }
+
+#[test]
+fn tombstone_survives_later_live_records() {
+    let mut state = SubstrateState::new();
+    let tombstone = Version {
+        clock: Clock(BTreeMap::from([("phone".to_string(), 2)])),
+        value: None,
+    };
+    state.merge_memory("mem-1", &[tombstone]).unwrap();
+    assert!(state.is_tombstoned("mem-1"));
+    assert_eq!(state.tombstone_count(), 1);
+    assert_eq!(state.live_memory_count(), 0);
+
+    // An offline edit must not resurrect a deleted memory.
+    let later = Version {
+        clock: Clock(BTreeMap::from([("laptop".to_string(), 1)])),
+        value: Some("offline edit".to_string()),
+    };
+    let merged = state.merge_memory("mem-1", &[later]).unwrap();
+    assert_eq!(merged, traceweave_portable::MergeResult::Tombstoned);
+    assert!(state.is_tombstoned("mem-1"));
+
+    // The tombstone survives encode/decode as well.
+    let bytes = state.canonical_bytes().unwrap();
+    let restored = SubstrateState::from_canonical_bytes(&bytes).unwrap();
+    assert!(restored.is_tombstoned("mem-1"));
+}

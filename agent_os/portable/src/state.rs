@@ -108,9 +108,21 @@ impl SubstrateState {
         let current = self.memories.get(memory_id).cloned().unwrap_or_default();
         let merged = merge(&current, inbound).map_err(|reason| StateError::Invalid(reason.to_string()))?;
         match &merged {
-            MergeResult::Tombstoned => self.memories.insert(memory_id.to_string(), Vec::new()),
+            MergeResult::Tombstoned => {
+                // Keep the tombstone candidate: storing an empty list would let a later live
+                // record resurrect the memory. A tombstone stays in `memories` forever.
+                let mut tombstones: Vec<Version> = current
+                    .iter()
+                    .chain(inbound.iter())
+                    .filter(|version| version.value.is_none())
+                    .cloned()
+                    .collect();
+                tombstones.sort();
+                tombstones.dedup();
+                self.memories.insert(memory_id.to_string(), tombstones);
+            }
             MergeResult::Live(versions) => {
-                self.memories.insert(memory_id.to_string(), versions.clone())
+                self.memories.insert(memory_id.to_string(), versions.clone());
             }
         };
         Ok(merged)
@@ -132,6 +144,28 @@ impl SubstrateState {
             }
         }
         self.merge_memory(memory_id, inbound)
+    }
+
+    /// Number of memory IDs that still have at least one live candidate.
+    pub fn live_memory_count(&self) -> usize {
+        self.memories
+            .values()
+            .filter(|versions| versions.iter().any(|version| version.value.is_some()))
+            .count()
+    }
+
+    /// Number of memory IDs whose only surviving candidates are tombstones.
+    pub fn tombstone_count(&self) -> usize {
+        self.memories
+            .values()
+            .filter(|versions| !versions.is_empty() && versions.iter().all(|version| version.value.is_none()))
+            .count()
+    }
+
+    pub fn is_tombstoned(&self, memory_id: &str) -> bool {
+        self.memories
+            .get(memory_id)
+            .is_some_and(|versions| !versions.is_empty() && versions.iter().all(|version| version.value.is_none()))
     }
 
     pub fn put_task(&mut self, checkpoint: TaskCheckpoint) -> Result<(), StateError> {
