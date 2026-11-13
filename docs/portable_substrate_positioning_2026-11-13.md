@@ -135,8 +135,9 @@ persisted as `state.bin`, signed memory merges, PBKDF2 + AES-256-GCM encrypted e
 post-restart `verify`. Key material can live in the macOS **login Keychain** instead of state
 files (`init --keychain-service`); the node directory then holds only a service marker and
 `state.bin`. A third backend targets Linux Secret Service through `secret-tool`
-(`init --secret-service`); its CLI contract is tested with a stub, while a real libsecret runtime
-still needs a Linux host. The key is still a software seed protected by the Keychain, not a Secure Enclave key;
+(`init --secret-service`). It is verified on a real Linux runtime (x86_64 container with
+libsecret + gnome-keyring: the full 16-test node suite and 31-test portable suite pass), and a CI
+job `portable-linux-secret-service` keeps that path covered. The key is still a software seed protected by the Keychain, not a Secure Enclave key;
 that, authenticated timestamps and Linux secret-service support are listed as limitations in the
 crate README.
 

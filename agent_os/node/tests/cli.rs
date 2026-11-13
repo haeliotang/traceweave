@@ -1148,3 +1148,45 @@ fn secret_service_backend_keeps_keys_out_of_the_state_directory() {
     assert!(store.join(format!("{service}.traceweave-identity")).exists());
     assert!(store.join(format!("{service}.traceweave-device")).exists());
 }
+
+// --- PC-1: real Secret Service round-trip when secret-tool is installed (Linux CI/container) ---
+
+#[test]
+fn real_secret_service_roundtrip_when_available() {
+    // Skip where secret-tool is not installed (e.g. the macOS dev host); the stub test covers the
+    // CLI contract there.
+    if std::env::var("TRACEWEAVE_SECRET_TOOL").is_ok() {
+        return;
+    }
+    if Command::new("secret-tool").arg("lookup").arg("service").arg("traceweave-probe").output().is_err() {
+        return;
+    }
+    let sandbox = Sandbox::new("secret-real");
+    let dir = sandbox.dir("node");
+    let service = format!("traceweave-real-{}", std::process::id());
+    let _cleanup = SecretServiceCleanup { service: service.clone() };
+
+    let created = json(&ok(&[
+        "init", "--dir", dir.to_str().unwrap(), "--at", "1000", "--secret-service", &service,
+    ]));
+    assert!(created["device_id"].as_str().unwrap().starts_with("node-"));
+    assert!(!dir.join("identity.key").exists());
+    assert!(dir.join(".secret-service").exists());
+    ok(&["add-memory", "--dir", dir.to_str().unwrap(), "--content", "real service", "--at", "2000"]);
+    assert_eq!(json(&ok(&["show", "--dir", dir.to_str().unwrap()]))["memories"], 1);
+    assert_eq!(json(&ok(&["verify", "--dir", dir.to_str().unwrap()]))["ok"], true);
+}
+
+struct SecretServiceCleanup {
+    service: String,
+}
+
+impl Drop for SecretServiceCleanup {
+    fn drop(&mut self) {
+        for account in ["traceweave-identity", "traceweave-device"] {
+            let _ = Command::new("secret-tool")
+                .args(["clear", "service", &self.service, "account", account])
+                .output();
+        }
+    }
+}

@@ -56,8 +56,10 @@ Set `TRACEWEAVE_KEY_AGENT` to use a helper in another location.
 
 With `--secret-service SERVICE` the seeds go through `secret-tool` (Linux Secret Service libraries)
 instead, keeping only `.secret-service` and `state.bin` in the node directory. Set
-`TRACEWEAVE_SECRET_TOOL` to use another `secret-tool` binary. The test suite exercises this backend
-against a stub of the `secret-tool` CLI; a real libsecret runtime has not been verified yet.
+`TRACEWEAVE_SECRET_TOOL` to use another `secret-tool` binary. The suite covers this backend both
+against a `secret-tool` CLI stub and, on Linux with libsecret + gnome-keyring, against the real
+Secret Service (`real_secret_service_roundtrip_when_available`). The CI job
+`portable-linux-secret-service` runs the real path on ubuntu-24.04.
 
 ## What the acceptance tests prove
 
@@ -111,7 +113,8 @@ real capability was executed.
   an ad-hoc entitlement without a provisioning profile is killed at launch. A signed, provisioned
   app bundle is required for a real hardware-held key.
 - The key-agent backend does not yet apply `kSecAccessControl`/biometric gating.
-- The Secret Service backend is protocol-tested with a stub, not against real libsecret on Linux.
+- The Secret Service backend has been verified in a Linux container and is covered by a CI job;
+  a physical Linux device has not been used yet.
 - Passphrase is a CLI argument (shell history) and PBKDF2 rounds are fixed at 100k; this is a
   prototype, not a hardened recovery envelope.
 - `--signed-at` is supplied by the caller in this prototype; the production protocol must carry
