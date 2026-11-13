@@ -12,6 +12,9 @@ envelope and recover after a restart. It is **not** a daemon and not part of the
 ```
 traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE] [--key-agent-tag TAG]
 traceweave-node recover --dir D --in BACKUP --passphrase TEXT --revoke-others true [--at MS]
+traceweave-node session-create --dir D --agent NAME --capability C --scope S [--ttl-ms N]
+traceweave-node session-list   --dir D
+traceweave-node session-revoke --dir D --session ID
 traceweave-node key     --dir D
 traceweave-node show    --dir D
 traceweave-node trust   --dir D --device-id ID --device-pubkey SPKI_HEX [--at MS]
@@ -78,6 +81,14 @@ on another host. `recover --in BACKUP --revoke-others true` adopts an encrypted 
 it refuses a backup whose identity root does not match, drops all grants, marks every task as
 needing authorization, enrolls the local device if needed, and revokes every other device in the
 book with the identity key. **History migrates; authority does not.**
+
+## Agent Sessions (PC-2)
+
+An Agent Session is the short-lived third identity: a name, a capability scope and an expiry,
+stored in a node-local `sessions.json` (never in the canonical state, so it cannot migrate). A
+grant created with `authorize --session ID` has its lifetime capped by the session, and revoking
+the session revokes every grant it created. Expired sessions cannot authorize new work. A session
+is an authority scope, not a cryptographic credential.
 
 ## Task continuity (PC-3)
 

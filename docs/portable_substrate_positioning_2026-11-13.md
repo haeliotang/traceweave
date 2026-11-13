@@ -227,6 +227,11 @@ backup, refuses a mismatched identity, drops all grants, marks tasks as needing 
 enrolls the new device and revokes the old ones. Host evidence: same identity fingerprint on the
 new device, old node and phone revoked, task still present and re-authorization required.
 
+**PC-2 Agent Sessions:** `session-create` mints a short-lived authority scope (capability, scope,
+expiry) stored in node-local `sessions.json`; `authorize --session` caps the grant lifetime at the
+session expiry, `session-revoke` revokes its grants, expired sessions are refused, and sessions do
+not survive export/import. They are authority scopes, not cryptographic credentials.
+
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
 

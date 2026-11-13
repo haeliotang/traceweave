@@ -993,3 +993,93 @@ fn recovery_secret_rebuilds_identity_and_revokes_lost_devices() {
     ]);
     assert!(!success, "wrong backup passphrase must fail: {output}");
 }
+
+// --- PC-2: Agent Sessions are short-lived and never migrate ---
+
+#[test]
+fn agent_sessions_are_short_lived_and_are_not_migrated() {
+    let sandbox = Sandbox::new("sessions");
+    let a_dir = sandbox.dir("a");
+    let b_dir = sandbox.dir("b");
+    init(&a_dir, "1000");
+    init(&b_dir, "1100");
+    ok(&[
+        "add-task", "--dir", a_dir.to_str().unwrap(), "--task-id", "task-1",
+        "--goal", "session work", "--capability", "file.write", "--scope", "note.txt", "--at", "1200",
+    ]);
+    let session = json(&ok(&[
+        "session-create", "--dir", a_dir.to_str().unwrap(), "--agent", "claude-run",
+        "--capability", "file.write", "--scope", "note.txt", "--ttl-ms", "5000", "--at", "2000",
+    ]));
+    let session_id = session["id"].as_str().unwrap().to_string();
+    let agent_id = session["agent_id"].as_str().unwrap().to_string();
+    assert!(agent_id.starts_with("session-"));
+
+    // A session cannot grant a scope it was not created for.
+    let (success, output) = node(&[
+        "authorize", "--dir", a_dir.to_str().unwrap(), "--session", &session_id,
+        "--task", "task-1", "--capability", "file.write", "--scope", "other.txt", "--at", "2100",
+    ]);
+    assert!(!success, "session scope must be enforced: {output}");
+    assert!(output.contains("does not grant"), "unexpected error: {output}");
+
+    ok(&[
+        "authorize", "--dir", a_dir.to_str().unwrap(), "--session", &session_id,
+        "--task", "task-1", "--capability", "file.write", "--scope", "note.txt",
+        "--ttl-ms", "999999", "--at", "2100",
+    ]);
+    // The grant is capped by the session lifetime, not the requested TTL.
+    ok(&[
+        "effect-execute", "--dir", a_dir.to_str().unwrap(), "--agent", &agent_id,
+        "--task", "task-1", "--operation", "op-1", "--capability", "file.write",
+        "--scope", "note.txt", "--content", "session write", "--at", "2200",
+    ]);
+    let listed = json(&ok(&["session-list", "--dir", a_dir.to_str().unwrap(), "--at", "2300"]));
+    assert_eq!(listed["sessions"][0]["active"], true);
+
+    // Revoking the session revokes its grants.
+    let revoked = json(&ok(&[
+        "session-revoke", "--dir", a_dir.to_str().unwrap(), "--session", &session_id, "--at", "2500",
+    ]));
+    assert_eq!(revoked["revoked_grants"], 1);
+    let (success, output) = node(&[
+        "effect-execute", "--dir", a_dir.to_str().unwrap(), "--agent", &agent_id,
+        "--task", "task-1", "--operation", "op-2", "--capability", "file.write",
+        "--scope", "note.txt", "--content", "must not happen", "--at", "2600",
+    ]);
+    assert!(!success, "revoked session must not act: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+
+    // An expired session cannot authorize new work.
+    let short = json(&ok(&[
+        "session-create", "--dir", a_dir.to_str().unwrap(), "--agent", "short",
+        "--capability", "file.write", "--scope", "note.txt", "--ttl-ms", "1000", "--at", "3000",
+    ]));
+    let short_id = short["id"].as_str().unwrap().to_string();
+    let (success, output) = node(&[
+        "authorize", "--dir", a_dir.to_str().unwrap(), "--session", &short_id,
+        "--task", "task-1", "--capability", "file.write", "--scope", "note.txt", "--at", "4500",
+    ]);
+    assert!(!success, "expired session must not authorize: {output}");
+    assert!(output.contains("expired"), "unexpected error: {output}");
+
+    // Sessions are node-local: an exported state does not carry them.
+    let a_key = key(&a_dir);
+    ok(&[
+        "trust", "--dir", b_dir.to_str().unwrap(),
+        "--device-id", a_key["device_id"].as_str().unwrap(),
+        "--device-pubkey", a_key["device_pubkey"].as_str().unwrap(), "--at", "2700",
+    ]);
+    let envelope = sandbox.file("a.twpn");
+    ok(&[
+        "export", "--dir", a_dir.to_str().unwrap(), "--out", envelope.to_str().unwrap(),
+        "--passphrase", "sessions",
+    ]);
+    ok(&[
+        "import", "--dir", b_dir.to_str().unwrap(), "--in", envelope.to_str().unwrap(),
+        "--passphrase", "sessions", "--from-device", a_key["device_id"].as_str().unwrap(),
+        "--signed-at", "2600",
+    ]);
+    let b_sessions = json(&ok(&["session-list", "--dir", b_dir.to_str().unwrap(), "--at", "2800"]));
+    assert_eq!(b_sessions["sessions"].as_array().unwrap().len(), 0, "sessions must not migrate");
+}

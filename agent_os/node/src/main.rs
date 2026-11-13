@@ -135,6 +135,56 @@ fn verify_der(spki_der: &[u8], message: &[u8], signature_der: &[u8]) -> bool {
 }
 
 const KEY_AGENT_MARKER: &str = ".key-agent";
+const SESSIONS_FILE: &str = "sessions.json";
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+struct SessionScope {
+    capability: String,
+    scope: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+struct AgentSession {
+    id: String,
+    agent_id: String,
+    name: String,
+    capabilities: Vec<SessionScope>,
+    created_at: i64,
+    expires_at: i64,
+    revoked: bool,
+}
+
+fn load_sessions(dir: &Path) -> NodeResult<Vec<AgentSession>> {
+    let path = dir.join(SESSIONS_FILE);
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let bytes = fs::read(&path).map_err(|error| format!("read sessions: {error}"))?;
+    serde_json::from_slice(&bytes).map_err(|error| format!("sessions.json: {error}"))
+}
+
+fn save_sessions(dir: &Path, sessions: &[AgentSession]) -> NodeResult<()> {
+    let bytes = serde_json::to_vec_pretty(sessions).map_err(|error| format!("encode sessions: {error}"))?;
+    write_private(&dir.join(SESSIONS_FILE), &bytes)
+}
+
+fn active_session<'a>(
+    sessions: &'a [AgentSession],
+    session_id: &str,
+    at: i64,
+) -> NodeResult<&'a AgentSession> {
+    let session = sessions
+        .iter()
+        .find(|session| session.id == session_id)
+        .ok_or_else(|| format!("unknown session: {session_id}"))?;
+    if session.revoked {
+        return Err(format!("session is revoked: {session_id}"));
+    }
+    if at > session.expires_at {
+        return Err(format!("session expired at {}: {session_id}", session.expires_at));
+    }
+    Ok(session)
+}
 
 fn key_agent_path() -> PathBuf {
     if let Ok(path) = std::env::var("TRACEWEAVE_KEY_AGENT") {
@@ -694,6 +744,88 @@ fn command_task(args: &Args) -> NodeResult<String> {
     serde_json::to_string(&checkpoint.resume_view()).map_err(|error| format!("view: {error}"))
 }
 
+fn command_session_create(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let ttl: i64 = args.optional("ttl-ms").unwrap_or("600000").parse()
+        .map_err(|_| "--ttl-ms must be milliseconds".to_string())?;
+    let mut capabilities = Vec::new();
+    if args.optional("capability").is_some() {
+        capabilities.push(SessionScope {
+            capability: args.get("capability")?.to_string(),
+            scope: args.get("scope")?.to_string(),
+        });
+    }
+    let id = hex_encode(&random_bytes::<8>()?);
+    let session = AgentSession {
+        id: id.clone(),
+        agent_id: format!("session-{id}"),
+        name: args.optional("agent").unwrap_or("agent-session").to_string(),
+        capabilities,
+        created_at: at,
+        expires_at: at.saturating_add(ttl),
+        revoked: false,
+    };
+    let mut sessions = load_sessions(&dir)?;
+    sessions.push(session.clone());
+    save_sessions(&dir, &sessions)?;
+    let mut node = Node::open(&dir)?;
+    node.state.audit.append(format!("session-created:{}", session.id).as_bytes());
+    node.save()?;
+    Ok(serde_json::to_string(&session).map_err(|error| format!("session: {error}"))?)
+}
+
+fn command_session_list(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let sessions = load_sessions(&dir)?;
+    let rows: Vec<serde_json::Value> = sessions
+        .iter()
+        .map(|session| {
+            serde_json::json!({
+                "id": session.id,
+                "agent_id": session.agent_id,
+                "name": session.name,
+                "expires_at": session.expires_at,
+                "revoked": session.revoked,
+                "active": !session.revoked && at <= session.expires_at,
+            })
+        })
+        .collect();
+    Ok(serde_json::json!({ "sessions": rows }).to_string())
+}
+
+fn command_session_revoke(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let mut sessions = load_sessions(&dir)?;
+    let session_id = args.get("session")?.to_string();
+    let agent_id = {
+        let session = active_session(&sessions, &session_id, at)?;
+        session.agent_id.clone()
+    };
+    let mut revoked_grants = 0usize;
+    let mut node = Node::open(&dir)?;
+    for grant in node.state.grants.iter_mut() {
+        if grant.agent_id == agent_id && !grant.revoked {
+            grant.revoked = true;
+            revoked_grants += 1;
+        }
+    }
+    if let Some(session) = sessions.iter_mut().find(|session| session.id == session_id) {
+        session.revoked = true;
+    }
+    save_sessions(&dir, &sessions)?;
+    node.state.audit.append(format!("session-revoked:{session_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({
+        "session": session_id,
+        "revoked_grants": revoked_grants,
+        "agent_id": agent_id,
+    })
+    .to_string())
+}
+
 fn command_authorize(args: &Args) -> NodeResult<String> {
     let mut node = Node::open(Path::new(args.get("dir")?))?;
     let at = now_millis(args)?;
@@ -703,20 +835,40 @@ fn command_authorize(args: &Args) -> NodeResult<String> {
     }
     let ttl: i64 = args.optional("ttl-ms").unwrap_or("300000").parse()
         .map_err(|_| "--ttl-ms must be milliseconds".to_string())?;
+    let capability = args.get("capability")?.to_string();
+    let scope = args.get("scope")?.to_string();
+    let (agent_id, mut expires_at) = match args.optional("session") {
+        Some(session_id) => {
+            let sessions = load_sessions(Path::new(args.get("dir")?))?;
+            let session = active_session(&sessions, session_id, at)?;
+            let allowed = session.capabilities.iter().any(|entry| {
+                entry.capability == capability && (entry.scope == scope || entry.scope == "*")
+            });
+            if !allowed {
+                return Err(format!("session {session_id} does not grant {capability}:{scope}"));
+            }
+            (session.agent_id.clone(), at.saturating_add(ttl).min(session.expires_at))
+        }
+        None => (args.optional("agent").unwrap_or("node-agent").to_string(), at.saturating_add(ttl)),
+    };
+    if expires_at < at {
+        expires_at = at;
+    }
     let grant = Grant {
-        agent_id: args.optional("agent").unwrap_or("node-agent").to_string(),
+        agent_id,
         task_id: task_id.clone(),
-        capability: args.get("capability")?.to_string(),
-        scope: args.get("scope")?.to_string(),
-        expires_at: at.saturating_add(ttl),
+        capability: capability.clone(),
+        scope: scope.clone(),
+        expires_at,
         revoked: false,
     };
     let capability = grant.capability.clone();
     let scope = grant.scope.clone();
+    let expires_at = grant.expires_at;
     node.state.add_grant(grant);
     node.state.audit.append(format!("authorized:{task_id}:{capability}:{scope}").as_bytes());
     node.save()?;
-    Ok(serde_json::json!({"task": task_id, "capability": capability, "scope": scope, "expires_at": at + ttl}).to_string())
+    Ok(serde_json::json!({"task": task_id, "capability": capability, "scope": scope, "expires_at": expires_at}).to_string())
 }
 
 fn command_begin_effect(args: &Args) -> NodeResult<String> {
@@ -1306,6 +1458,9 @@ fn run(args: Args) -> NodeResult<String> {
         "task" => command_task(&args),
         "recover" => command_recover(&args),
         "authorize" => command_authorize(&args),
+        "session-create" => command_session_create(&args),
+        "session-list" => command_session_list(&args),
+        "session-revoke" => command_session_revoke(&args),
         "begin-effect" => command_begin_effect(&args),
         "finish-effect" => command_finish_effect(&args),
         "reconcile-effect" => command_reconcile_effect(&args),

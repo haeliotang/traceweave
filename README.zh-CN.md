@@ -116,7 +116,7 @@ Traceweave 由「可移植基底 + 可替换适配器」组成，而不是一个
 | 工作线 | 交付 | 是否需要第二台 Android |
 | :--- | :--- | :--- |
 | **PC-0 可移植核心** | 已启动：[`agent_os/portable/`](agent_os/portable) —— 记录、策略、检查点、审计、带身份的状态格式 v2、golden 字节、与现有 Rust 核心的语义对齐、身份/撤销/恢复模拟，30 项测试 | 不需要 |
-| **PC-1 参考节点** | 已启动：[`agent_os/node/`](agent_os/node) —— 无界面一次性节点、P-256 设备身份（文件、macOS Keychain 或经 key agent 的不可导出 Keychain 密钥）、加密状态交换、重启后恢复、恢复密钥重建身份、Android 档案提取，13 项 CLI 验收测试；**Proof H v1–v3 已通过**：真实 Pixel 档案迁移、Keystore 签名 handoff、真实数据签名并在 macOS 验签（[记录](docs/proof_h_heterogeneous_2026-11-13.md)） | 不需要 |
+| **PC-1 参考节点** | 已启动：[`agent_os/node/`](agent_os/node) —— 无界面一次性节点、P-256 设备身份（文件、macOS Keychain 或经 key agent 的不可导出 Keychain 密钥）、加密状态交换、重启后恢复、恢复密钥重建身份、Agent Session、Android 档案提取，14 项 CLI 验收测试；**Proof H v1–v3 已通过**：真实 Pixel 档案迁移、Keystore 签名 handoff、真实数据签名并在 macOS 验签（[记录](docs/proof_h_heterogeneous_2026-11-13.md)） | 不需要 |
 | **PC-2 身份与恢复** | 设计 + 宿主模拟：[portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) —— PRS 派生个人身份、设备注册/撤销/轮换、恢复清空授权、身份并入规范状态封套（10 项身份/状态测试） | 仅设计与模拟 |
 | **PC-3 任务连续性** | 已启动：[`agent_os/node/`](agent_os/node) 任务命令 —— 跨设备恢复、未知结果先核对、成功副作用不重放、接收设备重新授权；真实 `file.write` **恰好执行一次**，**引擎替换**（native vs openssl）保持任务身份/历史且授权按引擎隔离（[记录](docs/pc3_task_continuity_2026-11-14.md)） | 真实能力 + 引擎替换；LLM 推理仍不在范围 |
 

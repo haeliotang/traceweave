@@ -190,3 +190,10 @@ Still open:
    authorization, enrolled the new device and revoked both old devices. A different recovery
    secret and a wrong backup passphrase were refused. Receipt (local):
    `agent_os/build/pc2-recovery-20261114/receipt.json`.
+
+8. **Agent Sessions (2026-11-14)**: `traceweave-node session-create/session-list/session-revoke`
+   added the short-lived third identity. A session carries a capability scope and an expiry; a
+   grant authorized under it is capped by the session lifetime, scopes outside the session are
+   refused, revocation revokes the session's grants, expired sessions cannot authorize, and
+   sessions do not survive export/import (node-local `sessions.json`). Receipt (local):
+   `agent_os/build/pc2-session-20261114/receipt.json`.
