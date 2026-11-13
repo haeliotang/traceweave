@@ -239,6 +239,9 @@ impl SubstrateState {
             LEGACY_STATE_FORMAT_VERSION => {
                 let legacy: SubstrateStateV1 = serde_json::from_slice(bytes)
                     .map_err(|error| StateError::Encoding(error.to_string()))?;
+                if legacy.version != LEGACY_STATE_FORMAT_VERSION {
+                    return Err(StateError::UnsupportedVersion(legacy.version));
+                }
                 let migrated = SubstrateState {
                     version: STATE_FORMAT_VERSION,
                     memories: legacy.memories,

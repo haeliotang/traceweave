@@ -1,0 +1,526 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//! PC-1 reference node: a headless, one-shot host for the portable substrate.
+//!
+//! It proves that a non-Android operating system can hold the same state, sign with a device
+//! key, exchange an encrypted state envelope, and recover after a restart. It is deliberately
+//! not a daemon: every command loads the state, does one thing, saves canonical bytes and exits.
+//!
+//! Research-grade limitations (do not hide them):
+//! - keys are software P-256 keys stored as raw seeds in `identity.key` / `device.key` (0600),
+//!   not Secure Enclave keys; a real macOS adapter must use the platform key store;
+//! - the encrypted envelope uses PBKDF2-HMAC-SHA256 + AES-256-GCM with a passphrase supplied on
+//!   the command line (visible in shell history for this prototype);
+//! - the identity book is shared out of band; the node trusts only book entries it verified
+//!   through `trust`/import commands.
+
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::ExitCode;
+
+use aes_gcm::aead::{Aead, KeyInit, Payload};
+use aes_gcm::{Aes256Gcm, Nonce};
+use p256::ecdsa::signature::Signer;
+use p256::ecdsa::SigningKey;
+use p256::pkcs8::EncodePublicKey;
+use sha2::{Digest, Sha256};
+use traceweave_portable::{
+    fingerprint, CheckpointStep, Clock, DeviceEnrollment, DeviceRevocation, IdentityBook,
+    StepStatus, SubstrateState, TaskCheckpoint, Version, IDENTITY_FORMAT_VERSION,
+};
+
+const MAGIC: &[u8; 5] = b"TWPN1";
+const AAD: &[u8] = b"traceweave-portable-node-v1";
+const SALT_LEN: usize = 16;
+const NONCE_LEN: usize = 12;
+const KDF_ROUNDS: u32 = 100_000;
+
+type NodeResult<T> = Result<T, String>;
+
+#[derive(Debug)]
+struct Args {
+    command: String,
+    flags: BTreeMap<String, String>,
+}
+
+impl Args {
+    fn parse() -> NodeResult<Self> {
+        let mut raw = std::env::args().skip(1);
+        let command = raw.next().ok_or("missing command")?;
+        let mut flags = BTreeMap::new();
+        let rest: Vec<String> = raw.collect();
+        let mut index = 0;
+        while index < rest.len() {
+            let item = rest[index].clone();
+            if let Some(name) = item.strip_prefix("--") {
+                let value = rest.get(index + 1).cloned().ok_or_else(|| format!("missing value for --{name}"))?;
+                flags.insert(name.to_string(), value);
+                index += 2;
+            } else {
+                return Err(format!("unexpected argument: {item}"));
+            }
+        }
+        Ok(Self { command, flags })
+    }
+
+    fn get(&self, name: &str) -> NodeResult<&str> {
+        self.flags.get(name).map(String::as_str).ok_or_else(|| format!("missing --{name}"))
+    }
+
+    fn optional(&self, name: &str) -> Option<&str> {
+        self.flags.get(name).map(String::as_str)
+    }
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn hex_decode(text: &str) -> NodeResult<Vec<u8>> {
+    if text.len() % 2 != 0 {
+        return Err("odd hex length".to_string());
+    }
+    (0..text.len() / 2)
+        .map(|index| u8::from_str_radix(&text[index * 2..index * 2 + 2], 16).map_err(|_| "invalid hex".to_string()))
+        .collect()
+}
+
+fn now_millis(args: &Args) -> NodeResult<i64> {
+    if let Some(at) = args.optional("at") {
+        return at.parse::<i64>().map_err(|_| "--at must be unix milliseconds".to_string());
+    }
+    let elapsed = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|_| "system clock before epoch".to_string())?;
+    Ok(elapsed.as_millis() as i64)
+}
+
+fn random_bytes<const N: usize>() -> NodeResult<[u8; N]> {
+    let mut buffer = [0u8; N];
+    getrandom::getrandom(&mut buffer).map_err(|error| format!("rng: {error}"))?;
+    Ok(buffer)
+}
+
+#[allow(deprecated)]
+fn signing_key_from_seed(seed: &[u8]) -> NodeResult<SigningKey> {
+    if seed.len() != 32 {
+        return Err("key seed must be 32 bytes".to_string());
+    }
+    SigningKey::from_slice(seed).map_err(|_| "invalid P-256 key".to_string())
+}
+
+fn spki(signing: &SigningKey) -> Vec<u8> {
+    signing
+        .verifying_key()
+        .to_public_key_der()
+        .expect("SPKI encoding cannot fail for a P-256 key")
+        .as_bytes()
+        .to_vec()
+}
+
+fn sign(signing: &SigningKey, message: &[u8]) -> Vec<u8> {
+    let signature: p256::ecdsa::Signature = signing.sign(message);
+    signature.to_der().as_bytes().to_vec()
+}
+
+fn write_private(path: &Path, bytes: &[u8]) -> NodeResult<()> {
+    fs::write(path, bytes).map_err(|error| format!("write {}: {error}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let permissions = fs::Permissions::from_mode(0o600);
+        fs::set_permissions(path, permissions)
+            .map_err(|error| format!("chmod {}: {error}", path.display()))?;
+    }
+    Ok(())
+}
+
+fn load_or_create_seed(path: &Path) -> NodeResult<Vec<u8>> {
+    if path.is_file() {
+        let seed = fs::read(path).map_err(|error| format!("read {}: {error}", path.display()))?;
+        if seed.len() != 32 {
+            return Err(format!("{} is not a 32-byte key seed", path.display()));
+        }
+        return Ok(seed);
+    }
+    let seed = random_bytes::<32>()?.to_vec();
+    write_private(path, &seed)?;
+    Ok(seed)
+}
+
+struct Node {
+    dir: PathBuf,
+    state: SubstrateState,
+    identity: SigningKey,
+    device: SigningKey,
+    device_id: String,
+}
+
+impl Node {
+    fn open(dir: &Path) -> NodeResult<Self> {
+        let identity_seed = fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?;
+        let device_seed = fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?;
+        let identity = signing_key_from_seed(&identity_seed)?;
+        let device = signing_key_from_seed(&device_seed)?;
+        let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
+        let bytes = fs::read(dir.join("state.bin")).map_err(|_| "missing state.bin; run init".to_string())?;
+        let state = SubstrateState::from_bytes(&bytes).map_err(|error| format!("state: {error}"))?;
+        Ok(Self { dir: dir.to_path_buf(), state, identity, device, device_id })
+    }
+
+    fn save(&self) -> NodeResult<()> {
+        let bytes = self.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+        fs::write(self.dir.join("state.bin"), bytes).map_err(|error| format!("write state: {error}"))
+    }
+
+    fn fingerprint_hex(&self) -> String {
+        hex_encode(&fingerprint(&spki(&self.device)))
+    }
+}
+
+fn cipher_key(passphrase: &str, salt: &[u8]) -> [u8; 32] {
+    let mut key = [0u8; 32];
+    pbkdf2::pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, KDF_ROUNDS, &mut key);
+    key
+}
+
+fn encrypt(passphrase: &str, plaintext: &[u8]) -> NodeResult<Vec<u8>> {
+    let salt = random_bytes::<SALT_LEN>()?;
+    let nonce_bytes = random_bytes::<NONCE_LEN>()?;
+    let key = cipher_key(passphrase, &salt);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let ciphertext = cipher
+        .encrypt(nonce, Payload { msg: plaintext, aad: AAD })
+        .map_err(|_| "encryption failed".to_string())?;
+    let mut out = Vec::with_capacity(5 + 2 + SALT_LEN + 2 + NONCE_LEN + 4 + ciphertext.len());
+    out.extend_from_slice(MAGIC);
+    out.extend_from_slice(&(SALT_LEN as u16).to_be_bytes());
+    out.extend_from_slice(&salt);
+    out.extend_from_slice(&(NONCE_LEN as u16).to_be_bytes());
+    out.extend_from_slice(&nonce_bytes);
+    out.extend_from_slice(&(ciphertext.len() as u32).to_be_bytes());
+    out.extend_from_slice(&ciphertext);
+    Ok(out)
+}
+
+fn read_u16(bytes: &[u8], cursor: &mut usize) -> NodeResult<usize> {
+    let slice = bytes.get(*cursor..*cursor + 2).ok_or("truncated envelope")?;
+    *cursor += 2;
+    Ok(u16::from_be_bytes([slice[0], slice[1]]) as usize)
+}
+
+fn read_u32(bytes: &[u8], cursor: &mut usize) -> NodeResult<usize> {
+    let slice = bytes.get(*cursor..*cursor + 4).ok_or("truncated envelope")?;
+    *cursor += 4;
+    Ok(u32::from_be_bytes([slice[0], slice[1], slice[2], slice[3]]) as usize)
+}
+
+fn decrypt(passphrase: &str, envelope: &[u8]) -> NodeResult<Vec<u8>> {
+    if envelope.len() < 5 + 2 + SALT_LEN + 2 + NONCE_LEN + 4 || &envelope[..5] != MAGIC {
+        return Err("not a TWPN1 envelope".to_string());
+    }
+    let mut cursor = 5;
+    let salt_len = read_u16(envelope, &mut cursor)?;
+    let salt = envelope.get(cursor..cursor + salt_len).ok_or("truncated salt")?.to_vec();
+    cursor += salt_len;
+    let nonce_len = read_u16(envelope, &mut cursor)?;
+    let nonce = envelope.get(cursor..cursor + nonce_len).ok_or("truncated nonce")?.to_vec();
+    cursor += nonce_len;
+    let cipher_len = read_u32(envelope, &mut cursor)?;
+    let ciphertext = envelope.get(cursor..cursor + cipher_len).ok_or("truncated ciphertext")?;
+    let key = cipher_key(passphrase, &salt);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    cipher
+        .decrypt(Nonce::from_slice(&nonce), Payload { msg: ciphertext, aad: AAD })
+        .map_err(|_| "wrong passphrase or corrupted envelope".to_string())
+}
+
+fn enrollment(
+    identity: &SigningKey,
+    device_pubkey: Vec<u8>,
+    device_id: &str,
+    at: i64,
+) -> NodeResult<DeviceEnrollment> {
+    let mut record = DeviceEnrollment {
+        version: IDENTITY_FORMAT_VERSION,
+        device_id: device_id.to_string(),
+        device_pubkey,
+        enrolled_at: at,
+        signer_pubkey: spki(identity),
+        signature: Vec::new(),
+    };
+    record.signature = sign(identity, &record.signing_bytes().map_err(|error| format!("payload: {error}"))?);
+    Ok(record)
+}
+
+fn revocation(identity: &SigningKey, device_id: &str, at: i64, reason: &str) -> NodeResult<DeviceRevocation> {
+    let mut record = DeviceRevocation {
+        version: IDENTITY_FORMAT_VERSION,
+        device_id: device_id.to_string(),
+        revoked_at: at,
+        reason: reason.to_string(),
+        signer_pubkey: spki(identity),
+        signature: Vec::new(),
+    };
+    record.signature = sign(identity, &record.signing_bytes().map_err(|error| format!("payload: {error}"))?);
+    Ok(record)
+}
+
+fn current_identity_book(node: &Node) -> NodeResult<IdentityBook> {
+    node.state
+        .identity
+        .clone()
+        .ok_or_else(|| "state has no identity book; run init".to_string())
+}
+
+fn set_book(node: &mut Node, book: IdentityBook) {
+    node.state.set_identity(book);
+}
+
+fn command_init(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    fs::create_dir_all(&dir).map_err(|error| format!("create {}: {error}", dir.display()))?;
+    if dir.join("state.bin").is_file() && args.optional("force").is_none() {
+        return Err(format!("{} already initialized", dir.display()));
+    }
+    let at = now_millis(args)?;
+    let identity = signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?;
+    let device = signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?;
+    let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
+
+    let mut book = IdentityBook::genesis(spki(&identity), at).map_err(|error| format!("genesis: {error}"))?;
+    book.enroll(enrollment(&identity, spki(&device), &device_id, at)?)
+        .map_err(|error| format!("enroll: {error}"))?;
+    let mut state = SubstrateState::new();
+    state.set_identity(book);
+    let node = Node { dir, state, identity, device, device_id };
+    node.save()?;
+
+    Ok(serde_json::json!({
+        "initialized": node.dir.display().to_string(),
+        "device_id": node.device_id,
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+    })
+    .to_string())
+}
+
+fn command_show(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let bytes = node.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    let digest: String = Sha256::digest(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+        "memories": node.state.memories.len(),
+        "tasks": node.state.tasks.len(),
+        "grants": node.state.grants.len(),
+        "audit_entries": node.state.audit.len(),
+        "state_bytes": bytes.len(),
+        "state_sha256": digest,
+    })
+    .to_string())
+}
+
+fn command_key(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "device_pubkey": hex_encode(&spki(&node.device)),
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_pubkey": hex_encode(&spki(&node.identity)),
+        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+    })
+    .to_string())
+}
+
+fn command_trust(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let peer_id = args.get("device-id")?.to_string();
+    let peer_pubkey = hex_decode(args.get("device-pubkey")?)?;
+    let record = enrollment(&node.identity, peer_pubkey, &peer_id, at)?;
+    let mut book = current_identity_book(&node)?;
+    book.enroll(record).map_err(|error| format!("enroll: {error}"))?;
+    set_book(&mut node, book);
+    node.state.audit.append(format!("trusted:{peer_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"trusted": peer_id, "at": at}).to_string())
+}
+
+fn command_revoke(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let peer_id = args.get("device-id")?.to_string();
+    let reason = args.get("reason")?.to_string();
+    let record = revocation(&node.identity, &peer_id, at, &reason)?;
+    let mut book = current_identity_book(&node)?;
+    book.revoke(record).map_err(|error| format!("revoke: {error}"))?;
+    set_book(&mut node, book);
+    node.state.audit.append(format!("revoked:{peer_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"revoked": peer_id, "at": at, "reason": reason}).to_string())
+}
+
+fn command_add_memory(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let content = args.get("content")?.to_string();
+    let memory_id = args.optional("memory-id").unwrap_or("mem-1").to_string();
+    let actor = node.device_id.clone();
+    let mut counter = 1u64;
+    if let Some(versions) = node.state.memories.get(&memory_id) {
+        counter = versions
+            .iter()
+            .filter_map(|version| version.clock.0.get(&actor).copied())
+            .max()
+            .unwrap_or(0)
+            + 1;
+    }
+    let mut clock = BTreeMap::new();
+    clock.insert(actor.clone(), counter);
+    let merged = node
+        .state
+        .merge_memory_from_device(&actor, at, &memory_id, &[Version { clock: Clock(clock), value: Some(content) }])
+        .map_err(|error| format!("merge: {error}"))?;
+    node.state.audit.append(format!("memory:{memory_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"memory_id": memory_id, "actor": actor, "counter": counter, "signed_at": at, "merged": format!("{merged:?}")}).to_string())
+}
+
+fn command_add_task(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.optional("task-id").unwrap_or("task-1").to_string();
+    let goal = args.get("goal")?.to_string();
+    let capability = args.optional("capability").unwrap_or("calendar").to_string();
+    let scope = args.optional("scope").unwrap_or("write").to_string();
+    let checkpoint = TaskCheckpoint::new(
+        task_id.clone(),
+        goal,
+        vec![CheckpointStep {
+            index: 0,
+            capability,
+            scope,
+            status: StepStatus::Pending,
+            evidence: Vec::new(),
+        }],
+    );
+    node.state.put_task(checkpoint).map_err(|error| format!("task: {error}"))?;
+    node.state.audit.append(format!("task:{task_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task_id": task_id, "at": at}).to_string())
+}
+
+fn command_export(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let out = PathBuf::from(args.get("out")?);
+    let passphrase = args.get("passphrase")?.to_string();
+    let plaintext = node.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    let envelope = encrypt(&passphrase, &plaintext)?;
+    fs::write(&out, &envelope).map_err(|error| format!("write {}: {error}", out.display()))?;
+    Ok(serde_json::json!({
+        "exported": out.display().to_string(),
+        "bytes": envelope.len(),
+        "plaintext_sha256": hex_encode(&Sha256::digest(&plaintext)),
+    })
+    .to_string())
+}
+
+fn command_import(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let input = PathBuf::from(args.get("in")?);
+    let passphrase = args.get("passphrase")?.to_string();
+    let from_device = args.get("from-device")?.to_string();
+    let signed_at: i64 = args.get("signed-at")?.parse().map_err(|_| "--signed-at must be unix milliseconds".to_string())?;
+
+    let envelope = fs::read(&input).map_err(|error| format!("read {}: {error}", input.display()))?;
+    let plaintext = decrypt(&passphrase, &envelope)?;
+    let incoming = SubstrateState::from_bytes(&plaintext).map_err(|error| format!("incoming state: {error}"))?;
+
+    // Authority check happens before any merge: the local identity book decides whether the
+    // sending device may contribute records signed at this time.
+    let identity_book = node.state.identity.clone();
+    if let Some(book) = identity_book {
+        if !book.can_accept_record(&from_device, signed_at) {
+            return Err(format!("untrusted device for signed-at {signed_at}: {from_device}"));
+        }
+    }
+
+    let mut memories = 0usize;
+    for (memory_id, versions) in &incoming.memories {
+        node.state
+            .merge_memory_from_device(&from_device, signed_at, memory_id, versions)
+            .map_err(|error| format!("merge {memory_id}: {error}"))?;
+        memories += 1;
+    }
+    let mut tasks = 0usize;
+    for (task_id, checkpoint) in &incoming.tasks {
+        if !node.state.tasks.contains_key(task_id) {
+            node.state.put_task(checkpoint.clone()).map_err(|error| format!("task {task_id}: {error}"))?;
+            tasks += 1;
+        }
+    }
+    // Grants are deliberately not imported: history migrates, authority does not.
+    let dropped_grants = incoming.grants.len();
+    node.state.audit.append(format!("imported:{from_device}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({
+        "from_device": from_device,
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped_grants,
+    })
+    .to_string())
+}
+
+fn command_verify(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let bytes = fs::read(dir.join("state.bin")).map_err(|_| "missing state.bin".to_string())?;
+    let state = SubstrateState::from_canonical_bytes(&bytes).map_err(|error| format!("canonical: {error}"))?;
+    let audit_ok = state.audit.verify();
+    let identity_ok = state
+        .identity
+        .as_ref()
+        .map(|book| book.canonical_bytes().is_ok())
+        .unwrap_or(true);
+    if !audit_ok || !identity_ok {
+        return Err(format!("verify failed: audit={audit_ok} identity={identity_ok}"));
+    }
+    let digest: String = Sha256::digest(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
+    Ok(serde_json::json!({"ok": true, "canonical_bytes": bytes.len(), "sha256": digest, "audit": audit_ok, "identity": identity_ok}).to_string())
+}
+
+fn run(args: Args) -> NodeResult<String> {
+    match args.command.as_str() {
+        "init" => command_init(&args),
+        "show" => command_show(&args),
+        "key" => command_key(&args),
+        "trust" => command_trust(&args),
+        "revoke" => command_revoke(&args),
+        "add-memory" => command_add_memory(&args),
+        "add-task" => command_add_task(&args),
+        "export" => command_export(&args),
+        "import" => command_import(&args),
+        "verify" => command_verify(&args),
+        other => Err(format!("unknown command: {other}")),
+    }
+}
+
+fn main() -> ExitCode {
+    match Args::parse().and_then(run) {
+        Ok(output) => {
+            println!("{output}");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("error: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}

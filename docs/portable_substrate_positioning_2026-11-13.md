@@ -129,6 +129,14 @@ Android:
 - encrypted memory exchange: import/export the same records the Android app produces;
 - persistent state recovery: restart the node and continue from the checkpoint.
 
+**Started 2026-11-13:** [`agent_os/node/`](../agent_os/node) (`traceweave-node`) is a headless,
+one-shot host: P-256 device identity, personal-identity enrollment/revocation, canonical v2 state
+persisted as `state.bin`, signed memory merges, PBKDF2 + AES-256-GCM encrypted export/import and
+post-restart `verify`. Three CLI acceptance tests run two nodes sharing one personal identity:
+exchange, rejection of a revoked device's post-revocation records (while keeping its earlier
+history), and envelope confidentiality/integrity. It uses software keys, not Secure Enclave keys;
+that and authenticated timestamps are listed as limitations in the crate README.
+
 Non-goals: desktop UI, always-on daemon, new wire protocol version, App Store distribution.
 
 Acceptance: the node can produce and consume the versioned state envelope and pass the existing

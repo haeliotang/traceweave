@@ -92,7 +92,7 @@ jobs:
       - name: Check dependency licences with cargo-deny
         run: |
           cargo install cargo-deny --version 0.20.2 --locked
-          for crate in agent_os/core agent_os/sync agent_os/portable native/zk_alignment agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
+          for crate in agent_os/core agent_os/sync agent_os/portable agent_os/node native/zk_alignment agent_os/tests/libp2p agent_os/tests/libp2p_live_binding agent_os/tests/libp2p_retry agent_os/tests/libp2p_wire; do
             (cd "$crate" && cargo deny check licenses)
           done
       - name: Apache-licensed components keep a permissive dependency closure
@@ -115,4 +115,7 @@ jobs:
       - name: Install pinned Rust toolchain
         run: rustup toolchain install 1.94.0 --profile minimal
       - name: Test the platform-neutral substrate core
+        run: rustup run 1.94.0 cargo test --locked
+      - name: Test the headless reference node
+        working-directory: agent_os/node
         run: rustup run 1.94.0 cargo test --locked

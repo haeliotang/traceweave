@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[package]
+name = "traceweave-node"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+authors = ["Inceptless <support@inceptless.com>"]
+license = "AGPL-3.0-or-later"
+description = "Headless reference node for the portable substrate (PC-1): identity signing, encrypted memory exchange, persistent recovery"
+
+[[bin]]
+name = "traceweave-node"
+path = "src/main.rs"
+
+[dependencies]
+traceweave-portable = { path = "../portable" }
+p256 = { version = "0.14", features = ["ecdsa", "pkcs8"] }
+sha2 = "0.10.8"
+aes-gcm = "0.10.3"
+pbkdf2 = { version = "0.12.2", default-features = false, features = ["hmac"] }
+getrandom = "0.2.17"
+serde_json = "1.0"
