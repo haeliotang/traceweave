@@ -27,8 +27,9 @@ use p256::ecdsa::SigningKey;
 use p256::pkcs8::EncodePublicKey;
 use sha2::{Digest, Sha256};
 use traceweave_portable::{
-    fingerprint, CheckpointStep, Clock, DeviceEnrollment, DeviceRevocation, IdentityBook,
-    StepStatus, SubstrateState, TaskCheckpoint, Version, IDENTITY_FORMAT_VERSION,
+    fingerprint, authorize, CheckpointStep, Clock, Decision, DeviceEnrollment, DeviceRevocation,
+    EffectOutcome, Grant, GrantRequest, IdentityBook, StepStatus, SubstrateState, TaskCheckpoint,
+    Version, IDENTITY_FORMAT_VERSION,
 };
 
 const MAGIC: &[u8; 5] = b"TWPN1";
@@ -448,6 +449,148 @@ fn set_book(node: &mut Node, book: IdentityBook) {
     node.state.set_identity(book);
 }
 
+fn task_mut<'a>(node: &'a mut Node, task_id: &str) -> NodeResult<&'a mut TaskCheckpoint> {
+    node.state
+        .tasks
+        .get_mut(task_id)
+        .ok_or_else(|| format!("unknown task: {task_id}"))
+}
+
+fn command_task(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let task_id = args.get("task")?.to_string();
+    let checkpoint = node
+        .state
+        .tasks
+        .get(&task_id)
+        .ok_or_else(|| format!("unknown task: {task_id}"))?;
+    serde_json::to_string(&checkpoint.resume_view()).map_err(|error| format!("view: {error}"))
+}
+
+fn command_authorize(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    if !node.state.tasks.contains_key(&task_id) {
+        return Err(format!("unknown task: {task_id}"));
+    }
+    let ttl: i64 = args.optional("ttl-ms").unwrap_or("300000").parse()
+        .map_err(|_| "--ttl-ms must be milliseconds".to_string())?;
+    let grant = Grant {
+        agent_id: args.optional("agent").unwrap_or("node-agent").to_string(),
+        task_id: task_id.clone(),
+        capability: args.get("capability")?.to_string(),
+        scope: args.get("scope")?.to_string(),
+        expires_at: at.saturating_add(ttl),
+        revoked: false,
+    };
+    let capability = grant.capability.clone();
+    let scope = grant.scope.clone();
+    node.state.add_grant(grant);
+    node.state.audit.append(format!("authorized:{task_id}:{capability}:{scope}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "capability": capability, "scope": scope, "expires_at": at + ttl}).to_string())
+}
+
+fn command_begin_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let capability = args.get("capability")?.to_string();
+    let scope = args.get("scope")?.to_string();
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &scope,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .begin_effect(&operation, &capability, &scope, at)
+            .map_err(|error| format!("begin effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-started:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "started_at": at}).to_string())
+}
+
+fn command_finish_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let outcome = match args.get("outcome")? {
+        "succeeded" => EffectOutcome::Succeeded,
+        "failed" => EffectOutcome::Failed,
+        "unknown" => EffectOutcome::Unknown,
+        other => return Err(format!("unknown outcome: {other}")),
+    };
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .finish_effect(&operation, outcome, at)
+            .map_err(|error| format!("finish effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-finished:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "outcome": format!("{outcome:?}")}).to_string())
+}
+
+fn command_reconcile_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let outcome = match args.get("outcome")? {
+        "succeeded" => EffectOutcome::Succeeded,
+        "failed" => EffectOutcome::Failed,
+        other => return Err(format!("reconciliation needs succeeded/failed, got {other}")),
+    };
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .reconcile_effect(&operation, outcome, at)
+            .map_err(|error| format!("reconcile: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-reconciled:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "outcome": format!("{outcome:?}")}).to_string())
+}
+
+fn command_complete_step(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let index: u32 = args.get("index")?.parse().map_err(|_| "--index must be a step index".to_string())?;
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .mark_step(index, StepStatus::Completed, at)
+            .map_err(|error| format!("complete step: {error:?}"))?;
+    }
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "step": index, "status": "completed"}).to_string())
+}
+
+fn command_resume(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let task_id = args.get("task")?.to_string();
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint.needs_authorization = true;
+    }
+    node.state.audit.append(format!("resume-requested:{task_id}").as_bytes());
+    node.save()?;
+    let checkpoint = node.state.tasks.get(&task_id).ok_or("task vanished")?;
+    Ok(serde_json::to_string(&checkpoint.resume_view()).map_err(|error| format!("view: {error}"))?)
+}
+
 fn command_init(args: &Args) -> NodeResult<String> {
     let dir = PathBuf::from(args.get("dir")?);
     fs::create_dir_all(&dir).map_err(|error| format!("create {}: {error}", dir.display()))?;
@@ -746,6 +889,13 @@ fn run(args: Args) -> NodeResult<String> {
         "revoke" => command_revoke(&args),
         "add-memory" => command_add_memory(&args),
         "add-task" => command_add_task(&args),
+        "task" => command_task(&args),
+        "authorize" => command_authorize(&args),
+        "begin-effect" => command_begin_effect(&args),
+        "finish-effect" => command_finish_effect(&args),
+        "reconcile-effect" => command_reconcile_effect(&args),
+        "complete-step" => command_complete_step(&args),
+        "resume" => command_resume(&args),
         "export" => command_export(&args),
         "from-archive" => command_from_archive(&args),
         "merge-state" => command_merge_state(&args),

@@ -248,7 +248,7 @@ impl TaskCheckpoint {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ResumeView {
     pub task_id: String,
     pub status: TaskStatus,

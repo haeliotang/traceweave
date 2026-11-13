@@ -21,6 +21,14 @@ traceweave-node export  --dir D --out FILE --passphrase TEXT
 traceweave-node import  --dir D --in FILE --passphrase TEXT --from-device ID --signed-at MS
 traceweave-node from-archive --archive PHONE.taos --passphrase TEXT --from-device ID --out STATE.bin
 traceweave-node merge-state  --dir D --in STATE.bin --from-device ID --signed-at MS
+traceweave-node import-signed --dir D --in HANDOFF.twph
+traceweave-node task     --dir D --task ID
+traceweave-node authorize --dir D --task ID --capability C --scope S [--agent A] [--ttl-ms N]
+traceweave-node begin-effect     --dir D --task ID --operation OP --capability C --scope S
+traceweave-node finish-effect    --dir D --task ID --operation OP --outcome succeeded|failed|unknown
+traceweave-node reconcile-effect --dir D --task ID --operation OP --outcome succeeded|failed
+traceweave-node complete-step    --dir D --task ID --index N
+traceweave-node resume   --dir D --task ID
 traceweave-node verify  --dir D
 ```
 
@@ -45,6 +53,15 @@ state into a node under the same trust/revocation check as a network import. The
 no vector clocks, so the converter assigns synthetic clocks `{device: 1}` for live records and
 `{device: 2}` for tombstones; plan step detail is not reconstructed. The Android side stays
 untouched, which is exactly the Track B constraint.
+
+## Task continuity (PC-3)
+
+The task commands make "resume, not replay" executable: a task checkpoint carries open steps,
+external effects with persisted operation ids, and a `needs_authorization` flag. An effect with an
+unknown outcome must be reconciled before it can be retried, and a succeeded effect can never run
+again under the same operation id. Grants are never imported, so a resumed task starts by asking
+for authorization again. The host simulation is in `tests/cli.rs`; the receipt documents that no
+real capability was executed.
 
 ## Research-grade limitations
 

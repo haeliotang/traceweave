@@ -167,6 +167,12 @@ items and already-performed external side effects. Recovery must not replay exte
 persist an operation ID, reconcile the outcome, and re-authorize before any external effect.
 This requires real capability execution to prove; simulation alone is not evidence.
 
+**Host simulation passed 2026-11-14:** a task with an unknown-outcome effect moved between two
+nodes; the receiving node refused the effect until the outcome was reconciled, refused to replay
+a succeeded effect, and required a fresh grant (the old one was dropped on import). See
+[pc3_task_continuity_2026-11-14.md](pc3_task_continuity_2026-11-14.md). Real capability execution
+and model replacement remain the open evidence gap.
+
 ## 6. Proof H — Heterogeneous device continuity
 
 A new, smaller proof that does not replace the Android-to-Android Proof 1:

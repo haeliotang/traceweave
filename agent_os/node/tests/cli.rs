@@ -516,3 +516,107 @@ fn signed_handoff_respects_revocation_time() {
     ]);
     assert_eq!(json(&ok(&["show", "--dir", node_dir.to_str().unwrap()]))["memories"], 1);
 }
+
+// --- PC-3: task continuity without replaying external effects ---
+
+#[test]
+fn task_continuity_resumes_on_another_node_without_replaying_effects() {
+    let sandbox = Sandbox::new("pc3");
+    let a_dir = sandbox.dir("a");
+    let b_dir = sandbox.dir("b");
+    init(&a_dir, "1000");
+    init(&b_dir, "1100");
+    ok(&[
+        "add-task", "--dir", a_dir.to_str().unwrap(),
+        "--task-id", "task-1", "--goal", "book the train",
+        "--capability", "calendar", "--scope", "write", "--at", "2000",
+    ]);
+
+    // Without a grant the effect is denied before anything starts.
+    let (success, output) = node(&[
+        "begin-effect", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "calendar", "--scope", "write", "--at", "3000",
+    ]);
+    assert!(!success, "effect must be denied without a grant: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+
+    ok(&[
+        "authorize", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--capability", "calendar", "--scope", "write",
+        "--ttl-ms", "600000", "--at", "3100",
+    ]);
+    ok(&[
+        "begin-effect", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "calendar", "--scope", "write", "--at", "3200",
+    ]);
+    // Crash-like outcome: the effect may have happened, but the result is unknown.
+    ok(&[
+        "finish-effect", "--dir", a_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1", "--outcome", "unknown", "--at", "3300",
+    ]);
+
+    let a_key = key(&a_dir);
+    ok(&[
+        "trust", "--dir", b_dir.to_str().unwrap(),
+        "--device-id", a_key["device_id"].as_str().unwrap(),
+        "--device-pubkey", a_key["device_pubkey"].as_str().unwrap(), "--at", "3400",
+    ]);
+    let envelope = sandbox.file("a.twpn");
+    ok(&[
+        "export", "--dir", a_dir.to_str().unwrap(),
+        "--out", envelope.to_str().unwrap(), "--passphrase", "pc3-pass",
+    ]);
+    let imported = json(&ok(&[
+        "import", "--dir", b_dir.to_str().unwrap(),
+        "--in", envelope.to_str().unwrap(), "--passphrase", "pc3-pass",
+        "--from-device", a_key["device_id"].as_str().unwrap(), "--signed-at", "3300",
+    ]));
+    assert_eq!(imported["tasks_added"], 1);
+    assert_eq!(imported["grants_not_imported"], 1);
+
+    // The resumed task requires a fresh authorization; the old grant did not travel.
+    let view = json(&ok(&["task", "--dir", b_dir.to_str().unwrap(), "--task", "task-1"]));
+    assert_eq!(view["needs_authorization"], true);
+    assert_eq!(view["effects_needing_reconciliation"][0], "op-1");
+
+    let (success, output) = node(&[
+        "begin-effect", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "calendar", "--scope", "write", "--at", "3500",
+    ]);
+    assert!(!success, "no grant means no retry: {output}");
+    assert!(output.contains("denied"), "unexpected error: {output}");
+
+    ok(&[
+        "authorize", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--capability", "calendar", "--scope", "write",
+        "--ttl-ms", "600000", "--at", "3600",
+    ]);
+    let (success, output) = node(&[
+        "begin-effect", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "calendar", "--scope", "write", "--at", "3700",
+    ]);
+    assert!(!success, "unknown outcome must be reconciled first: {output}");
+    assert!(output.contains("NeedsReconciliation"), "unexpected error: {output}");
+
+    ok(&[
+        "reconcile-effect", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1", "--outcome", "succeeded", "--at", "3800",
+    ]);
+    let (success, output) = node(&[
+        "begin-effect", "--dir", b_dir.to_str().unwrap(),
+        "--task", "task-1", "--operation", "op-1",
+        "--capability", "calendar", "--scope", "write", "--at", "3900",
+    ]);
+    assert!(!success, "a completed effect must never replay: {output}");
+    assert!(output.contains("AlreadyPerformed"), "unexpected error: {output}");
+
+    ok(&["complete-step", "--dir", b_dir.to_str().unwrap(), "--task", "task-1", "--index", "0", "--at", "4000"]);
+    let view = json(&ok(&["task", "--dir", b_dir.to_str().unwrap(), "--task", "task-1"]));
+    assert_eq!(view["open_steps"].as_array().unwrap().len(), 0);
+    assert_eq!(view["effects_needing_reconciliation"].as_array().unwrap().len(), 0);
+    assert_eq!(json(&ok(&["verify", "--dir", b_dir.to_str().unwrap()]))["ok"], true);
+}
