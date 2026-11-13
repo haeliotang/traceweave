@@ -73,3 +73,23 @@ The Java-side canonical JSON is pinned against the Rust layout by
 fails a host test instead of silently breaking the node.
 
 Receipt (local): `agent_os/build/proofh-20261113/receipt-v2.json`.
+
+## Proof H v3 — real user data, signed on device (2026-11-14)
+
+v2's signed state was synthetic. v3 signs the **real records** from the frozen 0.1.5 app:
+
+| Step | Result |
+| --- | --- |
+| Production 0.1.5 archive (2 real memories, sha256 `8f22312c…`) | pulled to the Mac |
+| Archive pushed into the validation package's external files, validation activity decrypts it, converts to canonical v2 and signs with the Keystore P-256 key | PASS, handoff 451 B, state sha256 `55d7f442…` |
+| macOS `import-signed` (device resolved by SHA-256(SPKI)) | 2 real memories merged, 0 tasks, grants 0; `verify` ok |
+| Tampered signature | REFUSED |
+| Revocation before `signed_at` | REFUSED (`untrusted device …`) |
+| Revocation after `signed_at` | ACCEPTED as historical record |
+
+**Still not production-key signing**: the signer is the debug validation package (same app
+sources, separate install) because the frozen 0.1.5 app has no portable exporter. The passphrase
+was passed as an adb intent extra (research tooling). A real production-key export is the next
+Track B step and must be a deliberate app build, not a 0.1.5 change.
+
+Receipt (local): `agent_os/build/proofh-20261113/receipt-v3.json`.

@@ -194,8 +194,13 @@ mean Proof H v1 does not replace Proof 1.
 **Proof H v2 (same day):** a `TWPH1` handoff whose canonical state is signed by the Android
 Keystore P-256 key was verified on macOS by resolving the device from SHA-256(SPKI), rejecting a
 tampered signature and an unenrolled key, and refusing a handoff signed after revocation. The
-signed state was synthetic because 0.1.5 has no portable exporter; real user-data export is the
-next Track B step.
+signed state was synthetic because 0.1.5 has no portable exporter.
+
+**Proof H v3 (2026-11-14):** the same pipeline signed the **real records** from the production
+archive (2 memories) — decrypted inside the validation package, converted and signed with a
+Keystore key, then verified and merged on macOS; tampered signatures were rejected and
+revocation timing was enforced. The signer is still the debug validation package, not the
+production app, so a production-key exporter remains the next Track B step.
 
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.

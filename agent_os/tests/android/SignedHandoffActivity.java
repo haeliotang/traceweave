@@ -8,11 +8,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Proof H v2: build a tiny canonical portable-substrate state, sign it with the device's
@@ -34,7 +38,8 @@ public final class SignedHandoffActivity extends Activity {
             try {
                 DeviceIdentity.create();
                 long signedAt = System.currentTimeMillis();
-                byte[] canonical = canonicalState();
+                boolean archiveMode = "SIGN_ARCHIVE".equals(getIntent().getAction());
+                byte[] canonical = archiveMode ? archiveState() : canonicalState();
                 byte[] message = ByteBuffer.allocate(DOMAIN.length + 8 + canonical.length)
                     .put(DOMAIN)
                     .putLong(signedAt)
@@ -49,11 +54,12 @@ public final class SignedHandoffActivity extends Activity {
                     .putInt(canonical.length).put(canonical)
                     .putInt(signature.length).put(signature)
                     .array();
-                File file = new File(getFilesDir(), OUTPUT);
+                File file = new File(getFilesDir(), archiveMode ? "signed-archive-handoff.bin" : OUTPUT);
                 try (FileOutputStream stream = new FileOutputStream(file)) {
                     stream.write(envelope);
                 }
-                result = "PASS signed_handoff bytes=" + envelope.length
+                result = "PASS signed_handoff mode=" + (archiveMode ? "archive" : "synthetic")
+                    + " bytes=" + envelope.length
                     + " state_sha256=" + sha256(canonical)
                     + " signed_at=" + signedAt
                     + " fingerprint=" + DeviceIdentity.fingerprint();
@@ -65,6 +71,91 @@ public final class SignedHandoffActivity extends Activity {
             String text = result;
             runOnUiThread(() -> output.setText(text));
         }).start();
+    }
+
+    /**
+     * Real-data mode: decrypt the archive the frozen 0.1.5 app exported, convert its memories,
+     * memory tombstones and tasks into canonical v2 JSON, then sign it. The archive format is
+     * read-only; the production app is untouched.
+     */
+    private byte[] archiveState() throws Exception {
+        String path = getIntent().getStringExtra("archive_path");
+        String name = getIntent().getStringExtra("archive_name");
+        String passphrase = getIntent().getStringExtra("passphrase");
+        if ((path == null && name == null) || passphrase == null)
+            throw new IllegalArgumentException("archive_path/archive_name and passphrase are required");
+        // Scoped storage: read from the app's own external files dir through Context, not /sdcard.
+        File archive = name != null ? new File(getExternalFilesDir(null), name) : new File(path);
+        MemoryArchive.Data data;
+        try (FileInputStream stream = new FileInputStream(archive)) {
+            data = MemoryArchive.decrypt(stream, passphrase.toCharArray());
+        }
+
+        TreeSet<String> memoryTombstones = new TreeSet<>();
+        TreeSet<String> taskTombstones = new TreeSet<>();
+        for (AgentStore.Tombstone tombstone : data.tombstones) {
+            if ("memory".equals(tombstone.entityType)) memoryTombstones.add(tombstone.entityId);
+            else if ("task".equals(tombstone.entityType)) taskTombstones.add(tombstone.entityId);
+        }
+
+        TreeMap<String, AgentStore.Memory> memories = new TreeMap<>();
+        for (AgentStore.Memory memory : data.memories) memories.put(memory.id, memory);
+        TreeMap<String, AgentStore.Task> tasks = new TreeMap<>();
+        for (AgentStore.Task task : data.tasks) {
+            if (!taskTombstones.contains(task.id)) tasks.put(task.id, task);
+        }
+
+        StringBuilder json = new StringBuilder(4096);
+        json.append("{\"version\":2,\"memories\":{");
+        boolean first = true;
+        for (AgentStore.Memory memory : memories.values()) {
+            if (memoryTombstones.contains(memory.id)) continue;
+            if (memory.content != null && memory.content.length() > 32000)
+                throw new IllegalArgumentException("memory content too large: " + memory.id);
+            if (!first) json.append(',');
+            first = false;
+            json.append('"').append(escape(memory.id)).append("\":[{\"clock\":{\"android\":1},\"value\":\"")
+                .append(escape(memory.content == null ? "" : memory.content)).append("\"}]");
+        }
+        json.append("},\"tasks\":{");
+        first = true;
+        for (AgentStore.Task task : tasks.values()) {
+            if (!first) json.append(',');
+            first = false;
+            json.append('"').append(escape(task.id)).append("\":{\"task_id\":\"").append(escape(task.id))
+                .append("\",\"goal\":\"").append(escape(task.title == null ? "" : task.title))
+                .append("\",\"status\":\"").append(portableStatus(task.status))
+                .append("\",\"steps\":[],\"effects\":{},\"updated_at\":").append(task.updatedAt)
+                .append(",\"needs_authorization\":true}");
+        }
+        json.append("},\"grants\":[],\"audit\":{\"entries\":[]}}");
+        return json.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String portableStatus(String status) {
+        if ("completed".equals(status)) return "completed";
+        if ("cancelled".equals(status)) return "cancelled";
+        if ("failed".equals(status)) return "failed";
+        return "waiting_for_user";
+    }
+
+    /** Minimal JSON string escaping; matches serde_json for the characters used here. */
+    private static String escape(String value) {
+        StringBuilder out = new StringBuilder(value.length() + 8);
+        for (int index = 0; index < value.length(); index++) {
+            char item = value.charAt(index);
+            switch (item) {
+                case '"': out.append("\\\""); break;
+                case '\\': out.append("\\\\"); break;
+                case '\n': out.append("\\n"); break;
+                case '\r': out.append("\\r"); break;
+                case '\t': out.append("\\t"); break;
+                default:
+                    if (item < 0x20) out.append(String.format(Locale.ROOT, "\\u%04x", (int) item));
+                    else out.append(item);
+            }
+        }
+        return out.toString();
     }
 
     /** Compact canonical v2 JSON; field order must match the Rust serde layout exactly. */
