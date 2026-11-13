@@ -783,3 +783,53 @@ fn engine_swap_preserves_task_identity_and_requires_its_own_grant() {
     assert_eq!(evidence, "task-native");
     assert_eq!(json(&ok(&["verify", "--dir", dir.to_str().unwrap()]))["ok"], true);
 }
+
+// --- PC-1: macOS Keychain backend keeps key material out of the state directory ---
+
+struct KeychainCleanup {
+    service: String,
+}
+
+impl Drop for KeychainCleanup {
+    fn drop(&mut self) {
+        for account in ["traceweave-identity", "traceweave-device"] {
+            let _ = Command::new("security")
+                .args(["delete-generic-password", "-a", account, "-s", &self.service])
+                .output();
+        }
+    }
+}
+
+#[test]
+fn keychain_backend_keeps_keys_out_of_the_state_directory() {
+    if !cfg!(target_os = "macos") {
+        return; // the security CLI is macOS-only; Linux CI skips this test
+    }
+    let sandbox = Sandbox::new("keychain");
+    let dir = sandbox.dir("node");
+    let service = format!(
+        "traceweave-node-test-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+    );
+    let _cleanup = KeychainCleanup { service: service.clone() };
+
+    let created = json(&ok(&[
+        "init", "--dir", dir.to_str().unwrap(), "--at", "1000", "--keychain-service", &service,
+    ]));
+    assert!(created["device_id"].as_str().unwrap().starts_with("node-"));
+    assert!(!dir.join("identity.key").exists(), "identity seed must not be a file");
+    assert!(!dir.join("device.key").exists(), "device seed must not be a file");
+    assert!(dir.join(".keychain").exists(), "the marker records which keychain service is used");
+
+    // Every command is a new process, so this also proves the key can be reloaded from Keychain.
+    ok(&["add-memory", "--dir", dir.to_str().unwrap(), "--content", "from keychain", "--at", "2000"]);
+    let show = json(&ok(&["show", "--dir", dir.to_str().unwrap()]));
+    assert_eq!(show["memories"], 1);
+    assert_eq!(json(&ok(&["verify", "--dir", dir.to_str().unwrap()]))["ok"], true);
+
+    // The device identity is stable across restarts.
+    let first = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
+    let second = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
+    assert_eq!(first["device_pubkey"], second["device_pubkey"]);
+}

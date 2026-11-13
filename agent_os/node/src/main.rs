@@ -164,6 +164,10 @@ fn load_or_create_seed(path: &Path) -> NodeResult<Vec<u8>> {
     Ok(seed)
 }
 
+const KEYCHAIN_MARKER: &str = ".keychain";
+const KEYCHAIN_IDENTITY: &str = "traceweave-identity";
+const KEYCHAIN_DEVICE: &str = "traceweave-device";
+
 const HANDOFF_MAGIC: &[u8; 5] = b"TWPH1";
 const HANDOFF_DOMAIN: &[u8] = b"traceweave-portable-handoff-v1";
 
@@ -319,6 +323,47 @@ fn merge_incoming(
     Ok((memories, tasks, dropped))
 }
 
+fn security(args: &[&str]) -> NodeResult<String> {
+    let output = std::process::Command::new("security")
+        .args(args)
+        .output()
+        .map_err(|error| format!("security CLI unavailable: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "security {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn keychain_store(service: &str, account: &str, seed: &[u8]) -> NodeResult<()> {
+    security(&[
+        "add-generic-password", "-U",
+        "-a", account,
+        "-s", service,
+        "-w", &hex_encode(seed),
+    ])?;
+    Ok(())
+}
+
+fn keychain_load(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    let hex = security(&["find-generic-password", "-a", account, "-s", service, "-w"])?;
+    hex_decode(hex.trim()).map_err(|_| "keychain item is not a valid key seed".to_string())
+}
+
+fn keychain_seed(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    match keychain_load(service, account) {
+        Ok(seed) if seed.len() == 32 => Ok(seed),
+        _ => {
+            let seed = random_bytes::<32>()?.to_vec();
+            keychain_store(service, account, &seed)?;
+            Ok(seed)
+        }
+    }
+}
+
 struct Node {
     dir: PathBuf,
     state: SubstrateState,
@@ -328,9 +373,26 @@ struct Node {
 }
 
 impl Node {
+    fn keychain_service(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(KEYCHAIN_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
     fn open(dir: &Path) -> NodeResult<Self> {
-        let identity_seed = fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?;
-        let device_seed = fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?;
+        let (identity_seed, device_seed) = match Self::keychain_service(dir) {
+            Some(service) => (
+                keychain_load(&service, KEYCHAIN_IDENTITY)
+                    .map_err(|error| format!("keychain identity: {error}"))?,
+                keychain_load(&service, KEYCHAIN_DEVICE)
+                    .map_err(|error| format!("keychain device: {error}"))?,
+            ),
+            None => (
+                fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?,
+                fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?,
+            ),
+        };
         let identity = signing_key_from_seed(&identity_seed)?;
         let device = signing_key_from_seed(&device_seed)?;
         let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
@@ -746,8 +808,19 @@ fn command_init(args: &Args) -> NodeResult<String> {
         return Err(format!("{} already initialized", dir.display()));
     }
     let at = now_millis(args)?;
-    let identity = signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?;
-    let device = signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?;
+    let (identity, device) = match args.optional("keychain-service") {
+        Some(service) => {
+            let identity = signing_key_from_seed(&keychain_seed(service, KEYCHAIN_IDENTITY)?)?;
+            let device = signing_key_from_seed(&keychain_seed(service, KEYCHAIN_DEVICE)?)?;
+            fs::write(dir.join(KEYCHAIN_MARKER), format!("{service}\n"))
+                .map_err(|error| format!("write keychain marker: {error}"))?;
+            (identity, device)
+        }
+        None => (
+            signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?,
+            signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?,
+        ),
+    };
     let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
 
     let mut book = IdentityBook::genesis(spki(&identity), at).map_err(|error| format!("genesis: {error}"))?;

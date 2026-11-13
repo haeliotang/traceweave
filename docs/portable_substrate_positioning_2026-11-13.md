@@ -132,10 +132,11 @@ Android:
 **Started 2026-11-13:** [`agent_os/node/`](../agent_os/node) (`traceweave-node`) is a headless,
 one-shot host: P-256 device identity, personal-identity enrollment/revocation, canonical v2 state
 persisted as `state.bin`, signed memory merges, PBKDF2 + AES-256-GCM encrypted export/import and
-post-restart `verify`. Three CLI acceptance tests run two nodes sharing one personal identity:
-exchange, rejection of a revoked device's post-revocation records (while keeping its earlier
-history), and envelope confidentiality/integrity. It uses software keys, not Secure Enclave keys;
-that and authenticated timestamps are listed as limitations in the crate README.
+post-restart `verify`. Key material can live in the macOS **login Keychain** instead of state
+files (`init --keychain-service`); the node directory then holds only a service marker and
+`state.bin`. The key is still a software seed protected by the Keychain, not a Secure Enclave key;
+that, authenticated timestamps and Linux secret-service support are listed as limitations in the
+crate README.
 
 Non-goals: desktop UI, always-on daemon, new wire protocol version, App Store distribution.
 
