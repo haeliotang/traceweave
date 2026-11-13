@@ -5,6 +5,10 @@
 >
 > 当前事实：包名 `com.inceptless.traceweave`、schema **17**、已发布 v0.1.0–v0.1.4（开发密钥侧载）、
 > 开发签名密钥别名 `agent-os-rotation-20261025`、Keychain service `com.inceptless.traceform.agentos.signing`。
+>
+> **定位更新（2026-11-13）：** 本文描述的 Android 应用是「个人计算基底」的**设备适配器原型**，
+> 不是架构本身。可移植核心、macOS 参考节点与身份恢复的主研究线见根目录 README 与
+> [portable_substrate_positioning_2026-11-13.md](../docs/portable_substrate_positioning_2026-11-13.md)。
 
 # Agent OS Android prototype
 
