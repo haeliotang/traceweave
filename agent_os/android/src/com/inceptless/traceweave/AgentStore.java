@@ -2697,6 +2697,11 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     byte[] exportArchive(char[] passphrase) throws Exception {
+        return MemoryArchive.encrypt(exportData(), passphrase);
+    }
+
+    /** Read-only snapshot used by archive export and the Track B signed portable handoff. */
+    MemoryArchive.Data exportData() throws Exception {
         SQLiteDatabase database = getReadableDatabase();
         MemoryArchive.Data data = new MemoryArchive.Data();
         database.beginTransactionNonExclusive();
@@ -2757,7 +2762,7 @@ final class AgentStore extends SQLiteOpenHelper {
             data.exportedAt = System.currentTimeMillis();
             database.setTransactionSuccessful();
         } finally { database.endTransaction(); }
-        return MemoryArchive.encrypt(data, passphrase);
+        return data;
     }
 
     ImportResult importArchive(java.io.InputStream input, char[] passphrase) throws Exception {
