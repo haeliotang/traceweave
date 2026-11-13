@@ -165,7 +165,7 @@ public final class PortableExportActivity extends Activity {
                     if (step.observation == null || step.observation.isEmpty()) {
                         json.append("[]");
                     } else {
-                        json.append("["").append(escape(step.observation)).append(""]");
+                        json.append("[\"").append(escape(step.observation)).append("\"]");
                     }
                     json.append('}');
                 }
