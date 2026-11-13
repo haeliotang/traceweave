@@ -1,8 +1,10 @@
 # Portable Identity and Recovery — Design Draft (PC-2)
 
-Status: design draft, 2026-11-13. No implementation yet. This document fixes the identity
-boundary that PC-1 must respect before porting code; it changes no database, wire protocol or
-0.1.5 release state.
+Status: design draft with a host simulation, 2026-11-13. The record types and the
+enrollment/revocation/rotation/recovery state machine are implemented in
+`agent_os/portable/src/identity.rs` and covered by 6 simulation tests; there is still no
+on-device implementation. This document fixes the identity boundary that PC-1 must respect, and
+changes no database, wire protocol or 0.1.5 release state.
 
 ## 1. Problem
 
@@ -158,10 +160,23 @@ Two paths, both requiring the personal identity key (derived from PRS) or a trus
 
 ## 9. Evidence this design still needs
 
-A document is not evidence of portability. Before PC-2 can be called done it needs:
+A document is not evidence of portability.
 
-1. A simulated two-device enrollment + revocation test in the portable crate (records, merge,
-   revocation rejection), with a golden fixture;
-2. A recovery simulation: PRS-derived identity, new device enrollment, grants NOT restored;
-3. A threat-model review against the table above by someone other than the author;
-4. On-device evidence of a hardware device key + enrollment record once Track B reaches PC-1.
+Implemented on 2026-11-13 in `agent_os/portable` (host simulation, 6 tests):
+
+1. **Enrollment and revocation state machine**: a root-signed enrollment is accepted only while
+   its signer key is active; revoked devices can no longer contribute records signed after
+   revocation, while records signed before it stay acceptable. Golden bytes for the identity
+   book are pinned (`0578a9ca…`) so the record format cannot drift silently.
+2. **Recovery simulation**: `recover_state` keeps memories, tasks and audit, clears every grant
+   and marks each task `needs_authorization`; an effect that was in flight before recovery still
+   demands reconciliation instead of being retried blindly.
+3. **Rotation**: the new root key can enroll/revoke; the old key is rejected as stale for later
+   records.
+
+Still open:
+
+4. A threat-model review against the table above by someone other than the author;
+5. On-device evidence of a hardware device key + enrollment record once Track B reaches PC-1;
+6. Moving identity records into the canonical `SubstrateState` envelope under a new format
+   version with a migration test (today they are a separate versioned document).

@@ -14,12 +14,17 @@
 
 pub mod audit;
 pub mod checkpoint;
+pub mod identity;
 pub mod policy;
 pub mod ports;
 pub mod record;
 pub mod state;
 
 pub use audit::{AuditAnchor, AuditChain, AuditEntry};
+pub use identity::{
+    fingerprint, recover_state, DeviceEnrollment, DeviceEntry, DeviceRevocation, IdentityBook,
+    IdentityError, IdentityRotation, RootKey, Trust, IDENTITY_FORMAT_VERSION,
+};
 pub use checkpoint::{
     CheckpointError, CheckpointStep, EffectOutcome, EffectStatus, ExternalEffect, ResumeView,
     StepStatus, TaskCheckpoint, TaskStatus,

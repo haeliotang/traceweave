@@ -138,8 +138,9 @@ cross-platform protocol contract tests.
 separates Personal Identity (PRS-derived signing root), Device Identity (non-exportable hardware
 key, enrollable/revocable) and Agent Session (short-lived grants), and spells out enrollment,
 revocation, recovery, rotation and the "history migrates, authority does not" rule, with a
-threat-model table and open questions. Implementation comes after PC-1's port, and its
-simulation tests are listed as required evidence.
+threat-model table and open questions. The enrollment/revocation/rotation/recovery state
+machine is already implemented and tested in `agent_os/portable/src/identity.rs` (6 host
+simulation tests); on-device implementation comes after PC-1's port.
 
 Design document first, implementation later:
 
