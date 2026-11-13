@@ -114,6 +114,4 @@ jobs:
       - name: Install pinned Rust toolchain
         run: rustup toolchain install 1.94.0 --profile minimal
       - name: Test the platform-neutral substrate core
-        run: |
-          rustup run 1.94.0 cargo test --locked --lib
-          rustup run 1.94.0 cargo test --locked --test contract
+        run: rustup run 1.94.0 cargo test --locked

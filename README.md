@@ -128,7 +128,7 @@ Current status:
 
 | Workstream | Deliverable | Needs a second Android phone |
 | :--- | :--- | :--- |
-| **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical envelope, 13 contract tests | No |
+| **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical envelope, 15 tests | No |
 | **PC-1 reference node** | Headless macOS/Linux node speaking the same protocol | No |
 | **PC-2 identity & recovery** | Personal identity separated from device identity; enrollment, revocation, recovery contract | Design and simulation only |
 | **PC-3 task continuity** | Model/device-independent task checkpoints without replaying external effects | Simulation only |
