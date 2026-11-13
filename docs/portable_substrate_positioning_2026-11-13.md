@@ -98,6 +98,14 @@ Extract the platform-neutral state machine from the existing Rust modules
 (`agent_ir.rs`, `broker.rs`, `task.rs`, `causal_memory.rs`, persistence and audit code) and make
 it a standalone crate with no Android types.
 
+**Started 2026-11-13:** the first extraction exists at [`agent_os/portable/`](../agent_os/portable)
+(`traceweave-portable`, no Android/JNI/Keystore/SQLite/UI dependency): memory version merge with
+tombstone priority, task checkpoints that refuse to replay external effects, order-independent
+policy decisions, a SHA-256 audit chain, adapter ports and a canonical state envelope that
+rejects non-canonical bytes. It is covered by 13 contract tests. Still to do: move the remaining
+Android-side semantics into this crate, add a Linux/macOS fixture run, and make the Android
+adapter consume the canonical envelope instead of its own Java state layer.
+
 Acceptance criteria (all host-only):
 
 1. One synthetic fixture (memory records + versions + tombstones + one unfinished task

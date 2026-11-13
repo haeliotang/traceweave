@@ -9,6 +9,7 @@
 > **定位更新（2026-11-13）：** 本文描述的 Android 应用是「个人计算基底」的**设备适配器原型**，
 > 不是架构本身。可移植核心、macOS 参考节点与身份恢复的主研究线见根目录 README 与
 > [portable_substrate_positioning_2026-11-13.md](../docs/portable_substrate_positioning_2026-11-13.md)。
+> PC-0 的首个抽取已经在 [`portable/`](portable)（`traceweave-portable`，无 Android 依赖）。
 
 # Agent OS Android prototype
 

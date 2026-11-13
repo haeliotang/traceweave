@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[package]
+name = "traceweave-portable"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+authors = ["Inceptless <support@inceptless.com>"]
+license = "AGPL-3.0-or-later"
+description = "Platform-neutral portable substrate core: records, policy, checkpoints, audit and canonical state"
+
+[lib]
+name = "traceweave_portable"
+path = "src/lib.rs"
+crate-type = ["lib"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10.8"
