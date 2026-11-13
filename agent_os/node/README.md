@@ -10,7 +10,7 @@ envelope and recover after a restart. It is **not** a daemon and not part of the
 ## Commands
 
 ```
-traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE]
+traceweave-node init    --dir D [--at MS] [--force] [--keychain-service SERVICE] [--key-agent-tag TAG]
 traceweave-node key     --dir D
 traceweave-node show    --dir D
 traceweave-node trust   --dir D --device-id ID --device-pubkey SPKI_HEX [--at MS]
@@ -39,6 +39,16 @@ P-256 seeds in `identity.key` (personal identity signing root) and `device.key` 
 both 0600. With `--keychain-service SERVICE` both seeds are stored as macOS Keychain
 generic-password items instead; the state directory keeps only `.keychain` (the service name) and
 `state.bin`, and every command reloads the keys from Keychain.
+
+With `--key-agent-tag TAG` the keys are created by Security.framework with
+`kSecAttrIsExtractable=false`, so the private key never leaves the Keychain. The node keeps only
+`.key-agent` (the tag) and `state.bin`; signing calls the small helper. Build it once:
+
+```
+clang -framework Security -framework CoreFoundation agent_os/node/macos/key_agent.c   -o agent_os/node/target/debug/traceweave-key-agent
+```
+
+Set `TRACEWEAVE_KEY_AGENT` to use a helper in another location.
 
 ## What the acceptance tests prove
 
@@ -70,9 +80,11 @@ real capability was executed.
 
 ## Research-grade limitations
 
-- The Keychain backend protects a software seed; it is not a Secure Enclave key and does not use
-  `kSecAccessControl`/biometric gating. A real adapter will generate a non-exportable Secure
-  Enclave key behind the same port.
+- The Keychain and key-agent backends protect a software key; neither is a Secure Enclave key.
+  Creating an Enclave key from an unsigned CLI fails with `errSecMissingEntitlement (-34018)`, and
+  an ad-hoc entitlement without a provisioning profile is killed at launch. A signed, provisioned
+  app bundle is required for a real hardware-held key.
+- The key-agent backend does not yet apply `kSecAccessControl`/biometric gating.
 - Passphrase is a CLI argument (shell history) and PBKDF2 rounds are fixed at 100k; this is a
   prototype, not a hardened recovery envelope.
 - `--signed-at` is supplied by the caller in this prototype; the production protocol must carry

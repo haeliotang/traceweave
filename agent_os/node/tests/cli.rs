@@ -833,3 +833,79 @@ fn keychain_backend_keeps_keys_out_of_the_state_directory() {
     let second = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
     assert_eq!(first["device_pubkey"], second["device_pubkey"]);
 }
+
+// --- PC-2: non-exportable Keychain keys behind a key agent (macOS) ---
+
+struct KeyAgentCleanup {
+    helper: std::path::PathBuf,
+    tags: Vec<String>,
+}
+
+impl Drop for KeyAgentCleanup {
+    fn drop(&mut self) {
+        for tag in &self.tags {
+            let _ = Command::new(&self.helper).args(["delete", tag]).output();
+        }
+    }
+}
+
+fn build_key_agent() -> std::path::PathBuf {
+    let helper = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/traceweave-key-agent");
+    if !helper.exists() {
+        let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("macos/key_agent.c");
+        let status = Command::new("clang")
+            .args(["-framework", "Security", "-framework", "CoreFoundation"])
+            .arg(&source)
+            .arg("-o")
+            .arg(&helper)
+            .status()
+            .expect("clang must be available on macOS");
+        assert!(status.success(), "could not build the key agent");
+    }
+    helper
+}
+
+#[test]
+fn key_agent_keeps_private_keys_non_exportable() {
+    if !cfg!(target_os = "macos") {
+        return; // key_agent.c uses Security.framework
+    }
+    let helper = build_key_agent();
+    let sandbox = Sandbox::new("key-agent");
+    let dir = sandbox.dir("node");
+    let base = format!(
+        "traceweave-node-agent-test-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+    );
+    let _cleanup = KeyAgentCleanup {
+        helper: helper.clone(),
+        tags: vec![format!("{base}-identity"), format!("{base}-device")],
+    };
+
+    let created = json(&ok(&[
+        "init", "--dir", dir.to_str().unwrap(), "--at", "1000", "--key-agent-tag", &base,
+    ]));
+    assert!(created["device_id"].as_str().unwrap().starts_with("node-"));
+    assert!(!dir.join("identity.key").exists(), "no identity seed file");
+    assert!(!dir.join("device.key").exists(), "no device seed file");
+    assert!(!dir.join(".keychain").exists(), "the key agent backend is not the seed backend");
+    assert!(dir.join(".key-agent").exists(), "the marker records the key agent tag");
+
+    // init enrolled the device with an identity-agent signature; revoke signs and verifies too.
+    ok(&["add-memory", "--dir", dir.to_str().unwrap(), "--content", "agent-backed", "--at", "2000"]);
+    let key = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
+    let device_id = key["device_id"].as_str().unwrap().to_string();
+    ok(&[
+        "revoke", "--dir", dir.to_str().unwrap(), "--device-id", &device_id,
+        "--reason", "test", "--at", "3000",
+    ]);
+    let show = json(&ok(&["show", "--dir", dir.to_str().unwrap()]));
+    assert_eq!(show["memories"], 1);
+    assert_eq!(json(&ok(&["verify", "--dir", dir.to_str().unwrap()]))["ok"], true);
+
+    // The public key is stable across processes, and no private key material is on disk.
+    let first = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
+    let second = json(&ok(&["key", "--dir", dir.to_str().unwrap()]));
+    assert_eq!(first["identity_pubkey"], second["identity_pubkey"]);
+}

@@ -134,6 +134,81 @@ fn verify_der(spki_der: &[u8], message: &[u8], signature_der: &[u8]) -> bool {
     key.verify(message, &signature).is_ok()
 }
 
+const KEY_AGENT_MARKER: &str = ".key-agent";
+
+fn key_agent_path() -> PathBuf {
+    if let Ok(path) = std::env::var("TRACEWEAVE_KEY_AGENT") {
+        return PathBuf::from(path);
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(parent) = exe.parent() {
+            let candidate = parent.join("traceweave-key-agent");
+            if candidate.exists() {
+                return candidate;
+            }
+            let nested = parent.join("../traceweave-key-agent");
+            if nested.exists() {
+                return nested;
+            }
+        }
+    }
+    PathBuf::from("traceweave-key-agent")
+}
+
+fn key_agent_run(args: &[&str]) -> NodeResult<String> {
+    let output = std::process::Command::new(key_agent_path())
+        .args(args)
+        .output()
+        .map_err(|error| format!("key agent unavailable: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "key agent {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn key_agent_public(tag: &str) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["public", tag])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid SPKI".to_string())
+}
+
+fn key_agent_create(tag: &str) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["create", tag])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid SPKI".to_string())
+}
+
+fn key_agent_sign(tag: &str, message: &[u8]) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["sign", tag, &hex_encode(message)])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid signature".to_string())
+}
+
+/// Where a signing key lives. The agent variant keeps the private key inside the Keychain and
+/// only exposes sign/public operations, so the substrate never handles private key bytes.
+#[derive(Clone)]
+enum NodeKey {
+    Software(SigningKey),
+    Agent { tag: String, spki: Vec<u8> },
+}
+
+impl NodeKey {
+    fn public_der(&self) -> Vec<u8> {
+        match self {
+            NodeKey::Software(key) => spki(key),
+            NodeKey::Agent { spki, .. } => spki.clone(),
+        }
+    }
+
+    fn sign(&self, message: &[u8]) -> NodeResult<Vec<u8>> {
+        match self {
+            NodeKey::Software(key) => Ok(sign(key, message)),
+            NodeKey::Agent { tag, .. } => key_agent_sign(tag, message),
+        }
+    }
+}
+
 fn sign(signing: &SigningKey, message: &[u8]) -> Vec<u8> {
     let signature: p256::ecdsa::Signature = signing.sign(message);
     signature.to_der().as_bytes().to_vec()
@@ -367,12 +442,19 @@ fn keychain_seed(service: &str, account: &str) -> NodeResult<Vec<u8>> {
 struct Node {
     dir: PathBuf,
     state: SubstrateState,
-    identity: SigningKey,
-    device: SigningKey,
+    identity: NodeKey,
+    device: NodeKey,
     device_id: String,
 }
 
 impl Node {
+    fn key_agent_tag(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(KEY_AGENT_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
     fn keychain_service(dir: &Path) -> Option<String> {
         fs::read_to_string(dir.join(KEYCHAIN_MARKER))
             .ok()
@@ -381,21 +463,35 @@ impl Node {
     }
 
     fn open(dir: &Path) -> NodeResult<Self> {
-        let (identity_seed, device_seed) = match Self::keychain_service(dir) {
-            Some(service) => (
-                keychain_load(&service, KEYCHAIN_IDENTITY)
-                    .map_err(|error| format!("keychain identity: {error}"))?,
-                keychain_load(&service, KEYCHAIN_DEVICE)
-                    .map_err(|error| format!("keychain device: {error}"))?,
-            ),
-            None => (
-                fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?,
-                fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?,
-            ),
+        let (identity, device) = if let Some(tag) = Self::key_agent_tag(dir) {
+            let identity = NodeKey::Agent {
+                tag: format!("{tag}-identity"),
+                spki: key_agent_public(&format!("{tag}-identity"))?,
+            };
+            let device = NodeKey::Agent {
+                tag: format!("{tag}-device"),
+                spki: key_agent_public(&format!("{tag}-device"))?,
+            };
+            (identity, device)
+        } else {
+            let (identity_seed, device_seed) = match Self::keychain_service(dir) {
+                Some(service) => (
+                    keychain_load(&service, KEYCHAIN_IDENTITY)
+                        .map_err(|error| format!("keychain identity: {error}"))?,
+                    keychain_load(&service, KEYCHAIN_DEVICE)
+                        .map_err(|error| format!("keychain device: {error}"))?,
+                ),
+                None => (
+                    fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?,
+                    fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?,
+                ),
+            };
+            (
+                NodeKey::Software(signing_key_from_seed(&identity_seed)?),
+                NodeKey::Software(signing_key_from_seed(&device_seed)?),
+            )
         };
-        let identity = signing_key_from_seed(&identity_seed)?;
-        let device = signing_key_from_seed(&device_seed)?;
-        let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
+        let device_id = format!("node-{}", &hex_encode(&fingerprint(&device.public_der()))[..16]);
         let bytes = fs::read(dir.join("state.bin")).map_err(|_| "missing state.bin; run init".to_string())?;
         let state = SubstrateState::from_bytes(&bytes).map_err(|error| format!("state: {error}"))?;
         Ok(Self { dir: dir.to_path_buf(), state, identity, device, device_id })
@@ -407,7 +503,7 @@ impl Node {
     }
 
     fn fingerprint_hex(&self) -> String {
-        hex_encode(&fingerprint(&spki(&self.device)))
+        hex_encode(&fingerprint(&self.device.public_der()))
     }
 }
 
@@ -470,7 +566,7 @@ fn decrypt(passphrase: &str, envelope: &[u8]) -> NodeResult<Vec<u8>> {
 }
 
 fn enrollment(
-    identity: &SigningKey,
+    identity: &NodeKey,
     device_pubkey: Vec<u8>,
     device_id: &str,
     at: i64,
@@ -480,23 +576,25 @@ fn enrollment(
         device_id: device_id.to_string(),
         device_pubkey,
         enrolled_at: at,
-        signer_pubkey: spki(identity),
+        signer_pubkey: identity.public_der(),
         signature: Vec::new(),
     };
-    record.signature = sign(identity, &record.signing_bytes().map_err(|error| format!("payload: {error}"))?);
+    record.signature = identity
+        .sign(&record.signing_bytes().map_err(|error| format!("payload: {error}"))?)?;
     Ok(record)
 }
 
-fn revocation(identity: &SigningKey, device_id: &str, at: i64, reason: &str) -> NodeResult<DeviceRevocation> {
+fn revocation(identity: &NodeKey, device_id: &str, at: i64, reason: &str) -> NodeResult<DeviceRevocation> {
     let mut record = DeviceRevocation {
         version: IDENTITY_FORMAT_VERSION,
         device_id: device_id.to_string(),
         revoked_at: at,
         reason: reason.to_string(),
-        signer_pubkey: spki(identity),
+        signer_pubkey: identity.public_der(),
         signature: Vec::new(),
     };
-    record.signature = sign(identity, &record.signing_bytes().map_err(|error| format!("payload: {error}"))?);
+    record.signature = identity
+        .sign(&record.signing_bytes().map_err(|error| format!("payload: {error}"))?)?;
     Ok(record)
 }
 
@@ -808,23 +906,33 @@ fn command_init(args: &Args) -> NodeResult<String> {
         return Err(format!("{} already initialized", dir.display()));
     }
     let at = now_millis(args)?;
-    let (identity, device) = match args.optional("keychain-service") {
+    let (identity, device) = if let Some(tag) = args.optional("key-agent-tag") {
+        let identity_tag = format!("{tag}-identity");
+        let device_tag = format!("{tag}-device");
+        let identity = NodeKey::Agent { spki: key_agent_create(&identity_tag)?, tag: identity_tag };
+        let device = NodeKey::Agent { spki: key_agent_create(&device_tag)?, tag: device_tag };
+        fs::write(dir.join(KEY_AGENT_MARKER), format!("{tag}\n"))
+            .map_err(|error| format!("write key-agent marker: {error}"))?;
+        (identity, device)
+    } else {
+        match args.optional("keychain-service") {
         Some(service) => {
-            let identity = signing_key_from_seed(&keychain_seed(service, KEYCHAIN_IDENTITY)?)?;
-            let device = signing_key_from_seed(&keychain_seed(service, KEYCHAIN_DEVICE)?)?;
+            let identity = NodeKey::Software(signing_key_from_seed(&keychain_seed(service, KEYCHAIN_IDENTITY)?)?);
+            let device = NodeKey::Software(signing_key_from_seed(&keychain_seed(service, KEYCHAIN_DEVICE)?)?);
             fs::write(dir.join(KEYCHAIN_MARKER), format!("{service}\n"))
                 .map_err(|error| format!("write keychain marker: {error}"))?;
             (identity, device)
         }
         None => (
-            signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?,
-            signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?,
+            NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?),
+            NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?),
         ),
+        }
     };
-    let device_id = format!("node-{}", &hex_encode(&fingerprint(&spki(&device)))[..16]);
+    let device_id = format!("node-{}", &hex_encode(&fingerprint(&device.public_der()))[..16]);
 
-    let mut book = IdentityBook::genesis(spki(&identity), at).map_err(|error| format!("genesis: {error}"))?;
-    book.enroll(enrollment(&identity, spki(&device), &device_id, at)?)
+    let mut book = IdentityBook::genesis(identity.public_der(), at).map_err(|error| format!("genesis: {error}"))?;
+    book.enroll(enrollment(&identity, device.public_der(), &device_id, at)?)
         .map_err(|error| format!("enroll: {error}"))?;
     let mut state = SubstrateState::new();
     state.set_identity(book);
@@ -835,7 +943,7 @@ fn command_init(args: &Args) -> NodeResult<String> {
         "initialized": node.dir.display().to_string(),
         "device_id": node.device_id,
         "device_fingerprint": node.fingerprint_hex(),
-        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
     })
     .to_string())
 }
@@ -847,7 +955,7 @@ fn command_show(args: &Args) -> NodeResult<String> {
     Ok(serde_json::json!({
         "device_id": node.device_id,
         "device_fingerprint": node.fingerprint_hex(),
-        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
         "memories": node.state.live_memory_count(),
         "tombstones": node.state.tombstone_count(),
         "tasks": node.state.tasks.len(),
@@ -961,10 +1069,10 @@ fn command_key(args: &Args) -> NodeResult<String> {
     let node = Node::open(Path::new(args.get("dir")?))?;
     Ok(serde_json::json!({
         "device_id": node.device_id,
-        "device_pubkey": hex_encode(&spki(&node.device)),
+        "device_pubkey": hex_encode(&node.device.public_der()),
         "device_fingerprint": node.fingerprint_hex(),
-        "identity_pubkey": hex_encode(&spki(&node.identity)),
-        "identity_fingerprint": hex_encode(&fingerprint(&spki(&node.identity))),
+        "identity_pubkey": hex_encode(&node.identity.public_der()),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
     })
     .to_string())
 }

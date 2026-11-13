@@ -214,6 +214,13 @@ Keystore key, then verified and merged on macOS; tampered signatures were reject
 revocation timing was enforced. The signer is still the debug validation package, not the
 production app, so a production-key exporter remains the next Track B step.
 
+**PC-2 hardware-backed device identity (macOS side):** `traceweave-node init --key-agent-tag TAG`
+creates P-256 keys with `kSecAttrIsExtractable=false` through a Security.framework helper; the
+node holds only a tag and the public SPKI, and every signature goes through the helper. A true
+Secure Enclave key is still out of reach: the unsigned CLI fails with
+`errSecMissingEntitlement (-34018)` and an ad-hoc entitlement is killed without a provisioning
+profile, so the Enclave path needs a signed, provisioned app bundle.
+
 Proof H is evidence that the substrate is escaping Android; it is **not** Proof 1 and must not
 be reported as cross-device Android acceptance.
 
