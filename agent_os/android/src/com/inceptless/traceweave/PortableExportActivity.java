@@ -32,6 +32,7 @@ public final class PortableExportActivity extends Activity {
 
     private TextView status;
     private android.widget.EditText passphraseInput;
+    private android.widget.CheckBox strictSynthesis;
     private android.widget.Button exportButton;
 
     @Override public void onCreate(Bundle state) {
@@ -48,6 +49,10 @@ public final class PortableExportActivity extends Activity {
         passphraseInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT
             | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         root.addView(passphraseInput);
+        strictSynthesis = new android.widget.CheckBox(this);
+        strictSynthesis.setText("Require a model grant on resume (strict synthesis)");
+        strictSynthesis.setChecked(false);
+        root.addView(strictSynthesis);
         exportButton = new android.widget.Button(this);
         exportButton.setText("Export sealed handoff");
         root.addView(exportButton);
@@ -93,7 +98,7 @@ public final class PortableExportActivity extends Activity {
                     }
                     memoryCount = memories.size();
                     taskCount = tasks.size();
-                    canonical = canonicalState(memories, tasks);
+                    canonical = canonicalState(memories, tasks, strictSynthesis.isChecked());
                 }
                 byte[] message = ByteBuffer.allocate(DOMAIN.length + 8 + canonical.length)
                     .put(DOMAIN)
@@ -165,7 +170,7 @@ public final class PortableExportActivity extends Activity {
     }
 
     private static byte[] canonicalState(TreeMap<String, AgentStore.Memory> memories,
-            TreeMap<String, AgentStore.Task> tasks) {
+            TreeMap<String, AgentStore.Task> tasks, boolean strictSynthesis) {
         StringBuilder json = new StringBuilder(4096);
         json.append("{\"version\":5,\"memories\":{");
         boolean first = true;
@@ -208,7 +213,11 @@ public final class PortableExportActivity extends Activity {
             json.append("],\"effects\":{},\"updated_at\":").append(task.updatedAt)
                 .append(",\"needs_authorization\":true}");
         }
-        json.append("},\"grants\":[],\"audit\":{\"entries\":[]}}");
+        json.append("},\"grants\":[]");
+        if (strictSynthesis) {
+            json.append(",\"policies\":{\"strict_synthesis\":true}");
+        }
+        json.append(",\"audit\":{\"entries\":[]}}");
         return json.toString().getBytes(StandardCharsets.UTF_8);
     }
 
