@@ -2712,6 +2712,15 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     /** Read-only snapshot used by archive export and the Track B signed portable handoff. */
+    /** Branch-only setter used by the export screen; the frozen app has no policy surface. */
+    void setPolicy(String name, boolean value) {
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("value", value ? 1 : 0);
+        values.put("updated_at", System.currentTimeMillis());
+        getWritableDatabase().insertWithOnConflict("policies", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
     /** Branch-only policy map that travels with a portable export. */
     java.util.TreeMap<String, Boolean> exportPolicies() {
         java.util.TreeMap<String, Boolean> policies = new java.util.TreeMap<>();

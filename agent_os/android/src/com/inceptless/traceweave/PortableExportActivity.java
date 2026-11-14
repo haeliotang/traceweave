@@ -34,6 +34,8 @@ public final class PortableExportActivity extends Activity {
     private android.widget.EditText passphraseInput;
     private android.widget.CheckBox strictSynthesis;
     private android.widget.Button exportButton;
+    private android.widget.EditText policyName;
+    private android.widget.EditText policyValue;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -53,6 +55,32 @@ public final class PortableExportActivity extends Activity {
         strictSynthesis.setText("Require a model grant on resume (strict synthesis)");
         strictSynthesis.setChecked(false);
         root.addView(strictSynthesis);
+        policyName = new android.widget.EditText(this);
+        policyName.setHint("Policy name (allow_model.*, allow_adapter.*, ...)");
+        root.addView(policyName);
+        policyValue = new android.widget.EditText(this);
+        policyValue.setHint("Policy value (true or false)");
+        root.addView(policyValue);
+        android.widget.Button policyButton = new android.widget.Button(this);
+        policyButton.setText("Save policy");
+        root.addView(policyButton);
+        policyButton.setOnClickListener(view -> {
+            String name = policyName.getText().toString().trim();
+            boolean value = Boolean.parseBoolean(policyValue.getText().toString().trim());
+            boolean known = name.equals("require_signed_adapters") || name.equals("strict_synthesis")
+                || name.startsWith("allow_model.") || name.startsWith("allow_adapter.")
+                || name.startsWith("deny_adapter.");
+            if (!known) {
+                status.setText("FAIL: unknown policy name");
+                return;
+            }
+            try (AgentStore store = new AgentStore(this)) {
+                store.setPolicy(name, value);
+                status.setText("PASS policy_saved name=" + name + " value=" + value);
+            } catch (Exception error) {
+                status.setText("FAIL policy_save " + error);
+            }
+        });
         exportButton = new android.widget.Button(this);
         exportButton.setText("Export sealed handoff");
         root.addView(exportButton);
