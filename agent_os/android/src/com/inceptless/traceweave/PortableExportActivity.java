@@ -138,6 +138,13 @@ public final class PortableExportActivity extends Activity {
                             "synthetic-1", "fact", synthetic, "trackb-synthetic", "intent",
                             now, now));
                     }
+                    boolean syntheticConflict = getIntent().getBooleanExtra("synthetic_conflict", false)
+                        || "true".equals(getIntent().getStringExtra("synthetic_conflict"));
+                    if (syntheticConflict) {
+                        long now = System.currentTimeMillis();
+                        tasks.put("task-conflict-1", new AgentStore.Task(
+                            "task-conflict-1", "synthetic conflict task", "waiting_for_user", now, now));
+                    }
                     memoryCount = memories.size();
                     taskCount = tasks.size();
                     canonical = canonicalState(memories, tasks, strictSynthesis.isChecked(),
@@ -234,7 +241,16 @@ public final class PortableExportActivity extends Activity {
                     json.append('}');
                 }
             }
-            json.append("],\"effects\":{},\"updated_at\":").append(task.updatedAt)
+            json.append("],\"effects\":{}");
+            if ("task-conflict-1".equals(task.id)) {
+                long at = task.updatedAt;
+                json.append(",\"conflicts\":[{\"at\":").append(at)
+                    .append(",\"kind\":\"regressed_steps\",\"steps\":[0]")
+                    .append(",\"from_device\":\"pixel-trackb\",\"signed_at\":").append(at)
+                    .append(",\"local_updated_at\":").append(at)
+                    .append(",\"incoming_updated_at\":").append(at).append("}]");
+            }
+            json.append(",\"updated_at\":").append(task.updatedAt)
                 .append(",\"needs_authorization\":true}");
         }
         json.append("},\"grants\":[]");
