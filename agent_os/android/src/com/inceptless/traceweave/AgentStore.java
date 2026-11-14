@@ -31,7 +31,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 final class AgentStore extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "agent_os.db";
-    private static final int DATABASE_VERSION = 20;
+    private static final int DATABASE_VERSION = 21;
     private static final String KEY_ALIAS = "com.inceptless.traceweave.local.v1";
     private static final int GCM_TAG_BITS = 128;
     private static final int GCM_NONCE_BYTES = 12;
@@ -417,6 +417,14 @@ final class AgentStore extends SQLiteOpenHelper {
         createPairingTable(database);
         createMemoryCandidateTable(database);
         createSyncCursorTable(database);
+        createPoliciesTable(database);
+    }
+
+    private static void createPoliciesTable(SQLiteDatabase database) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS policies ("
+            + "name TEXT PRIMARY KEY NOT NULL, "
+            + "value INTEGER NOT NULL, "
+            + "updated_at INTEGER NOT NULL)");
     }
 
     static final class SyncCursor {
@@ -644,6 +652,9 @@ final class AgentStore extends SQLiteOpenHelper {
             } else if (version == 19) {
                 upgradeChallengeHistory(database);
                 version = 20;
+            } else if (version == 20) {
+                createPoliciesTable(database);
+                version = 21;
             } else {
                 throw new IllegalStateException("No Agent OS database migration exists for version " + version);
             }
@@ -2701,6 +2712,18 @@ final class AgentStore extends SQLiteOpenHelper {
     }
 
     /** Read-only snapshot used by archive export and the Track B signed portable handoff. */
+    /** Branch-only policy map that travels with a portable export. */
+    java.util.TreeMap<String, Boolean> exportPolicies() {
+        java.util.TreeMap<String, Boolean> policies = new java.util.TreeMap<>();
+        try (Cursor cursor = getReadableDatabase().query(
+                "policies", new String[]{"name", "value"}, null, null, null, null, "name ASC")) {
+            while (cursor.moveToNext()) {
+                policies.put(cursor.getString(0), cursor.getInt(1) != 0);
+            }
+        }
+        return policies;
+    }
+
     MemoryArchive.Data exportData() throws Exception {
         SQLiteDatabase database = getReadableDatabase();
         MemoryArchive.Data data = new MemoryArchive.Data();

@@ -98,7 +98,8 @@ public final class PortableExportActivity extends Activity {
                     }
                     memoryCount = memories.size();
                     taskCount = tasks.size();
-                    canonical = canonicalState(memories, tasks, strictSynthesis.isChecked());
+                    canonical = canonicalState(memories, tasks, strictSynthesis.isChecked(),
+                        store.exportPolicies());
                 }
                 byte[] message = ByteBuffer.allocate(DOMAIN.length + 8 + canonical.length)
                     .put(DOMAIN)
@@ -150,7 +151,8 @@ public final class PortableExportActivity extends Activity {
     }
 
     private static byte[] canonicalState(TreeMap<String, AgentStore.Memory> memories,
-            TreeMap<String, AgentStore.Task> tasks, boolean strictSynthesis) {
+            TreeMap<String, AgentStore.Task> tasks, boolean strictSynthesis,
+            TreeMap<String, Boolean> storedPolicies) {
         StringBuilder json = new StringBuilder(4096);
         json.append("{\"version\":5,\"memories\":{");
         boolean first = true;
@@ -194,8 +196,19 @@ public final class PortableExportActivity extends Activity {
                 .append(",\"needs_authorization\":true}");
         }
         json.append("},\"grants\":[]");
+        TreeMap<String, Boolean> policies = new TreeMap<>(storedPolicies);
         if (strictSynthesis) {
-            json.append(",\"policies\":{\"strict_synthesis\":true}");
+            policies.put("strict_synthesis", true);
+        }
+        if (!policies.isEmpty()) {
+            json.append(",\"policies\":{");
+            boolean firstPolicy = true;
+            for (java.util.Map.Entry<String, Boolean> entry : policies.entrySet()) {
+                if (!firstPolicy) json.append(',');
+                firstPolicy = false;
+                json.append('"').append(escape(entry.getKey())).append("\":").append(entry.getValue());
+            }
+            json.append('}');
         }
         json.append(",\"audit\":{\"entries\":[]}}");
         return json.toString().getBytes(StandardCharsets.UTF_8);
