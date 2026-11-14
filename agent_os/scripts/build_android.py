@@ -29,6 +29,10 @@ def main():
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--extra-source", type=Path, action="append", default=[])
+    parser.add_argument("--extra-classpath", type=Path, action="append", default=[],
+                        help="additional javac classpath entries (for example a provider jar)")
+    parser.add_argument("--extra-dex", type=Path, action="append", default=[],
+                        help="additional jars or class directories for d8")
     parser.add_argument("--native-lib", type=Path, action="append", default=[])
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--source-commit", default="", help="commit hash for the AGPL source link (defaults to HEAD)")
@@ -51,6 +55,8 @@ def main():
         parser.error("Manifest is missing: " + str(manifest))
     if any(not source.is_file() for source in sources):
         parser.error("--extra-source must point to existing Java files")
+    if any(not entry.exists() for entry in args.extra_classpath + args.extra_dex):
+        parser.error("--extra-classpath and --extra-dex must point to existing paths")
     if not keystore.is_file():
         parser.error("--keystore must point to an existing local development keystore")
     if not password:
@@ -81,9 +87,11 @@ def main():
     if not sources:
         parser.error("No Java or AIDL sources found in " + str(source_dir))
 
-    run(["javac", "--release", "8", "-classpath", android_jar, "-d", classes, *sources])
+    classpath = os.pathsep.join([str(android_jar), *[str(entry) for entry in args.extra_classpath]])
+    run(["javac", "--release", "8", "-classpath", classpath, "-d", classes, *sources])
     class_files = sorted(classes.rglob("*.class"))
-    run([tools["d8"], "--min-api", "26", "--lib", android_jar, "--output", dex, *class_files])
+    run([tools["d8"], "--min-api", "26", "--lib", android_jar, "--output", dex,
+         *[str(entry) for entry in args.extra_dex], *class_files])
 
     unsigned = build / "agent-os-unsigned.apk"
     aligned = build / "agent-os-aligned.apk"
