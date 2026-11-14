@@ -167,7 +167,7 @@ public final class PortableExportActivity extends Activity {
     private static byte[] canonicalState(TreeMap<String, AgentStore.Memory> memories,
             TreeMap<String, AgentStore.Task> tasks) {
         StringBuilder json = new StringBuilder(4096);
-        json.append("{\"version\":4,\"memories\":{");
+        json.append("{\"version\":5,\"memories\":{");
         boolean first = true;
         for (AgentStore.Memory memory : memories.values()) {
             if (!first) json.append(',');
