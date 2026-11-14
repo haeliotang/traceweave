@@ -1,0 +1,1571 @@
+// SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//! PC-1 reference node: a headless, one-shot host for the portable substrate.
+//!
+//! It proves that a non-Android operating system can hold the same state, sign with a device
+//! key, exchange an encrypted state envelope, and recover after a restart. It is deliberately
+//! not a daemon: every command loads the state, does one thing, saves canonical bytes and exits.
+//!
+//! Research-grade limitations (do not hide them):
+//! - keys are software P-256 keys stored as raw seeds in `identity.key` / `device.key` (0600),
+//!   not Secure Enclave keys; a real macOS adapter must use the platform key store;
+//! - the encrypted envelope uses PBKDF2-HMAC-SHA256 + AES-256-GCM with a passphrase supplied on
+//!   the command line (visible in shell history for this prototype);
+//! - the identity book is shared out of band; the node trusts only book entries it verified
+//!   through `trust`/import commands.
+
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::ExitCode;
+
+use aes_gcm::aead::{Aead, KeyInit, Payload};
+use aes_gcm::{Aes256Gcm, Nonce};
+use p256::ecdsa::signature::Signer;
+use p256::ecdsa::SigningKey;
+use p256::pkcs8::EncodePublicKey;
+use sha2::{Digest, Sha256};
+use traceweave_portable::{
+    fingerprint, authorize, CheckpointStep, Clock, Decision, DeviceEnrollment, DeviceRevocation,
+    EffectOutcome, Grant, GrantRequest, IdentityBook, StepStatus, SubstrateState, TaskCheckpoint,
+    Version, IDENTITY_FORMAT_VERSION,
+};
+
+const MAGIC: &[u8; 5] = b"TWPN1";
+const AAD: &[u8] = b"traceweave-portable-node-v1";
+const SALT_LEN: usize = 16;
+const NONCE_LEN: usize = 12;
+const KDF_ROUNDS: u32 = 100_000;
+
+type NodeResult<T> = Result<T, String>;
+
+#[derive(Debug)]
+struct Args {
+    command: String,
+    flags: BTreeMap<String, String>,
+}
+
+impl Args {
+    fn parse() -> NodeResult<Self> {
+        let mut raw = std::env::args().skip(1);
+        let command = raw.next().ok_or("missing command")?;
+        let mut flags = BTreeMap::new();
+        let rest: Vec<String> = raw.collect();
+        let mut index = 0;
+        while index < rest.len() {
+            let item = rest[index].clone();
+            if let Some(name) = item.strip_prefix("--") {
+                let value = rest.get(index + 1).cloned().ok_or_else(|| format!("missing value for --{name}"))?;
+                flags.insert(name.to_string(), value);
+                index += 2;
+            } else {
+                return Err(format!("unexpected argument: {item}"));
+            }
+        }
+        Ok(Self { command, flags })
+    }
+
+    fn get(&self, name: &str) -> NodeResult<&str> {
+        self.flags.get(name).map(String::as_str).ok_or_else(|| format!("missing --{name}"))
+    }
+
+    fn optional(&self, name: &str) -> Option<&str> {
+        self.flags.get(name).map(String::as_str)
+    }
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn hex_decode(text: &str) -> NodeResult<Vec<u8>> {
+    if text.len() % 2 != 0 {
+        return Err("odd hex length".to_string());
+    }
+    (0..text.len() / 2)
+        .map(|index| u8::from_str_radix(&text[index * 2..index * 2 + 2], 16).map_err(|_| "invalid hex".to_string()))
+        .collect()
+}
+
+fn now_millis(args: &Args) -> NodeResult<i64> {
+    if let Some(at) = args.optional("at") {
+        return at.parse::<i64>().map_err(|_| "--at must be unix milliseconds".to_string());
+    }
+    let elapsed = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|_| "system clock before epoch".to_string())?;
+    Ok(elapsed.as_millis() as i64)
+}
+
+fn random_bytes<const N: usize>() -> NodeResult<[u8; N]> {
+    let mut buffer = [0u8; N];
+    getrandom::getrandom(&mut buffer).map_err(|error| format!("rng: {error}"))?;
+    Ok(buffer)
+}
+
+#[allow(deprecated)]
+fn signing_key_from_seed(seed: &[u8]) -> NodeResult<SigningKey> {
+    if seed.len() != 32 {
+        return Err("key seed must be 32 bytes".to_string());
+    }
+    SigningKey::from_slice(seed).map_err(|_| "invalid P-256 key".to_string())
+}
+
+fn spki(signing: &SigningKey) -> Vec<u8> {
+    signing
+        .verifying_key()
+        .to_public_key_der()
+        .expect("SPKI encoding cannot fail for a P-256 key")
+        .as_bytes()
+        .to_vec()
+}
+
+fn verify_der(spki_der: &[u8], message: &[u8], signature_der: &[u8]) -> bool {
+    use p256::ecdsa::signature::Verifier;
+    use p256::ecdsa::{Signature, VerifyingKey};
+    use p256::pkcs8::DecodePublicKey;
+    let Ok(key) = VerifyingKey::from_public_key_der(spki_der) else {
+        return false;
+    };
+    let Ok(signature) = Signature::from_der(signature_der) else {
+        return false;
+    };
+    key.verify(message, &signature).is_ok()
+}
+
+const KEY_AGENT_MARKER: &str = ".key-agent";
+const SECRET_SERVICE_MARKER: &str = ".secret-service";
+const SESSIONS_FILE: &str = "sessions.json";
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+struct SessionScope {
+    capability: String,
+    scope: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+struct AgentSession {
+    id: String,
+    agent_id: String,
+    name: String,
+    capabilities: Vec<SessionScope>,
+    created_at: i64,
+    expires_at: i64,
+    revoked: bool,
+}
+
+fn load_sessions(dir: &Path) -> NodeResult<Vec<AgentSession>> {
+    let path = dir.join(SESSIONS_FILE);
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let bytes = fs::read(&path).map_err(|error| format!("read sessions: {error}"))?;
+    serde_json::from_slice(&bytes).map_err(|error| format!("sessions.json: {error}"))
+}
+
+fn save_sessions(dir: &Path, sessions: &[AgentSession]) -> NodeResult<()> {
+    let bytes = serde_json::to_vec_pretty(sessions).map_err(|error| format!("encode sessions: {error}"))?;
+    write_private(&dir.join(SESSIONS_FILE), &bytes)
+}
+
+fn active_session<'a>(
+    sessions: &'a [AgentSession],
+    session_id: &str,
+    at: i64,
+) -> NodeResult<&'a AgentSession> {
+    let session = sessions
+        .iter()
+        .find(|session| session.id == session_id)
+        .ok_or_else(|| format!("unknown session: {session_id}"))?;
+    if session.revoked {
+        return Err(format!("session is revoked: {session_id}"));
+    }
+    if at > session.expires_at {
+        return Err(format!("session expired at {}: {session_id}", session.expires_at));
+    }
+    Ok(session)
+}
+
+fn key_agent_path() -> PathBuf {
+    if let Ok(path) = std::env::var("TRACEWEAVE_KEY_AGENT") {
+        return PathBuf::from(path);
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(parent) = exe.parent() {
+            let candidate = parent.join("traceweave-key-agent");
+            if candidate.exists() {
+                return candidate;
+            }
+            let nested = parent.join("../traceweave-key-agent");
+            if nested.exists() {
+                return nested;
+            }
+        }
+    }
+    PathBuf::from("traceweave-key-agent")
+}
+
+fn key_agent_run(args: &[&str]) -> NodeResult<String> {
+    let output = std::process::Command::new(key_agent_path())
+        .args(args)
+        .output()
+        .map_err(|error| format!("key agent unavailable: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "key agent {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn key_agent_public(tag: &str) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["public", tag])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid SPKI".to_string())
+}
+
+fn key_agent_create(tag: &str) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["create", tag])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid SPKI".to_string())
+}
+
+fn key_agent_sign(tag: &str, message: &[u8]) -> NodeResult<Vec<u8>> {
+    let hex = key_agent_run(&["sign", tag, &hex_encode(message)])?;
+    hex_decode(hex.trim()).map_err(|_| "key agent returned an invalid signature".to_string())
+}
+
+/// Where a signing key lives. The agent variant keeps the private key inside the Keychain and
+/// only exposes sign/public operations, so the substrate never handles private key bytes.
+#[derive(Clone)]
+enum NodeKey {
+    Software(SigningKey),
+    Agent { tag: String, spki: Vec<u8> },
+}
+
+impl NodeKey {
+    fn public_der(&self) -> Vec<u8> {
+        match self {
+            NodeKey::Software(key) => spki(key),
+            NodeKey::Agent { spki, .. } => spki.clone(),
+        }
+    }
+
+    fn sign(&self, message: &[u8]) -> NodeResult<Vec<u8>> {
+        match self {
+            NodeKey::Software(key) => Ok(sign(key, message)),
+            NodeKey::Agent { tag, .. } => key_agent_sign(tag, message),
+        }
+    }
+}
+
+fn sign(signing: &SigningKey, message: &[u8]) -> Vec<u8> {
+    let signature: p256::ecdsa::Signature = signing.sign(message);
+    signature.to_der().as_bytes().to_vec()
+}
+
+fn write_private(path: &Path, bytes: &[u8]) -> NodeResult<()> {
+    fs::write(path, bytes).map_err(|error| format!("write {}: {error}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let permissions = fs::Permissions::from_mode(0o600);
+        fs::set_permissions(path, permissions)
+            .map_err(|error| format!("chmod {}: {error}", path.display()))?;
+    }
+    Ok(())
+}
+
+fn load_or_create_seed(path: &Path) -> NodeResult<Vec<u8>> {
+    if path.is_file() {
+        let seed = fs::read(path).map_err(|error| format!("read {}: {error}", path.display()))?;
+        if seed.len() != 32 {
+            return Err(format!("{} is not a 32-byte key seed", path.display()));
+        }
+        return Ok(seed);
+    }
+    let seed = random_bytes::<32>()?.to_vec();
+    write_private(path, &seed)?;
+    Ok(seed)
+}
+
+const KEYCHAIN_MARKER: &str = ".keychain";
+const KEYCHAIN_IDENTITY: &str = "traceweave-identity";
+const KEYCHAIN_DEVICE: &str = "traceweave-device";
+
+const HANDOFF_MAGIC: &[u8; 5] = b"TWPH1";
+const HANDOFF_DOMAIN: &[u8] = b"traceweave-portable-handoff-v1";
+
+const ARCHIVE_MAGIC: &[u8; 4] = b"TAOS";
+const ARCHIVE_HEADER_BYTES: usize = 4 + 1 + 4 + 16 + 12;
+const ARCHIVE_ITERATIONS: u32 = 600_000;
+const ARCHIVE_FORMAT: &str = "com.inceptless.traceweave.memory";
+const ARCHIVE_LEGACY_FORMAT: &str = "org.traceform.agentos.memory";
+
+/// Decrypt a `MemoryArchive` exported by the Android app. This reads the frozen 0.1.5 archive
+/// format; it never changes it.
+fn decrypt_archive(passphrase: &str, archive: &[u8]) -> NodeResult<Vec<u8>> {
+    if archive.len() < ARCHIVE_HEADER_BYTES + 16 || &archive[..4] != ARCHIVE_MAGIC {
+        return Err("not a TAOS memory archive".to_string());
+    }
+    let version = archive[4];
+    if !(1..=3).contains(&version) {
+        return Err(format!("unsupported archive encryption version {version}"));
+    }
+    let iterations = u32::from_be_bytes([archive[5], archive[6], archive[7], archive[8]]);
+    if iterations != ARCHIVE_ITERATIONS {
+        return Err("unsupported archive key derivation parameters".to_string());
+    }
+    let salt = &archive[9..25];
+    let nonce = &archive[25..37];
+    let header = &archive[..ARCHIVE_HEADER_BYTES];
+    let ciphertext = &archive[ARCHIVE_HEADER_BYTES..];
+
+    let mut key = [0u8; 32];
+    pbkdf2::pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, ARCHIVE_ITERATIONS, &mut key);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    cipher
+        .decrypt(Nonce::from_slice(nonce), Payload { msg: ciphertext, aad: header })
+        .map_err(|_| "wrong passphrase or corrupted archive".to_string())
+}
+
+fn archive_task_status(status: &str) -> traceweave_portable::TaskStatus {
+    use traceweave_portable::TaskStatus;
+    match status {
+        "completed" => TaskStatus::Completed,
+        "cancelled" => TaskStatus::Cancelled,
+        "failed" => TaskStatus::Failed,
+        _ => TaskStatus::WaitingForUser,
+    }
+}
+
+/// Convert a decrypted archive JSON into a canonical v2 state. The archive has no vector clocks,
+/// so each live memory receives a synthetic initial clock `{device: 1}` and each tombstone
+/// `{device: 2}`; that ordering makes deletion win without inventing merge history.
+fn archive_to_state(passphrase: &str, archive: &[u8], from_device: &str) -> NodeResult<SubstrateState> {
+    let plaintext = decrypt_archive(passphrase, archive)?;
+    let root: serde_json::Value =
+        serde_json::from_slice(&plaintext).map_err(|error| format!("archive JSON: {error}"))?;
+    let format = root.get("format").and_then(serde_json::Value::as_str).unwrap_or("");
+    if format != ARCHIVE_FORMAT && format != ARCHIVE_LEGACY_FORMAT {
+        return Err(format!("unsupported archive format: {format}"));
+    }
+
+    let mut tombstoned: BTreeSet<String> = BTreeSet::new();
+    let mut task_tombstones: BTreeSet<String> = BTreeSet::new();
+    if let Some(tombstones) = root.get("tombstones").and_then(serde_json::Value::as_array) {
+        for tombstone in tombstones {
+            let entity = tombstone.get("entityType").and_then(serde_json::Value::as_str);
+            let Some(id) = tombstone.get("entityId").and_then(serde_json::Value::as_str) else { continue };
+            match entity {
+                Some("memory") => {
+                    tombstoned.insert(id.to_string());
+                }
+                Some("task") => {
+                    task_tombstones.insert(id.to_string());
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut state = SubstrateState::new();
+    let clock = |counter: u64| {
+        let mut clock = BTreeMap::new();
+        clock.insert(from_device.to_string(), counter);
+        Clock(clock)
+    };
+
+    if let Some(memories) = root.get("memories").and_then(serde_json::Value::as_array) {
+        for memory in memories {
+            let Some(id) = memory.get("id").and_then(serde_json::Value::as_str) else { continue };
+            if tombstoned.contains(id) {
+                continue;
+            }
+            let content = memory.get("content").and_then(serde_json::Value::as_str).unwrap_or("");
+            state
+                .merge_memory(
+                    id,
+                    &[Version { clock: clock(1), value: Some(content.to_string()) }],
+                )
+                .map_err(|error| format!("archive memory {id}: {error}"))?;
+        }
+    }
+    for id in &tombstoned {
+        state
+            .merge_memory(id, &[Version { clock: clock(2), value: None }])
+            .map_err(|error| format!("archive tombstone {id}: {error}"))?;
+    }
+
+    if let Some(tasks) = root.get("tasks").and_then(serde_json::Value::as_array) {
+        for (index, task) in tasks.iter().enumerate() {
+            let Some(id) = task.get("id").and_then(serde_json::Value::as_str) else { continue };
+            if task_tombstones.contains(id) {
+                continue;
+            }
+            let title = task.get("title").and_then(serde_json::Value::as_str).unwrap_or("");
+            let status = task.get("status").and_then(serde_json::Value::as_str).unwrap_or("");
+            let mut checkpoint = TaskCheckpoint::new(id, title, Vec::new());
+            checkpoint.task_id = id.to_string();
+            checkpoint.status = archive_task_status(status);
+            checkpoint.needs_authorization = true;
+            checkpoint.updated_at = index as i64;
+            state.put_task(checkpoint).map_err(|error| format!("archive task {id}: {error}"))?;
+        }
+    }
+    Ok(state)
+}
+
+fn merge_incoming(
+    node: &mut Node,
+    incoming: &SubstrateState,
+    from_device: &str,
+    signed_at: i64,
+) -> NodeResult<(usize, usize, usize)> {
+    let identity_book = node.state.identity.clone();
+    if let Some(book) = identity_book {
+        if !book.can_accept_record(from_device, signed_at) {
+            return Err(format!("untrusted device for signed-at {signed_at}: {from_device}"));
+        }
+    }
+    let mut memories = 0usize;
+    for (memory_id, versions) in &incoming.memories {
+        node.state
+            .merge_memory_from_device(from_device, signed_at, memory_id, versions)
+            .map_err(|error| format!("merge {memory_id}: {error}"))?;
+        memories += 1;
+    }
+    let mut tasks = 0usize;
+    for (task_id, checkpoint) in &incoming.tasks {
+        if !node.state.tasks.contains_key(task_id) {
+            node.state.put_task(checkpoint.clone()).map_err(|error| format!("task {task_id}: {error}"))?;
+            tasks += 1;
+        }
+    }
+    // Grants are deliberately not imported: history migrates, authority does not.
+    let dropped = incoming.grants.len();
+    node.state.audit.append(format!("imported:{from_device}").as_bytes());
+    Ok((memories, tasks, dropped))
+}
+
+fn security(args: &[&str]) -> NodeResult<String> {
+    let output = std::process::Command::new("security")
+        .args(args)
+        .output()
+        .map_err(|error| format!("security CLI unavailable: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "security {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn secret_tool_path() -> PathBuf {
+    std::env::var("TRACEWEAVE_SECRET_TOOL")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("secret-tool"))
+}
+
+fn secret_tool(args: &[&str], stdin: Option<&str>) -> NodeResult<String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    let mut command = Command::new(secret_tool_path());
+    command
+        .args(args)
+        .stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut child = command.spawn().map_err(|error| format!("secret-tool unavailable: {error}"))?;
+    if let Some(input) = stdin {
+        child
+            .stdin
+            .as_mut()
+            .ok_or("secret-tool stdin")?
+            .write_all(input.as_bytes())
+            .map_err(|error| format!("secret-tool stdin: {error}"))?;
+    }
+    let output = child.wait_with_output().map_err(|error| format!("secret-tool: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "secret-tool {} failed: {}",
+            args.first().unwrap_or(&""),
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+}
+
+fn secret_store(service: &str, account: &str, seed: &[u8]) -> NodeResult<()> {
+    let label = format!("Traceweave {account}");
+    let value = format!("{}\n", hex_encode(seed));
+    secret_tool(
+        &["store", "--label", &label, "service", service, "account", account],
+        Some(&value),
+    )?;
+    Ok(())
+}
+
+fn secret_load(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    let hex = secret_tool(&["lookup", "service", service, "account", account], None)?;
+    hex_decode(hex.trim()).map_err(|_| "Secret Service item is not a valid key seed".to_string())
+}
+
+fn secret_seed(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    match secret_load(service, account) {
+        Ok(seed) if seed.len() == 32 => Ok(seed),
+        _ => {
+            let seed = random_bytes::<32>()?.to_vec();
+            secret_store(service, account, &seed)?;
+            Ok(seed)
+        }
+    }
+}
+
+fn keychain_store(service: &str, account: &str, seed: &[u8]) -> NodeResult<()> {
+    security(&[
+        "add-generic-password", "-U",
+        "-a", account,
+        "-s", service,
+        "-w", &hex_encode(seed),
+    ])?;
+    Ok(())
+}
+
+fn keychain_load(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    let hex = security(&["find-generic-password", "-a", account, "-s", service, "-w"])?;
+    hex_decode(hex.trim()).map_err(|_| "keychain item is not a valid key seed".to_string())
+}
+
+fn keychain_seed(service: &str, account: &str) -> NodeResult<Vec<u8>> {
+    match keychain_load(service, account) {
+        Ok(seed) if seed.len() == 32 => Ok(seed),
+        _ => {
+            let seed = random_bytes::<32>()?.to_vec();
+            keychain_store(service, account, &seed)?;
+            Ok(seed)
+        }
+    }
+}
+
+struct Node {
+    dir: PathBuf,
+    state: SubstrateState,
+    identity: NodeKey,
+    device: NodeKey,
+    device_id: String,
+}
+
+impl Node {
+    fn secret_service(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(SECRET_SERVICE_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
+    fn key_agent_tag(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(KEY_AGENT_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
+    fn keychain_service(dir: &Path) -> Option<String> {
+        fs::read_to_string(dir.join(KEYCHAIN_MARKER))
+            .ok()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
+    fn open(dir: &Path) -> NodeResult<Self> {
+        let (identity, device) = if let Some(tag) = Self::key_agent_tag(dir) {
+            let identity = NodeKey::Agent {
+                tag: format!("{tag}-identity"),
+                spki: key_agent_public(&format!("{tag}-identity"))?,
+            };
+            let device = NodeKey::Agent {
+                tag: format!("{tag}-device"),
+                spki: key_agent_public(&format!("{tag}-device"))?,
+            };
+            (identity, device)
+        } else if let Some(service) = Self::secret_service(dir) {
+            let identity = NodeKey::Software(signing_key_from_seed(&secret_load(&service, "traceweave-identity")?)?);
+            let device = NodeKey::Software(signing_key_from_seed(&secret_load(&service, "traceweave-device")?)?);
+            (identity, device)
+        } else {
+            let (identity_seed, device_seed) = match Self::keychain_service(dir) {
+                Some(service) => (
+                    keychain_load(&service, KEYCHAIN_IDENTITY)
+                        .map_err(|error| format!("keychain identity: {error}"))?,
+                    keychain_load(&service, KEYCHAIN_DEVICE)
+                        .map_err(|error| format!("keychain device: {error}"))?,
+                ),
+                None => (
+                    fs::read(dir.join("identity.key")).map_err(|_| "missing identity.key; run init".to_string())?,
+                    fs::read(dir.join("device.key")).map_err(|_| "missing device.key; run init".to_string())?,
+                ),
+            };
+            (
+                NodeKey::Software(signing_key_from_seed(&identity_seed)?),
+                NodeKey::Software(signing_key_from_seed(&device_seed)?),
+            )
+        };
+        let device_id = format!("node-{}", &hex_encode(&fingerprint(&device.public_der()))[..16]);
+        let bytes = fs::read(dir.join("state.bin")).map_err(|_| "missing state.bin; run init".to_string())?;
+        let state = SubstrateState::from_bytes(&bytes).map_err(|error| format!("state: {error}"))?;
+        Ok(Self { dir: dir.to_path_buf(), state, identity, device, device_id })
+    }
+
+    fn save(&self) -> NodeResult<()> {
+        let bytes = self.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+        fs::write(self.dir.join("state.bin"), bytes).map_err(|error| format!("write state: {error}"))
+    }
+
+    fn fingerprint_hex(&self) -> String {
+        hex_encode(&fingerprint(&self.device.public_der()))
+    }
+}
+
+fn cipher_key(passphrase: &str, salt: &[u8]) -> [u8; 32] {
+    let mut key = [0u8; 32];
+    pbkdf2::pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, KDF_ROUNDS, &mut key);
+    key
+}
+
+fn encrypt(passphrase: &str, plaintext: &[u8]) -> NodeResult<Vec<u8>> {
+    let salt = random_bytes::<SALT_LEN>()?;
+    let nonce_bytes = random_bytes::<NONCE_LEN>()?;
+    let key = cipher_key(passphrase, &salt);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let ciphertext = cipher
+        .encrypt(nonce, Payload { msg: plaintext, aad: AAD })
+        .map_err(|_| "encryption failed".to_string())?;
+    let mut out = Vec::with_capacity(5 + 2 + SALT_LEN + 2 + NONCE_LEN + 4 + ciphertext.len());
+    out.extend_from_slice(MAGIC);
+    out.extend_from_slice(&(SALT_LEN as u16).to_be_bytes());
+    out.extend_from_slice(&salt);
+    out.extend_from_slice(&(NONCE_LEN as u16).to_be_bytes());
+    out.extend_from_slice(&nonce_bytes);
+    out.extend_from_slice(&(ciphertext.len() as u32).to_be_bytes());
+    out.extend_from_slice(&ciphertext);
+    Ok(out)
+}
+
+fn read_u16(bytes: &[u8], cursor: &mut usize) -> NodeResult<usize> {
+    let slice = bytes.get(*cursor..*cursor + 2).ok_or("truncated envelope")?;
+    *cursor += 2;
+    Ok(u16::from_be_bytes([slice[0], slice[1]]) as usize)
+}
+
+fn read_u32(bytes: &[u8], cursor: &mut usize) -> NodeResult<usize> {
+    let slice = bytes.get(*cursor..*cursor + 4).ok_or("truncated envelope")?;
+    *cursor += 4;
+    Ok(u32::from_be_bytes([slice[0], slice[1], slice[2], slice[3]]) as usize)
+}
+
+fn decrypt(passphrase: &str, envelope: &[u8]) -> NodeResult<Vec<u8>> {
+    if envelope.len() < 5 + 2 + SALT_LEN + 2 + NONCE_LEN + 4 || &envelope[..5] != MAGIC {
+        return Err("not a TWPN1 envelope".to_string());
+    }
+    let mut cursor = 5;
+    let salt_len = read_u16(envelope, &mut cursor)?;
+    let salt = envelope.get(cursor..cursor + salt_len).ok_or("truncated salt")?.to_vec();
+    cursor += salt_len;
+    let nonce_len = read_u16(envelope, &mut cursor)?;
+    let nonce = envelope.get(cursor..cursor + nonce_len).ok_or("truncated nonce")?.to_vec();
+    cursor += nonce_len;
+    let cipher_len = read_u32(envelope, &mut cursor)?;
+    let ciphertext = envelope.get(cursor..cursor + cipher_len).ok_or("truncated ciphertext")?;
+    let key = cipher_key(passphrase, &salt);
+    let cipher = Aes256Gcm::new_from_slice(&key).map_err(|_| "cipher init".to_string())?;
+    cipher
+        .decrypt(Nonce::from_slice(&nonce), Payload { msg: ciphertext, aad: AAD })
+        .map_err(|_| "wrong passphrase or corrupted envelope".to_string())
+}
+
+fn enrollment(
+    identity: &NodeKey,
+    device_pubkey: Vec<u8>,
+    device_id: &str,
+    at: i64,
+) -> NodeResult<DeviceEnrollment> {
+    let mut record = DeviceEnrollment {
+        version: IDENTITY_FORMAT_VERSION,
+        device_id: device_id.to_string(),
+        device_pubkey,
+        enrolled_at: at,
+        signer_pubkey: identity.public_der(),
+        signature: Vec::new(),
+    };
+    record.signature = identity
+        .sign(&record.signing_bytes().map_err(|error| format!("payload: {error}"))?)?;
+    Ok(record)
+}
+
+fn revocation(identity: &NodeKey, device_id: &str, at: i64, reason: &str) -> NodeResult<DeviceRevocation> {
+    let mut record = DeviceRevocation {
+        version: IDENTITY_FORMAT_VERSION,
+        device_id: device_id.to_string(),
+        revoked_at: at,
+        reason: reason.to_string(),
+        signer_pubkey: identity.public_der(),
+        signature: Vec::new(),
+    };
+    record.signature = identity
+        .sign(&record.signing_bytes().map_err(|error| format!("payload: {error}"))?)?;
+    Ok(record)
+}
+
+fn current_identity_book(node: &Node) -> NodeResult<IdentityBook> {
+    node.state
+        .identity
+        .clone()
+        .ok_or_else(|| "state has no identity book; run init".to_string())
+}
+
+fn set_book(node: &mut Node, book: IdentityBook) {
+    node.state.set_identity(book);
+}
+
+fn task_mut<'a>(node: &'a mut Node, task_id: &str) -> NodeResult<&'a mut TaskCheckpoint> {
+    node.state
+        .tasks
+        .get_mut(task_id)
+        .ok_or_else(|| format!("unknown task: {task_id}"))
+}
+
+fn adopt_recovered_state(
+    node: &mut Node,
+    incoming: SubstrateState,
+    revoke_others: bool,
+    at: i64,
+) -> NodeResult<(usize, usize, usize)> {
+    let expected = node.identity.public_der();
+    let root_matches = incoming
+        .identity
+        .as_ref()
+        .and_then(|book| book.current_root())
+        .is_some_and(|root| root.pubkey == expected);
+    if !root_matches {
+        return Err("recovery secret does not match this backup".to_string());
+    }
+    let memories = incoming.live_memory_count();
+    let tasks = incoming.tasks.len();
+    let mut state = incoming;
+    state.grants.clear();
+    for checkpoint in state.tasks.values_mut() {
+        checkpoint.needs_authorization = true;
+    }
+    let mut book = state.identity.clone().ok_or("backup has no identity book")?;
+    let device_id = node.device_id.clone();
+    if !book.devices.contains_key(&device_id) {
+        let record = enrollment(&node.identity, node.device.public_der(), &device_id, at)?;
+        book.enroll(record).map_err(|error| format!("enroll recovered device: {error}"))?;
+    }
+    let mut revoked = 0usize;
+    if revoke_others {
+        let others: Vec<String> = book
+            .devices
+            .values()
+            .filter(|entry| entry.device_id != device_id && entry.revoked_at.is_none())
+            .map(|entry| entry.device_id.clone())
+            .collect();
+        for other in others {
+            let record = revocation(&node.identity, &other, at, "recovered on a new device")?;
+            book.revoke(record).map_err(|error| format!("revoke {other}: {error}"))?;
+            revoked += 1;
+        }
+    }
+    state.set_identity(book);
+    state.audit.append(format!("recovered:{device_id}").as_bytes());
+    node.state = state;
+    Ok((memories, tasks, revoked))
+}
+
+fn command_recover(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read backup: {error}"))?;
+    let plaintext = decrypt(args.get("passphrase")?, &bytes)?;
+    let incoming = SubstrateState::from_bytes(&plaintext).map_err(|error| format!("backup state: {error}"))?;
+    let revoke_others = args.optional("revoke-others") == Some("true");
+    let (memories, tasks, revoked) = adopt_recovered_state(&mut node, incoming, revoke_others, at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "memories": memories,
+        "tasks": tasks,
+        "devices_revoked": revoked,
+        "grants": node.state.grants.len(),
+    })
+    .to_string())
+}
+
+fn command_task(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let task_id = args.get("task")?.to_string();
+    let checkpoint = node
+        .state
+        .tasks
+        .get(&task_id)
+        .ok_or_else(|| format!("unknown task: {task_id}"))?;
+    serde_json::to_string(&checkpoint.resume_view()).map_err(|error| format!("view: {error}"))
+}
+
+fn command_session_create(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let ttl: i64 = args.optional("ttl-ms").unwrap_or("600000").parse()
+        .map_err(|_| "--ttl-ms must be milliseconds".to_string())?;
+    let mut capabilities = Vec::new();
+    if args.optional("capability").is_some() {
+        capabilities.push(SessionScope {
+            capability: args.get("capability")?.to_string(),
+            scope: args.get("scope")?.to_string(),
+        });
+    }
+    let id = hex_encode(&random_bytes::<8>()?);
+    let session = AgentSession {
+        id: id.clone(),
+        agent_id: format!("session-{id}"),
+        name: args.optional("agent").unwrap_or("agent-session").to_string(),
+        capabilities,
+        created_at: at,
+        expires_at: at.saturating_add(ttl),
+        revoked: false,
+    };
+    let mut sessions = load_sessions(&dir)?;
+    sessions.push(session.clone());
+    save_sessions(&dir, &sessions)?;
+    let mut node = Node::open(&dir)?;
+    node.state.audit.append(format!("session-created:{}", session.id).as_bytes());
+    node.save()?;
+    Ok(serde_json::to_string(&session).map_err(|error| format!("session: {error}"))?)
+}
+
+fn command_session_list(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let sessions = load_sessions(&dir)?;
+    let rows: Vec<serde_json::Value> = sessions
+        .iter()
+        .map(|session| {
+            serde_json::json!({
+                "id": session.id,
+                "agent_id": session.agent_id,
+                "name": session.name,
+                "expires_at": session.expires_at,
+                "revoked": session.revoked,
+                "active": !session.revoked && at <= session.expires_at,
+            })
+        })
+        .collect();
+    Ok(serde_json::json!({ "sessions": rows }).to_string())
+}
+
+fn command_session_revoke(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let at = now_millis(args)?;
+    let mut sessions = load_sessions(&dir)?;
+    let session_id = args.get("session")?.to_string();
+    let agent_id = {
+        let session = active_session(&sessions, &session_id, at)?;
+        session.agent_id.clone()
+    };
+    let mut revoked_grants = 0usize;
+    let mut node = Node::open(&dir)?;
+    for grant in node.state.grants.iter_mut() {
+        if grant.agent_id == agent_id && !grant.revoked {
+            grant.revoked = true;
+            revoked_grants += 1;
+        }
+    }
+    if let Some(session) = sessions.iter_mut().find(|session| session.id == session_id) {
+        session.revoked = true;
+    }
+    save_sessions(&dir, &sessions)?;
+    node.state.audit.append(format!("session-revoked:{session_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({
+        "session": session_id,
+        "revoked_grants": revoked_grants,
+        "agent_id": agent_id,
+    })
+    .to_string())
+}
+
+fn command_authorize(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    if !node.state.tasks.contains_key(&task_id) {
+        return Err(format!("unknown task: {task_id}"));
+    }
+    let ttl: i64 = args.optional("ttl-ms").unwrap_or("300000").parse()
+        .map_err(|_| "--ttl-ms must be milliseconds".to_string())?;
+    let capability = args.get("capability")?.to_string();
+    let scope = args.get("scope")?.to_string();
+    let (agent_id, mut expires_at) = match args.optional("session") {
+        Some(session_id) => {
+            let sessions = load_sessions(Path::new(args.get("dir")?))?;
+            let session = active_session(&sessions, session_id, at)?;
+            let allowed = session.capabilities.iter().any(|entry| {
+                entry.capability == capability && (entry.scope == scope || entry.scope == "*")
+            });
+            if !allowed {
+                return Err(format!("session {session_id} does not grant {capability}:{scope}"));
+            }
+            (session.agent_id.clone(), at.saturating_add(ttl).min(session.expires_at))
+        }
+        None => (args.optional("agent").unwrap_or("node-agent").to_string(), at.saturating_add(ttl)),
+    };
+    if expires_at < at {
+        expires_at = at;
+    }
+    let grant = Grant {
+        agent_id,
+        task_id: task_id.clone(),
+        capability: capability.clone(),
+        scope: scope.clone(),
+        expires_at,
+        revoked: false,
+    };
+    let capability = grant.capability.clone();
+    let scope = grant.scope.clone();
+    let expires_at = grant.expires_at;
+    node.state.add_grant(grant);
+    node.state.audit.append(format!("authorized:{task_id}:{capability}:{scope}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "capability": capability, "scope": scope, "expires_at": expires_at}).to_string())
+}
+
+fn command_begin_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let capability = args.get("capability")?.to_string();
+    let scope = args.get("scope")?.to_string();
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &scope,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .begin_effect(&operation, &capability, &scope, at)
+            .map_err(|error| format!("begin effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-started:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "started_at": at}).to_string())
+}
+
+fn command_finish_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let outcome = match args.get("outcome")? {
+        "succeeded" => EffectOutcome::Succeeded,
+        "failed" => EffectOutcome::Failed,
+        "unknown" => EffectOutcome::Unknown,
+        other => return Err(format!("unknown outcome: {other}")),
+    };
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .finish_effect(&operation, outcome, at)
+            .map_err(|error| format!("finish effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-finished:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "outcome": format!("{outcome:?}")}).to_string())
+}
+
+fn command_reconcile_effect(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let outcome = match args.get("outcome")? {
+        "succeeded" => EffectOutcome::Succeeded,
+        "failed" => EffectOutcome::Failed,
+        other => return Err(format!("reconciliation needs succeeded/failed, got {other}")),
+    };
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .reconcile_effect(&operation, outcome, at)
+            .map_err(|error| format!("reconcile: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-reconciled:{operation}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "operation": operation, "outcome": format!("{outcome:?}")}).to_string())
+}
+
+fn command_complete_step(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let index: u32 = args.get("index")?.parse().map_err(|_| "--index must be a step index".to_string())?;
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .mark_step(index, StepStatus::Completed, at)
+            .map_err(|error| format!("complete step: {error:?}"))?;
+    }
+    node.save()?;
+    Ok(serde_json::json!({"task": task_id, "step": index, "status": "completed"}).to_string())
+}
+
+/// Real capability adapter: writes a file exactly once under `D/effects/`. The substrate records
+/// the operation id before the write and only marks it succeeded after the write, so a crash
+/// between the two leaves an unknown/in-flight effect that must be reconciled, never re-run.
+fn command_effect_execute(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let operation = args.get("operation")?.to_string();
+    let capability = args.optional("capability").unwrap_or("file.write").to_string();
+    let scope = args.get("scope")?.to_string();
+    if scope.is_empty() || scope.contains('/') || scope.contains('\\') || scope == "." || scope == ".." {
+        return Err("scope must be a plain file name inside the node effects directory".to_string());
+    }
+    let content = args.get("content")?.as_bytes().to_vec();
+
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &scope,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+
+    // Persist the attempt before touching the outside world.
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .begin_effect(&operation, &capability, &scope, at)
+            .map_err(|error| format!("begin effect: {error:?}"))?;
+    }
+    node.save()?;
+
+    let effects = node.dir.join("effects");
+    fs::create_dir_all(&effects).map_err(|error| format!("create effects dir: {error}"))?;
+    let path = effects.join(&scope);
+    if path.exists() {
+        // A real duplicate would mean the substrate failed to stop a replay.
+        return Err(format!("refusing to overwrite an existing effect file: {}", path.display()));
+    }
+    fs::write(&path, &content).map_err(|error| format!("write effect: {error}"))?;
+    let digest = hex_encode(&Sha256::digest(&content));
+
+    if args.optional("crash-after-write") == Some("true") {
+        node.state.audit.append(format!("effect-written-unfinished:{operation}:{digest}").as_bytes());
+        node.save()?;
+        return Err(format!("simulated crash after external write: {digest}"));
+    }
+
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint
+            .finish_effect(&operation, EffectOutcome::Succeeded, at)
+            .map_err(|error| format!("finish effect: {error:?}"))?;
+    }
+    node.state.audit.append(format!("effect-completed:{operation}:{digest}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({
+        "task": task_id,
+        "operation": operation,
+        "capability": capability,
+        "path": path.display().to_string(),
+        "bytes": content.len(),
+        "sha256": digest,
+    })
+    .to_string())
+}
+
+/// Model/engine adapter: run one task step on a chosen engine. The task identity, goal and
+/// evidence trail stay the same; only the executor changes, and each engine needs its own grant
+/// scope so an engine swap cannot silently reuse another engine's authority.
+fn command_engine_run(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.get("task")?.to_string();
+    let engine = args.get("engine")?.to_string();
+    if engine != "native" && engine != "openssl" {
+        return Err("engine must be native or openssl".to_string());
+    }
+    let input = args.get("input")?.as_bytes().to_vec();
+    let capability = "engine.run".to_string();
+    let request = GrantRequest {
+        agent_id: args.optional("agent").unwrap_or("node-agent"),
+        task_id: &task_id,
+        capability: &capability,
+        scope: &engine,
+    };
+    match authorize(&node.state.grants, &request, at) {
+        Decision::Allowed => {}
+        other => return Err(format!("capability denied: {other:?}")),
+    }
+
+    let digest = match engine.as_str() {
+        "native" => hex_encode(&Sha256::digest(&input)),
+        "openssl" => {
+            use std::io::Write;
+            use std::process::{Command, Stdio};
+            let mut child = Command::new("openssl")
+                .args(["dgst", "-sha256"])
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .spawn()
+                .map_err(|error| format!("spawn openssl: {error}"))?;
+            child
+                .stdin
+                .as_mut()
+                .ok_or("openssl stdin")?
+                .write_all(&input)
+                .map_err(|error| format!("openssl stdin: {error}"))?;
+            let output = child.wait_with_output().map_err(|error| format!("openssl: {error}"))?;
+            if !output.status.success() {
+                return Err(format!("openssl failed: {}", String::from_utf8_lossy(&output.stderr)));
+            }
+            String::from_utf8_lossy(&output.stdout)
+                .split_whitespace()
+                .last()
+                .ok_or("openssl produced no digest")?
+                .trim()
+                .to_string()
+        }
+        _ => unreachable!(),
+    };
+
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        let step = checkpoint.steps.get_mut(0).ok_or("task has no step 0")?;
+        if step.evidence.len() >= 16 {
+            return Err("too many evidence entries on step 0".to_string());
+        }
+        step.evidence.push(format!("engine:{engine}:sha256:{digest}"));
+        step.status = StepStatus::Completed;
+        checkpoint.updated_at = at;
+    }
+    node.state.audit.append(format!("engine-run:{engine}:{digest}").as_bytes());
+    node.save()?;
+    let checkpoint = node.state.tasks.get(&task_id).ok_or("task vanished")?;
+    Ok(serde_json::json!({
+        "task_id": checkpoint.task_id,
+        "goal": checkpoint.goal,
+        "engine": engine,
+        "digest": digest,
+        "evidence": checkpoint.steps[0].evidence,
+    })
+    .to_string())
+}
+
+fn command_resume(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let task_id = args.get("task")?.to_string();
+    {
+        let checkpoint = task_mut(&mut node, &task_id)?;
+        checkpoint.needs_authorization = true;
+    }
+    node.state.audit.append(format!("resume-requested:{task_id}").as_bytes());
+    node.save()?;
+    let checkpoint = node.state.tasks.get(&task_id).ok_or("task vanished")?;
+    Ok(serde_json::to_string(&checkpoint.resume_view()).map_err(|error| format!("view: {error}"))?)
+}
+
+fn command_init(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    fs::create_dir_all(&dir).map_err(|error| format!("create {}: {error}", dir.display()))?;
+    if dir.join("state.bin").is_file() && args.optional("force").is_none() {
+        return Err(format!("{} already initialized", dir.display()));
+    }
+    let at = now_millis(args)?;
+    let (identity, device) = if let Some(secret) = args.optional("recovery-secret") {
+        // PRS simulation: the personal identity root is derived from a high-entropy recovery
+        // secret with a fixed domain salt, so the same secret rebuilds the same identity on a
+        // new device. Production replaces this with a 24-word mnemonic + optional passphrase.
+        let mut seed = [0u8; 32];
+        pbkdf2::pbkdf2_hmac::<Sha256>(secret.as_bytes(), b"traceweave-recovery-v1", 200_000, &mut seed);
+        let identity_path = dir.join("identity.key");
+        if identity_path.is_file() {
+            let stored = fs::read(&identity_path).map_err(|error| format!("read identity seed: {error}"))?;
+            if stored != seed {
+                return Err("this directory already has a different identity; use a fresh --dir".to_string());
+            }
+        } else {
+            write_private(&identity_path, &seed)?;
+        }
+        let identity = NodeKey::Software(signing_key_from_seed(&seed)?);
+        let device = NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?);
+        (identity, device)
+    } else if let Some(tag) = args.optional("key-agent-tag") {
+        let identity_tag = format!("{tag}-identity");
+        let device_tag = format!("{tag}-device");
+        let identity = NodeKey::Agent { spki: key_agent_create(&identity_tag)?, tag: identity_tag };
+        let device = NodeKey::Agent { spki: key_agent_create(&device_tag)?, tag: device_tag };
+        fs::write(dir.join(KEY_AGENT_MARKER), format!("{tag}\n"))
+            .map_err(|error| format!("write key-agent marker: {error}"))?;
+        (identity, device)
+    } else if let Some(service) = args.optional("secret-service") {
+        let identity = NodeKey::Software(signing_key_from_seed(&secret_seed(service, "traceweave-identity")?)?);
+        let device = NodeKey::Software(signing_key_from_seed(&secret_seed(service, "traceweave-device")?)?);
+        fs::write(dir.join(SECRET_SERVICE_MARKER), format!("{service}\n"))
+            .map_err(|error| format!("write secret-service marker: {error}"))?;
+        (identity, device)
+    } else {
+        match args.optional("keychain-service") {
+        Some(service) => {
+            let identity = NodeKey::Software(signing_key_from_seed(&keychain_seed(service, KEYCHAIN_IDENTITY)?)?);
+            let device = NodeKey::Software(signing_key_from_seed(&keychain_seed(service, KEYCHAIN_DEVICE)?)?);
+            fs::write(dir.join(KEYCHAIN_MARKER), format!("{service}\n"))
+                .map_err(|error| format!("write keychain marker: {error}"))?;
+            (identity, device)
+        }
+        None => (
+            NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("identity.key"))?)?),
+            NodeKey::Software(signing_key_from_seed(&load_or_create_seed(&dir.join("device.key"))?)?),
+        ),
+        }
+    };
+    let device_id = format!("node-{}", &hex_encode(&fingerprint(&device.public_der()))[..16]);
+
+    let mut book = IdentityBook::genesis(identity.public_der(), at).map_err(|error| format!("genesis: {error}"))?;
+    book.enroll(enrollment(&identity, device.public_der(), &device_id, at)?)
+        .map_err(|error| format!("enroll: {error}"))?;
+    let mut state = SubstrateState::new();
+    state.set_identity(book);
+    let node = Node { dir, state, identity, device, device_id };
+    node.save()?;
+
+    Ok(serde_json::json!({
+        "initialized": node.dir.display().to_string(),
+        "device_id": node.device_id,
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
+    })
+    .to_string())
+}
+
+fn command_show(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let bytes = node.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    let digest: String = Sha256::digest(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
+        "memories": node.state.live_memory_count(),
+        "tombstones": node.state.tombstone_count(),
+        "tasks": node.state.tasks.len(),
+        "grants": node.state.grants.len(),
+        "audit_entries": node.state.audit.len(),
+        "state_bytes": bytes.len(),
+        "state_sha256": digest,
+    })
+    .to_string())
+}
+
+fn command_from_archive(args: &Args) -> NodeResult<String> {
+    let archive = fs::read(args.get("archive")?).map_err(|error| format!("read archive: {error}"))?;
+    let state = archive_to_state(args.get("passphrase")?, &archive, args.get("from-device")?)?;
+    let out = PathBuf::from(args.get("out")?);
+    let bytes = state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    fs::write(&out, &bytes).map_err(|error| format!("write {}: {error}", out.display()))?;
+    Ok(serde_json::json!({
+        "out": out.display().to_string(),
+        "from_device": args.get("from-device")?,
+        "memories": state.live_memory_count(),
+        "tombstones": state.tombstone_count(),
+        "tasks": state.tasks.len(),
+        "grants": state.grants.len(),
+        "bytes": bytes.len(),
+    })
+    .to_string())
+}
+
+fn command_merge_state(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let signed_at: i64 = args.get("signed-at")?.parse().map_err(|_| "--signed-at must be unix milliseconds".to_string())?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read state: {error}"))?;
+    let incoming = SubstrateState::from_bytes(&bytes).map_err(|error| format!("incoming: {error}"))?;
+    let from = args.get("from-device")?.to_string();
+    let (memories, tasks, dropped) = merge_incoming(&mut node, &incoming, &from, signed_at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "from_device": from,
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped,
+    })
+    .to_string())
+}
+
+/// Import a device-signed handoff: `TWPH1 | u64 signed_at | u32 spki_len | spki |
+/// u32 state_len | state | u32 sig_len | sig`. The signature covers
+/// `domain || signed_at || state`; the device is resolved by SHA-256(spki), not by a caller label.
+fn command_import_signed(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let bytes = fs::read(args.get("in")?).map_err(|error| format!("read handoff: {error}"))?;
+    if bytes.len() < 5 + 8 + 4 + 4 + 4 || &bytes[..5] != HANDOFF_MAGIC {
+        return Err("not a TWPH1 signed handoff".to_string());
+    }
+    let mut cursor = 5;
+    let signed_at = i64::from_be_bytes(
+        bytes
+            .get(cursor..cursor + 8)
+            .ok_or("truncated handoff")?
+            .try_into()
+            .map_err(|_| "truncated signed_at")?,
+    );
+    cursor += 8;
+    let spki_len = read_u32(&bytes, &mut cursor)?;
+    let spki = bytes.get(cursor..cursor + spki_len).ok_or("truncated spki")?.to_vec();
+    cursor += spki_len;
+    let state_len = read_u32(&bytes, &mut cursor)?;
+    let state_bytes = bytes.get(cursor..cursor + state_len).ok_or("truncated state")?.to_vec();
+    cursor += state_len;
+    let sig_len = read_u32(&bytes, &mut cursor)?;
+    let signature = bytes.get(cursor..cursor + sig_len).ok_or("truncated signature")?.to_vec();
+    cursor += sig_len;
+    if cursor != bytes.len() {
+        return Err("trailing bytes in signed handoff".to_string());
+    }
+
+    let mut message = Vec::with_capacity(HANDOFF_DOMAIN.len() + 8 + state_bytes.len());
+    message.extend_from_slice(HANDOFF_DOMAIN);
+    message.extend_from_slice(&signed_at.to_be_bytes());
+    message.extend_from_slice(&state_bytes);
+    if !verify_der(&spki, &message, &signature) {
+        return Err("handoff signature does not verify".to_string());
+    }
+
+    let device_fingerprint = fingerprint(&spki);
+    let identity_book = node.state.identity.clone();
+    let device_id = identity_book
+        .as_ref()
+        .and_then(|book| book.device_for_fingerprint(&device_fingerprint))
+        .map(|entry| entry.device_id.clone())
+        .ok_or_else(|| format!("handoff device is not enrolled: {}", hex_encode(&device_fingerprint)))?;
+
+    let incoming = SubstrateState::from_canonical_bytes(&state_bytes)
+        .map_err(|error| format!("incoming state: {error}"))?;
+    let (memories, tasks, dropped) = merge_incoming(&mut node, &incoming, &device_id, signed_at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "device_id": device_id,
+        "device_fingerprint": hex_encode(&device_fingerprint),
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped,
+    })
+    .to_string())
+}
+
+fn command_key(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    Ok(serde_json::json!({
+        "device_id": node.device_id,
+        "device_pubkey": hex_encode(&node.device.public_der()),
+        "device_fingerprint": node.fingerprint_hex(),
+        "identity_pubkey": hex_encode(&node.identity.public_der()),
+        "identity_fingerprint": hex_encode(&fingerprint(&node.identity.public_der())),
+    })
+    .to_string())
+}
+
+fn command_trust(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let peer_id = args.get("device-id")?.to_string();
+    let peer_pubkey = hex_decode(args.get("device-pubkey")?)?;
+    let record = enrollment(&node.identity, peer_pubkey, &peer_id, at)?;
+    let mut book = current_identity_book(&node)?;
+    book.enroll(record).map_err(|error| format!("enroll: {error}"))?;
+    set_book(&mut node, book);
+    node.state.audit.append(format!("trusted:{peer_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"trusted": peer_id, "at": at}).to_string())
+}
+
+fn command_revoke(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let peer_id = args.get("device-id")?.to_string();
+    let reason = args.get("reason")?.to_string();
+    let record = revocation(&node.identity, &peer_id, at, &reason)?;
+    let mut book = current_identity_book(&node)?;
+    book.revoke(record).map_err(|error| format!("revoke: {error}"))?;
+    set_book(&mut node, book);
+    node.state.audit.append(format!("revoked:{peer_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"revoked": peer_id, "at": at, "reason": reason}).to_string())
+}
+
+fn command_add_memory(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let content = args.get("content")?.to_string();
+    let memory_id = args.optional("memory-id").unwrap_or("mem-1").to_string();
+    let actor = node.device_id.clone();
+    let mut counter = 1u64;
+    if let Some(versions) = node.state.memories.get(&memory_id) {
+        counter = versions
+            .iter()
+            .filter_map(|version| version.clock.0.get(&actor).copied())
+            .max()
+            .unwrap_or(0)
+            + 1;
+    }
+    let mut clock = BTreeMap::new();
+    clock.insert(actor.clone(), counter);
+    let merged = node
+        .state
+        .merge_memory_from_device(&actor, at, &memory_id, &[Version { clock: Clock(clock), value: Some(content) }])
+        .map_err(|error| format!("merge: {error}"))?;
+    node.state.audit.append(format!("memory:{memory_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"memory_id": memory_id, "actor": actor, "counter": counter, "signed_at": at, "merged": format!("{merged:?}")}).to_string())
+}
+
+fn command_add_task(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let at = now_millis(args)?;
+    let task_id = args.optional("task-id").unwrap_or("task-1").to_string();
+    let goal = args.get("goal")?.to_string();
+    let capability = args.optional("capability").unwrap_or("calendar").to_string();
+    let scope = args.optional("scope").unwrap_or("write").to_string();
+    let checkpoint = TaskCheckpoint::new(
+        task_id.clone(),
+        goal,
+        vec![CheckpointStep {
+            index: 0,
+            capability,
+            scope,
+            status: StepStatus::Pending,
+            evidence: Vec::new(),
+        }],
+    );
+    node.state.put_task(checkpoint).map_err(|error| format!("task: {error}"))?;
+    node.state.audit.append(format!("task:{task_id}").as_bytes());
+    node.save()?;
+    Ok(serde_json::json!({"task_id": task_id, "at": at}).to_string())
+}
+
+fn command_export(args: &Args) -> NodeResult<String> {
+    let node = Node::open(Path::new(args.get("dir")?))?;
+    let out = PathBuf::from(args.get("out")?);
+    let passphrase = args.get("passphrase")?.to_string();
+    let plaintext = node.state.canonical_bytes().map_err(|error| format!("encode: {error}"))?;
+    let envelope = encrypt(&passphrase, &plaintext)?;
+    fs::write(&out, &envelope).map_err(|error| format!("write {}: {error}", out.display()))?;
+    Ok(serde_json::json!({
+        "exported": out.display().to_string(),
+        "bytes": envelope.len(),
+        "plaintext_sha256": hex_encode(&Sha256::digest(&plaintext)),
+    })
+    .to_string())
+}
+
+fn command_import(args: &Args) -> NodeResult<String> {
+    let mut node = Node::open(Path::new(args.get("dir")?))?;
+    let input = PathBuf::from(args.get("in")?);
+    let passphrase = args.get("passphrase")?.to_string();
+    let from_device = args.get("from-device")?.to_string();
+    let signed_at: i64 = args.get("signed-at")?.parse().map_err(|_| "--signed-at must be unix milliseconds".to_string())?;
+
+    let envelope = fs::read(&input).map_err(|error| format!("read {}: {error}", input.display()))?;
+    let plaintext = decrypt(&passphrase, &envelope)?;
+    let incoming = SubstrateState::from_bytes(&plaintext).map_err(|error| format!("incoming state: {error}"))?;
+    let (memories, tasks, dropped_grants) = merge_incoming(&mut node, &incoming, &from_device, signed_at)?;
+    node.save()?;
+    Ok(serde_json::json!({
+        "from_device": from_device,
+        "signed_at": signed_at,
+        "memories_merged": memories,
+        "tasks_added": tasks,
+        "grants_not_imported": dropped_grants,
+    })
+    .to_string())
+}
+
+fn command_verify(args: &Args) -> NodeResult<String> {
+    let dir = PathBuf::from(args.get("dir")?);
+    let bytes = fs::read(dir.join("state.bin")).map_err(|_| "missing state.bin".to_string())?;
+    let state = SubstrateState::from_canonical_bytes(&bytes).map_err(|error| format!("canonical: {error}"))?;
+    let audit_ok = state.audit.verify();
+    let identity_ok = state
+        .identity
+        .as_ref()
+        .map(|book| book.canonical_bytes().is_ok())
+        .unwrap_or(true);
+    if !audit_ok || !identity_ok {
+        return Err(format!("verify failed: audit={audit_ok} identity={identity_ok}"));
+    }
+    let digest: String = Sha256::digest(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
+    Ok(serde_json::json!({"ok": true, "canonical_bytes": bytes.len(), "sha256": digest, "audit": audit_ok, "identity": identity_ok}).to_string())
+}
+
+fn run(args: Args) -> NodeResult<String> {
+    match args.command.as_str() {
+        "init" => command_init(&args),
+        "show" => command_show(&args),
+        "key" => command_key(&args),
+        "trust" => command_trust(&args),
+        "revoke" => command_revoke(&args),
+        "add-memory" => command_add_memory(&args),
+        "add-task" => command_add_task(&args),
+        "task" => command_task(&args),
+        "recover" => command_recover(&args),
+        "authorize" => command_authorize(&args),
+        "session-create" => command_session_create(&args),
+        "session-list" => command_session_list(&args),
+        "session-revoke" => command_session_revoke(&args),
+        "begin-effect" => command_begin_effect(&args),
+        "finish-effect" => command_finish_effect(&args),
+        "reconcile-effect" => command_reconcile_effect(&args),
+        "complete-step" => command_complete_step(&args),
+        "effect-execute" => command_effect_execute(&args),
+        "engine-run" => command_engine_run(&args),
+        "resume" => command_resume(&args),
+        "export" => command_export(&args),
+        "from-archive" => command_from_archive(&args),
+        "merge-state" => command_merge_state(&args),
+        "import-signed" => command_import_signed(&args),
+        "import" => command_import(&args),
+        "verify" => command_verify(&args),
+        other => Err(format!("unknown command: {other}")),
+    }
+}
+
+fn main() -> ExitCode {
+    match Args::parse().and_then(run) {
+        Ok(output) => {
+            println!("{output}");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("error: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}

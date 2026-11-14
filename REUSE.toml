@@ -88,7 +88,7 @@ SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["agent_os/core/Cargo.lock", "agent_os/sync/Cargo.lock", "native/zk_alignment/Cargo.lock"]
+path = ["agent_os/core/Cargo.lock", "agent_os/sync/Cargo.lock", "agent_os/portable/Cargo.lock", "agent_os/node/Cargo.lock", "native/zk_alignment/Cargo.lock"]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 Inceptless <support@inceptless.com>"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

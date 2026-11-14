@@ -7,8 +7,9 @@
 
 # Traceweave
 
-> A sovereign personal computing system independent of any single device, model, or provider.  
-> An open architecture and operating substrate designed and maintained by **Inceptless**.
+> A personal computing substrate: one continuous identity, memory, tasks, grants and action
+> history that belong to the person. Devices are replaceable terminals; models are replaceable
+> execution engines. An open architecture designed and maintained by **Inceptless**.
 
 [English](README.md) | [中文](README.zh-CN.md)
 
@@ -64,9 +65,20 @@ cloud endpoint and approve the exact payload.
 
 ## 1. Executive Summary
 
-Traceweave redefines personal computing for the post-application agent era. Traditional consumer operating systems remain organized around isolated application silos and cloud platforms that fragment personal identity, memory, and agency. 
+Traceweave is building a **device-independent personal computing substrate**: one continuous
+personal identity, memory, task state, grants and action history that belong to the person.
+Devices are replaceable terminals; models are replaceable execution engines.
 
-Traceweave's design goal is a device-agnostic computing substrate where computational state, long-term memory, and task execution can move across hardware, providers, and models. The current repository is an early prototype toward that goal; portable user ownership and cryptographic control are not yet end-to-end guarantees across every subsystem.
+Traditional systems tie identity, memory and agency to application silos, one operating system
+and one cloud provider. Traceweave's answer is a portable substrate with explicit ports for
+device, model and capability adapters.
+
+The current repository is an **Android-hosted prototype** of that substrate, not the portable
+core itself: identity lives in Android Keystore, state in a Java/SQLite layer, policy in Binder
+permissions and execution in Android services. The next research line extracts the substrate
+from Android — see [docs/portable_substrate_positioning_2026-11-13.md](docs/portable_substrate_positioning_2026-11-13.md) —
+and runs in parallel with the frozen 0.1.5 release gate. Portable user ownership and
+cryptographic control are not yet end-to-end guarantees across every subsystem.
 
 <p align="center">
   <img src="docs/assets/screen_home_light_en.png" alt="Home screen in light mode" width="240" />
@@ -82,43 +94,53 @@ Traceweave's design goal is a device-agnostic computing substrate where computat
 
 ---
 
-## 2. Four Target Architecture Pillars
+## 2. Layered Target Architecture
 
-Traceweave's target architecture has four mutually reinforcing layers; the diagram distinguishes design goals from the current prototype:
+Traceweave is organized as a portable substrate plus replaceable adapters, not as one app:
 
 ```
-+-----------------------------------------------------------------------------------------+
-|                                        TRACEWEAVE                                        |
-|                          Personal Computing System (Inceptless)                         |
-+-----------------------------------------------------------------------------------------+
-|                                                                                         |
-|  1. Agent OS application prototype                                                     |
-|     Android APK on GrapheneOS; not an OS image or AOSP fork                            |
-|     - Scrollable task, memory, settings, and approval UI                               |
-|     - Optional overlay service; requires user-controlled Android access                |
-|     - Sensor, voice, vision, and peripheral components are experimental                |
-|                                                                                         |
-|  2. Traceweave Runtime                                                                   |
-|     Android task executor plus experimental Rust core                                  |
-|     - User-approved, task-scoped capability broker                                     |
-|     - Deterministic rule planner by default; optional user-imported GGUF model       |
-|     - Keystore-backed app data and passphrase-encrypted export                         |
-|     - Rust daemon is disabled; no automatic device-to-device sync                     |
-|                                                                                         |
-|  3. Traceweave Protocol                                                                  |
-|     Protocol schemas and experimental Rust synchronization code                        |
-|     - Android archive import/export is user initiated                                   |
-|     - App-side memory merge uses vector clocks and tombstone priority                   |
-|     - Rust sync transport exchanges those records; validation builds only                |
-|     - No deployed cross-device synchronization service                                 |
-|                                                                                         |
-|  4. Traceweave Research                                                                  |
-|     Exploratory scientific research subproject (research/traceweave/)                   |
-|     - Feature extraction and dynamical-systems research                                |
-|     - Metrics are research results only when tied to a dated reproducible record        |
-|                                                                                         |
-+-----------------------------------------------------------------------------------------+
++---------------------------------------------------------------------+
+|                    PERSONAL COMPUTING SUBSTRATE                     |
+|  personal identity · persistent state · policy governance ·        |
+|  auditable execution (the part that belongs to the person)          |
++---------------------------------------------------------------------+
+        ^                    ^                      ^
+        |                    |                      |
++---------------+    +---------------+      +-----------------+
+| Device        |    | Model         |      | Capability      |
+| adapters      |    | adapters      |      | adapters        |
+| Android (now) |    | local GGUF    |      | files           |
+| macOS (next)  |    | cloud API     |      | apps            |
+| iOS (later)   |    | any provider  |      | sensors         |
++---------------+    +---------------+      +-----------------+
 ```
+
+Current status:
+
+- the substrate is implemented **inside the Android prototype** — this is a hosting choice, not
+  the architecture; a standalone portable core does not exist yet;
+- device adapters exist only for Android; a macOS reference node is the next milestone;
+- model adapters exist as a deterministic rule planner, an optional user-imported GGUF model and
+  an optional cloud endpoint;
+- capability adapters are Android Binder services behind explicit, time-boxed grants.
+
+### 2.1 Portable Substrate roadmap (started 2026-11-13)
+
+| Workstream | Deliverable | Needs a second Android phone |
+| :--- | :--- | :--- |
+| **PC-0 portable core** | Started: [`agent_os/portable/`](agent_os/portable) — records, policy, checkpoints, audit, canonical state format v2 with identity, golden bytes, parity with the existing Rust core, identity + revocation + recovery simulation, 30 tests | No |
+| **PC-1 reference node** | Started: [`agent_os/node/`](agent_os/node) — headless one-shot node, P-256 device identity (file, macOS Keychain or non-exportable Keychain key via key agent), encrypted state exchange, post-restart recovery, recovery-secret rebuild, Agent Sessions, Linux Secret Service backend (verified on Linux), Android archive extraction, 16 CLI acceptance tests; **Proof H v1–v3 passed**: real Pixel archive migration, Keystore-signed handoff, and real-data signing verified on macOS ([record](docs/proof_h_heterogeneous_2026-11-13.md)) | No |
+| **PC-2 identity & recovery** | Design + host simulation: [portable_identity_recovery_design_2026-11-13.md](docs/portable_identity_recovery_design_2026-11-13.md) — PRS-rooted personal identity, device enrollment/revocation/rotation, recovery that clears grants, identity in the canonical envelope (10 identity/state tests) | Design and simulation only |
+| **PC-3 task continuity** | Started: [`agent_os/node/`](agent_os/node) task commands — resume across devices, reconcile unknown effects, never replay a succeeded effect, re-authorize on the receiving device; a **real `file.write`** effect ran exactly once, and an **engine swap** (native vs openssl) kept task identity/history with per-engine grants ([record](docs/pc3_task_continuity_2026-11-14.md)) | Real capability + engine swap; LLM inference still out of scope |
+
+PC-2's identity boundary is designed before PC-1 ports code. The full plan, acceptance criteria
+and the new **Proof H** (Android ↔ macOS memory continuity) are in
+[docs/portable_substrate_positioning_2026-11-13.md](docs/portable_substrate_positioning_2026-11-13.md).
+
+Two tracks keep the release honest: **Track A** is the frozen 0.1.5 release candidate — it only
+accepts fixes for critical Proof 1 defects and its acceptance stays `BLOCKED_BY_HARDWARE` until
+two Android devices run it; **Track B** is the Portable Substrate research line, which must not
+change the frozen database, wire protocol or release status.
 
 ---
 
@@ -126,7 +148,8 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 
 | Subsystem | Primary Implementation | Standards & Specifications | Key Engineering Metrics |
 | :--- | :--- | :--- | :--- |
-| **Agent OS prototype** | Java Android APK, tested on Android 17 | Android app sandbox and explicit user approvals | No OS image, latency, or battery-life guarantee |
+| **Portable substrate (target)** | Platform-neutral Rust core; records, policy and checkpoints | Design in [portable_substrate_positioning_2026-11-13.md](docs/portable_substrate_positioning_2026-11-13.md) | Not extracted yet; no standalone build |
+| **Android device adapter (current prototype)** | Java Android APK, tested on Android 17 | Android app sandbox and explicit user approvals | No OS image, latency, or battery-life guarantee |
 | **Traceweave Runtime** | Rust 2021, C-ABI JNI | Experimental native core; the Rust daemon and its IPC runtime are disabled |
 | **Local planner and Rust core** | Rule planner in the APK; optional user-imported GGUF model; Rust components remain experimental | No model is bundled; the app can run a user-selected model file | No throughput benchmark claimed |
 | **App data and archive** | Android Keystore AES-GCM; passphrase-encrypted archive | Archive format versioned; not independently audited | No zero-knowledge or hardware-backing guarantee |
@@ -135,56 +158,39 @@ Traceweave's target architecture has four mutually reinforcing layers; the diagr
 
 ---
 
-## 4. Target System Architecture
+## 4. Current Android Adapter Mapping
+
+The substrate ports exist only implicitly today. The current Android prototype implements each
+concern in Android-specific machinery, which is exactly what PC-0 and PC-1 must replace:
 
 ```
 +=========================================================================================+
-|                              USER INTERACTION SURFACE                                   |
-|                                                                                         |
-|  [ Agent OS app UI ]                       [ Optional overlay service ]                 |
-|  - Scrollable task, memory and settings UI - Requires user-controlled overlay access  |
-|  - Explicit capability approval            - Experimental voice/vision/peripheral code |
+|              PORTABLE SUBSTRATE (target; currently hosted inside Android)               |
+|  identity port  |  state port  |  policy port  |  audit port                           |
 +=========================================================================================+
-                                          |
-                                          | AOSP Binder IPC / WindowManager
-                                          v
-+=========================================================================================+
-|                     ANDROID APPLICATION LAYER (current prototype)                        |
-|                                                                                         |
-|  - MainActivity: Viewport coordination, multi-language localization (ZH / EN)           |
-|  - AgentFloatingService: SYSTEM_ALERT_WINDOW lifecycle, gesture-drag and touch events   |
-|  - TraceweaveProvider: Signature-protected optional local context bridge                |
-|  - PhysicalSensoriumManager: Explicit start/stop prototype                              |
-|  - HardwarePeripheralService: Experimental input adapter                                |
-|  - VisionAgentManager: Experimental, not accepted for general UI automation             |
-+=========================================================================================+
-                                          |
-                                          | Optional JNI boundary (deployment not release-verified)
-                                          v
-+=========================================================================================+
-|                          EXPERIMENTAL RUST COMPONENTS                                   |
-|                                                                                         |
-|  +------------------------+  +------------------------+  +---------------------------+  |
-|  |   Android Broker       |  |    Local Planner       |  |   Experimental Voice DSP  |  |
-|  | - User approval        |  | - Deterministic rules  |  | - Not a continuous service|
-|  | - Task-scoped grants   |  | - User-imported model  |  | - No latency claim        |
-|  +------------------------+  +------------------------+  +---------------------------+  |
-|  +------------------------+  +------------------------+  +---------------------------+  |
-|  |   Android Task Journal |  |   Encrypted App Data   |  |   Experimental JS Engine  |  |
-|  | - JobScheduler jobs    |  | - Keystore AES-GCM     |  | - Not a trusted boundary  |
-|  | - Persisted checkpoints|  | - User export/import   |  | - No daemon transport     |
-|  +------------------------+  +------------------------+  +---------------------------+  |
-+=========================================================================================+
-                                          |
-                                          | No running daemon transport
-                                          v
-+=========================================================================================+
-|                               agentosd: DISABLED                                        |
-|                                                                                         |
-|  - Binary exits; install/start/package commands are blocked                            |
-|  - Magisk hooks are inert; Rust file-backed store is rejected                          |
-+=========================================================================================+
+          |                |               |                |
+          v                v               v                v
++-----------------------------------------------------------------------------------------+
+|                         ANDROID DEVICE ADAPTER (current prototype)                     |
+|  Keystore P-256 key | Java AgentStore + Android SQLite | CapabilityBroker + Binder      |
+|  Audit hash chain + Keystore anchor | JobScheduler execution | Android View UI          |
++-----------------------------------------------------------------------------------------+
+          |
+          | Rust JNI boundary (sync transport only; agentosd remains disabled)
+          v
++-----------------------------------------------------------------------------------------+
+|  Rust components: libp2p/Noise sync transport, P-256 verification, task journal,        |
+|  causal memory merge, agent-IR passes (all experimental, not a running daemon)          |
++-----------------------------------------------------------------------------------------+
 ```
+
+What is still missing for portability:
+
+- personal identity separate from the hardware-backed device key (PC-2);
+- a canonical, platform-neutral record format shared by Android and the portable core (PC-0);
+- policy evaluation inside the substrate instead of Android permission plumbing (PC-0);
+- a portable audit anchor instead of a Keystore MAC (PC-0/PC-2);
+- a task checkpoint schema independent of JobScheduler (PC-3).
 
 ---
 
@@ -279,6 +285,17 @@ The current three-layer verification result is summarised in [docs/stage_status_
 
 The A–F boundary-closing milestones are tracked in [docs/agent_os_milestones_2026-10-30.md](docs/agent_os_milestones_2026-10-30.md): 28 of 30 are complete with dated device or host receipts. Three require external resources and are not claimed: independent audit, a second device matrix, and power-meter-grade energy measurement. Device results in this repository come from one Pixel 6a unless stated otherwise.
 
+### Two tracks
+
+- **Track A — 0.1.5 release candidate:** frozen. Only fixes for critical Proof 1 defects are
+  accepted. Proof 1 (two physical Android devices) has not run, so the release gate is
+  `BLOCKED_BY_HARDWARE`; it is not reported as passed.
+- **Track B — Ported Personal Computing:** the Portable Substrate research line in
+  [docs/portable_substrate_positioning_2026-11-13.md](docs/portable_substrate_positioning_2026-11-13.md).
+  It targets PC-0 (portable Rust core), PC-1 (macOS/Linux reference node), PC-2 (personal
+  identity and recovery) and PC-3 (task continuity), plus Proof H (Android ↔ macOS memory
+  continuity). It must not change the frozen database, wire protocol or release state.
+
 ## 7. Hardware Deployment & Verification
 
 The Phase 1 app prototype was exercised on a physical **Google Pixel 6a** running GrapheneOS / Android 17 (API 37). This validates selected app behavior only; it is not an AOSP image, full hardware validation, or a release readiness result. See the [dated acceptance record](docs/agent_os_phase1_acceptance.md).
@@ -333,7 +350,7 @@ adb shell am start -n com.inceptless.traceweave.validation.target/com.inceptless
 .
 ├── README.md               Master architectural specification and project documentation
 ├── LICENSE                 Licence text (AGPL-3.0-or-later); layers in LICENSING.md
-├── agent_os/               Agent OS Android app prototype and experimental Rust components
+├── agent_os/               Android device-adapter prototype and portable-core experiments
 │   ├── android/            Android app services, activities, overlay, and providers
 │   ├── core/               Rust native library; agentosd runtime is disabled
 │   ├── sdk_python/         Experimental Python client SDK for local substrate IPC
@@ -343,6 +360,7 @@ adb shell am start -n com.inceptless.traceweave.validation.target/com.inceptless
 │   ├── pyproject.toml      Research package configuration
 │   └── traceweave/          Feature extraction, recurrence, forecasting, and probes
 ├── docs/                   System specifications, protocol definitions, and audit reports
+│   ├── portable_substrate_positioning_2026-11-13.md   Portable Substrate plan and Proof H
 │   ├── protocol/           Substrate protocol specification and agent manifest JSON schemas
 │   └── archive/            Historical engineering design records and hardware migration notes
 └── native/                 Cryptographic and numerical acceleration libraries
@@ -398,5 +416,5 @@ Traceweave is initiated, engineered, and governed by **Inceptless**.
 
 - Parent Entity: Inceptless
 - Core Product: Traceweave
-- Subsystems: Traceweave OS, Traceweave Runtime, Traceweave Protocol, Traceweave Research
+- Subsystems: Traceweave Substrate (portable core, in progress), Traceweave Android Adapter (prototype), Traceweave Protocol, Traceweave Research
 - Copyright: (c) 2026 Inceptless. Code and documentation are licensed as described in [LICENSING.md](LICENSING.md); the project name, logo and icons are brand assets (`LicenseRef-Inceptless-Brand`) and are not covered by the source licences.

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: 2026 Inceptless <support@inceptless.com> -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.inceptless.traceweave.trackb"
+    android:versionCode="1"
+    android:versionName="trackb-0.1">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
+    <!-- Isolated research variant: no providers, services, receivers or shared permissions. -->
+    <application
+        android:allowBackup="false"
+        android:label="Traceweave Track B Export"
+        android:hasCode="true">
+        <activity
+            android:name="com.inceptless.traceweave.PortableExportActivity"
+            android:exported="true"
+            android:label="Track B TWPH3 export" />
+    </application>
+</manifest>

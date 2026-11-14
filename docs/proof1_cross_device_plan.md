@@ -9,6 +9,11 @@
 
 状态：**未开始 —— 需要第二台物理 Android 设备**。本文把步骤、观测点和判据写死，避免有设备时临场设计。
 
+**范围提醒（2026-11-13）**：本计划是 **0.1.5 的发布门槛**，不是整个研究计划的天花板。设备无关的
+个人计算基底另有 Portable Substrate 研究线（PC-0…PC-3）与 Proof H（Android ↔ macOS 记忆连续性），
+见 [portable_substrate_positioning_2026-11-13.md](portable_substrate_positioning_2026-11-13.md)。
+Proof H 不能替代本计划，本计划也不证明可移植核心已经存在。
+
 ## 0. 前置条件
 
 | 项 | 要求 |

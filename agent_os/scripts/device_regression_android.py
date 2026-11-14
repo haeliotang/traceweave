@@ -28,6 +28,7 @@ EXTRA_SOURCES = [
     "agent_os/tests/android/ControlledProbeService.java",
     "agent_os/tests/android/SyncProbe.java",
     "agent_os/tests/android/SyncExchange.java",
+    "agent_os/tests/android/SignedHandoffActivity.java",
 ]
 # Self-contained cases only; UI verification cases need their SEED_* case first.
 CASES = ["RUN_SUITE", "TASK_CENTER", "RUN_DOCUMENTS"]
