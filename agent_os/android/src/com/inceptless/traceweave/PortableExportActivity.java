@@ -167,7 +167,7 @@ public final class PortableExportActivity extends Activity {
     private static byte[] canonicalState(TreeMap<String, AgentStore.Memory> memories,
             TreeMap<String, AgentStore.Task> tasks) {
         StringBuilder json = new StringBuilder(4096);
-        json.append("{\"version\":2,\"memories\":{");
+        json.append("{\"version\":3,\"memories\":{");
         boolean first = true;
         for (AgentStore.Memory memory : memories.values()) {
             if (!first) json.append(',');
@@ -198,6 +198,9 @@ public final class PortableExportActivity extends Activity {
                         json.append("[]");
                     } else {
                         json.append("[\"").append(escape(step.observation)).append("\"]");
+                    }
+                    if (step.prompt != null && !step.prompt.isEmpty()) {
+                        json.append(",\"payload\":\"").append(escape(step.prompt)).append("\"");
                     }
                     json.append('}');
                 }

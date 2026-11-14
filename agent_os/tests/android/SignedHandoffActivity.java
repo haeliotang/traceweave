@@ -108,7 +108,7 @@ public final class SignedHandoffActivity extends Activity {
         }
 
         StringBuilder json = new StringBuilder(4096);
-        json.append("{\"version\":2,\"memories\":{");
+        json.append("{\"version\":3,\"memories\":{");
         boolean first = true;
         for (AgentStore.Memory memory : memories.values()) {
             if (memoryTombstones.contains(memory.id)) continue;
@@ -197,7 +197,7 @@ public final class SignedHandoffActivity extends Activity {
     private static byte[] canonicalTaskState(TreeMap<String, AgentStore.Memory> memories,
             TreeMap<String, AgentStore.Task> tasks) {
         StringBuilder json = new StringBuilder(4096);
-        json.append("{\"version\":2,\"memories\":{");
+        json.append("{\"version\":3,\"memories\":{");
         boolean first = true;
         for (AgentStore.Memory memory : memories.values()) {
             if (!first) json.append(',');
@@ -246,7 +246,7 @@ public final class SignedHandoffActivity extends Activity {
     /** Compact canonical v2 JSON; field order must match the Rust serde layout exactly. */
     private static byte[] canonicalState() {
         StringBuilder json = new StringBuilder(512);
-        json.append("{\"version\":2,\"memories\":{");
+        json.append("{\"version\":3,\"memories\":{");
         json.append("\"mem-1\":[{\"clock\":{\"android\":1},\"value\":\"synthetic handoff memory\"}]");
         json.append("},\"tasks\":{");
         json.append("\"task-1\":{\"task_id\":\"task-1\",\"goal\":\"continue on the mac\",\"status\":\"waiting_for_user\",");
