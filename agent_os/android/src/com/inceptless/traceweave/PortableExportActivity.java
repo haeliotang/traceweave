@@ -124,6 +124,13 @@ public final class PortableExportActivity extends Activity {
                     for (AgentStore.Task task : data.tasks) {
                         if (!taskTombstones.contains(task.id)) tasks.put(task.id, task);
                     }
+                    String synthetic = getIntent().getStringExtra("synthetic_memory");
+                    if (synthetic != null && !synthetic.isEmpty()) {
+                        long now = System.currentTimeMillis();
+                        memories.put("synthetic-1", new AgentStore.Memory(
+                            "synthetic-1", "fact", synthetic, "trackb-synthetic", "intent",
+                            now, now));
+                    }
                     memoryCount = memories.size();
                     taskCount = tasks.size();
                     canonical = canonicalState(memories, tasks, strictSynthesis.isChecked(),
