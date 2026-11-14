@@ -96,6 +96,13 @@ public final class PortableExportActivity extends Activity {
             startExport(passphrase);
         });
         setContentView(root);
+        if (getIntent().getBooleanExtra("schema_probe", false)) {
+            TextView probeStatus = status;
+            new Thread(() -> {
+                String result = MigrationProbe.run(this);
+                runOnUiThread(() -> probeStatus.setText(result));
+            }).start();
+        }
     }
 
     private void startExport(String passphrase) {
